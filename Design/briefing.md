@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-01 22:56 local (21:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-01 23:58 local (22:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -53,7 +53,7 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([12:46](h
 
 ## Queue
 
-**Starved (1 ready).** The ceremonies slice ([THR-2102](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the)) merged via [PR #2693](https://github.com/christianspliid-ui/threadbare/pull/2693) and is live. The one ready ticket, [THR-2103](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) (lists), is on hold until its veto window closes at midnight UTC; the last three builder runs stood down for that reason, which is correct. The last open ticket on the legibility map, [Modules and composition](https://linear.app/threadbare/issue/THR-2120/modules-and-composition-the-small-set-of-blocks-every-panel-is-built), is next for the design lane, and closing the map refills the shelf.
+**Starved (1 ready).** The ceremonies slice ([THR-2102](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the)) merged via [PR #2693](https://github.com/christianspliid-ui/threadbare/pull/2693) and is live. The one ready ticket, [THR-2103](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) (lists), is on hold until its veto window closes at midnight UTC, about an hour from now; the last five builder runs stood down for that reason, which is correct, and the first run after midnight should take it. The last open ticket on the legibility map, [Modules and composition](https://linear.app/threadbare/issue/THR-2120/modules-and-composition-the-small-set-of-blocks-every-panel-is-built), is next for the design lane, and closing the map refills the shelf.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -61,4 +61,4 @@ Two items for agents, not you:
 
 ## Health
 
-All green. No pull requests are open. The live site serves the latest commit on main (8d8e7538, the ceremonies slice). Checks on main and the scheduled background jobs pass. All nine enabled scheduled tasks are on time, and the worktree reaper last ran at 21:40 UTC. Engine speed is normal (141 ms per tick, 12% under the weekly median).
+All green. No pull requests are open. The live site serves the latest commit on main (8d8e7538, the ceremonies slice). Checks on main and the scheduled background jobs pass. All nine enabled scheduled tasks are on time, and the worktree reaper last ran at 22:53 UTC. Engine speed is normal (139 ms per tick, 13% under the weekly median).
