@@ -27,7 +27,7 @@ import {
   HAND_HEADER,
   HAND_REST_LINES,
 } from '../../../data/frame-content';
-import { GOD_RAIL_HAND_GROUP_KEY } from '../../../data/frame-registry';
+import { GOD_RAIL_HAND_GROUP_KEY, godRailSectionIcon } from '../../../data/frame-registry';
 import { NEWLY_REVEALED_STYLE } from '../GameView/openingReveal';
 import { CARD_DRAG_MIME, useArmedCard, useHandDragStart, useHandPress } from './HandPressContext';
 import {
@@ -75,6 +75,9 @@ const labelStyle: CSSProperties = {
   fontWeight: 700,
   color: 'var(--text-tertiary)',
 };
+
+/** THR-2099 — the "Your cards" heading's shape, from the hand's rail row. */
+const HAND_ICON = godRailSectionIcon('hand');
 
 function CardRow({ card, rest, armed }: { card: HandCardVM; rest: HandRest; armed: boolean }) {
   const press = useHandPress();
@@ -224,7 +227,11 @@ export function HandSection({ hand, showInvestiture, investitureNewlyRevealed = 
     >
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
         <Tooltip id="ui.your_cards" focusable={false}>
-          <span style={labelStyle}>{HAND_HEADER}</span>
+          {/* THR-2099 (R2) — the heading's carved shape, read from its rail row. */}
+          <span style={{ ...labelStyle, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            {HAND_ICON && <Icon name={HAND_ICON} size="floor" decorative />}
+            {HAND_HEADER}
+          </span>
         </Tooltip>
         <span style={{ ...labelStyle, marginLeft: 'auto', fontVariantNumeric: 'tabular-nums' }}>{cards.length}</span>
       </div>

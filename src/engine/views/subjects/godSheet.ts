@@ -44,6 +44,8 @@ import {
 import { heldSources } from '../../../engine/essenceSources';
 import { faithLine } from '../../../engine/prayers';
 import { resolveToParentLocation } from '../../../engine/sublocationShape';
+import { PLACE_ICON } from '../../../data/icons/conceptIcons';
+import type { IconName } from '../../../data/icons/iconRegistry';
 import { landNameFor } from './landName';
 import type { SignaturePathState } from '../../../data/ascendant-bar-content';
 import { REACH_SIGNATURE_CONTENT_TEMPLATES } from '../../../data/reach-signature-content';
@@ -597,6 +599,14 @@ export interface HomeSeatView {
   locationId: string;
   /** The settlement's name as the player reads it. */
   name: string;
+  /** THR-2099: the town's own place shape (`PLACE_ICON[subtype]`); null when the subtype has none. */
+  icon?: IconName | null;
+}
+
+function placeIconFor(subtype: unknown): IconName | null {
+  return typeof subtype === 'string' && Object.prototype.hasOwnProperty.call(PLACE_ICON, subtype)
+    ? PLACE_ICON[subtype as keyof typeof PLACE_ICON]
+    : null;
 }
 
 /**
@@ -611,5 +621,5 @@ export function selectHomeSeat(gameState: GameState): HomeSeatView | null {
   if (!seatId) return null;
   const place = resolveToParentLocation(graph, graph.getNode(seatId));
   if (!place) return null;
-  return { locationId: place.id, name: place.name ?? place.id };
+  return { locationId: place.id, name: place.name ?? place.id, icon: placeIconFor(place.properties.locationSubtype) };
 }

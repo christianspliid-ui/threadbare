@@ -125,6 +125,12 @@ export interface GodRailSectionDef {
   revealSurfaces: readonly OpeningRevealSurfaceId[];
   /** False for covenants, signatures and hooks: an empty section does not render (THR-1814 rule 4). */
   rendersWhenEmpty: boolean;
+  /**
+   * THR-2099 (dressing rule R2): the heading's carved shape, drawn before the label word.
+   * Required, so a new row must state it; null for identity (the face is the heading) and
+   * for the rows in {@link GOD_RAIL_NO_IDEA_ROWS}.
+   */
+  icon: IconName | null;
 }
 
 /**
@@ -133,15 +139,31 @@ export interface GodRailSectionDef {
  * `frame/godRailComponents.tsx`.
  */
 export const GOD_RAIL_SECTIONS: readonly GodRailSectionDef[] = [
-  { id: 'identity', place: 'pinned', order: 1, label: GOD_RAIL_LABELS.identity, tooltipId: 'ui.ascendant_name', revealSurfaces: ['identity'], rendersWhenEmpty: true },
-  { id: 'essence', place: 'pinned', order: 2, label: GOD_RAIL_LABELS.essence, tooltipId: null, revealSurfaces: ['essence', 'attention'], rendersWhenEmpty: true },
-  { id: 'hand', place: 'fill', order: 3, label: GOD_RAIL_LABELS.hand, tooltipId: 'ui.your_cards', revealSurfaces: ['hand', 'investiture'], rendersWhenEmpty: true },
-  { id: 'reaches', place: 'folded', order: 4, label: GOD_RAIL_LABELS.reaches, tooltipId: 'ui.reaches', revealSurfaces: ['reaches', 'dominion'], rendersWhenEmpty: true },
-  { id: 'mandate', place: 'folded', order: 5, label: GOD_RAIL_LABELS.mandate, tooltipId: null, revealSurfaces: ['mandate'], rendersWhenEmpty: true },
-  { id: 'covenants', place: 'folded', order: 6, label: GOD_RAIL_LABELS.covenants, tooltipId: 'ui.covenant', revealSurfaces: [], rendersWhenEmpty: false },
-  { id: 'signatures', place: 'folded', order: 7, label: GOD_RAIL_LABELS.signatures, tooltipId: 'ui.signatures', revealSurfaces: [], rendersWhenEmpty: false },
-  { id: 'hooks', place: 'folded', order: 8, label: GOD_RAIL_LABELS.hooks, tooltipId: 'ui.hooks', revealSurfaces: [], rendersWhenEmpty: false },
+  { id: 'identity', place: 'pinned', order: 1, label: GOD_RAIL_LABELS.identity, tooltipId: 'ui.ascendant_name', revealSurfaces: ['identity'], rendersWhenEmpty: true, icon: null },
+  { id: 'essence', place: 'pinned', order: 2, label: GOD_RAIL_LABELS.essence, tooltipId: null, revealSurfaces: ['essence', 'attention'], rendersWhenEmpty: true, icon: 'essence' },
+  { id: 'hand', place: 'fill', order: 3, label: GOD_RAIL_LABELS.hand, tooltipId: 'ui.your_cards', revealSurfaces: ['hand', 'investiture'], rendersWhenEmpty: true, icon: 'cards' },
+  { id: 'reaches', place: 'folded', order: 4, label: GOD_RAIL_LABELS.reaches, tooltipId: 'ui.reaches', revealSurfaces: ['reaches', 'dominion'], rendersWhenEmpty: true, icon: null },
+  { id: 'mandate', place: 'folded', order: 5, label: GOD_RAIL_LABELS.mandate, tooltipId: null, revealSurfaces: ['mandate'], rendersWhenEmpty: true, icon: 'mandate' },
+  { id: 'covenants', place: 'folded', order: 6, label: GOD_RAIL_LABELS.covenants, tooltipId: 'ui.covenant', revealSurfaces: [], rendersWhenEmpty: false, icon: null },
+  { id: 'signatures', place: 'folded', order: 7, label: GOD_RAIL_LABELS.signatures, tooltipId: 'ui.signatures', revealSurfaces: [], rendersWhenEmpty: false, icon: 'signature' },
+  { id: 'hooks', place: 'folded', order: 8, label: GOD_RAIL_LABELS.hooks, tooltipId: 'ui.hooks', revealSurfaces: [], rendersWhenEmpty: false, icon: 'hooks' },
 ];
+
+/** THR-2099 — rail rows with no carved shape yet, waiting on Christian's icon pick (THR-2104). */
+export const GOD_RAIL_NO_IDEA_ROWS: readonly GodRailSectionId[] = ['reaches', 'covenants'];
+
+/** A rail heading's carved shape, read from its row — bodies never name a literal (Law 58). */
+export function godRailSectionIcon(id: GodRailSectionId): IconName | null {
+  return GOD_RAIL_SECTIONS.find((s) => s.id === id)?.icon ?? null;
+}
+
+/**
+ * THR-2099 — the tallest an opened folded row's body may grow, in vh, before it scrolls
+ * inside itself. Keeps the rail inside one viewport (Law 33) when a row holds many
+ * chips: the seeded world's eleven hooks, with faces on its vows, ran 46 px past the
+ * fold at 1920×1080 (8 px without faces).
+ */
+export const GOD_RAIL_OPEN_ROW_MAX_VH = 30;
 
 /** The folded rows the player opened (Law 51). Every row starts closed. */
 export const GOD_RAIL_OPEN_ROWS_KEY = 'threadbare.ui.godRail.openRows';
@@ -162,7 +184,7 @@ export interface TopBarItemDef {
   order: number;
   /** The word, always shown (THR-1834 § 5); '' only where the item is text itself (time, direction line). */
   label: string;
-  /** null only where the item is text (time, direction line, doom, omen). */
+  /** null only where the item is text (time, direction line) or draws its own mark (omen). Doom's slot draws it before the bar (THR-2099). */
   icon: IconName | null;
   /** null only with a named reason in `TOOLTIP_NONE_REASONS`. */
   tooltipId: string | null;
@@ -187,7 +209,7 @@ export const TOP_BAR_ITEMS: readonly TopBarItemDef[] = [
   { id: 'needs_you', group: 'left', order: 2, label: NEEDS_YOU_LABEL, icon: 'needs-you', tooltipId: 'ui.needs_you', revealSurface: null, firstScreenGate: 'bonded', guardedWhileEncounter: false, hotkey: NEEDS_YOU_HOTKEY },
   { id: 'direction_line', group: 'left', order: 3, label: '', icon: null, tooltipId: null, revealSurface: null, firstScreenGate: null, guardedWhileEncounter: false, hotkey: null },
   { id: 'find', group: 'centre', order: 1, label: TOP_BAR_WORDS.find, icon: 'find', tooltipId: null, revealSurface: null, firstScreenGate: 'bonded', guardedWhileEncounter: true, hotkey: null },
-  { id: 'doom', group: 'right', order: 1, label: TOP_BAR_WORDS.doom, icon: null, tooltipId: 'ui.doom_bar', revealSurface: 'doom', firstScreenGate: 'doom', guardedWhileEncounter: true, hotkey: null },
+  { id: 'doom', group: 'right', order: 1, label: TOP_BAR_WORDS.doom, icon: 'doom', tooltipId: 'ui.doom_bar', revealSurface: 'doom', firstScreenGate: 'doom', guardedWhileEncounter: true, hotkey: null },
   { id: 'omen', group: 'right', order: 2, label: TOP_BAR_WORDS.omen, icon: null, tooltipId: 'ui.omen', revealSurface: 'omen', firstScreenGate: 'omens', guardedWhileEncounter: true, hotkey: null },
   { id: 'rivals', group: 'right', order: 3, label: TOP_BAR_WORDS.rivals, icon: 'rivals', tooltipId: 'ui.rival_panel', revealSurface: 'rivals', firstScreenGate: 'rivals', guardedWhileEncounter: true, hotkey: null },
   { id: 'notables', group: 'right', order: 4, label: TOP_BAR_WORDS.notables, icon: 'notables', tooltipId: 'ui.notables', revealSurface: 'notables', firstScreenGate: 'notables', guardedWhileEncounter: true, hotkey: null },

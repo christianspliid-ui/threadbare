@@ -166,6 +166,8 @@ describe('godRail view model', () => {
 
   it('names The First only once bonded (Law 56)', () => {
     expect(buildGodRail(makeState(), ARGS).identity?.first).toBeNull();
-    expect(buildGodRail(makeState({ first: true }), ARGS).identity?.first).toEqual({ id: 'kael', name: 'Kael Thorne' });
+    expect(buildGodRail(makeState({ first: true }), ARGS).identity?.first).toMatchObject({ id: 'kael', name: 'Kael Thorne' });
+    // THR-2099 — The First carries their face for the Your First chip.
+    expect(buildGodRail(makeState({ first: true }), ARGS).identity?.first?.visual?.alt).toBe('Kael Thorne');
   });
 });

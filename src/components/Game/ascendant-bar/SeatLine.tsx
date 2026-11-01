@@ -8,6 +8,7 @@
  */
 import React from 'react';
 import { Tooltip } from '../../shared/Tooltip';
+import { Icon } from '../../shared/Icon';
 import { HOME_SEAT_LABEL } from '../../../data/ascendant-bar-content';
 import type { HomeSeatView } from './selectors';
 import styles from './styles.module.css';
@@ -31,6 +32,8 @@ export function SeatLine({ seat, onCenter }: SeatLineProps) {
         onClick={() => onCenter?.(seat.locationId)}
         aria-label={`${HOME_SEAT_LABEL}: ${seat.name} — show on the map`}
       >
+        {/* THR-2099 (R2) — the town's own place shape before its name. */}
+        {seat.icon && <Icon name={seat.icon} size="floor" decorative style={{ marginRight: 4, verticalAlign: '-0.125em' }} />}
         {seat.name}
       </button>
     </div>
