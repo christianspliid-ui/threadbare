@@ -13,6 +13,8 @@ import { ICON_REGISTRY } from '../../../data/icons/iconRegistry';
 import { composeSections } from '../../detailPageGenerator';
 import { buildSubjectPage, placeArt } from '../subjects/subjectPage';
 import { fillClause, sentenceSection } from '../subjects/sentenceRows';
+import { joinFaction } from '../../factionMembership';
+import { applyFactionReputationGain } from '../../factionReputation';
 
 const ASC = 'asc';
 
@@ -31,7 +33,7 @@ function world(opts: { tiles?: boolean } = {}): GameState {
   graph.addNode({ id: 'area', type: 'region', name: 'Loremead', properties: { hexCount: 150 } });
   graph.addNode({
     id: 'guild', type: 'actor', name: 'Ironhold',
-    properties: { actorType: 'faction', wealth: 50, reputations: { town: { phrase: 'wary', sentiment: -0.5 } } },
+    properties: { actorType: 'faction', wealth: 50 },
   });
   graph.addNode({ id: 'blade', type: 'artifact', name: 'Oathblade', properties: { category: 'weapon', subcategory: 'arms' } });
   graph.addNode({ id: 'cup', type: 'artifact', name: 'Grey Chalice', properties: {} });
@@ -146,13 +148,30 @@ describe('R5–R7 — no Overview strip on these kinds (Law 16)', () => {
   it('a faction\'s means, reputations and the quiet line', () => {
     const s = byId(sections('faction', 'guild'));
     expect(proseOf(s.get('means'))).toMatch(/^They (live in comfort|get by|are wealthy|have nothing|are rich beyond counting)\.$/);
-    const reps = s.get('reputations_they_hold');
+    // No members yet → the quiet line.
+    expect(proseOf(s.get('reputations_they_hold'))).toBe('They hold no one in regard yet.');
+  });
+
+  it('a faction holds its members in regard: most-regarded first, worded, linked (THR-2111)', () => {
+    // Built with the real writers (join + reputation gain), not a hand-made property:
+    // the old `faction.properties.reputations` read had none, so live pages were always quiet.
+    const state = world();
+    const g = state.graph;
+    g.addNode({ id: 'mira', type: 'actor', name: 'Mira Hollow', properties: { actorType: 'individual' } });
+    expect(joinFaction(g, 'mira', 'guild', 1).changed).toBe(true);
+    expect(joinFaction(g, 'aldric', 'guild', 1).changed).toBe(true);
+    applyFactionReputationGain(g, 'aldric', 'guild', 1, 2, 'encounter_aftermath');
+    applyFactionReputationGain(g, 'mira', 'guild', -1, 2, 'encounter_aftermath');
+    const reps = byId(sections('faction', 'guild', state)).get('reputations_they_hold');
     expect(reps?.kind).toBe('chips');
-    const chip = reps && reps.kind === 'chips' ? reps.chips[0] : undefined;
-    expect(chip).toMatchObject({ label: 'Ashford', flavour: 'wary', sentiment: 'negative', clickRef: { nodeId: 'town', pageKind: 'place' } });
-    const quiet = world();
-    quiet.graph.getNode('guild')!.properties.reputations = {};
-    expect(proseOf(byId(sections('faction', 'guild', quiet)).get('reputations_they_hold'))).toBe('They hold no one in regard yet.');
+    expect(reps && reps.kind === 'chips' ? reps.chips : []).toEqual([
+      { label: 'Aldric Vane', flavour: 'revered', sentiment: 'positive', clickRef: { nodeId: 'aldric', pageKind: 'actor' } },
+      { label: 'Mira Hollow', flavour: 'distrusted', sentiment: 'negative', clickRef: { nodeId: 'mira', pageKind: 'actor' } },
+    ]);
+    // A 'retain' death keeps the member_of edge; the dead are not held in regard.
+    g.getNode('aldric')!.properties.deceased = true;
+    const after = byId(sections('faction', 'guild', state)).get('reputations_they_hold');
+    expect(after && after.kind === 'chips' ? after.chips.map(c => c.label) : []).toEqual(['Mira Hollow']);
   });
 
   it('an event\'s callback is prose, with no "Then" label', () => {

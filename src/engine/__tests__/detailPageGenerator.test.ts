@@ -7,6 +7,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { WorldGraph } from '../graph';
 import { generateDetailPage } from '../detailPageGenerator';
+import { applyFactionReputationGain } from '../factionReputation';
 import { createSimulationRuntime, type SimulationRuntime } from '../simulationRuntime';
 import type { GraphNode, GraphEdge } from '../../types/graph';
 
@@ -240,6 +241,8 @@ describe('generateDetailPage — Item', () => {
 describe('generateDetailPage — Faction', () => {
   it('always renders mandatory how_they_hold_her + reputations (chips, or the quiet line — THR-2098)', () => {
     const graph = fixtureGraph();
+    // THR-2111: the row reads members' live standing, so give Veiren some through the real writer.
+    applyFactionReputationGain(graph, 'veiren', 'iron-guard', 0.7, 5, 'encounter_aftermath');
     const page = generateDetailPage({
       nodeId: 'iron-guard',
       pageKind: 'faction',
