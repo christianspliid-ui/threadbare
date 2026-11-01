@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-01 01:56 local (00:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-01 02:58 local (01:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -44,14 +44,14 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([afternoo
 
 ## Queue
 
-**Healthy: three tickets ready, all inside their veto windows, so the builder is idle by design.** The design lane handed off [THR-2099](https://linear.app/threadbare/issue/THR-2099/art-led-pass-slice-3-the-god-rail-and-the-top-bar) (art-led god rail and top bar) tonight via [its plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-01-thr-2099-art-led-god-rail.md). The last five builder runs each stood down for exactly that reason. Claimable in order: [THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets) (story text, slice 1) about 03:47, [THR-2098](https://linear.app/threadbare/issue/THR-2098/art-led-pass-slice-2-every-other-inspector-page-places-lands-factions) (Inspector pages, slice 2) about 06:45, THR-2099 about 12:45.
+**Healthy: three tickets ready, all inside their veto windows, so the builder is idle by design.** The design lane handed off [THR-2099](https://linear.app/threadbare/issue/THR-2099/art-led-pass-slice-3-the-god-rail-and-the-top-bar) (art-led god rail and top bar) tonight via [its plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-01-thr-2099-art-led-god-rail.md). The last six builder runs each stood down for exactly that reason; the first window opens within the hour. Claimable in order: [THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets) (story text, slice 1) about 03:47, [THR-2098](https://linear.app/threadbare/issue/THR-2098/art-led-pass-slice-2-every-other-inspector-page-places-lands-factions) (Inspector pages, slice 2) about 06:45, THR-2099 about 12:45.
 
 - **Next:** [THR-2094](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26) (town cards reach the Mandate) sits in Todo with its plan merged; the orchestrator can promote it once its veto window closes (about 10:10).
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (12 days). No pushed branch or local worktree holds work for it. Agents can un-park it.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (12 days, last touched 28 Oct). No pushed branch or local worktree holds work for it. Agents can un-park it.
 
 ## Health
 
-All green. The live site is current (only docs merged since 7d617d2a), the PR checks and scheduled background jobs pass, no pull request is waiting, and all nine enabled scheduled tasks are on time. Engine speed is normal: 174 ms/tick, 9% above the 7-day median. The worktree reaper ran within the hour. The 40-hour silence on 29–30 Oct is on your list above.
+All green. The live site is current (only docs merged since 7d617d2a), the PR checks and scheduled background jobs pass, no pull request is waiting, and all nine enabled scheduled tasks are on time. Engine speed is normal: 163 ms/tick, 1% above the 7-day median. The worktree reaper ran within the hour. The 40-hour silence on 29–30 Oct is on your list above.
