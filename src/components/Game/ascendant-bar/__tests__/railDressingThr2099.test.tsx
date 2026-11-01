@@ -4,8 +4,8 @@
  *
  * - Every rail heading draws its carved shape from its registry row; rows with no shape yet
  *   are exactly `GOD_RAIL_NO_IDEA_ROWS` (they wait on THR-2104).
- * - A named mortal (The First, a covenant's mortal, a vow's mortal counterparty, a Needs-you
- *   row's mortal) carries their face; a place, a hex or a missing node draws none.
+ * - A named mortal (The First, a vow's mortal counterparty, a Needs-you row's mortal) carries
+ *   their face; a place, a hex or a missing node draws none.
  * - The Seat line draws its town's place shape and still centres the map.
  * - The doom item carries the `doom` shape; the omen draws no second icon.
  */
@@ -89,17 +89,14 @@ describe('THR-2099 faces on named mortals (S3.2)', () => {
     expect(mortalFace(g, 'gone')).toBeNull();
   });
 
-  it('a covenant held on a mortal carries their face; one on a place draws none', () => {
-    const rows = selectCovenantRows(state(world(), [effect('kael'), effect('loc-town')]));
-    expect(rows[0].targetRef?.id).toBe('kael');
-    expect(rows[0].targetRef?.visual.alt).toBe('Kael Thornweaver');
-    expect(rows[1].targetRef).toBeUndefined();
-    expect(rows[1].target).toBe('Varnholt');
-
+  // A covenant is held on a place or a land (`spawnControlEffect` refuses any other target),
+  // so its row keeps the place's name and draws no face.
+  it('a covenant on a place keeps its name and draws no face', () => {
+    const rows = selectCovenantRows(state(world(), [effect('loc-town')]));
+    expect(rows[0].target).toBe('Varnholt');
     const { container } = render(<CovenantsBlock rows={rows} />);
-    expect(container.querySelectorAll('[data-rail-face="true"]')).toHaveLength(1);
+    expect(container.querySelectorAll('[data-rail-face="true"]')).toHaveLength(0);
     expect(screen.getByText('Varnholt')).toBeInTheDocument();
-    expect(screen.getByText('Kael Thornweaver')).toBeInTheDocument();
   });
 
   it('a vow with a mortal counterparty leads with their face; the label is unchanged', () => {

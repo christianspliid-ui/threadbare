@@ -46,7 +46,6 @@ import { faithLine } from '../../../engine/prayers';
 import { resolveToParentLocation } from '../../../engine/sublocationShape';
 import { PLACE_ICON } from '../../../data/icons/conceptIcons';
 import type { IconName } from '../../../data/icons/iconRegistry';
-import { mortalFace, type EntityVisualDescriptor } from '../entityVisualResolver';
 import { landNameFor } from './landName';
 import type { SignaturePathState } from '../../../data/ascendant-bar-content';
 import { REACH_SIGNATURE_CONTENT_TEMPLATES } from '../../../data/reach-signature-content';
@@ -522,8 +521,6 @@ export interface CovenantRowView {
   kind: 'control' | 'source';
   /** THR-1747: whether the row offers Release (controls yes, sources no). */
   releasable: boolean;
-  /** THR-2099: set only when the covenant is held on a mortal — the row draws their face chip in place of `target`. */
-  targetRef?: { kind: 'agent'; id: string; visual: EntityVisualDescriptor };
 }
 
 /**
@@ -555,7 +552,6 @@ export function selectCovenantRows(gameState: GameState): CovenantRowView[] {
         hasCost ? COVENANT_UPKEEP_COPY.cost
         : hasIncome ? COVENANT_UPKEEP_COPY.income
         : COVENANT_UPKEEP_COPY.free;
-      const face = e.targetNodeId ? mortalFace(gameState.graph, e.targetNodeId) : null;
       return {
         effectId: e.effectId,
         title: e.narrativeTemplates.active,
@@ -564,7 +560,6 @@ export function selectCovenantRows(gameState: GameState): CovenantRowView[] {
         contested: !!e.encounterNodeId,
         kind: 'control' as const,
         releasable: true,
-        ...(face && e.targetNodeId ? { targetRef: { kind: 'agent' as const, id: e.targetNodeId, visual: face } } : {}),
       };
     });
 

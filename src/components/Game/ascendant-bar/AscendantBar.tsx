@@ -86,14 +86,14 @@ function useGodRailView(gameState: GameState, args: GodRailArgs): GodRailVM {
 }
 
 /**
- * THR-2099 — how many mortals the rail names by face (The First, covenants held on a
- * mortal, vows with a mortal counterparty), whether or not their row is open. Read by
- * the `data-rail-faces` debug attribute only.
+ * THR-2099 — how many mortals the rail names by face (The First, vows with a mortal
+ * counterparty), whether or not their row is open. Read by the `data-rail-faces` debug
+ * attribute only. A covenant is always held on a place or a land (`spawnControlEffect`
+ * refuses any other target), so the Covenants row has no face to draw.
  */
 function railFaceCount(vm: GodRailVM, gameState: GameState): string {
   const first = vm.identity?.first?.visual ? 1 : 0;
-  const covenants = vm.bodies.covenants.filter((r) => r.targetRef).length;
-  return String(first + covenants + countVowFaces(gameState));
+  return String(first + countVowFaces(gameState));
 }
 
 function FoldedRow({
