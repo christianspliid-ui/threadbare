@@ -10,6 +10,8 @@ import { WorldGraph } from '../../../engine/graph';
 import type { UndertakingMomentClass, UndertakingMomentRecord } from '../../../types/strategicAction';
 import { MomentCard } from '../MomentCard';
 import type { MomentCardModel } from '../momentCardModel';
+import { fallbackStageView } from '../../../engine/views/stage/stageView';
+import { resolveEntityVisual } from '../../../engine/views/entityVisualResolver';
 
 function buildGraph(): WorldGraph {
   const graph = new WorldGraph();
@@ -101,7 +103,13 @@ describe('MomentCard', () => {
         entity: { id: 'actor_2', kind: 'agent', name: 'Bram' }, selectAgentId: 'actor_2',
       }],
     });
-    render(<MomentCard open model={model} graph={buildGraph()} onAcknowledge={() => {}} onSelectAgent={onSelectAgent} />);
+    // THR-2100 — the face is the Stage's (`subjectVisual`), handed in by the view model.
+    const graph = buildGraph();
+    const stageVM = {
+      ...fallbackStageView({ kind: 'undertaking-moment', hasArt: false, hasCast: false }),
+      subjectVisual: resolveEntityVisual({ id: model.actorId, kind: 'agent', name: model.actorName }, graph),
+    };
+    render(<MomentCard open model={model} graph={graph} stageVM={stageVM} onAcknowledge={() => {}} onSelectAgent={onSelectAgent} />);
     fireEvent.click(screen.getByTestId('moment-card-portrait'));
     expect(onSelectAgent).toHaveBeenLastCalledWith('actor_1');
     fireEvent.click(screen.getByTestId('moment-chip-link-forward'));

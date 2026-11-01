@@ -1,5 +1,12 @@
 import { useState, useEffect, useCallback, useMemo, useRef, useSyncExternalStore, type ReactNode, type WheelEvent } from 'react';
 import { EntityVisual } from '../shared/EntityVisual';
+import { Icon } from '../shared/Icon';
+import { ICON_FOR_CONSEQUENCE } from '../../data/icons/conceptIcons';
+import type { IconName } from '../../data/icons/iconRegistry';
+import { stageLabelIcon } from '../../data/stage-content';
+import type { EntityVisualDescriptor } from '../../engine/views/entityVisualResolver';
+import { StageLabelIcon } from './stage/StageLabelIcon';
+import { StageSubjectPortrait } from './stage/StageSubjectPortrait';
 import { FollowToggle, type FollowDescriptor } from './FollowToggle';
 import { Tooltip } from '../shared/Tooltip';
 import { useEscapeLayer } from '../shared/useEscapeLayer';
@@ -11,7 +18,6 @@ import {
 } from '../shared/DeltaCluster';
 import { ReachIcon, REACH_TO_SPHERE } from '../icons';
 import {
-  CONSEQUENCE_CATEGORY_GLYPHS,
   CONSEQUENCE_CATEGORY_LABELS,
   CONSEQUENCE_CATEGORY_ORDER,
   CONSEQUENCE_CATEGORY_TOOLTIP_IDS,
@@ -163,6 +169,12 @@ export interface EncounterVeilProps {
    * Absent (tests, the styleguide), the two columns render in place.
    */
   renderFrame?: (frame: EncounterVeilFrame) => ReactNode;
+  /**
+   * THR-2100 (S4.1) — the subject mortal's face (`StageVM.subjectVisual`, knowledge-gated).
+   * Drawn once, in the left column under the scene picture (else first); the context
+   * strip's chip stands down so the panel shows one face. Absent → the chip as before.
+   */
+  subjectVisual?: EntityVisualDescriptor | null;
 }
 
 /** THR-1895 — what the veil hands its frame: one path's two columns. */
@@ -219,6 +231,7 @@ function VeilLeftColumn({
   visible,
   reducedMotion,
   cast,
+  face,
 }: {
   illustration: { src: string; alt?: string; caption?: string } | undefined;
   artOpacity: number;
@@ -226,6 +239,8 @@ function VeilLeftColumn({
   visible: boolean;
   reducedMotion: boolean;
   cast: ReactNode;
+  /** THR-2100 — the subject's face, under the scene picture (else first). */
+  face?: ReactNode;
 }) {
   return (
     <div
@@ -269,6 +284,7 @@ function VeilLeftColumn({
           )}
         </figure>
       )}
+      {face && <div data-testid="veil-subject-face" style={{ padding: illustration ? '0 16px' : '16px 16px 0', display: 'flex' }}>{face}</div>}
       {cast && <div data-testid="veil-scene-side" style={{ padding: '0 16px 16px', minWidth: 0 }}>{cast}</div>}
     </div>
   );
@@ -331,14 +347,15 @@ const CONSEQUENCE_DELTA_PX = 15;
  */
 const CONSEQUENCE_LEGEND_ENTRIES: readonly {
   category: EncounterStageConsequenceCategory;
-  glyph: string;
+  /** THR-2100 (S4.3) — the category's carved shape, the same one its chip tile draws. */
+  icon: IconName;
   label: string;
   /** THR-2061 (U7) — what the word means, beside it: "Scar · what it cost". */
   meaning: string;
   tooltipId: string;
 }[] = CONSEQUENCE_CATEGORY_ORDER.map((category) => ({
   category,
-  glyph: CONSEQUENCE_CATEGORY_GLYPHS[category],
+  icon: ICON_FOR_CONSEQUENCE[category],
   label: CONSEQUENCE_CATEGORY_LABELS[category],
   meaning: CONSEQUENCE_LEGEND_MEANINGS[category],
   // THR-1136 — read from the shared map rather than rebuilt here. The chip tag
@@ -605,6 +622,7 @@ export function EncounterVeil({
   onLetWorldTurn,
   onBackToMap,
   renderFrame,
+  subjectVisual = null,
 }: EncounterVeilProps) {
   /**
    * Law 44 (THR-1010). The veil's ceremonial motion is entirely inline, so a
@@ -744,9 +762,17 @@ export function EncounterVeil({
         {showAtStake && <FalloutPreview fallout={model.falloutPreview} />}
       </>
     ) : null;
-    if (!hasArt && !castNode) return null;
+    const faceNode = subjectVisual ? (
+      <StageSubjectPortrait
+        visual={subjectVisual}
+        onOpen={model.header.focalActorId && onSelectAgent ? () => onSelectAgent(model.header.focalActorId!) : undefined}
+        aria-label={model.header.focalActorId && onSelectAgent ? `View ${subjectVisual.alt}` : undefined}
+      />
+    ) : null;
+    if (!hasArt && !castNode && !faceNode) return null;
     return (
       <VeilLeftColumn
+        face={faceNode}
         illustration={model.illustration}
         artOpacity={art.opacity}
         artFilter={art.filter}
@@ -958,12 +984,14 @@ export function EncounterVeil({
               ...aftermathEntrance(0.6, 0.8),
             }}
           >
+            <StageLabelIcon label="encounterTitle" />
             {model.header.title}
           </div>
 
           {/* Context strip — who it happened to, and where */}
           <div data-testid="aftermath-context-strip" style={aftermathEntrance(0.7, 0.8)}>
             <ContextStrip
+              faceShownElsewhere={Boolean(subjectVisual)}
               header={model.header}
               threadTier={threadTier}
               onSelectAgent={onSelectAgent}
@@ -1169,10 +1197,11 @@ export function EncounterVeil({
                         name: chip.icon.name,
                         knownSrc: chip.icon.src,
                       }}
-                      data-testid={`consequence-chip-icon-${chip.kind}`}
+                      // THR-2100 (R3) — a relic's painting is counted by `getStage().dressing.relicTiles`.
+                      data-testid={chip.icon.routeKind === 'attachment' ? 'consequence-chip-relic' : `consequence-chip-icon-${chip.kind}`}
                       aria-label={chip.icon.name}
                       title={chip.icon.name}
-                      onClick={openEntity(chip.icon.entityId, chip.icon.kind === 'monster' ? 'agent' : chip.icon.kind)}
+                      onClick={openEntity(chip.icon.entityId, chip.icon.routeKind ?? (chip.icon.kind === 'monster' ? 'agent' : chip.icon.kind))}
                     />
                   ) : consequenceReach(chip.reachDomain) ? (
                     <span
@@ -1186,7 +1215,8 @@ export function EncounterVeil({
                     </span>
                   ) : (
                     <span
-                      data-testid={`consequence-chip-glyph-${chip.category}`}
+                      data-testid={`consequence-chip-shape-${chip.category}`}
+                      data-consequence-icon={ICON_FOR_CONSEQUENCE[chip.category]}
                       aria-hidden="true"
                       style={{
                         display: 'inline-flex',
@@ -1202,7 +1232,7 @@ export function EncounterVeil({
                         opacity: 0.85,
                       }}
                     >
-                      {chip.categoryGlyph}
+                      <Icon name={ICON_FOR_CONSEQUENCE[chip.category]} size="chip" decorative />
                     </span>
                   )}
                   {/* THR-1082 — `CATEGORY · NOUN`. The noun is the half that was
@@ -1384,7 +1414,7 @@ export function EncounterVeil({
                         data-testid={`consequence-legend-${entry.category}`}
                         style={{ display: 'inline-flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}
                       >
-                        <span aria-hidden="true">{entry.glyph}</span>
+                        <Icon name={entry.icon} size="floor" decorative />
                         {entry.label}
                         {/* THR-2061 (U7) — the meaning, lower case after the word. */}
                         <span style={{ textTransform: 'none', letterSpacing: '0.02em' }}>
@@ -1926,7 +1956,7 @@ export function EncounterVeil({
                 e.currentTarget.style.color = 'rgb(var(--veil-gold-rgb) / 0.45)';
               }}
             >
-              ◆ 1 — Peer Through the Thread
+              <EssenceMark insideControl /> 1 — Peer Through the Thread
             </button>
           </div>
         )}
@@ -2077,7 +2107,7 @@ export function EncounterVeil({
           >
             {/* THR-1006 — the pool is a float; interpolating it raw put
                 `193.60000000000005` on a mortal-facing surface. */}
-            &#9670; {essencePoolLabel(essence, essenceSphere)}
+            <EssenceMark /> {essencePoolLabel(essence, essenceSphere)}
           </div>
 
           {/* Action buttons */}
@@ -2313,6 +2343,7 @@ export function EncounterVeil({
               color: TEXT_GHOST,
             }}
           >
+            <StageLabelIcon label="encounterTitle" />
             {model.header.title}
           </div>
           {/* THR-1724 — the title row is the encounter's metadata row: title ·
@@ -2351,6 +2382,7 @@ export function EncounterVeil({
             merging here is what makes each of them appear once. */}
         <div style={entranceStyle(ENTRANCE_DELAYS.agentLine, 0.8)}>
           <ContextStrip
+            faceShownElsewhere={Boolean(subjectVisual)}
             header={model.header}
             threadTier={threadTier}
             onSelectAgent={onSelectAgent}
@@ -2689,7 +2721,7 @@ export function EncounterVeil({
         >
           {/* THR-1006 — second of three diamond readouts in this file; this is the
               branch the nudge stage actually mounts. */}
-          &#9670; {essencePoolLabel(essence, essenceSphere)}
+          <EssenceMark /> {essencePoolLabel(essence, essenceSphere)}
         </div>
 
         {/* THR-1724 — "Look away" is gone. Escape and "Show on map" minimise
@@ -3389,6 +3421,40 @@ function FalloutPreview({ fallout }: { fallout: EncounterStageFalloutModel[] }) 
   );
 }
 
+// ── Stage dressing marks (THR-2100) ────────────────────────────────
+
+/**
+ * The essence count's carved shape, in place of ◆ (S4.2). Not decorative: it carries the
+ * `ui.essence_panel` tooltip, so hovering it explains essence (Law 17) where the ◆
+ * explained nothing. The word "essence" stays printed beside it (Law 1).
+ *
+ * `insideControl`: inside a button the mark is decorative and carries no tooltip — a
+ * tooltip trigger is its own tab stop, and a focusable element inside a button is a dead
+ * stop that also renames the button for screen readers.
+ */
+function EssenceMark({ insideControl = false }: { insideControl?: boolean }) {
+  const name = stageLabelIcon('encounterEssence');
+  if (!name) return null;
+  return (
+    <span data-stage-label-icon={name} style={{ display: 'inline-flex', verticalAlign: 'middle' }}>
+      {insideControl
+        ? <Icon name={name} size="chip" decorative />
+        : <Icon name={name} size="chip" label="Divine Essence" tooltipId="ui.essence_panel" />}
+    </span>
+  );
+}
+
+/** A reach word's mark beside it (R2): `ReachIcon`, the encounter surface's own reach vocabulary. */
+function ReachMark({ label }: { label: string | undefined }) {
+  const reach = consequenceReach(label?.toLowerCase());
+  if (!reach) return null;
+  return (
+    <span style={{ display: 'inline-flex', verticalAlign: 'middle', marginRight: 6 }}>
+      <ReachIcon reach={reach} size={14} />
+    </span>
+  );
+}
+
 // ── ContextStrip sub-component (THR-636) ───────────────────────────
 function ContextStrip({
   header,
@@ -3399,6 +3465,7 @@ function ContextStrip({
   followState,
   onToggleFollow,
   reachShownElsewhere = false,
+  faceShownElsewhere = false,
   belowBlock,
 }: {
   header: EncounterStageHeaderModel;
@@ -3414,6 +3481,8 @@ function ContextStrip({
    * text reach chip stands down (the reach appears exactly once, THR-1478).
    */
   reachShownElsewhere?: boolean;
+  /** THR-2100 — the left column draws the subject's face, so the 28px chip stands down (one face). */
+  faceShownElsewhere?: boolean;
   /** Anything the marks need beneath them — today, the balance and its legend. */
   belowBlock?: ReactNode;
 }) {
@@ -3454,7 +3523,7 @@ function ContextStrip({
           aria-label={canSelectAgent ? `View ${name}` : name}
         >
           {/* Character portrait — Entity Visual Header primitive (THR-637) */}
-          <EntityVisual
+          {!faceShownElsewhere && <EntityVisual
             size="chip"
             shape="circle"
             entity={{
@@ -3464,7 +3533,7 @@ function ContextStrip({
               knownSrc: header.portraitUrl,
             }}
             style={{ width: 28, height: 28, opacity: ART_OPACITY[threadTier] }}
-          />
+          />}
           <span
             style={{
               fontFamily: FONT_DISPLAY,
@@ -3508,6 +3577,7 @@ function ContextStrip({
             padding: '2px 8px',
           }}
         >
+          <ReachMark label={header.reachLabel} />
           {header.reachLabel}
         </span>
       )}
@@ -3801,7 +3871,8 @@ function StepCastLine({
           marginBottom: 6,
         }}
       >
-        ✦ {cast.casterName ? `${cast.casterName} casts ` : 'Casting '}
+        <StageLabelIcon label="encounterCast" />
+        {cast.casterName ? `${cast.casterName} casts ` : 'Casting '}
         {onSelectEntity ? (
           <button
             type="button"
@@ -3922,6 +3993,7 @@ function StepReplayView({
               padding: '1px 7px',
             }}
           >
+            <ReachMark label={entry.reachLabel} />
             {entry.reachLabel}
           </span>
         )}

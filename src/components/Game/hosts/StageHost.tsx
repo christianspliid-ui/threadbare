@@ -293,6 +293,8 @@ export function StageHost({
             onLetWorldTurn={handleChapterLetWorldTurn}
             onBackToMap={handleChapterBackToMap}
             onShowOnMap={(col, row) => hexMapRef.current?.focusOn({ col, row })}
+            // THR-2100 — the Stage's one face, in the veil's left column.
+            subjectVisual={encounterStageVM?.subjectVisual ?? null}
             renderFrame={isStageFrameKind('encounter') && encounterStageVM ? ({ label, left, right, onWheel }) => (
               <Stage
                 key={openEncounterKey ?? 'encounter'}
@@ -382,6 +384,7 @@ export function StageHost({
             <StoryBeatStageBody
               template={activeStoryBeatTemplate}
               contextLine={storyBeatStageVM.contextLine}
+              subjectVisual={storyBeatStageVM.subjectVisual}
               agentName={activeStoryBeatAgentName}
               onDismiss={handleStoryBeatDismiss}
             />

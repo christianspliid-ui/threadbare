@@ -19,6 +19,19 @@ import { WorldGraph } from '../../../engine/graph';
 import { SPHERE_NAMES } from '../../../types';
 import type { PremonitionEvent } from '../../../types/premonition';
 import type { EssencePool } from '../../../types/influence';
+import { fallbackStageView } from '../../../engine/views/stage/stageView';
+import { resolveEntityVisual } from '../../../engine/views/entityVisualResolver';
+
+/**
+ * THR-2100 — the face comes from the Stage view model (`subjectVisual`), resolved where the
+ * graph is held. The tests hand it in the way `buildStageView` does (no gate: fully known).
+ */
+function stageVMFor(premonition: PremonitionEvent, graph: WorldGraph | null) {
+  return {
+    ...fallbackStageView({ kind: 'premonition', hasArt: false, hasCast: true }),
+    subjectVisual: resolveEntityVisual({ id: premonition.agentId, kind: 'agent', name: premonition.agentName }, graph),
+  };
+}
 
 const AGENT_ID = 'agent-kael';
 const AGENT_NAME = 'Kael Thornweaver';
@@ -96,12 +109,14 @@ function renderModal(
   const onDismiss = vi.fn();
   const onWhisperChoice = vi.fn();
   const onCompulsionChoice = vi.fn();
+  const graph = overrides.graph ?? makeGraph();
   const view = render(
     <PremonitionModal
       open
       premonition={premonition}
       essencePool={ESSENCE}
-      graph={makeGraph()}
+      graph={graph}
+      stageVM={stageVMFor(premonition, graph)}
       onWhisperChoice={onWhisperChoice}
       onCompulsionChoice={onCompulsionChoice}
       onViewAgent={onViewAgent}
@@ -120,6 +135,7 @@ function renderInert(premonition: PremonitionEvent, graph = makeGraph()) {
       premonition={premonition}
       essencePool={ESSENCE}
       graph={graph}
+      stageVM={stageVMFor(premonition, graph)}
       onWhisperChoice={vi.fn()}
       onCompulsionChoice={vi.fn()}
       onDismiss={vi.fn()}
@@ -208,6 +224,7 @@ describe('PremonitionModal — the surface as composed (THR-1139)', () => {
           open
           premonition={WHISPER}
           essencePool={ESSENCE}
+          stageVM={stageVMFor(WHISPER, null)}
           onWhisperChoice={vi.fn()}
           onCompulsionChoice={vi.fn()}
           onViewAgent={onViewAgent}

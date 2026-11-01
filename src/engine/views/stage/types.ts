@@ -522,8 +522,6 @@ export interface EncounterStageConsequenceChipModel {
    * of component imports.
    */
   nounEntityKind?: 'agent' | 'faction' | 'artifact' | 'companion' | 'attachment' | 'location' | 'area';
-  /** Icon-tile fallback glyph when neither an entity nor a reach resolves. */
-  categoryGlyph: string;
   /**
    * THR-1082 — the reach whose glyph tiles this chip, when the changed state is
    * a reach. Drawn with `ReachIcon`, the encounter surface's own reach
@@ -585,6 +583,11 @@ export interface EncounterStageConsequenceIconModel {
   name: string;
   /** Art the adapter resolved, when any exists. Absent ⇒ the designed fallback tile. */
   src?: string;
+  /**
+   * THR-2100 (S4.3) — where the tile's click routes, when it is not `kind`: a relic
+   * tiles with its painting as an `artifact` and opens the attachment's page.
+   */
+  routeKind?: 'attachment';
 }
 
 export interface EncounterStageAftermathModel {

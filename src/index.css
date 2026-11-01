@@ -385,6 +385,7 @@
     --inspector-full-trail-w: 240px; /* Inspector full, trail column — THR-1827 */
     --inspector-full-aside-w: 360px; /* Inspector full, Connections column — THR-1827 */
     --inspector-portrait-w: 15rem;   /* Inspector wide/Full, person portrait — THR-2097 */
+    --stage-subject-portrait-w: 8rem; /* the one Stage face — THR-2100 */
     --stage-gutter: 24px;            /* THR-1829 */
     --stage-window-w: 280px;         /* THR-1829 STAGE_WINDOW_PX */
     --stage-left-col-w: 340px;       /* THR-1829 STAGE_LEFT_COL_PX */
@@ -464,6 +465,7 @@
       --inspector-full-trail-w: 240px;
       --inspector-full-aside-w: 360px;
       --inspector-portrait-w: 15rem;
+      --stage-subject-portrait-w: 8rem;
       --stage-gutter: 24px;
       --stage-window-w: 280px;
       --stage-left-col-w: 340px;
@@ -488,6 +490,7 @@
       --inspector-full-trail-w: 300px;
       --inspector-full-aside-w: 440px;
       --inspector-portrait-w: 18rem;
+      --stage-subject-portrait-w: 10rem;
       --stage-gutter: 24px;
       --stage-window-w: 520px;
       --stage-left-col-w: 560px;
@@ -511,6 +514,7 @@
       --inspector-full-trail-w: 300px;
       --inspector-full-aside-w: 440px;
       --inspector-portrait-w: 18rem;
+      --stage-subject-portrait-w: 10rem;
       --stage-gutter: 24px;
       --stage-window-w: 1400px;
       --stage-left-col-w: 560px;

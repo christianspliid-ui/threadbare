@@ -18,6 +18,8 @@ import { DIALOG_SIZES, type DialogSize } from '../shared/dialogSize';
 import { Overlay, type OverlayBackdrop } from '../shared/Overlay';
 import { Panel } from '../shared/Panel';
 import { Stage } from '../Game/stage/Stage';
+import { StageSubjectPortrait } from '../Game/stage/StageSubjectPortrait';
+import { StageLabelIcon } from '../Game/stage/StageLabelIcon';
 import { GameScreenStateProvider, useGameScreenStore } from '../Game/frame/GameScreenState';
 import type { StageVM } from '../../engine/views/stage/stageView';
 import { STAGE_WORDS } from '../../data/view-content';
@@ -669,6 +671,12 @@ function EscapeLayerReadout() {
   );
 }
 
+/** THR-2100 — the Stage face samples: a known mortal's portrait and the silhouette below `recognised`. */
+const STAGE_FACE_SAMPLES: { label: string; visual: EntityVisualDescriptor }[] = [
+  { label: 'known (art)', visual: { tier: 'art', src: '/portraits/brooding-warrior.png', glyph: 'M', gradientIndex: 2, alt: 'Maren Ashfold', kind: 'agent' } },
+  { label: 'below recognised (silhouette)', visual: { tier: 'fallback', glyph: '?', gradientIndex: 5, alt: 'A stranger', kind: 'agent' } },
+];
+
 /** THR-1892 — sample moments for the Stage frame entry (no map: the panel enters on its timeout). */
 const STAGE_SAMPLE_VM: Record<'full' | 'compact', StageVM> = {
   full: {
@@ -676,6 +684,7 @@ const STAGE_SAMPLE_VM: Record<'full' | 'compact', StageVM> = {
     place: { ref: { kind: 'location', id: 'sample_millbrook' }, name: 'Millbrook' },
     placeTag: 'Millbrook · where it is happening', placeTagSuffix: STAGE_WORDS.placeTagSuffix,
     subject: { ref: { kind: 'agent', id: 'sample_maren' }, name: 'Maren Ashfold' },
+    subjectVisual: null,
     contextLine: null, layout: 'full',
   },
   compact: {
@@ -683,6 +692,7 @@ const STAGE_SAMPLE_VM: Record<'full' | 'compact', StageVM> = {
     place: { ref: { kind: 'location', id: 'sample_millbrook' }, name: 'Millbrook' },
     placeTag: 'Millbrook · where it is happening', placeTagSuffix: STAGE_WORDS.placeTagSuffix,
     subject: { ref: { kind: 'agent', id: 'sample_maren' }, name: 'Maren Ashfold' },
+    subjectVisual: null,
     contextLine: null, layout: 'compact',
   },
 };
@@ -698,6 +708,21 @@ function StageSection() {
         <Row>
           <Button variant="secondary" size="sm" data-styleguide-stage="full" onClick={() => setLayout('full')}>Open the Stage — full</Button>
           <Button variant="secondary" size="sm" data-styleguide-stage="compact" onClick={() => setLayout('compact')}>Open the Stage — compact</Button>
+        </Row>
+        <Label>StageSubjectPortrait (THR-2100) — the one face every Stage moment draws, from `StageVM.subjectVisual` (knowledge-gated), at `--stage-subject-portrait-w`, 3:4. StageLabelIcon draws a label's carved shape from `STAGE_LABEL_ICONS`; empty rows draw nothing.</Label>
+        <Row>
+          {STAGE_FACE_SAMPLES.map(sample => (
+            <div key={sample.label} style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center' }}>
+              <StageSubjectPortrait visual={sample.visual} />
+              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{sample.label}</span>
+            </div>
+          ))}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
+            <span><StageLabelIcon label="encounterTitle" />Encounter title</span>
+            <span><StageLabelIcon label="journeyTitle" />Journey title</span>
+            <span><StageLabelIcon label="dilemmaClaim" />Claim</span>
+            <span><StageLabelIcon label="encounterAtStake" />At stake (no idea yet — THR-2104)</span>
+          </div>
         </Row>
         {layout && (
           <Stage

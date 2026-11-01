@@ -140,8 +140,23 @@ export function useStageDebugBridge(args: {
         })(),
         // THR-1942 — the count the hand bar's "more cards below" line reads, off its DOM.
         handCardsBelowBar: Number(document.querySelector('[data-testid="nudge-hand-bar"]')?.getAttribute('data-cards-below') ?? 0) || 0,
+        dressing: stageDressing(open ? document.querySelector('[data-stage-panel]') : null),
       };
     };
+
+    /** THR-2100 — what the open Stage drew, off its DOM: the face tier, label shapes, chip shapes, relic tiles. */
+    function stageDressing(panel: Element | null): DebugStageState['dressing'] {
+      if (!panel) return { face: 'none', labelIcons: [], consequenceIcons: [], relicTiles: 0 };
+      const tier = panel.querySelector('[data-stage-face]')?.getAttribute('data-stage-face');
+      const values = (sel: string, attr: string) =>
+        [...panel.querySelectorAll(sel)].map(el => el.getAttribute(attr) ?? '').filter(Boolean);
+      return {
+        face: tier === 'art' ? 'art' : tier === 'fallback' ? 'fallback' : 'none',
+        labelIcons: values('[data-stage-label-icon]', 'data-stage-label-icon'),
+        consequenceIcons: values('[data-consequence-icon]', 'data-consequence-icon'),
+        relicTiles: panel.querySelectorAll('[data-testid="consequence-chip-relic"]').length,
+      };
+    }
 
     const storyBeat: Lever = () => new Promise(resolve => {
       const { setGameState, runtime } = latest.current;

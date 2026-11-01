@@ -130,21 +130,6 @@ export const CONSEQUENCE_CATEGORY_LABELS: Record<EncounterStageConsequenceCatego
 };
 
 /**
- * Icon-tile fallback, drawn only when neither an entity nor a reach resolves.
- *
- * Keyed on the category union, so a fifth category added without a glyph is a
- * *type error* rather than a blank tile (Law 9 — a new card type without an icon
- * is a build failure, THR-890). Drawn from the card-glyph family already on the
- * encounter surfaces rather than a new set.
- */
-export const CONSEQUENCE_CATEGORY_GLYPHS: Record<EncounterStageConsequenceCategory, string> = {
-  scar: '✕',
-  bond: '◈',
-  boon: '✦',
-  path: '◆',
-};
-
-/**
  * THR-1136 — the registry id that explains each category word.
  *
  * One derivation, read by both surfaces that draw the vocabulary: the
@@ -823,7 +808,6 @@ export function buildAftermathConsequences(
       // than a link to the wrong sheet.
       nounEntityId: stateNoun?.entityId,
       nounEntityKind: stateNoun?.visualKind,
-      categoryGlyph: CONSEQUENCE_CATEGORY_GLYPHS[category],
       reachDomain: reachDomainFor(stateNoun),
       sentence,
       sentenceText: paragraphText(sentence),
@@ -869,7 +853,6 @@ export function buildAftermathConsequences(
         category: 'path',
         categoryLabel: CONSEQUENCE_CATEGORY_LABELS.path,
         categoryTooltipId: CONSEQUENCE_CATEGORY_TOOLTIP_IDS.path,
-        categoryGlyph: CONSEQUENCE_CATEGORY_GLYPHS.path,
         sentence,
         sentenceText: paragraphText(sentence),
         // A planted sequel is authored prose — it is the one thing on the

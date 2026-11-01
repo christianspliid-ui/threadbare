@@ -18,6 +18,12 @@ import { REACH_DISPLAY_NAMES } from '../../engine/aftermathWords';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import type { StageContextLineVM } from '../../engine/views/stage/stageView';
 import { STAGE_WORDS } from '../../data/view-content';
+import type { EntityVisualDescriptor } from '../../engine/views/entityVisualResolver';
+import type { ReachDomain } from '../../types/traits';
+import { ReachIcon } from '../icons/ReachIcon';
+import { REACH_TO_SPHERE } from '../icons/constants';
+import { StageLabelIcon } from './stage/StageLabelIcon';
+import { StageSubjectPortrait } from './stage/StageSubjectPortrait';
 
 /** The words a story beat says (unchanged by its move onto the Stage). */
 export const STORY_BEAT_WORDS = {
@@ -40,8 +46,13 @@ interface StoryBeatModalProps {
 // ─── Reach Badge ────────────────────────────────────────────────────
 
 function ReachBadge({ reach }: { reach: string }) {
+  // THR-2100 (R2) — the reach word keeps its mark beside it; an unknown reach shows the word alone.
+  const known = Object.prototype.hasOwnProperty.call(REACH_TO_SPHERE, reach);
   return (
     <span style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: 'var(--space-1)',
       background: 'var(--dlg-inset, var(--bg-surface))',
       border: '1px solid var(--border-subtle)',
       borderRadius: '4px',
@@ -51,6 +62,7 @@ function ReachBadge({ reach }: { reach: string }) {
       fontSize: 'var(--text-xs)',
       color: 'var(--text-secondary)',
     }}>
+      {known && <ReachIcon reach={reach as ReachDomain} size={16} />}
       {REACH_DISPLAY_NAMES[reach] ?? reach}
     </span>
   );
@@ -74,6 +86,7 @@ function StoryBeatTitle({ template, byline }: { template: UnifiedActionTemplate;
         fontSize: 'var(--text-xs)',
         color: 'var(--dlg-accent-text, var(--accent-gold))',
       }}>
+        <StageLabelIcon label="storyBeatEyebrow" />
         {STORY_BEAT_WORDS.eyebrow}
       </span>
       <h2 style={{
@@ -188,11 +201,14 @@ export function StageContextLine({ line }: { line: StageContextLineVM | null }) 
 export function StoryBeatStageBody({
   template,
   contextLine,
+  subjectVisual = null,
   agentName,
   onDismiss,
 }: {
   template: UnifiedActionTemplate;
   contextLine: StageContextLineVM | null;
+  /** THR-2100 — the mortal's face (`StageVM.subjectVisual`), at the left of the title block. */
+  subjectVisual?: EntityVisualDescriptor | null;
   agentName: string;
   onDismiss: () => void;
 }) {
@@ -202,7 +218,10 @@ export function StoryBeatStageBody({
     : <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{agentName}</span>;
   return (
     <div data-story-beat-stage="" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, padding: 'var(--panel-padding, 20px)' }}>
-      <StoryBeatTitle template={template} byline={byline} />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-4)' }}>
+        <StageSubjectPortrait visual={subjectVisual} subject={contextLine?.subject} />
+        <StoryBeatTitle template={template} byline={byline} />
+      </div>
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 'var(--space-4) 0' }}>
         <StoryBeatProse template={template} agentName={agentName} />
       </div>

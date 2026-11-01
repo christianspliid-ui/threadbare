@@ -94,6 +94,7 @@ const PREMONITION_VM: StageVM = {
   placeTag: 'Millbrook · where Kael is',
   placeTagSuffix: ' · where Kael is',
   subject: { ref: { kind: 'agent', id: 'kael' }, name: 'Kael' },
+  subjectVisual: null,
   contextLine: null,
   layout: 'full',
 };

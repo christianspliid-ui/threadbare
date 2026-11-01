@@ -23,6 +23,8 @@ import { StageContextLine } from './StoryBeatModal';
 import { fallbackStageView, type StageVM } from '../../engine/views/stage/stageView';
 import { Tooltip } from '../shared/Tooltip';
 import { EntityVisual } from '../shared/EntityVisual';
+import { StageSubjectPortrait } from './stage/StageSubjectPortrait';
+import { StageLabelIcon } from './stage/StageLabelIcon';
 import { StepDots } from '../shared/StepDots';
 import { bandAccentColor } from './outcomeBandAccent';
 import { MOMENT_CARD_PAUSE_NOTE, MOMENT_SEE_WORK_LABEL } from '../../data/moment-card-content';
@@ -148,7 +150,7 @@ function ChipRow({ chip, onSelectAgent }: { chip: MomentCardChip; onSelectAgent?
   );
 }
 
-export function MomentCard({ open, model, graph, onAcknowledge, onSelectAgent, onSeeWork, onDivineAct, stageVM, tick = 0 }: MomentCardProps) {
+export function MomentCard({ open, model, onAcknowledge, onSelectAgent, onSeeWork, onDivineAct, stageVM, tick = 0 }: MomentCardProps) {
   const accent = bandAccentColor(model.outcomeBand ?? undefined, 'var(--accent-gold)');
   // Law 48 — an essence spend is armed, then fired. `staged` holds the verb the
   // player has armed; a second press on the same verb commits it.
@@ -179,14 +181,11 @@ export function MomentCard({ open, model, graph, onAcknowledge, onSelectAgent, o
           flexShrink: 0,
         }}
       >
-        <EntityVisual
-          size="chip"
-          entity={{ id: model.actorId, kind: 'agent', name: model.actorName }}
-          graph={graph}
-          shape="rounded"
+        {/* THR-2100 (R1) — the Stage's one face (`vm.subjectVisual`, knowledge-gated), grown from a chip. */}
+        <StageSubjectPortrait
+          visual={vm.subjectVisual}
+          onOpen={portraitClickable ? () => onSelectAgent!(model.actorId) : undefined}
           aria-label={model.actorName}
-          title={model.actorName}
-          onClick={portraitClickable ? () => onSelectAgent!(model.actorId) : undefined}
           data-testid="moment-card-portrait"
         />
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -200,6 +199,7 @@ export function MomentCard({ open, model, graph, onAcknowledge, onSelectAgent, o
                 color: 'var(--text-tertiary)',
               }}
             >
+              <StageLabelIcon label="undertakingTitle" />
               {model.title}
             </div>
           </Tooltip>

@@ -152,6 +152,13 @@ export const FRAME_TOKENS_PX: Record<LayoutTier, FrameTokens> = {
  */
 export const INSPECTOR_PORTRAIT_W_REM: Readonly<Record<LayoutTier, number>> = { base: 15, fhd: 15, qhd: 18, uwqhd: 18 };
 
+/**
+ * THR-2100 — the one Stage face width (`--stage-subject-portrait-w`), 3:4, in rem per tier,
+ * restated in every tier block of `index.css`. Kill criterion: 6rem at the 1920 tier if the
+ * encounter's *At stake* falls below the fold.
+ */
+export const STAGE_SUBJECT_PORTRAIT_W_REM: Readonly<Record<LayoutTier, number>> = { base: 8, fhd: 8, qhd: 10, uwqhd: 10 };
+
 /** Text-container widths in rem, declared once in `:root`, so they follow the root step-up. */
 export const TEXT_TOKENS_REM = {
   tooltipMaxW: 17.5,

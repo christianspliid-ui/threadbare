@@ -20,6 +20,9 @@
 import React, { useMemo } from 'react';
 import { Stage } from '../Game/stage/Stage';
 import { StageContextLine } from '../Game/StoryBeatModal';
+import { StageLabelIcon } from '../Game/stage/StageLabelIcon';
+import { StageSubjectPortrait } from '../Game/stage/StageSubjectPortrait';
+import type { StageLabelKey } from '../../data/stage-content';
 import { fallbackStageView, type StageVM } from '../../engine/views/stage/stageView';
 import type { GameState } from '../../types/gameState';
 import type { EmergenceChoice } from '../../engine/ruins/ruinTransformation';
@@ -118,6 +121,8 @@ const CARD_COST: React.CSSProperties = {
 interface ChoiceSpec {
   choice: EmergenceChoice;
   label: string;
+  /** THR-2100 (R2) — the card label's row in `STAGE_LABEL_ICONS`. */
+  iconKey: StageLabelKey;
   poet: string;
   /**
    * The card's price as a sentence.
@@ -136,24 +141,28 @@ const CHOICE_SPECS: ChoiceSpec[] = [
   {
     choice: 'let',
     label: 'Let it be',
+    iconKey: 'dilemmaLetItBe',
     poet: 'Walk away. Let the ruin decide what it becomes.',
     costSentence: () => 'Costs you nothing.',
   },
   {
     choice: 'claim',
     label: 'Claim',
+    iconKey: 'dilemmaClaim',
     poet: 'Plant your own banner in the stone. The Place will answer to you.',
     costSentence: claimCost => `Costs ${claimCost} essence.`,
   },
   {
     choice: 'bargain',
     label: 'Bargain',
+    iconKey: 'dilemmaBargain',
     poet: 'Let the agent keep it. Owe them a favor that will ripen in time.',
     costSentence: () => 'Costs a favor you will owe.',
   },
   {
     choice: 'corrupt',
     label: 'Corrupt',
+    iconKey: 'dilemmaCorrupt',
     poet: 'Mark the holder. Skim the stream. They will not know.',
     costSentence: () => `Costs ${POP_CORRUPT_UP_FRONT_COST} darkness essence.`,
   },
@@ -205,8 +214,12 @@ export function EmergenceDilemmaModal({ gameState, onResolve, stageVM }: Props) 
       right={(
       <div data-emergence-dilemma-stage="" style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 'var(--panel-padding, 20px)' }}>
         <div style={BODY}>
+          {/* THR-2100 (R1, decision 3) — the face of the mortal who delved, not the ruin (lit beside it). */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+          <StageSubjectPortrait visual={vm.subjectVisual} subject={vm.subject} />
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
           <div style={HEADER}>
-            <span>Emergence dilemma · {getRuinFateWord(pending.consequenceRoll)}</span>
+            <span><StageLabelIcon label="dilemmaHeader" />Emergence dilemma · {getRuinFateWord(pending.consequenceRoll)}</span>
             {/* Law 13 — the wait reads in words. `getDurationWord` is THR-1070's
                 scale, adopted rather than restated: the two tickets were made
                 mutex so the game would not grow a second phrasing for a wait.
@@ -217,6 +230,8 @@ export function EmergenceDilemmaModal({ gameState, onResolve, stageVM }: Props) 
             </span>
           </div>
           <StageContextLine line={vm.contextLine} />
+          </div>
+          </div>
           <div style={{ fontFamily: 'var(--font-body)', fontStyle: 'italic', fontSize: 'var(--text-xs)', color: 'var(--text-primary)', lineHeight: 1.5 }}>
             The delve has reached its last breath. What do you do with what remains?
           </div>
@@ -239,7 +254,7 @@ export function EmergenceDilemmaModal({ gameState, onResolve, stageVM }: Props) 
                   onClick={() => enabled && onResolve(spec.choice)}
                   style={cardStyle}
                 >
-                  <div style={CARD_TITLE}>{spec.label}</div>
+                  <div style={CARD_TITLE}><StageLabelIcon label={spec.iconKey} />{spec.label}</div>
                   <div style={CARD_PROSE}>{spec.poet}</div>
                   {/* Law 25 — disabled-with-reason: the card dims and says why,
                       in place. This replaces a `title={reason}` hover tooltip,

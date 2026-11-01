@@ -916,7 +916,6 @@ describe('aftermath mode', () => {
           category: 'boon',
           categoryLabel: 'BOON',
           categoryTooltipId: 'ui.consequence.boon',
-          categoryGlyph: '✦',
           sentence: { id: 'c-prize', segments: [{ text: 'A wrapped parcel changed hands.' }] },
           sentenceText: 'A wrapped parcel changed hands.',
           compact: false,
@@ -929,7 +928,6 @@ describe('aftermath mode', () => {
           category: 'path',
           categoryLabel: 'PATH',
           categoryTooltipId: 'ui.consequence.path',
-          categoryGlyph: '◆',
           sentence: {
             id: 'c-seed',
             segments: [
@@ -985,7 +983,6 @@ describe('aftermath mode', () => {
           category: 'scar',
           categoryLabel: 'SCAR',
           categoryTooltipId: 'ui.consequence.scar',
-          categoryGlyph: '✕',
           sentence: {
             id: 'c-grant',
             segments: [
@@ -1499,7 +1496,6 @@ describe('aftermath mode', () => {
           categoryLabel: 'BOON',
           categoryTooltipId: 'ui.consequence.boon',
           nounLabel: 'STONE',
-          categoryGlyph: '✦',
           reachDomain: 'stone',
           sentence: { id: 'c-growth', segments: [{ text: "Vara's Stone grew steadily." }] },
           sentenceText: "Vara's Stone grew steadily.",
@@ -1541,7 +1537,7 @@ describe('aftermath mode', () => {
     expect(screen.getByTestId('consequence-chip-reach-boon')).toBeInTheDocument();
   });
 
-  it('falls back to the category glyph when neither entity nor reach resolves (THR-1082)', () => {
+  it('falls back to the category shape when neither entity nor reach resolves (THR-1082, THR-2100)', () => {
     // `time` carries a display word but has no icon in REACH_TO_SPHERE — the exact
     // case that would render a glyph with an undefined sphere colour. (It replaced
     // `flesh` here when THR-1368 retired that Reach outright.)
@@ -1554,7 +1550,44 @@ describe('aftermath mode', () => {
     };
     render(<EncounterVeil {...defaultProps} model={unbackedReachModel} />);
     expect(screen.queryByTestId('consequence-chip-reach-boon')).not.toBeInTheDocument();
-    expect(screen.getByTestId('consequence-chip-glyph-boon')).toBeInTheDocument();
+    // THR-2100 (S4.3) — the carved boon shape, never a text glyph (✕ ◈ ✦ ◆).
+    const tile = screen.getByTestId('consequence-chip-shape-boon');
+    expect(tile.getAttribute('data-consequence-icon')).toBe('boon');
+    expect(tile.querySelector('svg[data-icon="boon"]')).not.toBeNull();
+    expect(tile.textContent).not.toMatch(/[✕◈✦◆]/);
+  });
+
+  // THR-2100 (S4.3, R3) — a relic gained or lost draws its painting and opens its page.
+  it('a relic chip draws its painting and opens the relic page (THR-2100)', () => {
+    const relicModel: EncounterStageModel = {
+      ...compactModel,
+      aftermath: {
+        ...compactModel.aftermath!,
+        consequences: [{
+          ...compactModel.aftermath!.consequences![0],
+          id: 'c-relic',
+          kind: 'possession',
+          category: 'boon',
+          reachDomain: undefined,
+          icon: { entityId: 'relic_1', kind: 'artifact', name: 'The Ember Blade', src: '/art/arms.jpg', routeKind: 'attachment' },
+        } as never],
+      },
+    };
+    const onSelectEntity = vi.fn();
+    render(<EncounterVeil {...defaultProps} model={relicModel} onSelectEntity={onSelectEntity} />);
+    const tile = screen.getByTestId('consequence-chip-relic');
+    expect(tile.querySelector('img')?.getAttribute('src')).toBe('/art/arms.jpg');
+    fireEvent.click(tile);
+    expect(onSelectEntity).toHaveBeenCalledWith('relic_1', 'attachment');
+  });
+
+  it('the legend draws the carved category shapes, never the old glyphs (THR-2100)', () => {
+    render(<EncounterVeil {...defaultProps} model={compactModel} />);
+    const legend = screen.getByTestId('consequence-legend');
+    for (const shape of ['scar', 'bond', 'boon', 'path']) {
+      expect(legend.querySelector(`svg[data-icon="${shape}"]`), shape).not.toBeNull();
+    }
+    expect(legend.textContent).not.toMatch(/[✕◈✦◆]/);
   });
 
   it('names the planted follow-up in the seed chip', () => {
@@ -1620,7 +1653,6 @@ describe('aftermath mode', () => {
             category: 'bond',
             categoryLabel: 'BOND',
             categoryTooltipId: 'ui.consequence.bond',
-            categoryGlyph: '◈',
             sentence: {
               id: 'c-standing',
               segments: [
@@ -2891,5 +2923,39 @@ describe('THR-1895 — the encounter on the Stage', () => {
   it('renders in place, never into a portal, when no host supplies a frame', () => {
     const { container } = render(<EncounterVeil {...defaultProps} />);
     expect(container.querySelector('[data-testid="encounter-veil-frame"]')).not.toBeNull();
+  });
+});
+
+describe('THR-2100 — one face of the subject on the encounter', () => {
+  const face = { tier: 'art' as const, src: '/portraits/vasara.png', glyph: 'V', gradientIndex: 0, alt: 'Vasara', kind: 'agent' as const };
+  const withActor: EncounterStageModel = {
+    ...mockModel,
+    header: { ...mockModel.header, agentName: 'Vasara', focalActorId: 'agent-vasara', portraitUrl: '/portraits/vasara.png' },
+  };
+
+  it('draws the face in the left column under the scene picture, and drops the header chip', () => {
+    const onSelectAgent = vi.fn();
+    render(<EncounterVeil {...defaultProps} model={withActor} subjectVisual={face} onSelectAgent={onSelectAgent} />);
+    const left = screen.getByTestId('veil-left-column');
+    const portrait = within(left).getByTestId('stage-subject-portrait');
+    expect(portrait.getAttribute('data-stage-face')).toBe('art');
+    // Under the scene picture: the art comes first in the column.
+    const art = within(left).getByTestId('veil-scene-art');
+    expect(art.compareDocumentPosition(portrait) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // One face: the only portrait image of Vasara on the panel is the Stage face.
+    expect(document.querySelectorAll('img[src="/portraits/vasara.png"]')).toHaveLength(1);
+    fireEvent.click(within(portrait).getByRole('button'));
+    expect(onSelectAgent).toHaveBeenCalledWith('agent-vasara');
+  });
+
+  it('without a Stage face the header keeps its chip (fail-soft)', () => {
+    render(<EncounterVeil {...defaultProps} model={withActor} />);
+    expect(screen.queryByTestId('stage-subject-portrait')).toBeNull();
+    expect(document.querySelectorAll('img[src="/portraits/vasara.png"]').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('the title carries the encounter shape', () => {
+    render(<EncounterVeil {...defaultProps} model={withActor} subjectVisual={face} />);
+    expect(document.querySelector('[data-stage-label-icon="encounter"]')).not.toBeNull();
   });
 });
