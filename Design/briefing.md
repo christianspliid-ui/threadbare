@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-01 12:58 local (11:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-01 14:00 local (13:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,7 +20,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-- [Art-led pass, slice 7 — lists and notices](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) (new this hour, [plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-01-thr-2103-art-led-lists.md)): a row about a mortal, a place, a faction, an army or a relic shows its small picture beside the name, in the Chronicle, Notables, Threads, Read the Threads, toasts and Find. A mortal you have not come to know shows the silhouette. Veto line: "no pictures in the lists". Window closes about 00:00 UTC tonight.
+- [Art-led pass, slice 7 — lists and notices](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-01-thr-2103-art-led-lists.md)): a row about a mortal, a place, a faction, an army or a relic shows its small picture beside the name, in the Chronicle, Notables, Threads, Read the Threads, toasts and Find. A mortal you have not come to know shows the silhouette. Veto line: "no pictures in the lists". Window closes about 00:00 UTC tonight.
 - Same ticket: a Chronicle entry shows one picture, for the first name it links that has one. The other names stay links, and hovering them shows their face. Veto line: "a picture for every name in the Chronicle".
 - Same ticket: Threads drops its initials circles. Each mortal shows their face, or the game's designed tile. Veto line: "keep the initials in Threads".
 - Same ticket: a toast keeps its small "go there" mark on the right and adds the picture of whoever it is about on the left. Veto line: "no pictures on toasts".
@@ -50,7 +50,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 - Same ticket: a relic won or lost in an encounter shows its painting on its chip, and clicking it opens the relic. Veto line: "no relic pictures on encounter chips".
 - Same ticket: *At stake*, the whisper header, *Let it be* and *Corrupt* draw no shape and join [your icon pick](https://linear.app/threadbare/issue/THR-2104). Veto line: "pick a near icon instead".
 
-Say "veto <title>" to reverse any of these. The god-rail slice ([THR-2099](https://linear.app/threadbare/issue/THR-2099/art-led-pass-slice-3-the-god-rail-and-the-top-bar)) passed its window at 11:45 UTC with no veto and is now open to the builder. *— from the design lane ([early](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01a.md), [this morning](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01b.md), [09:40](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01c.md), [12:46](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01d.md))*
+Say "veto <title>" to reverse any of these. *— from the design lane ([early](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01a.md), [this morning](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01b.md), [09:40](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01c.md), [12:46](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01d.md))*
 
 ## This week's screens
 
@@ -58,14 +58,13 @@ Say "veto <title>" to reverse any of these. The god-rail slice ([THR-2099](https
 
 ## Queue
 
-**Healthy (5 ready), and building.** [THR-2094](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26) (town cards reach the Mandate) is still parked in [PR #2678](https://github.com/christianspliid-ui/threadbare/pull/2678), unarmed. The builder fixed the Dominion problem, and the code review then found one more bug: a rival push the town cancelled still wore down the Mandate. That fix is pushed and needs one more review round; the PR's checks are running on it now. Nothing is stranded (the builder's worktree is clean and pushed). That is how-to-build, not a call for you.
+**Healthy (5 ready).** The god-rail slice ([THR-2099](https://linear.app/threadbare/issue/THR-2099)) merged in [PR #2683](https://github.com/christianspliid-ui/threadbare/pull/2683) and is live. Slices 4–7 wait on their veto windows: [THR-2100](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision) (Stage moments) about 14:30 UTC, [THR-2101](https://linear.app/threadbare/issue/THR-2101/art-led-pass-slice-5-the-dialogs-chapter-ledger-what-your-act-bought) (dialogs) about 17:45 UTC, [THR-2102](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the) (ceremonies) about 20:40 UTC, [THR-2103](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) (lists) from midnight UTC. So the builder stands down until 14:30, which is correct.
 
-The god-rail slice [THR-2099](https://linear.app/threadbare/issue/THR-2099/art-led-pass-slice-3-the-god-rail-and-the-top-bar) is now open to build. The others wait on their veto windows: [THR-2100](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision) (Stage moments) about 14:30 UTC, [THR-2101](https://linear.app/threadbare/issue/THR-2101/art-led-pass-slice-5-the-dialogs-chapter-ledger-what-your-act-bought) (dialogs) about 17:45 UTC, [THR-2102](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the) (ceremonies) about 20:40 UTC, and the new [THR-2103](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) (lists and notices) from midnight UTC, after slices 4–6 merge.
-
-Two items for agents, not you:
+Three items for agents, not you:
+- **The town-card fix is on hold for a re-scope.** [THR-2094](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26)'s [PR #2678](https://github.com/christianspliid-ui/threadbare/pull/2678) went through four code-review rounds this morning, and each fix turned up a new serious finding. The builder put it on hold until the ticket is split into smaller pieces. The hold note says the ticket moved to Todo, but Linear still shows it in Ready for Dev.
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (12 days, last touched 28 Oct), parked because unattended runs are refused the gate and CI edits it needs. Agents can un-park it in an attended run.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (12 days, last touched 28 Oct). It is parked because unattended runs are refused the gate and CI edits it needs. No branch or worktree carries its id. Agents can un-park it in an attended run.
 
 ## Health
 
-All green. The live site serves the latest game build (92bf1fa0; main has moved only in documents since), checks on main and the scheduled background jobs pass, all nine enabled scheduled tasks are on time, the builder is running normally, and the worktree reaper ran within the hour. Engine speed is back to normal (172 ms per tick, 3% above the 7-day median), so last hour's slow reading was machine load. The 40-hour silence on 29–30 Oct is on your list above.
+All green. The live site serves the latest commit on main (6faf7c32, the god-rail slice). Checks on main and the scheduled background jobs pass. All nine enabled scheduled tasks are on time, the builder is running normally, and the worktree reaper ran at 13:40. Engine speed is normal (154 ms per tick, 8% below the 7-day median). The 40-hour silence on 29–30 Oct is on your list above.
