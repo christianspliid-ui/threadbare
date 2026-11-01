@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-01 16:56 local (15:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-01 17:58 local (16:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -57,12 +57,12 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([this mor
 
 ## Queue
 
-**Healthy (3 ready).** [THR-2100](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision) (the Stage moments) merged via [#2686](https://github.com/christianspliid-ui/threadbare/pull/2686) and is live. The builder is idle on purpose until the next window opens; the remaining art-led slices wait on their windows: [THR-2101](https://linear.app/threadbare/issue/THR-2101/art-led-pass-slice-5-the-dialogs-chapter-ledger-what-your-act-bought) (dialogs) about 17:45 UTC, [THR-2102](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the) (ceremonies) about 20:40 UTC, [THR-2103](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) (lists) from midnight UTC. The type-size question on [the UI legibility map](https://linear.app/threadbare/issue/THR-2114) stays yours from charting; the panel census it waited on is done, so it is ready when you are.
+**Healthy (3 ready).** [THR-2100](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision) (the Stage moments) merged via [#2686](https://github.com/christianspliid-ui/threadbare/pull/2686) and is live. The builder is idle on purpose until the next window opens (its last three runs each stood down because all three tickets are still inside their windows); the remaining art-led slices wait on their windows: [THR-2101](https://linear.app/threadbare/issue/THR-2101/art-led-pass-slice-5-the-dialogs-chapter-ledger-what-your-act-bought) (dialogs) about 17:45 UTC, [THR-2102](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the) (ceremonies) about 20:40 UTC, [THR-2103](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) (lists) from midnight UTC. The type-size question on [the UI legibility map](https://linear.app/threadbare/issue/THR-2114) stays yours from charting; the panel census it waited on is done, so it is ready when you are.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (12 days, last touched 28 Oct). It is parked because unattended runs are refused the gate and CI edits it needs. No pushed branch or worktree carries its id (checked this run). Agents can un-park it in an attended run.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (12 days, last touched 28 Oct, 4 days ago). It is parked because unattended runs are refused the gate and CI edits it needs. No pushed branch or worktree carries its id (checked this run). Agents can un-park it in an attended run.
 
 ## Health
 
-All green. The live site carries the Stage moments (only docs merged since). Checks on main and the scheduled background jobs pass, and no pull request is waiting to merge. All nine enabled scheduled tasks are on time, and the worktree reaper last ran at 16:40. Engine speed is back to normal (155 ms a tick, 6% under the weekly median), so last hour's slow reading was the busy machine. The 40-hour silence on 29–30 Oct is on your list above.
+All green. The live site carries the Stage moments (only docs merged since). Checks on main and the scheduled background jobs pass, and no pull request is waiting to merge. All nine enabled scheduled tasks are on time, and the worktree reaper last ran at 17:50. Engine speed is normal (143 ms a tick, 12% under the weekly median). The 40-hour silence on 29–30 Oct is on your list above.
