@@ -5,6 +5,8 @@
  * THR-2097 (rule R1): at wide and Full a person-kind header leads with the portrait at
  * `--inspector-portrait-w`, 3:4 (Law 5), the name under it; The First wears the Your First
  * badge on the portrait's bottom edge. Docked keeps the small portrait beside the name.
+ * THR-2098: every other kind leads the same way with its 16:9 hero (a place's landscape,
+ * heraldry, relic art); docked keeps the 9rem thumbnail beside the name.
  */
 import type { SubjectHeaderVM } from '../../../engine/views/subjects/subjectTypes';
 import type { WorldGraph } from '../../../engine/graph';
@@ -47,12 +49,17 @@ const FIRST_BADGE = INSPECTOR_WORDS.factFirst.replace(/^your/, 'Your');
 
 function Visual({ header, graph }: { header: SubjectHeaderVM; graph?: WorldGraph | null }) {
   const portrait = PERSON_LIKE.has(header.visual.kind);
+  const opts = {
+    ...(header.visual.portraitGate === 'silhouette' ? { knowledgeLevel: 'stranger' as const } : {}),
+    // THR-2098 (rule R1): a place's terrain, so the resolver picks its landscape.
+    ...(header.visual.terrain ? { terrain: header.visual.terrain } : {}),
+  };
   return (
     <EntityVisual
       size={portrait ? 'portrait' : 'hero'}
       entity={{ id: header.visual.id, kind: VISUAL_KIND[header.visual.kind], name: header.name, knownSrc: header.visual.src ?? null }}
       graph={graph}
-      opts={header.visual.portraitGate === 'silhouette' ? { knowledgeLevel: 'stranger' } : undefined}
+      opts={Object.keys(opts).length > 0 ? opts : undefined}
     />
   );
 }
@@ -84,15 +91,17 @@ function FirstBadge({ firstOf }: { firstOf: NonNullable<SubjectHeaderVM['firstOf
 
 export function SubjectHeader({ header, graph, compact }: { header: SubjectHeaderVM; graph?: WorldGraph | null; compact: boolean }) {
   const portrait = PERSON_LIKE.has(header.visual.kind);
-  const lead = portrait && !compact;
-  const visualWidth = lead ? 'var(--inspector-portrait-w)' : portrait ? '5rem' : compact ? '9rem' : '12rem';
+  // THR-2098 (rule R1): every kind leads with its picture at wide and Full — a person the
+  // 3:4 portrait, anything else the 16:9 hero, both at the aside width.
+  const lead = !compact;
+  const visualWidth = lead ? 'var(--inspector-portrait-w)' : portrait ? '5rem' : '9rem';
   // With the badge on the portrait, the standing row does not say it again.
   const badge = lead && header.firstOf ? header.firstOf : null;
   const standing = badge ? header.standing.filter(c => c.label !== FIRST_BADGE) : header.standing;
   return (
     <header
       data-inspector-header=""
-      data-header-lead={lead ? 'portrait' : undefined}
+      data-header-lead={lead ? (portrait ? 'portrait' : 'hero') : undefined}
       style={{ display: 'flex', flexDirection: lead ? 'column' : 'row', gap: 'var(--space-3, 12px)', alignItems: lead ? 'center' : 'flex-start', minWidth: 0 }}
     >
       <div style={{ width: visualWidth, maxWidth: '100%', flexShrink: 0, position: 'relative', marginBottom: badge ? '12px' : undefined }}>

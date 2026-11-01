@@ -284,6 +284,74 @@ export const TRIGGER_PAYLOAD_WORDS: Readonly<Record<string, string>> = {
 /** "(once)" is a word; "(3x)" was a numeral and goes (Law 13). */
 export const TRIGGER_ONCE = '(once)';
 
+// ─── Sentences (THR-2098, rule R6) ───────────────────────────────────────────
+
+/**
+ * THR-2098 — the clauses the retired label strips become (plan
+ * `Docs/plans/2026-10-31-thr-2098-art-led-inspector-pages.md` § Data tables). One template
+ * per fact; each `{slot}` is the fact's existing word, drawn as a term that keeps its link or
+ * tooltip. A fact with no word drops its clause; a row with no clause hides (Law 14).
+ */
+export const SUBJECT_SENTENCE_CLAUSES = {
+  /** Place standing: "Here you are Accepted." */
+  standing: 'Here you are {band}.',
+  /** Place of power: "Aldric Vane holds it." / "No one holds it." */
+  powerHolder: '{holder} holds it.',
+  powerStream: 'Its stream runs {yield} of {sphere}, fading {when}.',
+  powerDormant: 'Its stream lies dormant.',
+  powerOrigin: 'Its power came from {origin}.',
+  /** Area: "Boundless lands, settled country." — the danger word runs on lower case. */
+  areaSizeDanger: '{size}, {danger}.',
+  areaOne: '{word}.',
+  /** Faction agenda: "Hold the river crossings: under way." */
+  agenda: '{agenda}: {status}.',
+  /** Attachment loss, authored free text: "It is lost when rest heals it." */
+  lostWhen: 'It is lost when {loss}.',
+  /** Attachment effect: "Granted by the Temple of Ash." */
+  grantedBy: 'Granted by {granter}.',
+  /** Attachment duration: "It lasts three days." */
+  lasts: 'It lasts {term}.',
+} as const;
+
+/**
+ * THR-2098 — a faction's means as a whole clause, by band (the band words are the wealth
+ * tiers, so "They are getting by" never reads "They are Getting by"). The term is the phrase.
+ */
+export const FACTION_MEANS_CLAUSES: Readonly<Record<'Destitute' | 'Getting by' | 'Comfortable' | 'Wealthy' | 'Magnate', { lead: string; term: string }>> = {
+  Destitute: { lead: 'They ', term: 'have nothing' },
+  'Getting by': { lead: 'They ', term: 'get by' },
+  Comfortable: { lead: 'They ', term: 'live in comfort' },
+  Wealthy: { lead: 'They are ', term: 'wealthy' },
+  Magnate: { lead: 'They are ', term: 'rich beyond counting' },
+};
+
+/**
+ * THR-2098 — an attachment's `lossCondition` key as a sentence (the strip printed the key).
+ * A value that is not a key is authored words ("rest heals it") and reads through
+ * `SUBJECT_SENTENCE_CLAUSES.lostWhen`; a bare snake_case key never prints itself (Law 14).
+ */
+export const LOSS_CONDITION_CLAUSES: Readonly<Record<string, string>> = {
+  breakable: 'It can be broken.',
+  permanent: 'It is never lost.',
+  consumable: 'It is spent when used.',
+  stealable: 'It can be stolen.',
+  cursed: 'It cannot be cast off.',
+};
+
+/** THR-2098 — a faction that holds no one in regard yet: the quiet line, not a `—` strip. */
+export const NO_REPUTATIONS_LINE = 'They hold no one in regard yet.';
+
+/** THR-2098 — the gallery labels with their count, as slice 1's "What they carry · 4". */
+export const SUBJECT_GALLERY_LABELS = {
+  relicsHere: 'Relics here',
+  relicsHeld: 'Relics they hold',
+  /** "{label} · {n}" */
+  counted: '{label} · {n}',
+} as const;
+
+/** THR-2098 — the area's sphere chips row. */
+export const AREA_SPHERES_LABEL = 'Its spheres';
+
 /** An agreement's raw `agreementType`, worded. */
 export const AGREEMENT_TYPE_WORDS: Readonly<Record<string, string>> = {
   debt: 'A debt',

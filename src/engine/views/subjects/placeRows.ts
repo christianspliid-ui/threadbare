@@ -17,9 +17,8 @@ import type {
   CardsSection,
   EventCardSection,
   EventEntry,
-  PanelRow,
-  PanelSection,
   ProseSection,
+  SentencePart,
 } from '../../../types/detailPage';
 import type { GraphNode } from '../../../types/graph';
 import type { GameState } from '../../../types/gameState';
@@ -56,8 +55,10 @@ import {
   LIVELIHOOD_KEYWORDS,
   PLACE_OF_POWER_LINES,
   SOURCE_DRAIN_LINES,
-  SUBJECT_FACT_WORDS,
   SUBJECT_ROW_LABELS,
+  SUBJECT_SENTENCE_CLAUSES,
+  SUBJECT_GALLERY_LABELS,
+  AREA_SPHERES_LABEL,
   WALLS_LINES,
   FOUNDED_BY_LINE,
   LAIR_MONSTER_WORDS,
@@ -68,6 +69,9 @@ import {
 } from '../../../data/subject-sheet-words';
 import { proseMarkupToHtml } from './pageResolvers';
 import { linkedProseSection, type ProsePart } from './linkedProse';
+import { asSentence, chipsSection, fillClause, lowerFirst, sentenceSection } from './sentenceRows';
+import { relicGallery } from './relicGallery';
+import { ICON_FOR_WORLD_REF_KIND } from '../../../data/icons/conceptIcons';
 import { founderOf } from '../../undertakingEconomy';
 import { isSettlement } from '../../factionPurse/income';
 import { isPlaceNode } from '../../sublocationShape';
@@ -111,7 +115,10 @@ const placeProse: SectionResolver = (ctx) => {
   }
   const paragraphs = text.split('\n\n').map(s => s.trim()).filter(Boolean);
   if (paragraphs.length === 0) return null;
-  return { kind: 'prose', typeId: 'place_prose', label: SUBJECT_ROW_LABELS.placeProse, gold: true, tier: 'routine', source: 'generateEntityProse', prose: paragraphs.map(proseMarkupToHtml).join('\n\n') };
+  // THR-2098 (rule R2): the heading draws the page's own world-ref idea — a Place within a
+  // place reads `place-within`, any other place `place`.
+  const icon = ICON_FOR_WORLD_REF_KIND[isPlaceNode(p.node) ? 'sublocation' : 'location'];
+  return { kind: 'prose', typeId: 'place_prose', label: SUBJECT_ROW_LABELS.placeProse, gold: true, tier: 'routine', source: 'generateEntityProse', prose: paragraphs.map(proseMarkupToHtml).join('\n\n'), icon };
 };
 
 /** The place's past line (THR-1656), as the player's fog knows it. */
@@ -267,7 +274,10 @@ const conditionsHere: SectionResolver = (ctx) => {
   return section;
 };
 
-/** "Your reputation here" — the avatar's standing, hidden while it is the default (Law 4). */
+/**
+ * "Here you are Accepted." — the avatar's standing, hidden while it is the default (Law 4).
+ * THR-2098 (rule R6): one sentence, the band a term with its tooltip.
+ */
 const standing: SectionResolver = (ctx) => {
   const p = placeOf(ctx);
   if (!p || !p.state.ascendantId) return null;
@@ -275,11 +285,9 @@ const standing: SectionResolver = (ctx) => {
   if (!viewer) return null;
   const reading = getReputationWith(ctx.graph, viewer, p.node.id);
   if (reading.source === 'default') return null;
-  const section: PanelSection = {
-    kind: 'panel', typeId: 'standing', label: SUBJECT_ROW_LABELS.standing, gold: false, tier: 'routine', source: 'getReputationWith',
-    rows: [{ left: SUBJECT_FACT_WORDS.yourReputation, right: reading.band, tooltipId: 'ui.reputation_with' }],
-  };
-  return section;
+  return sentenceSection('standing', SUBJECT_ROW_LABELS.standing, [
+    fillClause(SUBJECT_SENTENCE_CLAUSES.standing, { band: { text: reading.band, tooltipId: 'ui.reputation_with' } }),
+  ], 'getReputationWith');
 };
 
 function isSphereName(v: unknown): v is SphereName {
@@ -299,24 +307,31 @@ const placeOfPower: SectionResolver = (ctx) => {
       break;
     }
   }
-  const sphere = isSphereName(props.popSphere) ? props.popSphere : PLACE_OF_POWER_LINES.essence;
-  const rows: PanelRow[] = [];
-  rows.push(holder
-    ? { left: SUBJECT_FACT_WORDS.holder, right: holder.node.name, ...(holder.type === 'actor' ? { ref: { kind: 'agent' as const, id: holder.node.id, name: holder.node.name } } : {}) }
-    : { left: SUBJECT_FACT_WORDS.holder, right: PLACE_OF_POWER_LINES.noOne });
-  rows.push(props.popStreamDead === true
-    ? { left: SUBJECT_FACT_WORDS.stream, right: 'Dormant' }
-    : {
-        left: SUBJECT_FACT_WORDS.stream,
-        right: `${sentenceCase(getStreamYieldWord((props.popEssencePerTick as number | undefined) ?? 0))} of ${sphere}, fading ${getDurationWord((props.popStreamDecayCountdown as number | undefined) ?? 0)}`,
-        ...(isSphereName(props.popSphere) ? { tooltipId: `sphere.${props.popSphere}` } : {}),
-      });
+  // THR-2098 (rule R6): the strip becomes sentences — holder, stream, origin, the god's marks.
+  const sphere: SentencePart = isSphereName(props.popSphere) ? { text: props.popSphere, tooltipId: `sphere.${props.popSphere}` } : PLACE_OF_POWER_LINES.essence;
+  const holderPart: SentencePart = holder
+    ? (holder.type === 'actor' ? { text: holder.node.name, ref: { kind: 'agent', id: holder.node.id, name: holder.node.name } } : holder.node.name)
+    : PLACE_OF_POWER_LINES.noOne;
   const from = props.transformedFromRuinId as string | undefined;
-  if (from) rows.push({ left: SUBJECT_FACT_WORDS.origin, right: ctx.graph.getNode(from)?.name ?? PLACE_OF_POWER_LINES.fallenRuin });
-  if (holder?.edge.corruptMark === true) rows.push({ left: PLACE_OF_POWER_LINES.corrupt, right: PLACE_OF_POWER_LINES.corruptLine, sentiment: 'negative' });
-  if (holder?.edge.bargainFavor === true) rows.push({ left: PLACE_OF_POWER_LINES.bound, right: PLACE_OF_POWER_LINES.boundLine, sentiment: 'positive' });
-  const section: PanelSection = { kind: 'panel', typeId: 'place_of_power', label: SUBJECT_ROW_LABELS.placeOfPower, gold: false, tier: 'routine', source: 'placeOfPower', rows };
-  return section;
+  // A ruin transforms in place (`ruinTransformation.ts` sets the id to itself): the origin is
+  // then "a fallen ruin", never this page linking to itself (Law 25).
+  const fromNode = from && from !== p.node.id ? ctx.graph.getNode(from) : undefined;
+  const origin: SentencePart | null = !from ? null
+    : fromNode?.name ? { text: fromNode.name, ref: { kind: 'location', id: fromNode.id, name: fromNode.name } }
+    : PLACE_OF_POWER_LINES.fallenRuin;
+  return sentenceSection('place_of_power', SUBJECT_ROW_LABELS.placeOfPower, [
+    fillClause(SUBJECT_SENTENCE_CLAUSES.powerHolder, { holder: holderPart }),
+    props.popStreamDead === true
+      ? [SUBJECT_SENTENCE_CLAUSES.powerDormant]
+      : fillClause(SUBJECT_SENTENCE_CLAUSES.powerStream, {
+          yield: getStreamYieldWord((props.popEssencePerTick as number | undefined) ?? 0),
+          sphere,
+          when: getDurationWord((props.popStreamDecayCountdown as number | undefined) ?? 0),
+        }),
+    origin ? fillClause(SUBJECT_SENTENCE_CLAUSES.powerOrigin, { origin }) : null,
+    holder?.edge.corruptMark === true ? [asSentence(PLACE_OF_POWER_LINES.corruptLine)] : null,
+    holder?.edge.bargainFavor === true ? [asSentence(PLACE_OF_POWER_LINES.boundLine)] : null,
+  ], 'placeOfPower');
 };
 
 /**
@@ -327,32 +342,62 @@ const placeOfPower: SectionResolver = (ctx) => {
 const areaFacts: SectionResolver = (ctx) => {
   const p = placeOf(ctx, true);
   if (!p || p.node.type !== 'region') return null;
-  const rows: PanelRow[] = [];
+  // THR-2098 (rule R6): "Boundless lands, settled country." then "{Feature}." The sphere
+  // strengths are their own chips row (`area_spheres`).
   const hexCount = p.node.properties.hexCount;
-  if (typeof hexCount === 'number' && hexCount > 0) rows.push({ left: SUBJECT_FACT_WORDS.size, right: areaSizeWord(hexCount) });
-  const feature = p.node.properties.featureType;
-  if (typeof feature === 'string' && feature) rows.push({ left: SUBJECT_FACT_WORDS.feature, right: areaFeatureWord(feature) });
+  const size: SentencePart | null = typeof hexCount === 'number' && hexCount > 0 ? areaSizeWord(hexCount) : null;
   const tiles = (p.state.tiles ?? []).filter(t => t.regionId === p.node.id);
-  if (tiles.length > 0) {
-    const danger = tiles.reduce((s, t) => s + (t.dangerLevel ?? 0), 0) / tiles.length;
-    rows.push({ left: SUBJECT_FACT_WORDS.danger, right: positionalDangerWord(danger), tooltipId: 'ui.land.danger' });
-    const sums: Partial<Record<SphereName, number>> = {};
-    for (const t of tiles) {
-      const inf = getHexSphereInfluence(ctx.graph, t.coord.col, t.coord.row) as Partial<Record<SphereName, number>>;
-      for (const [sphere, v] of Object.entries(inf ?? {})) {
-        if (typeof v === 'number' && v > 0) sums[sphere as SphereName] = (sums[sphere as SphereName] ?? 0) + v;
-      }
+  const danger: SentencePart | null = tiles.length > 0
+    ? { text: lowerFirst(positionalDangerWord(tiles.reduce((s, t) => s + (t.dangerLevel ?? 0), 0) / tiles.length)), tooltipId: 'ui.land.danger' }
+    : null;
+  const feature = p.node.properties.featureType;
+  const opener = size && danger
+    ? fillClause(SUBJECT_SENTENCE_CLAUSES.areaSizeDanger, { size, danger })
+    : size ? fillClause(SUBJECT_SENTENCE_CLAUSES.areaOne, { word: size })
+    : danger ? fillClause(SUBJECT_SENTENCE_CLAUSES.areaOne, { word: { ...danger, text: sentenceCase(danger.text) } })
+    : null;
+  return sentenceSection('area_facts', SUBJECT_ROW_LABELS.areaFacts, [
+    opener,
+    typeof feature === 'string' && feature ? fillClause(SUBJECT_SENTENCE_CLAUSES.areaOne, { word: areaFeatureWord(feature) }) : null,
+  ], 'areaFacts');
+};
+
+/**
+ * THR-2098 (rule R7) — an Area's sphere strengths as chips, the means over its own tiles:
+ * "Time · strong". The bar drops; the word already carries the size (Law 13).
+ */
+const areaSpheres: SectionResolver = (ctx) => {
+  const p = placeOf(ctx, true);
+  if (!p || p.node.type !== 'region') return null;
+  const tiles = (p.state.tiles ?? []).filter(t => t.regionId === p.node.id);
+  if (tiles.length === 0) return null;
+  const sums: Partial<Record<SphereName, number>> = {};
+  for (const t of tiles) {
+    const inf = getHexSphereInfluence(ctx.graph, t.coord.col, t.coord.row) as Partial<Record<SphereName, number>>;
+    for (const [sphere, v] of Object.entries(inf ?? {})) {
+      if (typeof v === 'number' && v > 0) sums[sphere as SphereName] = (sums[sphere as SphereName] ?? 0) + v;
     }
-    const bars = (Object.entries(sums) as [SphereName, number][])
-      .map(([s, v]) => [s, v / tiles.length] as const)
-      .filter(([, v]) => v > 0)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, AREA_SPHERE_ROWS_MAX);
-    for (const [sphere, v] of bars) rows.push({ left: sentenceCase(sphere), right: sphereStrengthWord(v), meter: Math.min(1, v), tooltipId: `sphere.${sphere}` });
   }
-  if (rows.length === 0) return null;
-  const section: PanelSection = { kind: 'panel', typeId: 'area_facts', label: SUBJECT_ROW_LABELS.areaFacts, gold: false, tier: 'routine', source: 'areaFacts', rows };
-  return section;
+  const strongest = (Object.entries(sums) as [SphereName, number][])
+    .map(([s, v]) => [s, v / tiles.length] as const)
+    .filter(([, v]) => v > 0)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, AREA_SPHERE_ROWS_MAX);
+  return chipsSection('area_spheres', AREA_SPHERES_LABEL, strongest.map(([sphere, v]) => ({
+    label: sentenceCase(sphere), flavour: sphereStrengthWord(v), sphere, tooltipId: `sphere.${sphere}`,
+  })), 'areaFacts');
+};
+
+/**
+ * THR-2098 (rule R3) — the relics lying at this place, as art tiles in the aside: the
+ * `lies_at` edges the Connections block reads, each tile from slice 1's art path
+ * (`relicTile`). "Relics here · 3". None → no row (no empty gallery).
+ */
+const relicsHere: SectionResolver = (ctx) => {
+  const p = placeOf(ctx);
+  if (!p) return null;
+  const ids = ctx.graph.getIncomingEdges(p.node.id, 'lies_at').map(e => e.source);
+  return relicGallery(ctx.graph, ids, 'relics_here', SUBJECT_GALLERY_LABELS.relicsHere);
 };
 
 // ─── Here now ────────────────────────────────────────────────────────────────
@@ -544,6 +589,8 @@ export const PLACE_ROW_RESOLVERS = {
   standing,
   place_of_power: placeOfPower,
   area_facts: areaFacts,
+  area_spheres: areaSpheres,
+  relics_here: relicsHere,
   guild_postings: guildPostings,
   encounters_here: encountersHere,
   pilgrim_way: pilgrimWay,

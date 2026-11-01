@@ -7,7 +7,7 @@
  */
 import type { PageLayoutKind, Section } from '../../../types/detailPage';
 import type { WorldRef, WorldRefKind } from '../../../types/worldRef';
-import type { SphereName } from '../../../types';
+import type { SphereName, TerrainType } from '../../../types';
 import type { HexKey } from '../../hexActorIndex';
 import type { ConnectionGroupId, LandIndexRowId } from '../../../data/view-content';
 import type { RefRow } from '../types';
@@ -59,9 +59,11 @@ export interface SubjectHeaderVM {
   /**
    * What `EntityVisual` draws: the subject's kind and id, and the Law 8 portrait gate.
    * `src` is art the page already chose (the land page's hero, THR-1916); it wins over
-   * the resolver's own lookup. Absent ⇒ the resolver decides.
+   * the resolver's own lookup. Absent ⇒ the resolver decides. THR-2098 (rule R1): `terrain`
+   * is a place's own tile terrain, handed to the resolver so its `location` branch picks the
+   * landscape — the one art path (Law 3). Absent ⇒ the designed glyph tile.
    */
-  visual: { kind: WorldRefKind | 'god' | 'land' | 'content' | 'record' | 'missing'; id: string; portraitGate: 'shown' | 'silhouette'; src?: string | null };
+  visual: { kind: WorldRefKind | 'god' | 'land' | 'content' | 'record' | 'missing'; id: string; portraitGate: 'shown' | 'silhouette'; src?: string | null; terrain?: TerrainType };
   standing: StateChipVM[];
   /** What the subject is doing now, one sentence. */
   doingLine: string | null;

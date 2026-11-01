@@ -21,7 +21,6 @@ import type {
   GraphPageKind,
   PageLayoutKind,
   EventCardSection,
-  PanelSection,
   PortraitSection,
   ProseSection,
   Section,
@@ -35,6 +34,12 @@ import {
 } from './encounterEventNode';
 import { latestBloodshedRecord } from './battleRecord';
 import { BLOOD_SOAKED_WINDOW_TICKS } from '../data/location-trait-constants';
+import { NO_REPUTATIONS_LINE } from '../data/subject-sheet-words';
+
+/** Plain text into prose markup: escaped, nothing else is markup. */
+function escapeProse(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
 import { TICKS_PER_DAY } from '../data/attention-constants';
 import {
   ACTOR_BONDED_DISPOSITION_TEMPLATES,
@@ -623,6 +628,9 @@ const howTheyHoldHerResolver: SectionResolver = (ctx) => {
     tier: 'routine',
     source: 'howTheyHoldHerResolver',
     prose,
+    // THR-2098 (rule R5): the faction page's one highlighted line — the faction's name over
+    // how it holds the god. Its heading's idea is `standing` (the registry row).
+    highlight: { icon: 'standing', headline: faction.name },
   };
   return section;
 };
@@ -700,33 +708,63 @@ const reputationsTheyHoldResolver: SectionResolver = (ctx) => {
   const reps = faction.properties?.reputations as
     | Record<string, { phrase?: string; sentiment?: number }>
     | undefined;
-  const rows: PanelSection['rows'] = [];
+  // THR-2098 (rule R7): chips — "Ironhold · wary" — each linking the one they regard, its
+  // sentiment kept. None → the quiet line, not a `—` strip (rule R8).
+  const chips: ChipDescriptor[] = [];
   if (reps) {
     for (const [targetId, value] of Object.entries(reps)) {
       const target = ctx.graph.getNode(targetId);
       if (!target) continue;
       const sentiment = value.sentiment ?? 0;
-      rows.push({
-        left: target.name,
-        right: value.phrase ?? (sentiment > 0.2 ? 'allied' : sentiment < -0.2 ? 'opposed' : 'neutral'),
+      const pageKind = pageKindForRefTarget(target);
+      chips.push({
+        label: target.name,
+        flavour: value.phrase ?? (sentiment > 0.2 ? 'allied' : sentiment < -0.2 ? 'opposed' : 'neutral'),
         sentiment: sentiment > 0.2 ? 'positive' : sentiment < -0.2 ? 'negative' : 'neutral',
+        ...(pageKind ? { clickRef: { nodeId: target.id, pageKind } } : {}),
       });
     }
   }
-  if (rows.length === 0) {
-    rows.push({ left: '—', right: 'no reputations recorded', sentiment: 'neutral' });
+  if (chips.length === 0) {
+    const quiet: ProseSection = {
+      kind: 'prose',
+      typeId: 'reputations_they_hold',
+      label: 'Reputations they hold',
+      gold: false,
+      tier: 'routine',
+      source: 'reputationsTheyHoldResolver',
+      prose: NO_REPUTATIONS_LINE,
+      variant: 'quote',
+    };
+    return quiet;
   }
-  const section: PanelSection = {
-    kind: 'panel',
+  const section: ChipsSection = {
+    kind: 'chips',
     typeId: 'reputations_they_hold',
     label: 'Reputations they hold',
     gold: false,
     tier: 'routine',
     source: 'reputationsTheyHoldResolver',
-    rows: rows.slice(0, 8),
+    chips: chips.slice(0, REPUTATIONS_THEY_HOLD_MAX),
   };
   return section;
 };
+
+/** How many regarded parties the faction page lists (the strip's eight). */
+const REPUTATIONS_THEY_HOLD_MAX = 8;
+
+/** The page a regarded node opens, or null (a node with no page renders a plain chip). */
+function pageKindForRefTarget(node: GraphNode): GraphPageKind | null {
+  if (node.type === 'actor') {
+    const t = node.properties?.actorType;
+    if (t === 'faction') return 'faction';
+    if (t === 'group') return 'group';
+    return 'actor';
+  }
+  if (node.type === 'location' || node.type === 'region') return 'place';
+  if (node.type === 'artifact' || node.type === 'artifact_legendary') return 'item';
+  return null;
+}
 
 const recentActionsResolver: SectionResolver = (ctx) => {
   const faction = ctx.graph.getNode(ctx.nodeId);
@@ -937,15 +975,18 @@ const howItInvokesNowResolver: SectionResolver = (ctx) => {
   const evt = ctx.graph.getNode(ctx.nodeId);
   if (!evt) return null;
   const callbackPhrase = evt.properties?.callbackPhrase as string | undefined;
-  if (!callbackPhrase) return null;
-  const section: PanelSection = {
-    kind: 'panel',
+  if (!callbackPhrase?.trim()) return null;
+  // THR-2098 (rule R6): the callback line as prose — one authored line, no "Then" label.
+  const line = callbackPhrase.trim();
+  const capped = line.charAt(0).toUpperCase() + line.slice(1);
+  const section: ProseSection = {
+    kind: 'prose',
     typeId: 'how_it_invokes_now',
     label: 'How it invokes now',
     gold: true,
     tier: 'notable',
     source: 'howItInvokesNowResolver',
-    rows: [{ left: 'Then', right: callbackPhrase, sentiment: 'neutral' }],
+    prose: escapeProse(/[.!?]$/.test(capped) ? capped : `${capped}.`),
   };
   return section;
 };
