@@ -1416,6 +1416,8 @@ if (import.meta.env.DEV) {
     // THR-1885: every mounted count chip, read from its data attributes (Law 40 — opening a
     // list never clears its count). Dynamic import keeps Chip out of this module's static graph.
     getCountChips: async () => (await import('./components/shared/Chip')).readCountChips(),
+    // THR-2102: what the open ceremony drew, off its DOM. Dynamic import, as above.
+    getCeremonyDressing: async () => (await import('./components/Game/hosts/ceremonyDressing')).readCeremonyDressing(),
     getInterruptState: async () => _interruptStateProvider?.()
       ?? { open: [], wasRunningBeforeInterrupt: null, queuedPopups: 0, running: false, heldArrivals: [], heldEncounter: null, rendering: [], foreground: null, stage: null, held: [], homedSurfaces: [] },
     getStage: async () => _stageProvider?.() ?? {

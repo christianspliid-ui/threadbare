@@ -289,6 +289,26 @@ export interface DebugStageState {
 }
 
 /** `openHomedSurface(kind)` (THR-1892) — whether the lever opened the moment, and why not. */
+/**
+ * `getCeremonyDressing()` (THR-2102, art-led pass slice 6) — what the open ceremony drew, read
+ * off its DOM. Reports what was drawn, not why.
+ */
+export interface DebugCeremonyDressing {
+  kind: 'cycle-harvest' | 'age-twilight' | 'threading-rite';
+  /** Every face drawn (`data-ceremony-face`): the god at the harvest, the First at the end, the rite's mortal. */
+  faces: { role: 'god' | 'first' | 'rite'; tier: 'art' | 'fallback'; widthPx: number }[];
+  /** Every heading shape (`data-ceremony-heading-icon`). */
+  headingIcons: string[];
+  /** The harvest's preserved-echo cards. */
+  echoCards: number;
+  /** Cards whose picture is art or the designed tile (Law 4). */
+  echoCardsWithArt: number;
+  /** The god's own echoes the harvest-leaves line names (`data-leave-count`). */
+  leaveEchoes: number;
+  /** The small pictures above that line. */
+  leaveChips: number;
+}
+
 export interface DebugOpenHomedSurfaceResult {
   opened: boolean;
   reason?: string;
@@ -2500,6 +2520,11 @@ export interface DebugBridge {
    * zero renders no chip, so it is absent here. Async.
    */
   getCountChips(): Promise<DebugCountChip[]>;
+  /**
+   * THR-2102 — the open ceremony's dressing (harvest, end of the age, rite), read off its DOM;
+   * null when no ceremony is open. Async.
+   */
+  getCeremonyDressing(): Promise<DebugCeremonyDressing | null>;
   /**
    * The Stellaris clock (THR-1608, plan `2026-09-27-thr-1605-the-opening.md` § S3).
    * What stops the world right now, and what the clock returns to when it closes.

@@ -18,6 +18,9 @@ import {
   INSPECTOR_PORTRAIT_W_REM,
   STAGE_SUBJECT_PORTRAIT_W_REM,
   DIALOG_SUBJECT_PORTRAIT_W_REM,
+  CEREMONY_PORTRAIT_W_REM,
+  CEREMONY_MEDALLION_W_REM,
+  CEREMONY_PANEL_MAX_W_REM,
   LAYOUT_BREAKPOINTS_PX,
   MEASURE_PROSE_EM,
   MODAL_MAX_HEIGHT_VH,
@@ -101,6 +104,14 @@ describe('layoutContract — CSS ↔ TS parity', () => {
   it('the dialog face width matches index.css at every tier (THR-2101)', () => {
     for (const tier of TIERS) {
       expect(decl(rootBlock(tier), '--dialog-subject-portrait-w'), tier).toBe(`${DIALOG_SUBJECT_PORTRAIT_W_REM[tier]}rem`);
+    }
+  });
+
+  it('the ceremony widths match index.css at every tier (THR-2102)', () => {
+    for (const tier of TIERS) {
+      expect(decl(rootBlock(tier), '--ceremony-portrait-w'), tier).toBe(`${CEREMONY_PORTRAIT_W_REM[tier]}rem`);
+      expect(decl(rootBlock(tier), '--ceremony-medallion-w'), tier).toBe(`${CEREMONY_MEDALLION_W_REM[tier]}rem`);
+      expect(decl(rootBlock(tier), '--ceremony-panel-max-w'), tier).toBe(`${CEREMONY_PANEL_MAX_W_REM}rem`);
     }
   });
 

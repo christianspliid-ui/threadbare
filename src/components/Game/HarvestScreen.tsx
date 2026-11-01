@@ -1,11 +1,17 @@
 import type { HarvestResult, HarvestEchoCandidate } from '../../engine/cycleEnd';
 import type { HarvestType } from '../../types/worldSoul';
+import type { EntityVisualDescriptor } from '../../engine/views/entityVisualResolver';
 import { countWord, magnitudeWord, type MagnitudeBand } from '../../engine/aftermathWords';
 import { Tooltip } from '../shared/Tooltip';
 import { Button } from '../shared/Button';
 import { Overlay } from '../shared/Overlay';
 import { surfaceHomeProps } from '../shared/surfaceHomes';
+import { EntityVisual } from '../shared/EntityVisual';
+import { Icon } from '../shared/Icon';
 import { ACCOUNT_WORDS, echoDisplayName } from '../../data/account-content';
+import { ceremonyHeadingIcon, HARVEST_ECHO_TILE_W } from '../../data/view-content';
+import { sphereWord } from '../../data/essence-format';
+import { SPHERE_COLORS_BASE } from '../icons/constants';
 
 /** The ceremony answers no implicit close: only "Wake in a new world" leaves it. */
 const STAY_OPEN = () => {};
@@ -23,6 +29,15 @@ interface HarvestScreenProps {
    * would promise, and says the next world will not remember this one.
    */
   accountCarried?: boolean;
+  /**
+   * THR-2102 (S6.1) — the god's face, built by `CeremonyHost` (the screen never reads the
+   * graph for its pictures). Absent → no face, as before.
+   */
+  godFace?: EntityVisualDescriptor | null;
+  /** THR-2102 decision 3 — each preserved echo's picture, by echo id. */
+  echoVisuals?: Readonly<Record<string, EntityVisualDescriptor>>;
+  /** THR-2102 decision 3 — each of the god's own echoes' picture, by echo id. */
+  leaveVisuals?: Readonly<Record<string, EntityVisualDescriptor>>;
 }
 
 /**
@@ -42,33 +57,71 @@ const HARVEST_STYLES: Record<HarvestType, { title: string; color: string; bg: st
   somber: { title: 'A Somber Age', color: '#6b7280', bg: 'from-gray-900/30' },
 };
 
-function EchoCard({ candidate }: { candidate: HarvestEchoCandidate }) {
+/** THR-2102 — a picture's tier for the debug read: art, the designed tile, or nothing drawn. */
+const tierOf = (v: EntityVisualDescriptor | null | undefined): 'art' | 'fallback' | 'none' => v?.tier ?? 'none';
+
+function EchoCard({ candidate, visual }: { candidate: HarvestEchoCandidate; visual?: EntityVisualDescriptor }) {
   const def = candidate.echoDefinition;
+  // THR-2102 decision 4 — one name per echo, the one the line under the cards uses (PC-6).
+  const name = echoDisplayName(def);
   return (
-    <div className="bg-stone-800/60 border border-amber-700/20 rounded-lg p-3 w-56 flex-shrink-0">
-      <div className="flex items-center gap-2 mb-1">
-        <div className="w-2 h-2 rounded-full bg-amber-400" />
-        <span className="text-xs font-bold text-amber-100/90 truncate">{def.name}</span>
-      </div>
-      <p className="text-xs text-amber-200/70 leading-relaxed mb-2">{def.summary}</p>
-      <div className="flex gap-1">
-        {def.sphereAffinities.map(s => (
-          <span key={s} className="text-xs px-1.5 py-0.5 bg-stone-600/50 rounded text-amber-200/70">
-            {s}
-          </span>
-        ))}
-      </div>
-      <div className="mt-1 text-xs text-amber-200/60 italic">
-        A {magnitudeWord(candidate.score, ECHO_SIGNIFICANCE_BANDS)} echo of the age
+    <div
+      className="bg-stone-800/60 border border-amber-700/20 rounded-panel overflow-hidden flex-shrink-0"
+      style={{ width: HARVEST_ECHO_TILE_W }}
+      data-testid="harvest-echo-card"
+      data-echo-art={tierOf(visual)}
+    >
+      <div className="p-3">
+        {/* Decision 3 — the card opens on what the echo is of (R1, R3). Drawn as a chip beside
+            the name, the plan's second kill criterion: a 16:9 band pushed a five-card harvest's
+            button below the fold at 1920×1080 (measured 2026-11-01, panel 1145px). */}
+        <div className="flex items-center gap-2 mb-1 min-w-0">
+          {visual && <EntityVisual size="chip" shape="rounded" descriptor={{ ...visual, alt: name }} />}
+          <span className="block text-xs font-bold text-amber-100/90 truncate" data-testid="harvest-echo-name">{name}</span>
+        </div>
+        <p className="text-xs text-amber-200/70 leading-relaxed mb-2">{def.summary}</p>
+        <div className="flex flex-wrap gap-1">
+          {/* Decision 4 — the sphere's word and tint, with its tooltip (Law 14). */}
+          {def.sphereAffinities.map(s => (
+            <Tooltip key={s} id={`sphere.${s}`}>
+              <span
+                className="text-xs px-1.5 py-0.5 bg-stone-600/50 rounded text-amber-200/80 cursor-help"
+                style={{ borderLeft: `2px solid ${SPHERE_COLORS_BASE[s] ?? 'var(--accent-gold)'}` }}
+                data-testid="harvest-echo-sphere"
+              >
+                {sphereWord(s)}
+              </span>
+            </Tooltip>
+          ))}
+        </div>
+        <div className="mt-1 text-xs text-amber-200/60 italic">
+          A {magnitudeWord(candidate.score, ECHO_SIGNIFICANCE_BANDS)} echo of the age
+        </div>
       </div>
     </div>
   );
 }
 
-export function HarvestScreen({ harvest, cycle, onWakeNewWorld, accountSaved = null, accountCarried = true }: HarvestScreenProps) {
+export function HarvestScreen({
+  harvest,
+  cycle,
+  onWakeNewWorld,
+  accountSaved = null,
+  accountCarried = true,
+  godFace = null,
+  echoVisuals,
+  leaveVisuals,
+}: HarvestScreenProps) {
   const style = HARVEST_STYLES[harvest.harvestType];
   // THR-1813 — the god's own echoes, named the one way every surface names them (PC-6).
-  const leaves = (harvest.divineEchoes ?? []).map(echoDisplayName);
+  const divineEchoes = harvest.divineEchoes ?? [];
+  const leaves = divineEchoes.map(echoDisplayName);
+  const titleIcon = ceremonyHeadingIcon('harvestTitle');
+  // THR-2102 decision 3 — one small picture per echo the line names, in the line's order.
+  const leaveChips = divineEchoes.flatMap(def => {
+    const visual = leaveVisuals?.[def.id];
+    return visual ? [{ def, visual }] : [];
+  });
   // Whether the next world will remember this one: not on the Advanced path, and not
   // after a failed save (that wake carries an empty record). An age the next world will
   // not remember names no echo as preserved or left behind (review-gate cycle 4).
@@ -88,18 +141,39 @@ export function HarvestScreen({ harvest, cycle, onWakeNewWorld, accountSaved = n
       animation="none"
       surfaceClassName="flex items-center justify-center"
     >
-      <div className={`max-w-2xl w-full mx-4 bg-gradient-to-b ${style.bg} to-stone-900 border border-amber-900/30 rounded-xl p-8`}>
+      <div
+        className={`w-full mx-4 bg-gradient-to-b ${style.bg} to-stone-900 border border-amber-900/30 rounded-xl p-8`}
+        style={{ maxWidth: 'var(--ceremony-panel-max-w)' }}
+        data-testid="cycle-harvest"
+      >
         <div className="text-center mb-6">
-          <Tooltip id="ui.harvest_cycle">
+          {/* THR-2102 decision 1 — the age was the god's: the harvest opens on its face (R1). */}
+          {godFace && (
+            <div
+              className="mx-auto mb-3"
+              style={{ width: 'var(--ceremony-medallion-w)' }}
+              data-ceremony-face={tierOf(godFace)}
+              data-ceremony-face-role="god"
+              data-testid="harvest-god-face"
+            >
+              <EntityVisual size="portrait" shape="circle" descriptor={godFace} style={{ aspectRatio: '1 / 1' }} />
+            </div>
+          )}
+          <Tooltip id="ui.harvest_cycle" block>
             <p className="text-xs text-amber-200/70 mb-1 cursor-help">
               Cycle {cycle} complete
             </p>
           </Tooltip>
-          <Tooltip id="ui.harvest_type">
+          <Tooltip id="ui.harvest_type" block>
             <h2
-              className="text-2xl font-bold tracking-wide cursor-help"
+              className="text-2xl font-bold tracking-wide cursor-help flex items-center justify-center gap-2"
               style={{ color: style.color, fontFamily: 'var(--font-display)' }}
             >
+              {titleIcon && (
+                <span data-ceremony-heading-icon={titleIcon} style={{ display: 'inline-flex' }}>
+                  <Icon name={titleIcon} size="list" decorative />
+                </span>
+              )}
               {style.title}
             </h2>
           </Tooltip>
@@ -120,15 +194,29 @@ export function HarvestScreen({ harvest, cycle, onWakeNewWorld, accountSaved = n
                 echo is visible at once (THR-1884). */}
             <div className="flex flex-wrap justify-center gap-3 pb-2">
               {harvest.cosmicEchoCandidates.map(c => (
-                <EchoCard key={c.echoDefinition.id} candidate={c} />
+                <EchoCard key={c.echoDefinition.id} candidate={c} visual={echoVisuals?.[c.echoDefinition.id]} />
               ))}
             </div>
           </div>
         )}
 
+        {remembered && leaveChips.length > 0 && (
+          <div className="flex flex-wrap justify-center gap-2 mb-2" data-testid="harvest-leave-chips">
+            {leaveChips.map(({ def, visual }) => (
+              <EntityVisual
+                key={def.id}
+                size="chip"
+                descriptor={{ ...visual, alt: echoDisplayName(def) }}
+                title={echoDisplayName(def)}
+                data-testid="harvest-leave-chip"
+              />
+            ))}
+          </div>
+        )}
+
         {remembered ? (
-          <Tooltip id="ui.harvest_leaves">
-            <p className="text-sm text-amber-100/85 text-center mb-6 cursor-help" data-testid="harvest-leaves">
+          <Tooltip id="ui.harvest_leaves" block>
+            <p className="text-sm text-amber-100/85 text-center mb-6 cursor-help" data-testid="harvest-leaves" data-leave-count={leaves.length}>
               {leaves.length > 0 ? ACCOUNT_WORDS.harvestLeavesBehind(leaves) : ACCOUNT_WORDS.harvestLeavesLittle}
             </p>
           </Tooltip>

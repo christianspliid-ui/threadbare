@@ -13,7 +13,7 @@
  * interrupt resolution names its kind in `rendering`; ceremonies and Stage moments share
  * one foreground, so a ceremony never draws over an open moment, or under one.
  */
-import { Component, Fragment, type ReactNode } from 'react';
+import { Component, Fragment, useMemo, type ReactNode } from 'react';
 import type { CeremonyHomedKind, HomedSurfaceKind } from '../../../data/homed-surfaces';
 import type { GameState } from '../../../types/gameState';
 import type { AscendantArchetype } from '../../../types/influence';
@@ -23,6 +23,7 @@ import type { StoredHungerId } from '../../../types/hunger';
 import type { HarvestResult } from '../../../engine/cycleEnd';
 import type { PendingThreadingRite } from '../../../engine/threadingRite';
 import type { RiteClose } from '../../../engine/threadingRiteQueue';
+import { echoVisuals, godFaceVisual, riteFaceVisual } from '../../../engine/views/ceremonyVisuals';
 import { AnimateMount } from '../../shared/AnimateMount';
 import { MeetTheFirstFlow } from '../../MeetTheFirst/MeetTheFirstFlow';
 import { ThreadingRite } from '../../ThreadingRite/ThreadingRite';
@@ -90,6 +91,28 @@ export function CeremonyHost({
   onHomedSurfaceSkip,
   onHomedSurfaceFallback,
 }: CeremonyHostProps) {
+  // THR-2102 (S6.1) — the ceremonies' pictures, built here once, when the harvest or the rite
+  // mounts: the screens draw descriptors and never read the graph for them. Keyed on the
+  // harvest and the rite, never on the (in-place mutated) graph.
+  const harvestVisuals = useMemo(() => {
+    if (!harvestResult) return null;
+    try {
+      return {
+        godFace: godFaceVisual(gameState),
+        echoVisuals: echoVisuals(gameState, harvestResult.cosmicEchoCandidates.map(c => c.echoDefinition)),
+        leaveVisuals: echoVisuals(gameState, harvestResult.divineEchoes ?? []),
+      };
+    } catch {
+      return null;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [harvestResult]);
+  const riteFace = useMemo(() => (pendingRite
+    ? riteFaceVisual(gameState, pendingRite.agentId, 'this mortal')
+    : undefined),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [pendingRite?.agentId, pendingRite?.tick]);
+
   // THR-1877 — ceremonies share the foreground with the Stage: each renders only while
   // the resolution names its kind, through this exhaustive switch.
   const renders = new Set<HomedSurfaceKind>(interruptResolution.rendering);
@@ -124,6 +147,9 @@ export function CeremonyHost({
             onWakeNewWorld={handleWakeNewWorld}
             accountSaved={accountSaved}
             accountCarried={accountCarried}
+            godFace={harvestVisuals?.godFace}
+            echoVisuals={harvestVisuals?.echoVisuals}
+            leaveVisuals={harvestVisuals?.leaveVisuals}
           />
         )}
       </AnimateMount>
@@ -161,6 +187,7 @@ export function CeremonyHost({
           onSpendEssence={handleMeetingSpendEssence}
           onComplete={handleRiteComplete}
           onBondWithoutHand={handleRiteWithoutHand}
+          face={riteFace}
         />
       );
 

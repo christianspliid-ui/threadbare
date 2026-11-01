@@ -57,6 +57,9 @@ import { buildMeetingNudgePhaseModel, meetingSpendRequests } from '../MeetTheFir
 import { NudgePhaseShell } from '../Game/encounter-stage/shells/NudgePhaseShell';
 import type { NudgeSpendRequest } from '../Game/encounter-stage/nudgeCommit';
 import { RevealCard } from '../shared/RevealCard';
+import { EntityVisual } from '../shared/EntityVisual';
+import type { EntityVisualDescriptor } from '../../engine/views/entityVisualResolver';
+import { riteFaceVisual } from '../../engine/views/ceremonyVisuals';
 import { Button } from '../shared/Button';
 import { Tooltip } from '../shared/Tooltip';
 import { Overlay } from '../shared/Overlay';
@@ -84,7 +87,15 @@ export interface ThreadingRiteProps {
   onComplete: (close: Extract<RiteClose, { kind: 'played' }>) => void;
   /** *Bond without a hand*, Escape, or the card's close. */
   onBondWithoutHand: () => void;
+  /**
+   * THR-2102 decision 5 — the mortal's face, built by `CeremonyHost` through the shared
+   * resolver. Absent → resolved here the same way, so the rite never draws a raw image.
+   */
+  face?: EntityVisualDescriptor;
 }
+
+/** The rite's opening face fades at its edges into the scene. */
+const RITE_FACE_MASK = 'radial-gradient(ellipse 90% 90% at center, black 30%, transparent 92%)';
 
 export function ThreadingRite({
   graph,
@@ -96,6 +107,7 @@ export function ThreadingRite({
   onSpendEssence,
   onComplete,
   onBondWithoutHand,
+  face: faceProp,
 }: ThreadingRiteProps) {
   // The rite's plan and its mortal are fixed for the rite's life: keyed on the
   // rite itself, never on the (in-place mutated) graph.
@@ -107,6 +119,9 @@ export function ThreadingRite({
     [rite.agentId]);
   const node = graph.getNode(rite.agentId);
   const name = candidate?.name ?? node?.name ?? 'this mortal';
+  const face = useMemo(() => faceProp ?? riteFaceVisual({ graph }, rite.agentId, name),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [faceProp, rite.agentId, name]);
   const gender = node?.properties.gender;
   const locationId = graph.getOutgoingEdges(rite.agentId, 'located_at')[0]?.target;
   const locationName = (locationId ? graph.getNode(locationId)?.name : undefined) ?? '';
@@ -182,6 +197,7 @@ export function ThreadingRite({
         name={name}
         gender={gender}
         portraitUrl={candidate?.imageAssetPath ?? ''}
+        face={face}
         opening={opening}
         ordinal={rite.ordinal}
         seed={plan.seed + RITE_BOND_SEED_OFFSET}
@@ -231,19 +247,17 @@ export function ThreadingRite({
             </p>
             <div
               data-testid="threading-rite-portrait"
-              role="img"
-              aria-label={name}
+              data-ceremony-face={face.tier}
+              data-ceremony-face-role="rite"
               style={{
-                width: 'min(220px, 18vw)',
-                aspectRatio: '3/4',
+                width: 'var(--ceremony-portrait-w)',
                 margin: '3vh auto',
-                backgroundImage: `url(${candidate.imageAssetPath}), ${candidate.placeholderGradient}`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                maskImage: 'radial-gradient(ellipse 90% 90% at center, black 30%, transparent 92%)',
-                WebkitMaskImage: 'radial-gradient(ellipse 90% 90% at center, black 30%, transparent 92%)',
+                maskImage: RITE_FACE_MASK,
+                WebkitMaskImage: RITE_FACE_MASK,
               }}
-            />
+            >
+              <EntityVisual size="portrait" descriptor={face} style={{ border: 'none' }} />
+            </div>
             <h3 data-testid="threading-rite-name" style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', color: '#e8e0d0', letterSpacing: '0.08em', margin: '0 0 2vh' }}>
               {name}
             </h3>
@@ -350,6 +364,8 @@ interface BondOnlyRiteProps {
   name: string;
   gender: unknown;
   portraitUrl: string;
+  /** THR-2102 — the medallion's face, through the shared resolver. */
+  face: EntityVisualDescriptor;
   opening: string;
   ordinal: number;
   seed: number;
@@ -364,6 +380,7 @@ function BondOnlyRite({
   name,
   gender,
   portraitUrl,
+  face,
   opening,
   ordinal,
   seed,
@@ -402,9 +419,9 @@ function BondOnlyRite({
     >
       <RevealCard.Title>{RITE_HEADER.toUpperCase()}</RevealCard.Title>
       <RevealCard.Medallion title={name}>
-        {portraitUrl ? (
-          <img src={portraitUrl} alt={name} data-testid="threading-rite-portrait" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
-        ) : undefined}
+        <div data-testid="threading-rite-portrait" data-ceremony-face={face.tier} data-ceremony-face-role="rite" style={{ width: '100%', height: '100%' }}>
+          <EntityVisual size="portrait" shape="circle" descriptor={face} style={{ width: '100%', height: '100%', aspectRatio: 'auto', border: 'none' }} />
+        </div>
       </RevealCard.Medallion>
       <RevealCard.Banner>
         <span data-testid="threading-rite-name">{name}</span>
