@@ -12,7 +12,7 @@ import { buildViewContext } from '../viewContext';
 import { buildStageView, fallbackStageView, type StageMomentInput } from '../stage/stageView';
 import { buildChipIconResolver } from '../stage/chipCollaborators';
 import { FAMILIARITY_THRESHOLDS } from '../../../types/familiarity';
-import { ARTIFACT_CATEGORY_ART } from '../../../data/artifact-category-art';
+import { getAttachmentArtUrl } from '../../../data/artifact-category-art';
 import { STAGE_LABEL_ICONS, STAGE_NO_IDEA_LABELS, type StageLabelKey } from '../../../data/stage-content';
 import { ICON_REGISTRY } from '../../../data/icons/iconRegistry';
 
@@ -77,22 +77,22 @@ describe('THR-2100 S4.2 — Stage label icons', () => {
 describe('THR-2100 S4.3 — a relic chip draws its painting', () => {
   function relicGraph(subcategory?: string): WorldGraph {
     const graph = new WorldGraph();
-    graph.addNode({ id: 'relic_1', type: 'attachment', name: 'The Ember Blade', properties: subcategory ? { subcategory } : {} } as never);
+    graph.addNode({ id: 'reward_arms_bronze_spear', type: 'attachment', name: 'The Ember Blade', properties: subcategory ? { subcategory } : {} } as never);
     return graph;
   }
 
   it('an attachment with a plate tiles as art and routes to the attachment page', () => {
-    const icon = buildChipIconResolver(relicGraph('arms'))({ text: 'The Ember Blade', entityId: 'relic_1', visualKind: 'attachment' } as never);
+    const icon = buildChipIconResolver(relicGraph('arms'))({ text: 'The Ember Blade', entityId: 'reward_arms_bronze_spear', visualKind: 'attachment' } as never);
     expect(icon).toEqual({
-      entityId: 'relic_1',
+      entityId: 'reward_arms_bronze_spear',
       kind: 'artifact',
       name: 'The Ember Blade',
-      src: ARTIFACT_CATEGORY_ART.arms,
+      src: getAttachmentArtUrl('reward_arms_bronze_spear', 'arms'),
       routeKind: 'attachment',
     });
   });
 
   it('an attachment with no plate keeps no tile, as before', () => {
-    expect(buildChipIconResolver(relicGraph())({ text: 'A trinket', entityId: 'relic_1', visualKind: 'attachment' } as never)).toBeUndefined();
+    expect(buildChipIconResolver(relicGraph())({ text: 'A trinket', entityId: 'reward_arms_bronze_spear', visualKind: 'attachment' } as never)).toBeUndefined();
   });
 });
