@@ -130,6 +130,12 @@ describe('R5–R7 — no Overview strip on these kinds (Law 16)', () => {
     const parts = pop && pop.kind === 'prose' ? pop.parts ?? [] : [];
     expect(parts.some(p => typeof p !== 'string' && p.ref?.id === 'aldric')).toBe(true);
     expect(parts.some(p => typeof p !== 'string' && p.tooltipId === 'sphere.time')).toBe(true);
+    // A ruin transformed in place names a fallen ruin, never links to its own page.
+    const inPlace = world();
+    inPlace.graph.getNode('pop')!.properties.transformedFromRuinId = 'pop';
+    const own = byId(sections('place', 'pop', inPlace)).get('place_of_power');
+    expect(proseOf(own)).toContain('Its power came from a fallen ruin.');
+    expect((own && own.kind === 'prose' ? own.parts ?? [] : []).some(p => typeof p !== 'string' && p.ref?.id === 'pop')).toBe(false);
   });
 
   it('the area facts are one sentence; its spheres a chips row', () => {

@@ -313,7 +313,9 @@ const placeOfPower: SectionResolver = (ctx) => {
     ? (holder.type === 'actor' ? { text: holder.node.name, ref: { kind: 'agent', id: holder.node.id, name: holder.node.name } } : holder.node.name)
     : PLACE_OF_POWER_LINES.noOne;
   const from = props.transformedFromRuinId as string | undefined;
-  const fromNode = from ? ctx.graph.getNode(from) : undefined;
+  // A ruin transforms in place (`ruinTransformation.ts` sets the id to itself): the origin is
+  // then "a fallen ruin", never this page linking to itself (Law 25).
+  const fromNode = from && from !== p.node.id ? ctx.graph.getNode(from) : undefined;
   const origin: SentencePart | null = !from ? null
     : fromNode?.name ? { text: fromNode.name, ref: { kind: 'location', id: fromNode.id, name: fromNode.name } }
     : PLACE_OF_POWER_LINES.fallenRuin;
