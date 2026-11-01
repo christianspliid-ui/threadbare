@@ -2462,10 +2462,9 @@ exit
 - **Producer → Consumer:** Spheres & Quintessence → Mandate
 - **UL terms:** *Victory Mandate*, *Sphere*, *Place*
 - **Module:** `src/engine/townPressureTarget.ts`
-- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Production hits:** 2 total — 1 write, 1 read, 0 unclassified
 - **Write sites:** `src/engine/townPressureTarget.ts`
 - **Read sites:** `src/engine/phaseSpherePressure.ts`
-- **Other hits:** `src/types/sphereAffinity.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `god-reads-mortal-intention` — 🟢 LIVE
