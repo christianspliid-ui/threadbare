@@ -1956,7 +1956,7 @@ export function EncounterVeil({
                 e.currentTarget.style.color = 'rgb(var(--veil-gold-rgb) / 0.45)';
               }}
             >
-              <EssenceMark /> 1 — Peer Through the Thread
+              <EssenceMark insideControl /> 1 — Peer Through the Thread
             </button>
           </div>
         )}
@@ -3427,13 +3427,19 @@ function FalloutPreview({ fallout }: { fallout: EncounterStageFalloutModel[] }) 
  * The essence count's carved shape, in place of ◆ (S4.2). Not decorative: it carries the
  * `ui.essence_panel` tooltip, so hovering it explains essence (Law 17) where the ◆
  * explained nothing. The word "essence" stays printed beside it (Law 1).
+ *
+ * `insideControl`: inside a button the mark is decorative and carries no tooltip — a
+ * tooltip trigger is its own tab stop, and a focusable element inside a button is a dead
+ * stop that also renames the button for screen readers.
  */
-function EssenceMark() {
+function EssenceMark({ insideControl = false }: { insideControl?: boolean }) {
   const name = stageLabelIcon('encounterEssence');
   if (!name) return null;
   return (
     <span data-stage-label-icon={name} style={{ display: 'inline-flex', verticalAlign: 'middle' }}>
-      <Icon name={name} size="chip" label="Divine Essence" tooltipId="ui.essence_panel" />
+      {insideControl
+        ? <Icon name={name} size="chip" decorative />
+        : <Icon name={name} size="chip" label="Divine Essence" tooltipId="ui.essence_panel" />}
     </span>
   );
 }
