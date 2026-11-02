@@ -2541,10 +2541,10 @@ exit
 - **Producer → Consumer:** Companies & Group Travel → Attention, Chronicle & Narrative
 - **UL terms:** *Company*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 100 total — 1 write, 2 read, 97 unclassified
+- **Production hits:** 103 total — 1 write, 2 read, 100 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/views/subjects/personRows.ts`
-- **Other hits:** `src/components/Game/frame/frameDebugState.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/RivalsButton.tsx` +92 more
+- **Other hits:** `src/components/Game/frame/frameDebugState.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/listDressing.ts` +95 more
 - **Verdict:** Verified 2026-07-25: Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).
 
 ### `guild-rank-gates-senior-content` — 🟢 LIVE
@@ -3422,10 +3422,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Chapter*, *Chronicle*
 - **Module:** `src/engine/restlessRoad.ts`
-- **Production hits:** 43 total — 2 write, 3 read, 38 unclassified
+- **Production hits:** 44 total — 2 write, 3 read, 39 unclassified
 - **Write sites:** `src/engine/phaseAgentDecision.ts`, `src/engine/restlessRoad.ts`
 - **Read sites:** `src/components/Game/ChronicleEntryCard.tsx`, `src/debug-bridge.ts`, `src/engine/orchestrator.ts`
-- **Other hits:** `src/components/Codex/codexConcepts.ts`, `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/encounter-stage/OpponentHeader.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/PastLineText.tsx` +33 more
+- **Other hits:** `src/components/Codex/codexConcepts.ts`, `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/encounter-stage/OpponentHeader.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/PastLineText.tsx` +34 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `reunion-reads-the-edges-not-the-roster` — 🟢 LIVE
