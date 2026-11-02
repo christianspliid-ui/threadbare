@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-02 16:57 local (15:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-02 17:58 local (16:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -59,7 +59,7 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([06:37](h
 
 ## Queue
 
-**Healthy (3 ready, 1 being built).** [Encounter story text, wave 2a](https://linear.app/threadbare/issue/THR-2108) shipped and is live. The builder is now on [wave 2b](https://linear.app/threadbare/issue/THR-2128/encounter-story-text-wave-2b-board-encounters-ranked-21-30-plus-three) (run started 15:31 UTC, active a minute ago). Still held in their veto windows: [THR-2109](https://linear.app/threadbare/issue/THR-2109) until 17:30 UTC, [THR-2110](https://linear.app/threadbare/issue/THR-2110/rewrite-the-five-novel-prose-encounters-to-prose-doctrine-v2-flawed) until 20:40 UTC, and [Legibility 1](https://linear.app/threadbare/issue/THR-2122/plan-doc-legibility-1-the-shared-blocks-the-type-ladder-and-the) until 23:50 UTC.
+**Healthy (3 ready, none being built).** [Encounter story text, wave 2b](https://linear.app/threadbare/issue/THR-2128/encounter-story-text-wave-2b-board-encounters-ranked-21-30-plus-three) merged via [#2713](https://github.com/christianspliid-ui/threadbare/pull/2713) and is live. The builder's last three runs correctly waited, because every ready ticket is still in its veto window: [THR-2109](https://linear.app/threadbare/issue/THR-2109) until 17:30 UTC, [THR-2110](https://linear.app/threadbare/issue/THR-2110/rewrite-the-five-novel-prose-encounters-to-prose-doctrine-v2-flawed) until 20:40 UTC, and [Legibility 1](https://linear.app/threadbare/issue/THR-2122/plan-doc-legibility-1-the-shared-blocks-the-type-ladder-and-the) until 23:50 UTC.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -67,4 +67,4 @@ Two items for agents, not you:
 
 ## Health
 
-All green. The engine-speed drift from the last five hours has cleared: 131 ms/tick, 19% under the 7-day median, so the earlier jump was the build running beside the measurement. The live site serves the latest main (bf0dc3bf). No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 15:40 UTC.
+All green. Engine speed is 134 ms/tick, 17% under the 7-day median. The live site serves the latest main (d322ddd1). No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 16:40 UTC.
