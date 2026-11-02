@@ -117,7 +117,7 @@ export function handleChoiceRowKeyDown(e: ReactKeyboardEvent<HTMLElement>): void
  * players waited for a Continue that never comes. Keyed by the caller on the chosen
  * item, so a new choice restarts the fill.
  */
-export function ChoiceHoldCue({ holdMs, color = 'rgba(212,196,158,0.55)' }: { holdMs: number; color?: string }) {
+export function ChoiceHoldCue({ holdMs }: { holdMs: number }) {
   return (
     <div
       data-testid="remembrance-hold-cue"
@@ -128,18 +128,18 @@ export function ChoiceHoldCue({ holdMs, color = 'rgba(212,196,158,0.55)' }: { ho
       <span style={{
         fontFamily: 'var(--font-prose)',
         fontStyle: 'italic',
-        fontSize: '1rem',
+        fontSize: 'var(--text-base)',
         letterSpacing: '0.08em',
-        color,
+        color: 'var(--text-muted)',
       }}>
         {REMEMBRANCE_MOVING_ON}
       </span>
-      <div style={{ width: '160px', height: '2px', background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+      <div style={{ width: '160px', height: '2px', background: 'var(--border-subtle)', overflow: 'hidden' }}>
         <div
           style={{
             width: '100%',
             height: '100%',
-            background: color,
+            background: 'var(--accent-gold-dim)',
             transformOrigin: 'left center',
             animation: `remembranceHoldFill ${holdMs}ms linear forwards`,
           }}
