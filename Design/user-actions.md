@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-02 12:00 local (11:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-02 12:58 local (11:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,6 +46,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-02: the results screen and the mortal's page now agree, and the fix is merged** ([THR-2139](https://linear.app/threadbare/issue/THR-2139/the-aftermath-and-the-mortals-sheet-disagree-reputation-rose-but-the)). Merged via [#2707](https://github.com/christianspliid-ui/threadbare/pull/2707).
 - **2026-11-02: the "gather followers" card now finds the townsfolk to target, and it is live** ([THR-2137](https://linear.app/threadbare/issue/THR-2137)). Merged via [#2706](https://github.com/christianspliid-ui/threadbare/pull/2706).
 - **2026-11-02: nine unused modules are deleted, and the change is live** ([THR-2131](https://linear.app/threadbare/issue/THR-2131/nine-more-modules-have-tests-but-no-production-caller-delete-each-with)). Merged via [#2703](https://github.com/christianspliid-ui/threadbare/pull/2703).
 - **2026-11-02: the warm start's catch-up screen now shows a live time-left estimate, and it is live** ([THR-2133](https://linear.app/threadbare/issue/THR-2133/the-warm-starts-catch-up-screen-promises-a-minute-or-two-but-300-ticks)). Merged via [#2702](https://github.com/christianspliid-ui/threadbare/pull/2702).
@@ -55,7 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-01: the ceremonies (the harvest, the end of the age, the threading rite) now lead with art, and it is live** ([THR-2102](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the)). Merged via [#2693](https://github.com/christianspliid-ui/threadbare/pull/2693).
 - **2026-11-01: the dialogs (chapter ledger, what your act bought) now lead with art, and it is live** ([THR-2101](https://linear.app/threadbare/issue/THR-2101/art-led-pass-slice-5-the-dialogs-chapter-ledger-what-your-act-bought)). Merged via [#2690](https://github.com/christianspliid-ui/threadbare/pull/2690).
 - **2026-11-01: type-size question handed to the design lane** ("Let the design lane do the work", Discord 19:04). [THR-2118](https://linear.app/threadbare/issue/THR-2118/type-hierarchy-can-a-player-tell-title-heading-value-and-label-apart) is no longer reserved; the design lane decides it and invites your veto.
-- **2026-11-01: the Stage moments (encounter, premonition, vision, story beat, new power, undertaking) now lead with art, and it is live** ([THR-2100](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision)). Merged via [#2686](https://github.com/christianspliid-ui/threadbare/pull/2686).
 
 ---
 
