@@ -3240,11 +3240,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   // ────────────────────────────────────────────────────────────────────
   {
     id: 'encounter.pickpocket',
+    // THR-2128: stakes and every line rewritten from scratch to Prose Doctrine v2.
     stakes: {
-      goal: 'lift the wool-buyer\'s purse unseen',
+      goal: 'take the wool-buyer\'s purse unseen',
       risk: 'spend the night in the market lockup',
-      won: 'lifted the wool-buyer\'s purse unseen',
-      lost: 'was caught by the wrist with the lane shouting',
+      won: 'took the wool-buyer\'s purse unseen',
+      lost: 'was caught by the wrist and ran off empty-handed',
       lostBadly: 'spent the night in the market lockup',
     },
     // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
@@ -3255,6 +3256,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     },
     name: 'The Pickpocket',
     locationTypes: ['town', 'city', 'capital'],
+    // THR-2128: `urban` is exactly this placement, so it is the one class declared
+    // (plan decision 2). Subtype set unchanged.
+    settings: ['urban'],
+    openings: {
+      urban: '{name} reaches the market square at {location} as the stalls open.',
+    },
     reachPrimary: 'shadow',
     reachSecondary: 'gold',
     encounterType: 'steal',
@@ -3268,18 +3275,17 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE,
         duration: 2,
-        narrative: 'The market runs on habit. {actor} finds a post by the cloth-seller where two lanes cross, and watches which purses ride loose and which ride under a hand.',
-        // THR-1634 S1: the missing afterimages and a dealt hand.
-        successAtCostAfterimage: '{actor} marks the wool-buyer, but a stallholder has watched {them} watching the crowd all morning and will know {their} face again.',
-        criticalSuccessAfterimage: '{actor} marks the wool-buyer and learns his whole round: the stalls he pays at, and that he never checks the purse between them.',
-        criticalFailureAfterimage: 'A market warden notices {actor} idling at the crossing and walks {them} out of the market. The wardens know {their} face now.',
+        narrative: 'The market is crowded today, and the wardens walk it in pairs. A thief was caught here this morning and beaten in front of the stalls.\n\n{actor} must choose whose purse to take without drawing a warden\'s eye.',
+        successAtCostAfterimage: '{actor} picks out a wool-buyer with a full purse. But a stallholder has watched {actor} all morning and will know {their} face again.',
+        criticalSuccessAfterimage: '{actor} picks out a wool-buyer with a full purse and learns his round. He pays at the same stalls each day and never checks his purse between them.',
+        criticalFailureAfterimage: 'A warden sees {actor} watching the crowd and warns {them} off. {actor} picks out a wool-buyer anyway, with the warden still close by.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['shadow', 'insight'] },
         onSuccess: {
-          narrative: 'A wool-buyer counts coin twice and puts it away once. {actor} marks the pocket, and the shoulder that guards it.',
+          narrative: '{actor} picks out a wool-buyer who counts his coin and puts the purse in a loose side pocket.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: 'The crowd thins before {actor} settles on a mark, and the ones left are the ones who have been robbed before. They all walk with a hand on the seam.',
+          narrative: '{actor} cannot find a careless mark. In the end {actor} settles on a wool-buyer who keeps one hand near his purse.',
           reputationDelta: -0.02,
         },
       },
@@ -3289,19 +3295,18 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 1,
-        narrative: '{actor} needs to arrive at the wool-buyer\'s elbow without appearing to have crossed the square to get there. The trick is to be carried, not to walk.',
-        // THR-1634 S1: the missing afterimages and a dealt hand.
-        successAtCostAfterimage: '{actor} reaches the right elbow, but only by shouldering through the dye argument. Two of the arguers remember who pushed past them.',
-        criticalSuccessAfterimage: '{actor} arrives as part of the dye argument, and the wool-buyer turns to join it. His purse side is open to {actor}.',
-        criticalFailureAfterimage: 'The wool-buyer sees {actor} coming and calls for the warden. {actor} has to leave the market with the warden a few steps behind.',
+        narrative: 'The wool-buyer stands at a busy stall. A stranger who walks straight up to him will be noticed.\n\n{actor} must get to his side without being seen to come.',
+        successAtCostAfterimage: '{actor} reaches the wool-buyer, but only by pushing through a crowd. Two of the people {actor} pushed past will remember {them}.',
+        criticalSuccessAfterimage: '{actor} arrives with a crowd arguing over dye, and the wool-buyer turns to join the argument. His purse side is open to {actor}.',
+        criticalFailureAfterimage: 'The wool-buyer sees {actor} coming and calls for a warden. {actor} stays close in the crowd, but the warden is now only a few stalls away.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['finesse', 'social'] },
         onSuccess: {
-          narrative: '{actor} joins a knot of people arguing over dye prices and steps out of it at the right elbow. Nobody notices an arrival that came with a crowd.',
+          narrative: '{actor} joins a crowd arguing over the price of dye and steps out of it at the wool-buyer\'s side. No one sees {actor} arrive.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor} closes a half-step too directly, and the wool-buyer turns to see who is standing there. The pocket goes under an arm and stays there.',
+          narrative: '{actor} walks up too directly, and the wool-buyer turns to look. He tucks his purse under his arm, so {actor} must wait for him to pay before trying.',
           reputationDelta: -0.03,
         },
       },
@@ -3311,14 +3316,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: 'The purse sits four inches down, and the cloth is stiff enough to hold its shape once the weight is gone. {actor} has the length of one transaction to work in.',
-        // THR-1634 S1: the missing afterimages and a dealt hand.
-        successAtCostAfterimage: '{actor} gets the purse, but the cloth tears as it comes free. The wool-buyer feels it at once, and {actor} has to run with the lane shouting behind {them}.',
-        criticalSuccessAfterimage: '{actor} takes the purse and leaves a pebble of the same weight in its place. The wool-buyer does not know he was robbed until he pays for supper.',
-        criticalFailureAfterimage: 'The wool-buyer catches {actor}\'s wrist and holds on until the wardens arrive. {actor} spends the night in the market lockup.',
+        narrative: '{actor} is at the wool-buyer\'s side. He is paying for cloth with the purse in his hand, and a warden is walking toward the stall.\n\n{actor} must take the purse before he puts it away.',
+        successAtCostAfterimage: '{actor} gets the purse, but tears the pocket taking it. The wool-buyer feels it at once, and {actor} must run with the market shouting behind {them}.',
+        criticalSuccessAfterimage: '{actor} takes the purse and leaves a stone of the same weight in its place. The wool-buyer does not know he was robbed until he pays for supper.',
+        criticalFailureAfterimage: 'The wool-buyer catches {actor}\'s wrist and holds on until the wardens come. {actor} spends the night in the market lockup.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['finesse', 'shadow', 'peril'] },
         onSuccess: {
-          narrative: 'Two fingers, a wrist turn, and the weight is gone before the cloth remembers it. {actor} is three stalls away before the wool-buyer reaches for coin that is no longer there.',
+          narrative: '{actor} takes the purse as the wool-buyer puts it back. {actor} is gone into the crowd before he reaches for it again.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -3326,7 +3330,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor}\'s knuckle catches the seam. The wool-buyer has hold of {their} wrist before the purse clears the pocket, and the shouting brings the whole lane around.',
+          narrative: 'The wool-buyer feels {actor}\'s hand and grabs {their} wrist. He shouts for the wardens, and {actor} pulls free and runs off empty-handed.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 0.7, condition: 0.3 },
@@ -3337,11 +3341,15 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.vault_heist',
+    // THR-2128: stakes and every line rewritten from scratch to Prose Doctrine v2, plus
+    // the missing afterimage ladder and a pure-fill dealt hand on every step. Only
+    // `arcane` is whole inside this placement, and its line cannot read right at a
+    // castle, so no `settings`: the arrival sentence leads step 0 (plan decision 2).
     stakes: {
-      goal: 'get the strongbox out of the counting-house vault',
+      goal: 'carry the money out of the counting-house vault',
       risk: 'go over the wall with none of the money',
       won: 'got out by the coal chute with the money',
-      lost: 'dropped the strongbox and went over the wall empty',
+      lost: 'dropped the strongbox and got away with none of the money',
     },
     // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
     outcomeEffects: {
@@ -3363,13 +3371,17 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
         duration: 2,
-        narrative: 'The vault sits under the counting-house, with one stair down and no other opening anyone will admit to. {actor} spends the week learning the building\'s habits instead of its locks.',
+        narrative: '{actor} comes to {location} to rob the vault under its counting-house.\n\nThe vault has one stair down and two locks. The last thief who tried it was caught on the stair and hanged.\n\n{actor} must learn the guards\' habits before going in.',
+        successAtCostAfterimage: '{actor} learns the clerk\'s habits, but a guard notices {actor} near the door too often. The guards are watching for {them} now.',
+        criticalSuccessAfterimage: '{actor} learns the clerk\'s habits, and finds a copy of the second key in a locksmith\'s shop. Both locks will open for {actor}.',
+        criticalFailureAfterimage: 'A guard catches {actor} drawing the building and takes the drawing. {actor} still knows when the clerk leaves, but the guard will know {their} face.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'shadow'] },
         onSuccess: {
-          narrative: 'The night clerk drinks at the eighth bell and the relief comes at the ninth. That hour is the whole plan, and {actor} writes the rest of it backwards from there.',
+          narrative: '{actor} watches the counting-house for a week. The night clerk leaves his post for an hour each night, and that hour is when {actor} will go in.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor} learns the stair, the clerk, and the bell, and never learns what the second key opens. The plan has a hole in it shaped like a door.',
+          narrative: '{actor} learns when the clerk leaves his post, but not how to open the second lock. {actor} will have to go in without knowing.',
           reputationDelta: -0.02,
         },
       },
@@ -3379,14 +3391,18 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'The stair is stone and carries every step to the room above it. {actor} goes down it in the ten breaths between the bell and the relief arriving.',
+        narrative: 'The clerk has left his post. The stair is stone, and any noise on it carries to the room above.\n\n{actor} must reach the vault before the clerk comes back.',
+        successAtCostAfterimage: '{actor} reaches the vault, but cuts {their} hand badly on the second lock. {actor} must carry the strongbox out bleeding.',
+        criticalSuccessAfterimage: '{actor} reaches the vault, and the clerk does not come back until dawn. {actor} has the whole night to work.',
+        criticalFailureAfterimage: '{actor} drops a tool on the stair, and the noise brings the clerk running. He sees {actor}\'s face before {actor} grabs the strongbox and runs.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['shadow', 'finesse'] },
         onSuccess: {
-          narrative: '{actor} is past the clerk\'s empty chair and through the inner door with four breaths to spare. The vault opens quietly, on hinges that have been kept oiled.',
+          narrative: '{actor} goes down the stair without a sound and opens the vault. The strongbox is inside.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'The relief clerk comes early and finds the inner door standing open. The bell goes up before {actor} reaches the strongbox, and the stair fills from the top.',
+          narrative: '{actor} opens the vault, but the clerk comes back early and finds the door open. He rings the alarm, and {actor} must get out with the strongbox before the guards arrive.',
           reputationDelta: -0.03,
         },
       },
@@ -3396,9 +3412,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: 'The strongbox gives up its contents. Carrying them out is the other half of the job, and the counting-house stands on a square with four exits, all of them watched by morning.',
+        narrative: '{actor} has the strongbox. The counting-house stands on a square, and guards are coming to watch every gate and door.\n\n{actor} must get out with the money.',
+        successAtCostAfterimage: '{actor} gets out with the money, but a guard sees {actor} go over the wall. The town watch will be looking for {them}.',
+        criticalSuccessAfterimage: '{actor} gets out by the coal chute with the money, and no one sees {actor} leave. The theft is not found until the clerks count the vault days later.',
+        criticalFailureAfterimage: 'A guard catches {actor} in the coal chute. {actor} fights free and runs, but leaves the money behind, and the guard has seen {actor}\'s face.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'peril'] },
         onSuccess: {
-          narrative: '{actor} leaves by the coal chute, which is on nobody\'s list of doors, and crosses the square while it is still quiet.',
+          narrative: '{actor} leaves by the coal chute, which no guard is watching, and crosses the square with the money before dawn.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -3406,7 +3426,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The coal chute is barred from the outside. {actor} drops the strongbox to climb faster, and gets over the wall with a hand full of splinters and none of the money.',
+          narrative: 'The coal chute is barred. {actor} drops the strongbox to climb the wall, and gets away with none of the money.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 0.7, condition: 0.3 },
@@ -3945,11 +3965,16 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.tribute_exchange',
+    // THR-2128: stakes and every line rewritten from scratch to Prose Doctrine v2, plus
+    // the missing afterimage ladder and a pure-fill dealt hand on every step. No
+    // setting class is whole inside this placement, so no `settings`: the arrival
+    // sentence leads step 0's narrative instead (plan decision 2). `risk` and `lost`
+    // keep a loss word: every failure band costs the actor Means (THR-1936 test).
     stakes: {
-      goal: 'win the crown\'s protection in the tribute oath',
-      risk: 'pay the tribute and see the protection clause struck',
-      won: 'swore the tribute with the crown\'s protection on the page',
-      lost: 'paid the tribute and lost the protection clause',
+      goal: 'win the crown\'s protection for the tribute',
+      risk: 'pay the tribute and get no protection for it',
+      won: 'paid the tribute and won the crown\'s protection',
+      lost: 'paid the tribute and got no protection for it',
     },
     // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
     // THR-2051 — the oath half: every success band swears the actor's house to the crown
@@ -3976,13 +4001,17 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'The tribute comes in on three trays and is set down where the whole court can count it. What {actor} brought matters less than the order it is laid out in — best piece last, or the court reads the entire gift as an opening offer.',
+        narrative: '{actor} comes to {location} to pay tribute to the crown.\n\nThe crown has raised the tribute this year. Two houses that could not pay it lost their lands last spring.\n\n{actor} must present the gift so that the court takes it as a sign of good faith.',
+        successAtCostAfterimage: 'The court is pleased with the gift, but only because {actor} adds a silver cup that {actor} meant to keep.',
+        criticalSuccessAfterimage: 'The ruler is so pleased with the gift that {actor} is given a seat near the throne. The court will listen closely when {actor} speaks.',
+        criticalFailureAfterimage: 'A steward says aloud that the gift is too small, and the court laughs. The talks will start with the crown expecting more.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['presence', 'social'] },
         onSuccess: {
-          narrative: 'The ruler lifts the cloth from the third tray in person rather than letting a steward do it. The court marks the gesture, and the court is who the gesture was aimed at.',
+          narrative: 'The ruler uncovers the best piece of the gift in person. The whole court sees that the crown is pleased.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: 'A steward lifts all three cloths at once and the trays go out together. The court has been told exactly what the tribute is worth, and not a word was spent on saying it.',
+          narrative: 'A steward uncovers all the gifts at once, and the court sees exactly what they are worth. The talks will start with the crown expecting more.',
           reputationDelta: -0.02,
         },
       },
@@ -3992,14 +4021,18 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'The demand is an annual payment, set at a figure the crown settled on before {actor} ever arrived. {actor} can argue the figure or argue the schedule, and only one of those is ever conceded in this hall.',
+        narrative: 'The crown names the yearly payment it wants. The sum was settled before {actor} arrived, and the crown never lowers a sum in front of its court.\n\n{actor} must win better terms without asking for a lower sum.',
+        successAtCostAfterimage: 'The crown agrees to take the payment after harvest, but adds a gift of horses each spring. {actor} accepts.',
+        criticalSuccessAfterimage: 'The crown agrees to take the payment after harvest, and lets {actor} pay part of it in grain instead of coin.',
+        criticalFailureAfterimage: '{actor} argues the sum, and the crown raises it twice. The court now sees {actor}\'s house as one that does not know its place.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'insight'] },
         onSuccess: {
-          narrative: '{actor} leaves the figure untouched and takes the schedule instead: paid after harvest rather than before it. The crown keeps its number, {actor} keeps a season of use, and both sides call it a victory.',
+          narrative: '{actor} accepts the sum, but asks to pay it after the harvest instead of before. The crown agrees.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor} argues the figure. The crown raises it, because a hall like this cannot be seen to give ground, and the new number sits past what {actor} came prepared to promise.',
+          narrative: '{actor} asks for a lower sum, and the crown raises it instead. {actor} must still swear to pay it.',
           reputationDelta: -0.03,
         },
       },
@@ -4009,9 +4042,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: 'The oath is sworn in front of witnesses whose only office is to remember it. Once spoken, the terms outlive both parties and pass to whoever holds {actor}\'s house after {them}.',
+        narrative: 'The oath is sworn before witnesses. Its terms will bind {actor}\'s house after {actor} is gone.\n\n{actor} must swear to the payment and win the crown\'s promise of protection in return.',
+        successAtCostAfterimage: 'The crown swears its protection, but only after {actor} agrees to pay the whole of this year\'s tribute today.',
+        criticalSuccessAfterimage: 'The crown swears its protection and names {actor}\'s house a friend of the throne in front of the whole court.',
+        criticalFailureAfterimage: '{actor} refuses one of the terms in front of the witnesses. The crown takes the tribute and strikes its promise of protection, and the court will remember the refusal.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['presence', 'social'] },
         onSuccess: {
-          narrative: '{actor} swears to the schedule as agreed, and the crown swears to the protection that answers it. Both halves go on the page. The second half is what {actor} climbed the hill for.',
+          narrative: '{actor} swears to pay the tribute, and the crown swears to protect {actor}\'s house in return. Both oaths are written down.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -4019,7 +4056,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor} hedges on the first payment date, in front of the witnesses. The crown strikes the protection clause and keeps the tribute clause, and the witnesses remember that half just as well.',
+          narrative: '{actor} hesitates over the date of the first payment, in front of the witnesses. The crown keeps the tribute and strikes its promise of protection.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 0.9, condition: 0.1 },
@@ -6546,12 +6583,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.master_craftsman_challenge',
+    // THR-2128: stakes and every line rewritten from scratch to Prose Doctrine v2, plus
+    // the missing afterimages and a pure-fill dealt hand on both steps.
     stakes: {
-      goal: 'build the joint that should not hold',
-      risk: 'see the piece fail at the unveiling',
-      won: 'built the joint and was paid without haggling',
-      lost: 'turned in competent work and lost the patron',
-      lostBadly: 'saw the piece fail at the unveiling, fee withheld',
+      goal: 'make the joint hold and earn the fee',
+      risk: 'see the joint fail and lose the fee',
+      won: 'made the joint hold and was paid in full',
+      lost: 'made ordinary work and lost the patron',
+      lostBadly: 'saw the joint fail and lost the fee',
     },
     // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
     outcomeEffects: {
@@ -6561,6 +6600,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     },
     name: 'Master Craftsman Challenge',
     locationTypes: ['town', 'city', 'capital'],
+    // THR-2128: `urban` is exactly this placement, so it is the one class declared
+    // (plan decision 2). Subtype set unchanged.
+    settings: ['urban'],
+    openings: {
+      urban: '{name} reaches the craft quarter at {location} in the morning, looking for work.',
+    },
     reachPrimary: 'stone',
     reachSecondary: 'gold',
     encounterType: 'create',
@@ -6574,13 +6619,17 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'stone',
         difficulty: HARD_DIFFICULTY_BASE,
         duration: 2,
-        narrative: 'A wealthy patron offers a commission every craftsman in {location} has turned down. {actor} reads the drawing twice{?has_trade} with {their} {trade}\'s eye{/has_trade} and finds the reason: it calls for a joint that should not hold.',
+        narrative: 'A rich patron has a piece that no craftsman here will make. The drawing calls for a joint that looks too weak to hold. The last craftsman who tried it lost both the fee and the patron\'s trust.\n\n{actor} must work out how to make the joint hold.',
+        successAtCostAfterimage: '{actor} works out how to make the joint hold, but it needs costly wood. The fee will cover less than {actor} hoped.',
+        criticalSuccessAfterimage: '{actor} works out how to make the joint hold, and shows the patron why the others failed. The patron raises the fee.',
+        criticalFailureAfterimage: '{actor} ruins a good piece of wood testing the joint and must buy another. {actor} takes the commission already out of pocket.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['craft', 'insight'] },
         onSuccess: {
-          narrative: 'The joint will hold if it is cut in the wrong order. {actor} starts cutting.',
+          narrative: '{actor} studies the drawing and finds the answer: the joint will hold if it is cut in a different order. {actor} takes the commission.',
           reputationDelta: 0.06,
         },
         onFailure: {
-          narrative: 'The design defeats {actor} at first reading. {They} must rebuild {their} approach.',
+          narrative: '{actor} cannot see how to make the joint hold, but takes the commission anyway. {actor} will have to work it out at the bench.',
           reputationDelta: -0.03,
         },
       },
@@ -6590,11 +6639,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP,
         duration: 3,
-        narrative: 'Days of work, each piece cut to a tolerance nobody will ever see. The patron visits to inspect progress, asking questions that probe {actor}\'s every decision.',
-        criticalSuccessAfterimage: 'The patron sets down every objection prepared in advance and simply looks. Word of the piece travels faster than {actor} can follow it, and other patrons begin to arrive before the varnish has dried.',
-        criticalFailureAfterimage: 'The work fails at the unveiling — a flaw {actor} had talked past surfaces under the patron\'s hand. The commission is refused, the fee withheld, and the story reaches the guild before {actor} does.',
+        narrative: '{actor} works on the piece for many days. The patron comes often and questions every choice {actor} makes.\n\n{actor} must finish a piece good enough to satisfy the patron.',
+        successAtCostAfterimage: 'The joint holds, but {actor} works through the nights to finish in time. {actor} falls ill for days after the patron pays.',
+        criticalSuccessAfterimage: 'The patron cannot fault the piece and pays at once. Word of the piece spreads, and other patrons come to {actor} with work.',
+        criticalFailureAfterimage: 'The joint fails when the patron tests it. The patron refuses the piece and keeps the fee, and the craft guild hears of it.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['craft', 'labor'] },
         onSuccess: {
-          narrative: 'The patron pays without haggling, which is not the habit of a lifetime. The piece will outlast them both.',
+          narrative: 'The joint holds, and the patron pays the full fee without arguing. The patron will ask for {actor} again.',
           reputationDelta: 0.14,
           tierPromotionEligible: true,
           rewardPool: {
@@ -6603,7 +6654,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The patron is unmoved. The work is competent, and competent was not the commission. It is paid for, and not renewed.',
+          narrative: 'The piece is sound, but it is ordinary work. The patron pays for it and does not offer another commission.',
           reputationDelta: -0.06,
           rewardPool: {
             categoryWeights: { possession: 0.6, bestowed_power: 0.4 },
@@ -6765,14 +6816,22 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.festival_of_spheres',
+    // THR-2128: stakes and every line rewritten from scratch to Prose Doctrine v2, plus
+    // the missing afterimage ladder and a pure-fill dealt hand on both steps.
     stakes: {
       goal: 'make a worthy offering at the festival',
-      risk: 'give the least they carried and see it set at the back',
-      won: 'made an offering the officiant held a moment longer',
+      risk: 'give the least they carry and see it set at the back',
+      won: 'made an offering the priest held up longer than the rest',
       lost: 'gave the least they carried and saw it set at the back',
     },
     name: 'Festival of the Spheres',
     locationTypes: ['town', 'city', 'capital'],
+    // THR-2128: `urban` is exactly this placement, so it is the one class declared
+    // (plan decision 2). Subtype set unchanged.
+    settings: ['urban'],
+    openings: {
+      urban: '{name} reaches the square at {location} on the first day of the festival.',
+    },
     reachPrimary: 'veil',
     reachSecondary: 'heart',
     encounterType: 'explore',
@@ -6786,15 +6845,17 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: MODERATE_DIFFICULTY_BASE - 5,
         duration: 1,
-        // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape (batch 12,
-        // divination slice).
-        narrative: 'The Festival draws pilgrims from every road, and every road brought its own version of the rite. {actor} has to get through the first hour without performing the wrong one.',
+        narrative: 'Pilgrims have come from many lands, and each land does the rites differently. Yesterday a pilgrim did the wrong rite and was led out of the square.\n\n{actor} must take part in the rites without giving offence.',
+        successAtCostAfterimage: '{actor} gets through the rites, but kneels on stone for hours to do it. {actor}\'s knees are bruised and stiff.',
+        criticalSuccessAfterimage: 'A priest sees {actor} do the old rite well and asks {actor} to stand near the altar for the offering.',
+        criticalFailureAfterimage: '{actor} does the wrong rite in front of a priest. The priest warns {actor} that one more mistake will see {them} led out.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'social'] },
         onSuccess: {
-          narrative: '{actor} watches the woman in front and copies her half a beat late all evening. The officiants take it for reverence.',
+          narrative: '{actor} copies the woman in front all evening. The priests take {actor} for one of the faithful.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor} kneels on the beat the others rise. Nobody says a word, and everybody adjusts to leave a little more room.',
+          narrative: '{actor} kneels when the others stand. No one speaks of it, but the people nearby give {actor} more room.',
           reputationDelta: -0.03,
         },
       },
@@ -6804,9 +6865,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP - 5,
         duration: 2,
-        narrative: 'The last rite is the offering. Each pilgrim gives up one item they would rather keep, and the crowd watches to see how long the choosing takes.',
+        narrative: 'The last rite is the offering. Each pilgrim must give up one of their own belongings, and the crowd watches how long each one takes to choose.\n\n{actor} must choose what to give.',
+        successAtCostAfterimage: '{actor} gives a good gift, but it is the warm cloak {actor} needs for the road.',
+        criticalSuccessAfterimage: 'The priest holds up {actor}\'s gift and blesses it in front of the crowd. The pilgrims nearby bow to {actor} as the rite ends.',
+        criticalFailureAfterimage: '{actor} takes so long to choose that the crowd starts to laugh. The priest takes the gift without a word and sets it on the ground.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['presence', 'social'] },
         onSuccess: {
-          narrative: '{actor} chooses fast and gives up more than the rite asks for. The officiant holds it a second longer than the others before setting it down.',
+          narrative: '{actor} chooses quickly and gives more than the rite asks. The priest holds the gift up longer than the others.',
           reputationDelta: 0.12,
           tierPromotionEligible: true,
           rewardPool: {
@@ -6815,7 +6880,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor} gives up the least of what {they} carried in. It is accepted, thanked for, and set at the back of the table.',
+          narrative: '{actor} gives the cheapest item {actor} carries. The priest thanks {actor} and sets it at the back of the table.',
           reputationDelta: -0.02,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.5, condition: 0.5 },
@@ -8830,15 +8895,31 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.night_watch',
+    // THR-2128: stakes and every line rewritten from scratch to Prose Doctrine v2.
     stakes: {
-      goal: 'keep the camp safe through the night watch',
-      risk: 'sleep while a thief walks through camp',
+      goal: 'keep the camp safe through the night',
+      risk: 'wake the camp by charging at a child',
       won: 'kept the camp safe through the night',
-      lost: 'woke the whole camp shouting at a noise',
-      lostBadly: 'woke the camp charging at a lost child',
+      lost: 'woke the whole camp before finding the cause of a noise',
+      lostBadly: 'woke the camp by charging at a child',
     },
     name: 'Keep the Night Watch',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
+    // THR-2128: all eight classes, so each gets a doctrine v2 P1 arrival line. Expands
+    // to exactly ALL_LOCATION_SUBTYPES (pinned both ways by settingClasses.test.ts):
+    // placement is unchanged. Every line puts the actor in a travellers' camp, so the
+    // steps' "the camp" reads right in each class.
+    settings: SETTING_CLASSES,
+    openings: {
+      rural: '{name} stops at {location} at dusk and camps by the barns with other travellers.',
+      urban: '{name} arrives at {location} at dusk and camps with other travellers outside the walls.',
+      stronghold: '{name} reaches {location} at dusk and camps with other travellers below the walls.',
+      sacred: '{name} arrives at {location} at dusk and camps with the pilgrims outside the gate.',
+      arcane: '{name} reaches {location} at dusk and camps with other travellers at the foot of the tower.',
+      ruin: '{name} makes camp with other travellers in the ruins of {location} at dusk.',
+      wayside: '{name} stops at {location} at dusk and camps with other travellers.',
+      battlefield: '{name} reaches the camp at {location} at dusk.',
+    },
     reachPrimary: 'shadow',
     reachSecondary: 'iron',
     encounterType: 'lead',
@@ -8852,18 +8933,17 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'Darkness settles. {actor} takes the watch and moves out past the firelight, where a watcher can see the camp and the road without being seen.',
-        // THR-1667 S3: the missing afterimages and a dealt hand.
-        successAtCostAfterimage: '{actor} stays hidden all night by lying still in the wet grass. Nothing gets past the line, and by dawn {actor} cannot stop shaking.',
-        criticalSuccessAfterimage: 'Near midnight {actor} hears two voices on the road, low, counting the tents. They move off without seeing {actor}, and {actor} marks which way they went.',
-        criticalFailureAfterimage: '{actor} falls asleep by the fire. Before dawn someone walks through the camp and takes a pack from beside the sleepers, and nobody wakes.',
+        narrative: 'Thieves came to this camp two nights ago. They took packs from beside the sleepers while the watch slept.\n\n{actor} takes the night watch and must stay awake and unseen through the night.',
+        successAtCostAfterimage: '{actor} stays hidden by lying still in the wet grass. {actor} stays awake, but is shaking with cold by midnight.',
+        criticalSuccessAfterimage: 'Near midnight {actor} hears two men on the road counting the tents. They move off without seeing {actor}, and {actor} sees where they go.',
+        criticalFailureAfterimage: '{actor} falls asleep by the fire. When {actor} wakes, a pack is missing from beside the sleepers.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['shadow', 'peril'] },
         onSuccess: {
-          narrative: '{actor} sits in the dark under a thorn bush beyond the firelight, unseen from the road, and stays there until dawn. Nothing reaches the camp without passing {actor} first.',
+          narrative: '{actor} sits in the dark beyond the firelight, where no one on the road can see {them}. The hours pass, and {actor} stays awake.',
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: 'Fatigue wins. {actor} nods off, jerking awake to find the fire low and the perimeter unchecked.',
+          narrative: '{actor} dozes off by the fire and wakes with a start. The fire is low, and {actor} does not know how long the camp went unwatched.',
           reputationDelta: -0.01,
         },
       },
@@ -8873,18 +8953,17 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'A sound at the edge of camp, wrong for the wind. {actor} rises with a hand on the weapon and waits for it to come again.',
-        // THR-1667 S3: the missing afterimages and a dealt hand.
-        successAtCostAfterimage: 'It is a fox at the hen coop. {actor} drives it off, but it takes two hens with it, and the hens\' owner blames the watch.',
-        criticalSuccessAfterimage: 'It is a man at the edge of the firelight, and he runs when {actor} rises. He drops what he was carrying: a knife and an empty sack.',
-        criticalFailureAfterimage: '{actor} charges the sound with a raised blade, and the sound is a child from the camp looking for the latrine. The child screams, the camp wakes, and nobody sleeps again that night.',
+        narrative: 'There is a sound at the edge of the camp, and it is not the wind. {actor} stands with a hand on {their} weapon.\n\n{actor} must find the cause of the sound without waking the camp.',
+        successAtCostAfterimage: 'It is a fox at the hens. {actor} drives it off, but it takes two hens with it, and their owner blames the watch.',
+        criticalSuccessAfterimage: 'It is a thief at the edge of the firelight, and he runs when {actor} stands. He drops what he carried: a knife and an empty sack.',
+        criticalFailureAfterimage: '{actor} charges the sound with a raised blade and finds a child from the camp looking for the latrine. The child screams, the whole camp wakes, and no one sleeps again that night.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['might', 'peril'] },
         onSuccess: {
-          narrative: 'A wild animal, a falling branch — no more than that. {actor} handles it cleanly and the camp sleeps on.',
+          narrative: 'It is a stray dog looking for scraps. {actor} chases it off quietly, and the camp sleeps on.',
           reputationDelta: 0.03,
         },
         onFailure: {
-          narrative: 'Too slow, too loud. The camp is awake and shouting before {actor} can put a name to what caused it.',
+          narrative: '{actor} is too slow and too loud. The camp wakes shouting before {actor} finds what made the sound.',
           reputationDelta: -0.01,
         },
       },
@@ -9826,15 +9905,30 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.mend_equipment',
+    // THR-2128: stakes and every line rewritten from scratch to Prose Doctrine v2.
     stakes: {
-      goal: 'mend the cracked haft and loose strap',
-      risk: 'have the repair fail out on the road',
+      goal: 'mend the cracked haft and the loose strap',
+      risk: 'have the repair break on the road',
       won: 'mended the gear well enough to hold',
       lost: 'packed the broken gear away unmended',
-      lostBadly: 'had the repair fail out where it mattered',
+      lostBadly: 'had the repair break on the road the next day',
     },
     name: 'Mend Equipment',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
+    // THR-2128: all eight classes, so each gets a doctrine v2 P1 arrival line. Expands
+    // to exactly ALL_LOCATION_SUBTYPES (pinned both ways by settingClasses.test.ts):
+    // placement is unchanged.
+    settings: SETTING_CLASSES,
+    openings: {
+      rural: '{name} stops at {location} for the day and borrows a bench in a barn.',
+      urban: '{name} arrives at {location} and takes a bench in the yard of an inn.',
+      stronghold: '{name} reaches {location} and is given a corner of the armoury for the day.',
+      sacred: '{name} arrives at {location} and is given a bench in the outer yard.',
+      arcane: '{name} reaches {location} and is given a table in the lower hall.',
+      ruin: '{name} makes camp in the ruins of {location} for the day.',
+      wayside: 'Travelling the road, {name} stops at {location} for the day.',
+      battlefield: '{name} reaches the camp at {location} and finds a place near the smiths.',
+    },
     reachPrimary: 'stone',
     reachSecondary: 'iron',
     encounterType: 'build',
@@ -9848,18 +9942,17 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'stone',
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'Gear frays and blunts with use. {actor} lays out {their} tools and takes stock of what needs fixing.',
-        // THR-1667 S3: the missing afterimages and a dealt hand.
-        successAtCostAfterimage: '{actor} finds the crack in the haft, but only by testing it, and the haft gives. What needed mending now needs replacing.',
-        criticalSuccessAfterimage: 'Laid out side by side, the gear shows {actor} why it wears: every strap is rubbed on one side, because the pack has ridden crooked all season.',
-        criticalFailureAfterimage: '{actor} takes the buckle apart to see the damage and drops the pin in the grass. After an hour on hands and knees, the strap still has no buckle.',
+        narrative: '{actor}\'s gear is worn from the road. A strap broke yesterday, and {actor} lost a whole day of travel to it.\n\n{actor} must find everything that needs mending before more of it breaks.',
+        successAtCostAfterimage: '{actor} finds the crack in the haft by testing it, and the crack grows. The haft will be harder to mend now.',
+        criticalSuccessAfterimage: '{actor} lays the gear out together and sees why it wears out. Every strap is rubbed on the same side, because the pack has been riding crooked.',
+        criticalFailureAfterimage: '{actor} takes a buckle apart and loses its pin. That strap must now be mended without a buckle.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['craft', 'insight'] },
         onSuccess: {
-          narrative: '{actor} identifies the worst of it — a cracked haft, a loosened strap — and sets to work without hurrying.',
+          narrative: '{actor} finds the worst of the damage: a cracked haft and a loose strap.',
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: 'The damage runs deeper than expected. {actor} lacks the materials for a proper repair.',
+          narrative: 'The damage is worse than {actor} thought. {actor} cannot find all of it, and must start on the parts {actor} can see.',
           reputationDelta: -0.01,
         },
       },
@@ -9869,22 +9962,17 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'Improvisation is its own craft. {actor} works with what the land provides, bending skill to necessity.',
-        // THR-1101 (build-family batch): `{they}` resolves to a singular pronoun, so a bare
-        // verb after it reads "she mend" / "she carry". Pre-existing, caught by rendering
-        // these lines through `enrichProse` rather than reading the source; `{s}` is the
-        // engine's existing agreement token and is what the rest of the corpus uses.
-        criticalSuccessAfterimage: 'The repair holds better than the gear did new. {actor} stumbles on an old improvement in the fixing — a balance, a set to the grip — and keeps it for everything {they} mend{s} after.',
-        criticalFailureAfterimage: 'The fix fails at the worst moment to learn it failed — not on the bench but later, out where it mattered. {actor} carries the lesson a good deal longer than the broken gear.',
-        // THR-1667 S3: the missing at-cost line and a dealt hand.
-        successAtCostAfterimage: 'The repair holds, but it takes the last of {actor}\'s cord and the spare strap to make it. The next thing that breaks will have to wait.',
+        narrative: '{actor} has no proper tools or spare parts here, only cord, wire and a knife.\n\n{actor} must make the repairs with what {actor} has.',
+        criticalSuccessAfterimage: 'The repair holds better than the gear did when it was new. While mending it, {actor} learns how to set the grip better, and will do so from now on.',
+        criticalFailureAfterimage: 'The repair holds on the bench and breaks the next day on the road, when {actor} needs it most.',
+        successAtCostAfterimage: 'The repair holds, but it uses up the last of {actor}\'s cord and the spare strap. The next strap that breaks will have to wait.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['craft', 'labor'] },
         onSuccess: {
-          narrative: 'Not perfect, but serviceable. {actor} tests the repair — it holds. Good enough for what lies ahead.',
+          narrative: 'The repair is rough, but it holds when {actor} tests it. The gear will last until {actor} reaches a smith.',
           reputationDelta: 0.03,
         },
         onFailure: {
-          narrative: 'The fix does not hold. {actor} packs the broken gear away, hoping for better tools elsewhere.',
+          narrative: 'The repair does not hold. {actor} packs the broken gear away until {actor} can find better tools.',
           reputationDelta: -0.01,
         },
       },
@@ -12303,14 +12391,31 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.rally_the_locals',
+    // THR-2128: stakes and every line rewritten from scratch to Prose Doctrine v2, plus
+    // the missing afterimage ladder and a pure-fill dealt hand on both steps.
     stakes: {
-      goal: 'rally the drained townsfolk to their feet',
-      risk: 'watch the crowd drift away unchanged',
-      won: 'got the townsfolk to rise of their own accord',
-      lost: 'watched the crowd drift away unchanged',
+      goal: 'give the people here a reason to stay',
+      risk: 'anger the crowd and be told to leave',
+      won: 'gave the people a reason to stay and rebuild',
+      lost: 'did not move them, and more families talk of leaving',
+      lostBadly: 'angered the crowd and was told to leave',
     },
     name: 'Rally the Locals',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
+    // THR-2128: all eight classes, so each gets a doctrine v2 P1 arrival line. Expands
+    // to exactly ALL_LOCATION_SUBTYPES (pinned both ways by settingClasses.test.ts):
+    // placement is unchanged.
+    settings: SETTING_CLASSES,
+    openings: {
+      rural: '{name} arrives at {location} in the evening, as the farmers come in from the fields.',
+      urban: '{name} arrives at {location} and finds a crowd gathered in the square.',
+      stronghold: '{name} reaches {location} at dusk, as the garrison gathers in the yard.',
+      sacred: '{name} arrives at {location} as the faithful gather for evening prayers.',
+      arcane: '{name} climbs to {location} as its scholars gather in the lower hall.',
+      ruin: '{name} reaches the ruins of {location}, where a few families still live among the walls.',
+      wayside: '{name} stops at {location} at dusk, where the travellers sit round the fire.',
+      battlefield: '{name} reaches the camp at {location} as the soldiers gather for their evening meal.',
+    },
     reachPrimary: 'heart',
     reachSecondary: 'star',
     encounterType: 'lead',
@@ -12325,13 +12430,17 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: MODERATE_DIFFICULTY_BASE - 5,
         duration: 1,
-        narrative: 'Before rallying anyone, {actor} has to understand what drained them. The complaint people state first is rarely the one that hollowed them out.',
+        narrative: 'The people here have lost heart. Bandits burned their stores this winter, and two families have already packed up and left.\n\n{actor} must find out what has made them give up.',
+        successAtCostAfterimage: '{actor} learns the real trouble, but it takes all night and much of {actor}\'s coin, spent on drinks for anyone who will talk.',
+        criticalSuccessAfterimage: 'An old man tells {actor} the real trouble: no one came to help them this winter. He agrees to stand beside {actor} when {actor} speaks.',
+        criticalFailureAfterimage: '{actor} asks the wrong questions, and word goes round that a stranger is prying. The people come to hear {actor} speak, but they come suspicious.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'social'] },
         onSuccess: {
-          narrative: '{actor} reads the grievance under the grievance. The speech will land on the real wound instead of beside it.',
+          narrative: '{actor} listens and learns the real trouble. The people do not blame the bandits most; they feel that no one came to help them.',
           reputationDelta: 0.04,
         },
         onFailure: {
-          narrative: '{actor} addresses the surface complaint. The real wound goes unnamed, and the crowd hears the omission.',
+          narrative: '{actor} hears only the first complaint people give. {actor} will speak to them without knowing the real trouble.',
           reputationDelta: -0.03,
         },
       },
@@ -12341,14 +12450,18 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP - 5,
         duration: 1,
-        narrative: 'The crowd is assembled and waiting. {actor} stands in front of people who want a reason to hope and will recognise a manufactured one on sight.',
+        narrative: 'The people have gathered to hear {actor}. They want a reason to hope, and they will know if {actor} offers a false one.\n\n{actor} must give them a reason to stay and carry on.',
+        successAtCostAfterimage: 'The people agree to stay, but only after {actor} promises to send help from the next town. They will hold {actor} to that promise.',
+        criticalSuccessAfterimage: 'The people rise to their feet. That night they share out the last of their stores and agree to rebuild together.',
+        criticalFailureAfterimage: '{actor} speaks carelessly of the families who left, and the crowd turns angry. {actor} is told to leave before morning.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['presence', 'social'] },
         onSuccess: {
-          narrative: '{actor}\'s words move through the crowd like warmth through cold hands. People rise — not because they were told to, but because they decided to.',
+          narrative: 'The people listen, and they believe {actor}. They agree among themselves to stay and rebuild.',
           reputationDelta: 0.12,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s words fall flat. The crowd drifts away unchanged, and the drifting is its own answer.',
+          narrative: '{actor}\'s words do not move them. The people go home, and more families talk of leaving.',
           reputationDelta: -0.06,
         },
       },
@@ -12497,15 +12610,31 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.master_local_craft',
+    // THR-2128: stakes and every line rewritten from scratch to Prose Doctrine v2, plus
+    // the missing afterimages and a pure-fill dealt hand on both steps.
     stakes: {
-      goal: 'make a piece the masters cannot dismiss',
-      risk: 'split a seam in front of the masters',
-      won: 'made a piece the masters could not dismiss',
-      lost: 'made competent work and stayed an outsider',
-      lostBadly: 'split a seam in front of the assembled masters',
+      goal: 'make a piece the masters cannot fault',
+      risk: 'see the piece split in front of the masters',
+      won: 'made a piece the masters could not fault',
+      lost: 'made good work and stayed an outsider',
+      lostBadly: 'saw the piece split in front of the masters',
     },
     name: 'Master the Local Craft',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
+    // THR-2128: all eight classes, so each gets a doctrine v2 P1 arrival line. Expands
+    // to exactly ALL_LOCATION_SUBTYPES (pinned both ways by settingClasses.test.ts):
+    // placement is unchanged.
+    settings: SETTING_CLASSES,
+    openings: {
+      rural: '{name} arrives at {location} in spring, to learn the craft the place is known for.',
+      urban: '{name} arrives at {location} and finds the street where its masters keep their workshops.',
+      stronghold: '{name} reaches {location} and asks to work in the forge below the walls.',
+      sacred: '{name} arrives at {location} and asks to work beside the monks who make its icons.',
+      arcane: '{name} climbs to {location} and asks to learn how its lenses are ground.',
+      ruin: '{name} reaches the ruins of {location}, where a few masters still keep up the old craft.',
+      wayside: '{name} stops at {location} and joins the travelling makers who camp there.',
+      battlefield: '{name} reaches the camp at {location} and asks to work beside the armourers.',
+    },
     reachPrimary: 'stone',
     reachSecondary: 'gold',
     encounterType: 'create',
@@ -12519,13 +12648,17 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: HARD_DIFFICULTY_BASE,
         duration: 2,
-        narrative: 'Every place makes one thing better than anywhere else, and the reason is usually two hundred years old and never written down. {actor} sets out to learn it properly.',
+        narrative: 'The masters here keep their methods secret. The last outsider who asked worked for them a whole season and was turned away.\n\n{actor} must earn their trust and learn the craft properly.',
+        successAtCostAfterimage: '{actor} earns the masters\' trust, but only by working for them unpaid all season.',
+        criticalSuccessAfterimage: 'An old master takes {actor} as a pupil and shows {actor} the one step the others keep hidden.',
+        criticalFailureAfterimage: '{actor} suggests a change to the method, and the masters take offence. They let {actor} try the final test, but they expect {actor} to fail.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['craft', 'social'] },
         onSuccess: {
-          narrative: '{actor} learns it in the order they teach it and suggests no improvements. The masters start leaving the workshop unlocked.',
+          narrative: '{actor} learns the craft in the order the masters teach it and suggests no changes. The masters begin to leave the workshop open to {actor}.',
           reputationDelta: 0.06,
         },
         onFailure: {
-          narrative: '{actor} learns the steps and not the reasons. The steps are the part the masters do not mind sharing.',
+          narrative: '{actor} learns the steps but not the reasons for them. The masters still let {actor} try the final test.',
           reputationDelta: -0.04,
         },
       },
@@ -12535,11 +12668,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'stone',
         difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP,
         duration: 3,
-        narrative: 'The last test is simple to state: make one thing in the local tradition that the masters cannot dismiss.',
-        criticalSuccessAfterimage: 'The masters do not praise the work. They go quiet, and one of them takes it apart to understand how {actor} did in a single season what should not be done at all. The tradition changes shape around the piece.',
-        criticalFailureAfterimage: 'The piece fails in front of the assembled masters — a seam splits as it is lifted, along the exact line the tradition warns about. The story of it outlives the shame, a cautionary example handed to every apprentice after.',
+        narrative: '{actor} has learned all that the masters will teach.\n\nThe final test is simple: {actor} must make one piece in the local style that the masters cannot fault.',
+        successAtCostAfterimage: 'The masters cannot fault the piece, but {actor} burns {their} hands making it. The burns take weeks to heal.',
+        criticalSuccessAfterimage: 'The masters are silent at first. Then one of them takes the piece apart to learn how {actor} made it, and they begin to change their own methods.',
+        criticalFailureAfterimage: 'The piece splits as a master lifts it, along the line the craft warns against. The masters tell the story of it to every new pupil.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['craft', 'labor'] },
         onSuccess: {
-          narrative: 'The masters cannot dismiss it. The tradition has a new practitioner, and — quietly, unwillingly — a new direction.',
+          narrative: 'The masters cannot fault the piece. They accept {actor} as one of them.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -12548,7 +12683,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The work is competent. Competent is what the tradition looks like from outside, and outside is where {actor} still stands.',
+          narrative: 'The piece is good, but it is an outsider\'s work. The masters do not accept {actor} as one of them.',
           reputationDelta: -0.07,
           rewardPool: {
             categoryWeights: { possession: 0.5, bestowed_power: 0.5 },
@@ -12561,15 +12696,31 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.confront_the_unknown',
+    // THR-2128: stakes and every line rewritten from scratch to Prose Doctrine v2, plus
+    // the missing afterimages and a pure-fill dealt hand on both steps.
     stakes: {
-      goal: 'stare down the old thing bound to this place',
-      risk: 'walk out with a door left open behind their eyes',
-      won: 'stared down the old thing until it withdrew',
-      lost: 'walked out carrying a mark they will find later',
-      lostBadly: 'walked out with a door left open behind their eyes',
+      goal: 'drive the old spirit out of this place',
+      risk: 'come out unable to sleep in the dark',
+      won: 'outlasted the old spirit until it left',
+      lost: 'gave in first and left the spirit still there',
+      lostBadly: 'came out unable to sleep in the dark',
     },
     name: 'Confront the Unknown',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
+    // THR-2128: all eight classes, so each gets a doctrine v2 P1 arrival line. Expands
+    // to exactly ALL_LOCATION_SUBTYPES (pinned both ways by settingClasses.test.ts):
+    // placement is unchanged.
+    settings: SETTING_CLASSES,
+    openings: {
+      rural: '{name} arrives at {location} at dusk and is taken to a barn the farmers will not enter.',
+      urban: '{name} arrives at {location} and is taken to a cellar the townsfolk keep locked.',
+      stronghold: '{name} reaches {location} and is taken to a tower the guards will not climb.',
+      sacred: '{name} arrives at {location} and is taken to a crypt the priests have sealed.',
+      arcane: '{name} climbs to {location} and is taken to a locked room on the top floor.',
+      ruin: '{name} reaches the ruins of {location} and finds the hall the locals warned about.',
+      wayside: '{name} stops at {location} and is warned away from a grove nearby.',
+      battlefield: '{name} reaches the camp at {location} and is taken to a field where no one will bury the dead.',
+    },
     reachPrimary: 'iron',
     reachSecondary: 'veil',
     encounterType: 'duel',
@@ -12583,14 +12734,17 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: HARD_DIFFICULTY_BASE,
         duration: 1,
-        // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape (duel-family batch).
-        narrative: 'The place is wrong in a way that does not survive being looked at directly. {actor} works out what is actually here before deciding what to do about it.',
+        narrative: 'An old spirit is bound to this place. Two people who went in last month came out unable to speak, and everyone else now keeps away.\n\n{actor} must learn what binds the spirit here before facing it.',
+        successAtCostAfterimage: '{actor} learns what binds the spirit, but gets too close to it while doing so. {actor}\'s hands shake and will not stop.',
+        criticalSuccessAfterimage: '{actor} learns what binds the spirit, and finds the words of the old pact carved above the door. {actor} knows what will break its hold.',
+        criticalFailureAfterimage: 'The spirit notices {actor} while {actor} studies it. Now it knows {actor} is coming, and {actor} still does not know what binds it.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'lore'] },
         onSuccess: {
-          narrative: '{actor} puts a shape to it — old, patient, and bound here by an arrangement that has outlived the ones who made it. Still dangerous. No longer strange.',
+          narrative: '{actor} learns what binds the spirit: an old pact that was broken long ago. The spirit is still dangerous, but {actor} knows what {actor} is facing.',
           reputationDelta: 0.06,
         },
         onFailure: {
-          narrative: 'It fits none of the categories {actor} brought. Acting on half an understanding is the only route left, and half an understanding is how people end up inside the walls.',
+          narrative: '{actor} cannot work out what binds the spirit. {actor} must face it without knowing.',
           reputationDelta: -0.05,
         },
       },
@@ -12600,11 +12754,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'There is no clever approach left. It has to be met head on — will against will, and whoever stops first loses more than the argument.',
-        criticalSuccessAfterimage: '{actor} does not merely outlast it — {they} name{s} it, and the naming undoes it. Where it stood, the air closes like a wound healing clean.',
-        criticalFailureAfterimage: 'The unknown takes a piece {actor} cannot name in return. {They} walk{s} out whole in body, but a door was left open behind {their} eyes, and it does not shut.',
+        narrative: '{actor} goes in to face the spirit. It cannot be fought with weapons, only outlasted.\n\n{actor} must stand against it until it gives in.',
+        successAtCostAfterimage: '{actor} outlasts the spirit and it leaves, but the effort drains {actor}. {actor} is weak and grey-faced for days.',
+        criticalSuccessAfterimage: '{actor} breaks the spirit\'s hold on the place, and it is gone for good. The people here can use the place again.',
+        criticalFailureAfterimage: 'The spirit gets inside {actor}\'s mind before {actor} escapes. {actor} walks out unhurt, but from that night on cannot sleep without a light.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['might', 'peril'] },
         onSuccess: {
-          narrative: '{actor} does not flinch and does not look away. It finds no purchase, and withdraws the way cold leaves a room — slowly, and without apology.',
+          narrative: '{actor} does not look away and does not give ground. In the end the spirit draws back and leaves the place.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -12613,7 +12769,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'It goes badly, and it goes badly quietly. {actor} walks out under {their} own power, carrying a mark {they} will find later.',
+          narrative: '{actor} gives in first and stumbles out. The spirit is still there, and {actor} has bad dreams of it for many nights.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.6, condition: 0.4 },
@@ -12700,14 +12856,29 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.arcane_resonance_study',
+    // THR-2128: stakes and every line rewritten from scratch to Prose Doctrine v2.
     stakes: {
-      goal: 'read the room\'s old memory into words',
-      risk: 'come out of the stillness shaking and sick',
-      won: 'read a quarrel and a name out of the room',
-      lost: 'felt the room\'s memory but could not word it',
+      goal: 'learn what happened in the old room',
+      risk: 'faint, and hear the room\'s shouting for days after',
+      won: 'learned of the quarrel and the name of the one who lost',
+      lost: 'felt the room\'s memory but could not put it into words',
     },
     name: 'Arcane Resonance Study',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
+    // THR-2128: all eight classes, so each gets a doctrine v2 P1 arrival line. Expands
+    // to exactly ALL_LOCATION_SUBTYPES (pinned both ways by settingClasses.test.ts):
+    // placement is unchanged.
+    settings: SETTING_CLASSES,
+    openings: {
+      rural: '{name} arrives at {location} and is let into an old farmhouse that no one will live in.',
+      urban: '{name} arrives at {location} and is let into an old hall near the market.',
+      stronghold: '{name} reaches {location} and is let into the old council room under the keep.',
+      sacred: '{name} arrives at {location} and is let into the old chapter house.',
+      arcane: '{name} climbs to {location} and is let into a sealed room on the upper floor.',
+      ruin: '{name} reaches the ruins of {location} and finds a room that still has all its walls.',
+      wayside: '{name} stops at {location} and finds an old hut that other travellers avoid.',
+      battlefield: '{name} reaches the camp at {location} and is taken to the old hut where the captains met.',
+    },
     reachPrimary: 'veil',
     reachSecondary: 'eye',
     encounterType: 'explore',
@@ -12721,20 +12892,17 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: HARD_DIFFICULTY_BASE,
         duration: 2,
-        // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape (batch 12,
-        // divination slice).
-        narrative: 'Rooms keep what is done in them. It settles into plaster and floorboard and stays there, thinning by the year. {actor} stops moving and lets it come.',
-        // THR-1666 S2: the missing afterimages and a dealt hand.
-        successAtCostAfterimage: 'The memory comes, but it brings a headache that will not lift. {actor} holds the picture and pays for it behind the eyes.',
-        criticalSuccessAfterimage: 'The memory comes whole: a room full of people, a raised voice, and the moment the quarrel turned. {actor} holds all of it at once.',
-        criticalFailureAfterimage: 'The room gives up an old fear instead of a memory, and {actor} comes out of the stillness shaking and sick.',
+        narrative: 'A crime was done in this room long ago, and the room still holds the memory of it. People who sleep here dream of shouting, and one of them woke last month with a bleeding nose.\n\n{actor} must sit still and let the memory come.',
+        successAtCostAfterimage: 'The memory comes, but it brings a headache that does not lift. {actor} holds on to the memory through the pain.',
+        criticalSuccessAfterimage: 'The memory comes whole: a room full of people, a raised voice, and the blow that ended the quarrel. {actor} holds all of it at once.',
+        criticalFailureAfterimage: 'The room gives up an old fear along with the memory. {actor} comes out of the trance shaking and sick, holding only a shout and a slammed door.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'insight'] },
         onSuccess: {
-          narrative: 'It arrives as feeling before it arrives as picture. {actor} waits through the first and the second assembles on its own.',
+          narrative: 'The memory comes as a feeling first, and then as a picture. {actor} sees a room full of people, and a quarrel.',
           reputationDelta: 0.06,
         },
         onFailure: {
-          narrative: 'It comes in pieces and refuses to be more. {actor} holds a shout, a smell of cut wood, and a door closing, and cannot put them in order.',
+          narrative: 'The memory comes only in pieces. {actor} has a shout, the smell of cut wood and a door closing, but cannot put them in order.',
           reputationDelta: -0.05,
         },
       },
@@ -12744,16 +12912,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'Feeling is not yet knowledge. Turning one into the other is a separate skill, and the one that fails more often.',
-        // THR-1666 S2: the missing afterimages and a dealt hand.
-        successAtCostAfterimage: '{actor} gets it into words, but gets one detail wrong: the name of the person who lost comes out as the winner\'s.',
+        narrative: '{actor} has felt the memory, but cannot yet say what it means.\n\n{actor} must put it into words: what happened here, and who was part of it.',
+        successAtCostAfterimage: '{actor} puts it into words, but gets one detail wrong. {actor} names the loser of the quarrel as the winner.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'insight'] },
-        criticalSuccessAfterimage: 'The impressions do not just resolve — they open. {actor} reads not only what happened in this place but the shape of what it wanted, and the knowing settles in like a language {they} always spoke.',
-        // THR-1107: `{they} hold` rendered "she hold" in the he/she arm. `{s}` is
-        // the present-tense agreement suffix and reaches this one in place.
-        criticalFailureAfterimage: 'The interpretation turns on {actor}. For a breath {they} hold{s} every layer of the place at once — every act, every intention — and the weight of it leaves a ringing that follows {them} into other rooms, other days.',
+        criticalSuccessAfterimage: '{actor} learns what happened here and why. The loser of the quarrel was killed in this room, and {actor} learns where the body was buried.',
+        criticalFailureAfterimage: '{actor} takes in too much of the room at once and faints. For days after, {actor} hears the shouting in other rooms.',
         onSuccess: {
-          narrative: '{actor} gets it across into words. The room gave up a quarrel, a decision, and the name of the person who lost.',
+          narrative: '{actor} puts the memory into words. A quarrel was settled in this room, and {actor} learns the name of the one who lost.',
           reputationDelta: 0.14,
           tierPromotionEligible: true,
           rewardPool: {
@@ -12762,7 +12927,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The translation comes apart in {actor}\'s hands. The feeling was real and stays real, and will not resolve into a sentence.',
+          narrative: '{actor} cannot put the memory into words. {actor} knows there was a quarrel here, but not who was in it or how it ended.',
           reputationDelta: -0.06,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.7, condition: 0.3 },
@@ -14444,14 +14609,24 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.dead_drop',
+    // THR-2128: stakes and every line rewritten from scratch to Prose Doctrine v2, plus
+    // the missing afterimage ladder and a pure-fill dealt hand on every step.
     stakes: {
-      goal: 'service the dead drop and vanish unseen',
-      risk: 'get marked by a watcher in a doorway',
-      won: 'serviced the dead drop and vanished unseen',
-      lost: 'got marked by a watcher in a doorway',
+      goal: 'pass the message on and leave unseen',
+      risk: 'be followed back to their lodging',
+      won: 'passed the message on and left unseen',
+      lost: 'was marked by a watcher in a doorway',
+      lostBadly: 'was followed back to their lodging',
     },
     name: 'Service a Dead Drop',
     locationTypes: ['town', 'city', 'capital', 'camp'],
+    // THR-2128: `urban` is the only class wholly inside this placement, so it is the
+    // only one declared (plan decision 2). The camp falls back to the urban line,
+    // which is written to read right there too. Subtype set unchanged.
+    settings: ['urban'],
+    openings: {
+      urban: '{name} arrives at {location} in the morning with a message to pass on.',
+    },
     reachPrimary: 'shadow',
     reachSecondary: 'heart',
     encounterType: 'trade',
@@ -14465,13 +14640,17 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} takes the long route. Double back at the fountain, pause at the baker\'s stall, check the reflection in a puddle. Clean approach.',
+        narrative: 'The message must go into a hiding place, for a contact {actor} has never met. The last messenger on this route was followed and has not been seen since.\n\n{actor} must reach the hiding place without being followed.',
+        successAtCostAfterimage: 'No one follows {actor}, but the long route takes all morning. {actor} reaches the hiding place late, close to the time the contact comes.',
+        criticalSuccessAfterimage: '{actor} spots the man following {them} and leads him off in the wrong direction. {actor} reaches the hiding place alone.',
+        criticalFailureAfterimage: 'A man follows {actor} from the start. {actor} reaches the hiding place knowing that the man is watching.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['shadow', 'journey'] },
         onSuccess: {
-          narrative: 'No tail. No watching eyes. {actor} reaches the drop site clean.',
+          narrative: '{actor} takes a long route and doubles back twice. No one follows {actor} to the hiding place.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: 'A face appears twice in the crowd. Coincidence? {actor} aborts and walks away.',
+          narrative: '{actor} sees the same face twice in the crowd. {actor} goes on to the hiding place, but cannot be sure the man has gone.',
           reputationDelta: -0.02,
         },
       },
@@ -14481,14 +14660,18 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'The loose brick. The hollow tree. The gap beneath the third step. {actor}\'s hands work with practiced speed.',
+        narrative: 'The hiding place is a loose stone in an old wall. The contact\'s reply should be behind it.\n\n{actor} must leave the message and take the reply without anyone seeing.',
+        successAtCostAfterimage: '{actor} makes the exchange, but tears the reply pulling it from the wall. Half of it is lost.',
+        criticalSuccessAfterimage: '{actor} makes the exchange, and the reply holds more than {actor} expected: a name, a date, and the place of a meeting.',
+        criticalFailureAfterimage: '{actor} drops the reply in the street, and a passer-by picks it up and hands it back. That stranger has now seen {actor}\'s face and the paper.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['finesse', 'social'] },
         onSuccess: {
-          narrative: 'Message left, message taken. {actor} walks away with a name and a date, small and valuable — information, always information.',
+          narrative: '{actor} leaves the message and takes the reply. The reply gives a name and a date.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'The drop is empty — already serviced, or the signal was wrong. {actor} leaves with an empty hand and a route now burned.',
+          narrative: 'The hiding place is empty, and the contact has left no reply. {actor} leaves the message anyway.',
           reputationDelta: -0.03,
         },
       },
@@ -14498,9 +14681,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: 'The art is not in arriving or exchanging. The art is in disappearing afterward, as though {actor} had never stood there at all.',
+        narrative: 'The message is left. Anyone who saw {actor} at the wall could follow {actor} to the next contact.\n\n{actor} must leave without being marked.',
+        successAtCostAfterimage: '{actor} gets away unseen, but only by leaving {location} for the rest of the day. {actor} loses a day\'s work.',
+        criticalSuccessAfterimage: '{actor} gets away unseen, and sees who was watching the hiding place. {actor} will know that face again.',
+        criticalFailureAfterimage: 'A watcher follows {actor} back to {their} lodging. {actor} must find a new place to sleep before nightfall.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['shadow', 'peril'] },
         onSuccess: {
-          narrative: '{actor} melts into the crowd and becomes nobody. The drop is complete. Nobody knows.',
+          narrative: '{actor} slips into the crowd and is gone. No one saw the exchange.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -14509,7 +14696,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'A face in a doorway held on {actor} a beat too long. No name taken, no arrest — but a seed of suspicion planted. Sloppy.',
+          narrative: 'A man in a doorway watches {actor} for too long. He does not follow, but he will know {actor} again.',
           reputationDelta: -0.08,
         },
       },
@@ -15051,11 +15238,16 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.negotiate_passage',
+    // THR-2128: stakes and every line rewritten from scratch to Prose Doctrine v2, plus
+    // the missing afterimage ladder and a pure-fill dealt hand on every step. No
+    // setting class is whole inside this placement, so no `settings`: the arrival
+    // sentence leads step 0's narrative instead (plan decision 2).
     stakes: {
-      goal: 'talk their way through the checkpoint',
-      risk: 'find the road closed at the checkpoint',
-      won: 'talked their way through the checkpoint',
-      lost: 'got through the checkpoint with no goodwill left',
+      goal: 'get through the checkpoint on good terms',
+      risk: 'be pushed through the checkpoint without their pack',
+      won: 'got through the checkpoint and may pass again',
+      lost: 'got through, but will not be let through again',
+      lostBadly: 'was pushed through the checkpoint without their pack',
     },
     name: 'Negotiate Safe Passage',
     locationTypes: ['wilderness', 'camp', 'fort', 'hamlet'],
@@ -15072,13 +15264,17 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'Empty hands held high. {actor} approaches the checkpoint and asks to pass. The answer depends on who\'s asking.',
+        narrative: '{actor} comes to {location} and finds the road closed by armed guards.\n\nThe guards stopped a merchant this morning and took his cart. They let through only the people they trust.\n\n{actor} must convince them that {actor} is no threat.',
+        successAtCostAfterimage: 'The guards believe {actor}, but only after they search {actor}\'s pack and keep the knife they find in it.',
+        criticalSuccessAfterimage: 'The guard captain takes a liking to {actor} at once and offers {them} a seat by the fire while they talk.',
+        criticalFailureAfterimage: '{actor} reaches into {their} pack too fast, and a guard knocks {actor} down. The guards still hear {actor} out, but with a spear held at {their} throat.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'presence'] },
         onSuccess: {
-          narrative: '{actor}\'s bearing says \'traveler, not threat.\' The guards lower their spears by a fraction.',
+          narrative: 'The guards see that {actor} is a traveller and not a threat. They lower their spears and listen.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: 'Suspicion. The spears stay level. {actor}\'s approach reads wrong, and no second reading is offered.',
+          narrative: 'The guards do not trust {actor}. They keep their spears raised, but they will still hear what {actor} offers.',
           reputationDelta: -0.02,
         },
       },
@@ -15088,14 +15284,18 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'Safe passage has a price. {actor} negotiates: a toll, a favour, a piece of information. The currency of the road.',
+        narrative: 'The guards will let {actor} pass for a price. They ask for coin, a favour, or news from the road.\n\n{actor} must agree a price that {actor} can pay.',
+        successAtCostAfterimage: 'The guards agree, but part of the price is a letter {actor} must carry to the next town. That town is far off {actor}\'s road.',
+        criticalSuccessAfterimage: '{actor} tells the guards about bandits on the road behind. The news is worth more to them than coin, and they ask no other price.',
+        criticalFailureAfterimage: '{actor} pays the price, and then the guards raise it. {actor} pays again and has little coin left for the road.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'insight'] },
         onSuccess: {
-          narrative: 'A price is named and paid. {actor} passes through with a nod — commerce, not conflict.',
+          narrative: '{actor} pays a fair toll in coin. The guards agree to let {actor} pass.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'The price is too high. {actor} cannot or will not pay what\'s asked. The road remains closed.',
+          narrative: 'The guards ask a high price, and {actor} pays it. They agree to let {actor} pass, but they still do not trust {actor}.',
           reputationDelta: -0.03,
         },
       },
@@ -15105,9 +15305,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: 'The deal is only as good as the honour behind it. {actor} keeps to the agreed terms, even while the other side watches for betrayal.',
+        narrative: 'The price is paid. The guards walk {actor} through their post and watch for any sign of a trick.\n\n{actor} must keep to the terms until {actor} is past the last guard.',
+        successAtCostAfterimage: '{actor} gets through, but the guards make {actor} wait until dark before letting {them} go. {actor} must travel the next stretch of road at night.',
+        criticalSuccessAfterimage: '{actor} crosses without trouble. The guards give {actor} a token to show at the next checkpoint on the road.',
+        criticalFailureAfterimage: 'A guard says that {actor} has broken the terms. The guards take {actor}\'s pack and push {actor} through without it.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['presence', 'journey'] },
         onSuccess: {
-          narrative: 'Clean passage. {actor} crosses without incident and leaves behind a reputation for keeping {their} word.',
+          narrative: '{actor} keeps to the terms and crosses without trouble. The guards will let {actor} through again.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -15116,7 +15320,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The mood sours before the last spear is lowered. The passage is grudging, the terms strained. {actor} gets through and leaves no goodwill behind.',
+          narrative: 'A guard takes offence at a joke {actor} makes. {actor} gets through, but the guards will not let {actor} pass here again.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { condition: 0.80, possession: 0.20 },
