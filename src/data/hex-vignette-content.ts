@@ -17,7 +17,11 @@ import type {
   CompassDirection,
   VisibilityTransforms,
 } from '../types/hexVignette';
-import type { AllSphereName } from './hex-tile-assets';
+
+/** All sphere names (creation + foundation) — moved here from the deleted hex-tile-assets.ts (THR-2131). */
+type AllSphereName =
+  | 'force' | 'matter' | 'energy' | 'life' | 'mind' | 'spirit' | 'time' | 'entropy'
+  | 'chaos' | 'order' | 'light' | 'darkness';
 
 // ═══════════════════════════════════════════════════════════════════
 // 1. TERRAIN OPENINGS — Tier 1 first clause

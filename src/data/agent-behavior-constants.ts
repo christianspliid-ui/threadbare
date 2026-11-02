@@ -1001,21 +1001,6 @@ export const LOOT_REWARD_WEIGHT = 0.5;
 export const DOMAIN_EXERCISE_WEIGHT = 0.3;
 
 // ═══════════════════════════════════════════════════════════════════
-// VIGNETTES — Significance-gated notifications (vignetteNotification.ts)
-// ═══════════════════════════════════════════════════════════════════
-
-/** Max Tier 1 notifications per tick.
- * @range 1–5 */
-export const VIGNETTE_MAX_PER_TICK = 3;
-
-/** Default minimum threat for Tier 1 vignette classification. */
-export const VIGNETTE_THREAT_THRESHOLD = 'hard' as const;
-
-/** Minimum questPriority for Tier 1 vignette classification.
- * @range 1.0–3.0 */
-export const VIGNETTE_QUEST_PRIORITY_THRESHOLD = 2.0;
-
-// ═══════════════════════════════════════════════════════════════════
 // DIVINE ATTENTION — Focus/attunement/scrying state (divineAttention.ts)
 // ═══════════════════════════════════════════════════════════════════
 
@@ -1034,32 +1019,6 @@ export const FOCUS_DURATION_TICKS = 3;
 /** Bond efficiency bonus during Focus.
  * @range 0.2–0.6 */
 export const FOCUS_EFFICIENCY_BOOST = 0.4;
-
-// ═══════════════════════════════════════════════════════════════════
-// INTERVENTION COST — Triangular cost curve (interventionCost.ts)
-// ═══════════════════════════════════════════════════════════════════
-
-/** Hard cap on probability bonus from divine intervention.
- * @range 0.10–0.30 */
-export const INTERVENTION_MAX_BONUS = 0.20;
-
-/** Cost multiplier for opposing spheres.
- * @range 2.0–5.0 */
-export const OPPOSING_SPHERE_COST_MULTIPLIER = 3.0;
-
-/** Cost multiplier for unrelated spheres.
- * @range 1.2–2.0 */
-export const NEUTRAL_SPHERE_COST_MULTIPLIER = 1.5;
-
-/** Bond efficiency by influence tier (0=unbonded through 4=exalted).
- * @range values 0.1–1.0 per tier */
-export const BOND_EFFICIENCY: Record<number, number> = {
-  0: 0.2,   // unbonded
-  1: 0.4,   // touched
-  2: 0.6,   // drawn
-  3: 0.8,   // devoted
-  4: 0.95,  // exalted
-};
 
 // ═══════════════════════════════════════════════════════════════════
 // RUINS EXPLORATION — Gated scoring for ruin-seeking behavior
