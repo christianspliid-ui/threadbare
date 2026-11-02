@@ -18,7 +18,7 @@
  * | LEDGER_CHRONICLE_MIN_REM | 12 | Height Threads leaves for the Chronicle; Threads scrolls inside the rest |
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { ComponentProps, ReactElement } from 'react';
+import type { ComponentProps, CSSProperties, ReactElement } from 'react';
 import type { GameState } from '../../../types/gameState';
 import type { OpeningRevealView } from '../GameView/openingReveal';
 import { countThreadedChapters } from '../ChapterLedger';
@@ -42,6 +42,18 @@ import { isStageOpen } from '../stage/stageState';
 
 /** Height Threads leaves for the Chronicle before Threads scrolls inside its own region. */
 export const LEDGER_CHRONICLE_MIN_REM = 12;
+
+/**
+ * The rail's section sizing. Threads keeps its content height and scrolls once the
+ * Chronicle is down to its floor. The Chronicle grows from a zero basis, so a long
+ * Now tab fills only the free height and scrolls inside its panel (Law 57). With an
+ * `auto` basis its content height won the shrink and squeezed Threads to ~12px (THR-2126).
+ */
+export function ledgerSectionStyle(id: LedgerSectionId): CSSProperties {
+  return id === 'threads'
+    ? { flex: '0 1 auto', minHeight: 0, overflowY: 'auto' }
+    : { flex: '1 1 0', minHeight: `${LEDGER_CHRONICLE_MIN_REM}rem`, display: 'flex', flexDirection: 'column' };
+}
 
 type ThreadsPanelProps = ComponentProps<typeof ThreadsPanel>;
 type ChroniclePanelProps = ComponentProps<typeof ChroniclePanel>;
@@ -269,9 +281,7 @@ export function LedgerRail({
           key={s.id}
           ref={el => { if (where === 'rail') sectionRefs.current[s.id] = el; }}
           data-ledger-section={s.id}
-          style={s.id === 'threads'
-            ? { flex: '0 1 auto', minHeight: 0, overflowY: 'auto' }
-            : { flex: '1 1 auto', minHeight: `${LEDGER_CHRONICLE_MIN_REM}rem`, display: 'flex', flexDirection: 'column' }}
+          style={ledgerSectionStyle(s.id)}
         >
           {LEDGER_SECTION_COMPONENTS[s.id](bag)}
         </div>
