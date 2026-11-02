@@ -974,11 +974,25 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   },
   'ui.warm_start.wait': {
     label: 'Catching up',
-    desc: 'Catching up on the seasons you were away. This takes a minute or two.',
+    desc: 'Catching up on the seasons you were away. This can take several minutes.',
   },
   'ui.warm_start.progress': {
     label: 'Catching up',
     desc: '{now} — catching up to {target}',
+  },
+  // THR-2133: the wait is stated from the pace measured so far, never a fixed promise —
+  // tick cost grows with the world, and "a minute or two" became five and a half.
+  'ui.warm_start.estimating': {
+    label: 'Measuring',
+    desc: 'Working out how long this will take…',
+  },
+  'ui.warm_start.remaining': {
+    label: 'Time left',
+    desc: 'About {time} left.',
+  },
+  'ui.warm_start.almost_done': {
+    label: 'Almost there',
+    desc: 'Almost there.',
   },
   // THR-1787: held decisions wait for the player; the Lives-on line alone read as
   // "everything resolves itself" just before the game asked for a choice.
