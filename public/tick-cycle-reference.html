@@ -679,7 +679,7 @@ const ACTS = [
     color: 'var(--act-knowledge)',
     summary: 'Agents gain familiarity from proximity and deepen relationships',
     phases: [
-      { id: '2.75', name: 'Familiarity Gain', fn: 'phaseFamiliarityGain()', desc: 'Grant familiarity to agents at the same location — passive learning through proximity. Being near something means learning about it.', reads: ['colocation events', 'familiarity thresholds'], writes: ['familiarityMap'], tags: [] },
+      { id: '2.75', name: 'Familiarity Gain', fn: 'phaseFamiliarityGain()', desc: 'Grant familiarity to the living individuals on the avatar's hex (buildHexActorIndex — ambient NPCs included since THR-2137) — passive learning through proximity. Being near something means learning about it. Fail-soft: a state without familiarityMap starts from an empty map.', reads: ['colocation events', 'familiarity thresholds'], writes: ['familiarityMap'], tags: [] },
       { id: '2.76', name: 'Interaction Depth', fn: 'phaseInteractionDepth()', desc: 'Accumulate intimacy/depth metric from encounters and colocations. Tracks how well agents know each other over time.', reads: ['interaction history', 'encounter outcomes'], writes: ['graph (agent intimacy)'], tags: [] }
     ]
   },

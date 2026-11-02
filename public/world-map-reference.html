@@ -292,7 +292,7 @@
       <ul>
         <li><strong>hex → location → sublocation.</strong> An actor occupies exactly one tier via a single <code>located_at</code> edge pointing to the most specific node they stand on. Resolution is upward: a sublocation carries <code>parentLocationId</code> → parent location → <code>hexCol</code>/<code>hexRow</code> → hex. All spatial reasoning resolves to the hex level.</li>
         <li>Reference resolver: <code>resolveLocationToHex(graph, locationId)</code> in <code>encounterAwareness.ts</code> — recurses through <code>parentLocationId</code> for sublocations, then reads <code>hexCol</code>/<code>hexRow</code>; returns <code>null</code> (fail-soft) when coordinates are missing.</li>
-        <li><strong>Honest note on the dual representation:</strong> the canonical relationship is the <code>located_at</code> edge (used by <code>visibility.ts</code> and <code>encounterAwareness.ts</code>), while <code>hexActorIndex.ts</code> reads the mirror property <code>actor.properties.locationId</code> to build a fast per-tick index. Both resolve up to the same hex; the edge is the model of record.</li>
+        <li><strong>Honest note on the dual representation:</strong> the canonical relationship is the <code>located_at</code> edge (used by <code>visibility.ts</code> and <code>encounterAwareness.ts</code>), while <code>hexActorIndex.ts</code> reads the mirror property <code>actor.properties.locationId</code> first and falls back to the <code>located_at</code> edge when the mirror is absent — ambient NPCs from <code>seedNpcsAtLocations</code> carry only the edge (THR-2137). Both resolve up to the same hex; the edge is the model of record.</li>
       </ul>
 
       <h3>The two map partitions — Areas and Realms <span class="flag impl">IMPL</span></h3>
@@ -338,7 +338,7 @@
 
       <h3>Per-tick hex→actor index <span class="flag impl">IMPL</span></h3>
       <ul>
-        <li><code>buildHexActorIndex(graph)</code> (<code>hexActorIndex.ts</code>, THR-188) builds a pure, module-state-free <code>Map&lt;"col,row", string[]&gt;</code> of the living <code>individual</code> actors on each hex (a retained dead mortal keeps its <code>locationId</code> where it lies and is skipped — THR-1631), resolving each actor's <code>locationId</code> (up through <code>parentLocationId</code> for sublocations) to hex coordinates. Unresolvable actors fall to <code>unresolvedCount</code> for a fail-soft trace. Iteration follows stable insertion order for determinism. <code>getActorsOnHex(index, col, row)</code> reads a bucket.</li>
+        <li><code>buildHexActorIndex(graph)</code> (<code>hexActorIndex.ts</code>, THR-188) builds a pure, module-state-free <code>Map&lt;"col,row", string[]&gt;</code> of the living <code>individual</code> actors on each hex (a retained dead mortal keeps its <code>locationId</code> where it lies and is skipped — THR-1631), resolving each actor's <code>locationId</code>, or its first <code>located_at</code> edge when that is absent (THR-2137), (up through <code>parentLocationId</code> for sublocations) to hex coordinates. Unresolvable actors fall to <code>unresolvedCount</code> for a fail-soft trace. Iteration follows stable insertion order for determinism. <code>getActorsOnHex(index, col, row)</code> reads a bucket.</li>
       </ul>
 
       <h3>Tick placement <span class="flag impl">IMPL</span></h3>
