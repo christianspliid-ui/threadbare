@@ -282,9 +282,10 @@ describe('contract 2 — one band ladder in the engine', () => {
       // own local `capability − difficulty` formula, which the re-fit would have left
       // behind on the old dice. They now read `computeResolutionThreshold` — the
       // threshold only, never the band ladder — so a contest, a control contest and
-      // the legacy resolver quote the same odds the core rolls.
+      // the legacy resolver quote the same odds the core rolls. (The control-contest
+      // resolver, `controlContestationResolver.ts`, had no production caller and was
+      // deleted by THR-2131.)
       'contestation.ts',
-      'controlContestationResolver.ts',
       // Added in slice 5 (THR-1292 §4), deliberately and in the open. The decision
       // board *forecasts* a band rather than rolling one: it enumerates all 100
       // rolls through `classifyResolutionRoll` + `breakdownToOutcome` +

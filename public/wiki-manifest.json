@@ -83,7 +83,6 @@
       "sources": [
         "src/engine/essenceIncome.ts",
         "src/engine/phaseControlEffects.ts",
-        "src/engine/controlContestationResolver.ts",
         "src/engine/phaseStrategicProjects.ts",
         "src/engine/strategicActionLifecycle.ts",
         "src/types/influence.ts",
