@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-02 10:00 local (09:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-02 11:00 local (10:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -51,7 +51,7 @@ Say "veto <title>" to reverse any of these. The type-size decisions ([THR-2118](
 
 ## Queue
 
-**Healthy (3 ready, none being built).** All three ready tickets are held while their decisions sit in the veto window: [THR-2108](https://linear.app/threadbare/issue/THR-2108) (story text for ten more everyday encounters) until 14:30 UTC, [THR-2109](https://linear.app/threadbare/issue/THR-2109) (Encounter Factory habits, first round) until 17:30 UTC, and the new [THR-2110](https://linear.app/threadbare/issue/THR-2110/rewrite-the-five-novel-prose-encounters-to-prose-doctrine-v2-flawed) (the five novel-prose encounters, first round) until 20:40 UTC. So the builder's short runs this morning are correct: nothing is claimable yet. The four legibility plans ([THR-2122](https://linear.app/threadbare/issue/THR-2122)–[THR-2125](https://linear.app/threadbare/issue/THR-2125)) wait on the first one's veto window, which closes around 11:25 UTC.
+**Healthy (3 ready, none being built).** All three ready tickets are held while their decisions sit in the veto window: [THR-2108](https://linear.app/threadbare/issue/THR-2108) (story text for ten more everyday encounters) until 14:30 UTC, [THR-2109](https://linear.app/threadbare/issue/THR-2109) (Encounter Factory habits, first round) until 17:30 UTC, and the new [THR-2110](https://linear.app/threadbare/issue/THR-2110/rewrite-the-five-novel-prose-encounters-to-prose-doctrine-v2-flawed) (the five novel-prose encounters, first round) until 20:40 UTC. So the builder's short runs this morning are correct: nothing is claimable yet, and its 10:51 run says the first one opens at 14:30 UTC. The four legibility plans ([THR-2122](https://linear.app/threadbare/issue/THR-2122)–[THR-2125](https://linear.app/threadbare/issue/THR-2125)) wait on the first one's veto window, which closes around 11:25 UTC.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -59,4 +59,4 @@ Two items for agents, not you:
 
 ## Health
 
-All green. Two more fixes are live: [THR-2133](https://linear.app/threadbare/issue/THR-2133/the-warm-starts-catch-up-screen-promises-a-minute-or-two-but-300-ticks) (the warm start's catch-up screen now shows a live time-left estimate) via [#2702](https://github.com/christianspliid-ui/threadbare/pull/2702), and [THR-2131](https://linear.app/threadbare/issue/THR-2131/nine-more-modules-have-tests-but-no-production-caller-delete-each-with) (nine unused modules deleted) via [#2703](https://github.com/christianspliid-ui/threadbare/pull/2703). The live site is up to date; later commits were docs only. Engine speed is back to normal (146 ms a tick, 8% under the week's median), so last hour's slowdown was machine load, not code. No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All enabled scheduled tasks are on time. The worktree reaper is running.
+All green. Two more fixes are live: [THR-2133](https://linear.app/threadbare/issue/THR-2133/the-warm-starts-catch-up-screen-promises-a-minute-or-two-but-300-ticks) (the warm start's catch-up screen now shows a live time-left estimate) via [#2702](https://github.com/christianspliid-ui/threadbare/pull/2702), and [THR-2131](https://linear.app/threadbare/issue/THR-2131/nine-more-modules-have-tests-but-no-production-caller-delete-each-with) (nine unused modules deleted) via [#2703](https://github.com/christianspliid-ui/threadbare/pull/2703). The live site is up to date; later commits were docs only. Engine speed is normal (184 ms a tick, 16% over the week's median, inside the 25% band). No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All enabled scheduled tasks are on time. The worktree reaper is running.
