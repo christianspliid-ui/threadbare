@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-02 05:57 local (04:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-02 06:56 local (05:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,6 +20,12 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
+- [Encounter Factory habits](https://linear.app/threadbare/issue/THR-2109) ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-02-thr-2109-encounter-factory-habits.md)): the fix comes in three rounds. First, the drafting rules and every card line. Then the seven older camp-and-shrine encounters' result lines. Last, the town encounters. Veto line: "one round".
+- Same plan: a god's card says what the god does, never how strong it is. Lines like "A small help." and "and it costs no essence" go, because the pips and the cost already show that. A line that is only mood once the tag is cut gets rewritten whole. Veto line: "just cut the tags".
+- Same plan: cards speak as plain commands ("Close the gap between them"), not "You close the gap…", as the model encounter's cards already do. Each command is the god's own act on the world, never an order to the mortal. Veto line: "keep 'you' on the cards".
+- Same plan: the "It argues for…" endings that show which way a card leans stay word for word. The Smugglers' Ford "honest way" card is left untouched until you pick its wording. Veto line: "drop the 'argues for' endings".
+- Same plan: the five rules ("no strength talk", "no 'X held. Y did not.'", "name the mortal", "write each stake line fresh", "don't give away the secret in the summary") go into the factory's writing instructions, each pointing at the doctrine line it already breaks. The doctrine itself and the critic's checklist stay as they are, because changing the checks is [your conversation about the writing checks](https://linear.app/threadbare/issue/THR-2106). Veto line: "add them to the critic too".
+- Same plan: the mortal in an encounter is always named. Titles like "the master" are kept for side characters only. Veto line: "titles for the mortal are fine".
 - [Encounter story text, wave 2a](https://linear.app/threadbare/issue/THR-2108) ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-02-thr-2108-encounter-story-text-wave-2.md)): the next batch of everyday encounters gets rewritten in plain game-master language in two rounds of ten-odd, not one big round of 23, so each build run finishes cleanly. Veto line: "one round".
 - Same plan: an encounter only gets an "arrival" opening for the kinds of place it already appears in. No encounter starts showing up somewhere new. Veto line: "give every encounter all eight openings".
 - Same plan: the short "what's at stake" lines are rewritten with the result lines, so the stake and the outcome say the same thing. Veto line: "keep the stake lines".
@@ -37,13 +43,8 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 - Same ticket: the god rail's essence numbers grow to 18 and line up in their column. Veto line: "keep the essence numbers small".
 - Same ticket: the encounter's title becomes the strongest words in the Stage header, and the scene text moves to the normal story size instead of small italics. Veto line: "keep the Stage header as it is".
 - Same ticket: interface paragraphs get their own line-length cap (about 70 letters), because the story text's cap lets the interface font run to 91 letters a line on the big screen. Veto line: "use the story cap for everything".
-- [Text positions — where labels, values, numbers and captions sit](https://linear.app/threadbare/issue/THR-2119/text-positions-where-labels-values-numbers-and-captions-sit) ([decision](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-11-01-ui-text-positions.md)): a label sits above the thing it names. In a list of short facts, the labels line up in one column right next to their answers, instead of label at the left edge and answer at the far right. Veto line: "labels on the left, like a character sheet".
-- Same ticket: each panel has one left edge for its words and one right edge kept for small marks. Words are never centred, except the big single lines of the ceremonies and the start page. The choice dialog's title moves to the left edge. Veto line: "keep the centred titles".
-- Same ticket: a count stays next to its heading ("Your cards 2"), not pushed to the far edge. Veto line: "counts on the right".
-- Same ticket: the words about a small picture sit to its right; a big picture has its name above it; a label under a grid tile lines up with the tile's left edge. Veto line: "captions under pictures".
-- Same ticket: a small tag about a row comes after the row's name, and a count badge sits right after its word. Tooltips open where they do today. Veto line: "tags before the name".
 
-Say "veto <title>" to reverse any of these. The panel-anatomy decisions ([THR-2117](https://linear.app/threadbare/issue/THR-2117/panel-anatomy-one-reading-order-that-every-core-panel-follows)) have passed their 12-hour veto window and stand. *— from the design lane ([18:25](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01f.md), [21:27](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01g.md), [00:27](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01h.md), [03:40](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02a.md))*
+Say "veto <title>" to reverse any of these. The text-positions decisions ([THR-2119](https://linear.app/threadbare/issue/THR-2119/text-positions-where-labels-values-numbers-and-captions-sit)) have passed their 12-hour veto window and stand. *— from the design lane ([21:27](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01g.md), [00:27](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01h.md), [03:40](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02a.md), [06:37](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02b.md))*
 
 ## This week's screens
 
@@ -51,7 +52,7 @@ Say "veto <title>" to reverse any of these. The panel-anatomy decisions ([THR-21
 
 ## Queue
 
-**Starved (1 ready, on hold).** [THR-2108](https://linear.app/threadbare/issue/THR-2108) (story text for ten more everyday encounters) is the only ready ticket. It is held until 14:30 UTC today while its five design decisions sit in their veto window, and the builder's runs since 02:31 UTC have correctly stood down on that hold. Both small UI bugs from last night are done and live ([THR-2126](https://linear.app/threadbare/issue/THR-2126), [THR-2127](https://linear.app/threadbare/issue/THR-2127/hand-sections-disclosure-chevron-points-right-when-open-rotate90deg-on)). The four legibility plans ([THR-2122](https://linear.app/threadbare/issue/THR-2122)–[THR-2125](https://linear.app/threadbare/issue/THR-2125)) wait on the first one's veto window, which opens around 11:25 UTC.
+**Starved (2 ready, both on hold).** [THR-2108](https://linear.app/threadbare/issue/THR-2108) (story text for ten more everyday encounters) is held until 14:30 UTC, and the new [THR-2109](https://linear.app/threadbare/issue/THR-2109) (Encounter Factory habits, first round) until 17:30 UTC, while their decisions sit in the veto window. The builder's runs since 02:31 UTC have correctly stood down on those holds. Its two follow-on rounds ([THR-2129](https://linear.app/threadbare/issue/THR-2129/encounter-factory-habits-slice-b-the-seven-migrated-board-encounters), [THR-2130](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write)) wait on it. The four legibility plans ([THR-2122](https://linear.app/threadbare/issue/THR-2122)–[THR-2125](https://linear.app/threadbare/issue/THR-2125)) wait on the first one's veto window, which closes around 11:25 UTC.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -59,5 +60,4 @@ Two items for agents, not you:
 
 ## Health
 
-- **Engine speed, for the builder:** tick cost 224 ms/tick steady, 41% above the 7-day median (159, 128 rows since 6a1ff261); top phase agent_decision, 639 agents. Name the merges between 6a1ff261 and 2526793c: git log --oneline --merges 6a1ff261..2526793c
-- Everything else is green. No pull requests are open. The live site serves the latest game build (fea5ff53; later commits were docs only). Checks on main and the scheduled background jobs pass. All nine enabled scheduled tasks are on time; the weekly screen review runs at 07:34 this morning. The worktree reaper last ran at 04:48 UTC.
+All green. Engine speed is back to normal (168 ms/tick, 6% above the 7-day median). No pull requests are open. The live site serves the latest game build (fea5ff53; later commits were docs only). Checks on main and the scheduled background jobs pass. All nine enabled scheduled tasks are on time; the weekly screen review runs at 06:34 UTC. The worktree reaper last ran at 05:40 UTC.
