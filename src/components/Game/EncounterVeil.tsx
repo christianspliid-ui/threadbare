@@ -471,6 +471,12 @@ const AFTERMATH_PIN_FADE_PX = 24;
 const AFTERMATH_PIN_PAD_BOTTOM_PX = 24;
 
 /**
+ * THR-2140 — breathing room under the choice path's pinned Play. Small, because
+ * the column already reserves the footer strip below it.
+ */
+const STAGE_COMMIT_PIN_PAD_BOTTOM_PX = 8;
+
+/**
  * THR-1856 — a wheel turned anywhere on the veil scrolls its content column.
  * The column is 52–65% of the width; a wheel over the art or the void beside it
  * used to do nothing, so the player could not reach content below the fold
@@ -794,7 +800,11 @@ export function EncounterVeil({
 
   const handleChoiceClick = useCallback(
     (choice: EncounterStageChoiceModel) => {
-      setSelectedChoiceId((prev) => (prev === choice.id ? null : choice.id));
+      // THR-2140 — a click on the selected choice keeps it selected. The old
+      // toggle cleared it, so a second click (often on the coloured stance
+      // label, read as a link) silently disarmed Play. Changing the choice is
+      // a click on another one.
+      setSelectedChoiceId(choice.id);
     },
     [],
   );
@@ -2665,7 +2675,22 @@ export function EncounterVeil({
                   screen from what it committed. Still gated on a selection —
                   on this path the choice *is* the move, and it also keys which
                   authored ending the aftermath resolves to. */}
+              {/* THR-2140 — pinned to the bottom of the scroll column, the
+                  THR-1856 / THR-1732 pattern: two long choices pushed Play
+                  past y 1080. The pin respects the column's footer
+                  reservation, so it also stops sitting under the footer. */}
               {model.choices.length > 0 && (
+                <div
+                  data-testid="stage-commit-pin"
+                  style={{
+                    position: 'sticky',
+                    bottom: 0,
+                    zIndex: 2,
+                    paddingTop: AFTERMATH_PIN_FADE_PX,
+                    paddingBottom: STAGE_COMMIT_PIN_PAD_BOTTOM_PX,
+                    background: `linear-gradient(to bottom, transparent 0px, ${VOID} ${AFTERMATH_PIN_FADE_PX}px)`,
+                  }}
+                >
                 <StageCommit
                   // THR-1720 — selecting an unaffordable choice still lets the
                   // player read it, but it cannot be committed.
@@ -2673,6 +2698,7 @@ export function EncounterVeil({
                   essenceCost={selectedChoice?.essenceCost ?? 0}
                   onCommit={handleIntervene}
                 />
+                </div>
               )}
             </>
           )}
@@ -3167,11 +3193,28 @@ function ChoiceBlock({ choice, selected, onClick }: ChoiceBlockProps) {
             data-testid="choice-stance"
             style={{
               textTransform: 'lowercase',
-              color: typeLabelColor,
+              // THR-2140 — the word is warm text and the stance colour is a
+              // small mark beside it (Law 31 keeps both). A whole word in a
+              // saturated colour read as a link inside the button.
+              color: TEXT_WARM,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
               opacity: active ? 1 : 0,
               transition: 'opacity 0.5s ease',
             }}
           >
+            <span
+              aria-hidden="true"
+              data-testid="choice-stance-mark"
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                background: typeLabelColor ?? TEXT_WARM,
+                flexShrink: 0,
+              }}
+            />
             {choice.stanceLabel}
           </span>
         )}

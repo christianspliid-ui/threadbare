@@ -16,6 +16,7 @@
  * | PLAYER_HOLD_ENABLED    | true     | kill switch: false restores play-out |
  * | PLAYER_HOLD_MAX_TICKS  | Infinity | no cap, by decision                  |
  * | PLAYER_HOLD_ON_POST    | true     | THR-2052: hold from the beat's post  |
+ * | SKIP_STEPS_WITHOUT_PLAYER_MOVE | true | THR-2140: a moveless step plays out |
  *
  * ─── Fail-soft ───────────────────────────────────────────────────
  * | Actor has no thread edge     | not live → `thread_not_pause` release |
@@ -28,7 +29,8 @@
  */
 
 import type { WorldGraph } from './graph';
-import type { UnifiedAction } from '../types/unifiedAction';
+import type { UnifiedAction, UnifiedActionTemplate } from '../types/unifiedAction';
+import type { EncounterChoiceMemory } from '../types/encounter';
 import type { EncounterNotification } from '../types/encounterVisibility';
 import type { ThreadEdgeProperties } from '../types/influence';
 import type {
@@ -38,7 +40,7 @@ import type {
 } from '../types/trace';
 import { resolveAttentionMode } from './attentionCadence';
 import { getThreadTo } from './graphQueries';
-import { progressUnifiedAction, withoutPlayerHold } from './unifiedActionLifecycle';
+import { progressUnifiedAction, resolveStepDefinition, withoutPlayerHold } from './unifiedActionLifecycle';
 import { emitTrace } from './traceBuffer';
 
 export type { PlayerHoldReleaseReason } from '../types/trace';
@@ -56,6 +58,37 @@ export const PLAYER_HOLD_MAX_TICKS = Infinity;
  * step play out alone ("faced it alone"). `false` restores the minimise-only hold.
  */
 export const PLAYER_HOLD_ON_POST = true;
+
+/**
+ * THR-2140 — a step that offers the player no move is neither held nor opened:
+ * it plays out and its result reaches the next beat or the Aftermath. Before,
+ * such a step (a branch step decided by the one before it) stopped the world for
+ * a screen that said only "Nothing here answers to you". `false` restores that.
+ */
+export const SKIP_STEPS_WITHOUT_PLAYER_MOVE = true;
+
+/**
+ * THR-2140 — does the step at `stepIndex` offer the player a move? Yes when the
+ * template authors choices for it, or the resolved step (branches followed)
+ * authors nudges or declares a dealt hand. Read off the template alone, so it
+ * is the same answer at post time and at render time. A missing template or
+ * step is fail-soft `true`: today's behaviour, never a silent skip.
+ */
+export function stepOffersPlayerMove(
+  template: UnifiedActionTemplate | undefined,
+  stepIndex: number,
+  choiceHistory?: readonly EncounterChoiceMemory[],
+): boolean {
+  if (!template) return true;
+  try {
+    if ((template.authoredChoices?.[stepIndex]?.length ?? 0) > 0) return true;
+    const step = resolveStepDefinition(template, stepIndex, choiceHistory);
+    if (!step) return true;
+    return (step.nudges?.length ?? 0) > 0 || step.deal !== undefined;
+  } catch {
+    return true;
+  }
+}
 
 /**
  * Hold the action's current step for the player. Idempotent per step: an
@@ -91,6 +124,8 @@ export function holdStepsForPostedBeats(
   for (const n of posted) {
     if (n.sourceSystem !== 'unified_action' || (n.kind ?? 'encounter') !== 'encounter') continue;
     if (n.autoResolveTick !== null || !n.actionId || n.stepIndex === undefined) continue;
+    // THR-2140 — a step with no player move posts already resolved; nothing waits on it.
+    if (n.noPlayerMove || n.resolved) continue;
     stepsToHold.set(n.actionId, n.stepIndex);
   }
   if (stepsToHold.size === 0) return actions;
