@@ -34,6 +34,15 @@ describe('ToastStack — anchored inside the map area (THR-1711)', () => {
     expect(stack.style.zIndex).toBe(String(Z_BAND.stage));
   });
 
+  it('narrows to the Stage window strip while a Stage moment is open (THR-2132)', () => {
+    const toasts = [{ id: 't1', message: 'A road opens', count: 1, createdTick: 1, expiresAt: Date.now() + 10000 }];
+    const { rerender } = render(<ToastStack toasts={toasts} onDismiss={vi.fn()} />);
+    const stack = screen.getByTestId('toast-stack');
+    expect(stack.style.maxWidth).toBe('var(--toast-w)');
+    rerender(<ToastStack toasts={toasts} onDismiss={vi.fn()} stageOpen />);
+    expect(stack.style.maxWidth).toContain('--stage-window-w');
+  });
+
   it('GameView mounts it inside the relative map area, before the map', () => {
     // `absolute` is only correct while the mount stays inside the map's
     // `relative` box — pin that half of the contract too.

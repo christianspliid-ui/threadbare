@@ -65,7 +65,12 @@ interface ToastStackProps {
    * kind icon stays, because that is the click affordance, not the subject.
    */
   toastVisuals?: Readonly<Record<string, EntityVisualDescriptor | null>>;
+  /** THR-2132 — a Stage moment is open: the stack keeps inside the Stage's window strip. */
+  stageOpen?: boolean;
 }
+
+/** THR-2132 — the toast width while the Stage is open: the window strip less its gutters. */
+export const TOAST_W_ON_STAGE = 'min(var(--toast-w), calc(var(--stage-window-w) - 2 * var(--stage-gutter)))';
 
 function formatCount(count: number): string {
   return count > 1 ? `×${count}` : '';
@@ -82,7 +87,7 @@ function navTargetHasPicture(target: NavigationTarget): boolean {
 
 export const toastStackTestHelpers = { formatCount, filterActive };
 
-export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate, receiptOpenLocked = false, toastVisuals }: ToastStackProps) {
+export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate, receiptOpenLocked = false, toastVisuals, stageOpen = false }: ToastStackProps) {
   // Track which toasts are in exit animation (right-click dismissed)
   const [dismissingIds, setDismissingIds] = useState<Set<string>>(new Set());
   // THR-1877 — the receipt toast whose click was refused, and a counter that restarts its shake.
@@ -119,7 +124,9 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate, recei
       className="absolute right-4 top-4 flex flex-col gap-2 pointer-events-none"
       // THR-2132 — the Stage's band (Law 35), the height the raw `z-50` held: toasts stay
       // readable over a Stage moment, whose place tag now keeps to the window's bottom edge.
-      style={{ maxWidth: 'var(--toast-w)', zIndex: Z_BAND.stage }}
+      // While the Stage is open the stack narrows to its window strip, so the panel never
+      // clips a toast's first words (the strip is 280px at 1920, narrower than a toast).
+      style={{ maxWidth: stageOpen ? TOAST_W_ON_STAGE : 'var(--toast-w)', zIndex: Z_BAND.stage }}
       aria-live="polite"
       aria-label="Notifications"
     >

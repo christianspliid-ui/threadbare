@@ -4509,6 +4509,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               onNavigate={handleNotificationNavigate}
               // THR-1877 (D7): a receipt waits while a ceremony or Stage moment holds the screen.
               receiptOpenLocked={interruptResolution.foreground !== null}
+              stageOpen={stageOpen}
             />
             {/* The world map: HexMapV2, lens switch, summary bar, map-anchored dialogs (THR-1881 step d) */}
             <GameMap
