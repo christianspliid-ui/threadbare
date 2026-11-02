@@ -9,7 +9,9 @@ import { describe, expect, it } from 'vitest';
 import type { UnifiedAction } from '../../types/unifiedAction';
 import type { EncounterNotification } from '../../types/encounterVisibility';
 import { WorldGraph } from '../graph';
-import { holdStepsForPostedBeats, progressActionsWithPlayerHolds } from '../playerStepHold';
+import { holdStepsForPostedBeats, progressActionsWithPlayerHolds, stepOffersPlayerMove } from '../playerStepHold';
+import { shouldAutoOpenEncounterNotification } from '../views/stage/encounterNotificationRuntime';
+import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 
 function makeGraph(attentionMode: 'pause' | 'auto_resolve'): WorldGraph {
   const g = new WorldGraph();
@@ -128,5 +130,33 @@ describe('THR-2052 — holdStepsForPostedBeats', () => {
   it('returns the same array when nothing was posted', () => {
     const actions = [action()];
     expect(holdStepsForPostedBeats(actions, [], makeGraph('pause'), 10)).toBe(actions);
+  });
+});
+
+describe('THR-2140 — a step with no player move is neither held nor auto-opened', () => {
+  it('reads The Merchant\'s Favor: step 1 offers a move, the branch step 2 does not', () => {
+    const tpl = getUnifiedTemplateById('reputation.gold.the_merchants_favor');
+    expect(tpl).toBeDefined();
+    expect(stepOffersPlayerMove(tpl, 0, [])).toBe(true);
+    const chose = [{ stepIndex: 0, stepId: 's0', choiceId: 'mark_the_robbers', choiceText: 'Go', tick: 5 }] as unknown as Parameters<typeof stepOffersPlayerMove>[2];
+    expect(stepOffersPlayerMove(tpl, 1, chose)).toBe(false);
+    expect(stepOffersPlayerMove(tpl, 1, [])).toBe(false);
+  });
+
+  it('is fail-soft true without a template', () => {
+    expect(stepOffersPlayerMove(undefined, 0)).toBe(true);
+  });
+
+  it('does not hold a posted beat marked noPlayerMove, and does not auto-open it', () => {
+    const graph = makeGraph('pause');
+    const actions = [action()];
+    const moveless = beat({ noPlayerMove: true, resolved: true });
+    expect(holdStepsForPostedBeats(actions, [moveless], graph, 10)).toBe(actions);
+    expect(shouldAutoOpenEncounterNotification(moveless)).toBe(false);
+    // The flag alone is enough, even on a record not yet resolved.
+    expect(holdStepsForPostedBeats(actions, [beat({ noPlayerMove: true })], graph, 10)).toBe(actions);
+    expect(shouldAutoOpenEncounterNotification(beat({ noPlayerMove: true }))).toBe(false);
+    // An ordinary pause beat still opens.
+    expect(shouldAutoOpenEncounterNotification(beat())).toBe(true);
   });
 });

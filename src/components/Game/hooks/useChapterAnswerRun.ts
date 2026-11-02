@@ -134,6 +134,26 @@ export function hasPendingAnswerBeat(
 }
 
 /**
+ * THR-2140 — the action is playing out a step that offers the player no move
+ * (its beat posted `noPlayerMove`), past the committed one. That beat never
+ * opens, but the chapter is still live: its answer is the next move-bearing
+ * beat or the aftermath, so the run keeps going rather than reading "ended
+ * without an answer".
+ */
+export function isPlayingOutMovelessStep(
+  notifications: readonly EncounterNotification[],
+  target: Pick<ChapterAnswerTarget, 'actionId' | 'stepIndex'>,
+  actions: readonly UnifiedAction[],
+): boolean {
+  const action = actions.find(a => a.actionId === target.actionId);
+  if (!action || action.resolved || action.currentStep <= target.stepIndex) return false;
+  return notifications.some(n =>
+    n.actionId === target.actionId
+    && n.noPlayerMove === true
+    && n.stepIndex === action.currentStep);
+}
+
+/**
  * One pure step of the state machine — the hook's whole decision, so it can be
  * read and tested without React. Effects are applied by the hook in order.
  */
@@ -159,6 +179,7 @@ export function stepChapterAnswer(
 
     case 'waiting': {
       if (!isChapterStepAnswered(inputs.unifiedActions, record)) return keep(record);
+      if (isPlayingOutMovelessStep(inputs.encounterNotifications, record, inputs.unifiedActions)) return keep(record);
       // The answer opened (or will open) by itself; a veil records the paused
       // clock as its return state, so nothing more to do.
       if (inputs.veilOpen || hasPendingAnswerBeat(inputs.encounterNotifications, record, inputs.unifiedActions)) return none([]);
@@ -169,7 +190,13 @@ export function stepChapterAnswer(
       const sawRunning = record.sawRunning || inputs.running || inputs.heldRunning === true;
       const current = sawRunning === record.sawRunning ? record : { ...record, sawRunning };
 
-      if (isChapterStepAnswered(inputs.unifiedActions, record)) {
+      // THR-2140 — a moveless step playing out is not yet the answer: the run
+      // carries on exactly as before the step advanced (a player pause still
+      // turns it into a waiting answer; the max-ticks bound still applies).
+      if (
+        isChapterStepAnswered(inputs.unifiedActions, record)
+        && !isPlayingOutMovelessStep(inputs.encounterNotifications, record, inputs.unifiedActions)
+      ) {
         // The answer's veil is up: its hold saved "running" — make it paused.
         if (inputs.veilOpen) return none([{ kind: 'pause_if_held' }]);
         // Some other interrupt holds the clock: stop it there; the beat opens

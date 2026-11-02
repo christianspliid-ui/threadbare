@@ -119,6 +119,12 @@ export interface EncounterNotification {
    * absent on older records, where `agentId` is the only participant.
    */
   participantIds?: string[];
+  /**
+   * THR-2140 — the step offers the player no move (no authored choices, nudges
+   * or dealt hand). Posted already `resolved`: a record, never held, never
+   * auto-opened. Absent on older records ⇒ unchanged behaviour.
+   */
+  noPlayerMove?: boolean;
 }
 
 /**
