@@ -138,7 +138,7 @@
         "onSuccess": [],
         "onFailure": [],
         "failBehavior": "continue_weakened",
-        "narrativeTemplate": "A tremor has cracked the bell tower, and now it leans. The masons' lodge that built it bound the crack with iron, and the crack spread.\n\n{cast:councillor} of the council asks {actor} to save the tower. Half the fee is paid now. The rest will be paid at the tower when the bell rings on market day. If {actor} fails as well, {location} will think less of them.",
+        "narrativeTemplate": "A tremor has cracked the bell tower, and now it leans. The masons' lodge that built it bound the crack with iron, and the crack spread.\n\n{cast:councillor} of the council asks {actor} to save the tower. Half the fee is paid now. The rest will be paid at the tower when the bell rings on market day. If {actor} fails as well, the tower comes down.",
         "successAfterimage": "They found the lodge's secret: a hidden arch inside the wall carries the bell, and the crack runs beside it.",
         "failureAfterimage": "They could not find what carried the weight, and set the props by guesswork.",
         "successAtCostAfterimage": "They found a hidden arch inside the wall that carries the bell, but a loose block fell from the bell chamber while they searched and split a prop.",
