@@ -168,7 +168,7 @@ import { bondFirstFromMeeting } from './meetingBond';
 import { closeThreadingRite, isRiteAgentMissing, type RiteClose } from '../../engine/threadingRiteQueue';
 import { firstClaimedMessage } from '../../data/threading-rite-prose';
 import { useNotifications } from './hooks/useNotifications';
-import { useInterruptAutoPause, releaseClockOnBond, type InterruptAutoPauseHandle } from './hooks/useInterruptAutoPause';
+import { useInterruptAutoPause, releaseClockOnBond, clockHoldOpen, type InterruptAutoPauseHandle } from './hooks/useInterruptAutoPause';
 import { useChapterAnswerRun, type ChapterAnswerRunHandle } from './hooks/useChapterAnswerRun';
 import { resolveInterrupts, worldOpenedEncounterHeldBy, INTERRUPT_QUIET_AFTER_INPUT_MS, type ArrivalHoldReason } from './interruptRegistry';
 import { HOMED_SURFACES, type HomedSurfaceKind, type StageHomedKind } from '../../data/homed-surfaces';
@@ -3737,9 +3737,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (anyInterruptShown && inspectorFullOpen) setInspector(stepFullToDocked);
   }, [anyInterruptShown, inspectorFullOpen, setInspector]);
 
+  // THR-2141: an armed card holds the clock too, so a target cannot walk out from
+  // under the cursor while the player aims. `useCardArming` is declared further down
+  // (it needs the cast wiring), so it reports into this state from there.
+  const [cardArmedHold, setCardArmedHold] = useState(false);
   const interruptAutoPause = useInterruptAutoPause({
     // THR-1911: the Inspector's Full view holds the clock while it is open (§ D2).
-    interruptOpen: interruptResolution.anyOpen || inspectorFullOpen,
+    interruptOpen: clockHoldOpen({ interruptOpen: interruptResolution.anyOpen, inspectorFullOpen, cardArmed: cardArmedHold }),
     running,
     setRunning,
   });
@@ -4059,7 +4063,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     stage: interruptResolution.stage,
     held: interruptResolution.held,
     homedSurfaces: DEBUG_HOMED_SURFACES,
-  }), [interruptResolution, interruptAutoPause, notificationState.popupQueue.length, running]);
+    // THR-2141: an armed card holds the clock until it is cast or put down.
+    cardArmed: cardArmedHold,
+  }), [interruptResolution, interruptAutoPause, notificationState.popupQueue.length, running, cardArmedHold]);
 
   // ── Who holds the clock (THR-1814) ──
   // Every held state names its holder, not only an encounter veil (Law 52): the
@@ -4068,6 +4074,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const clockHolderIds = [...interruptResolution.open, ...interruptResolution.heldArrivals.map(h => h.id)];
   const clockHolder = clockHeldNow && clockHolderIds.length === 0 && inspectorFullOpen
     ? INSPECTOR_WORDS.fullHolder
+    : clockHeldNow && clockHolderIds.length === 0 && cardArmedHold
+    ? INSPECTOR_WORDS.armedHolder
     : clockHeldNow
     ? resolveClockHolder(
         // THR-1853: a held arrival holds the clock too, so the readout names it.
@@ -4275,6 +4283,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     screenStore: gameScreen,
   });
   useArmedDebugBridge(arming, gameState, lensSuppressed);
+  const cardArmedNow = arming.armed !== null;
+  useEffect(() => {
+    setCardArmedHold(cardArmedNow);
+  }, [cardArmedNow]);
 
   // ── Find (THR-1915, Inspector plan § D11) ──
   // A world result flies the camera there and opens through the router (never around it);

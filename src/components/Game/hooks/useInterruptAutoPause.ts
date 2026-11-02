@@ -50,6 +50,16 @@ export interface InterruptAutoPauseHandle {
 }
 
 /**
+ * What holds the clock besides a registry interrupt (THR-1911, THR-2141): the
+ * Inspector's Full view, and an armed card — the player is aiming, so the world waits
+ * and no target walks out from under the cursor. Disarming (cast, Esc, put down)
+ * releases it, and the clock returns to the state it was in.
+ */
+export function clockHoldOpen(holds: { interruptOpen: boolean; inspectorFullOpen: boolean; cardArmed: boolean }): boolean {
+  return holds.interruptOpen || holds.inspectorFullOpen || holds.cardArmed;
+}
+
+/**
  * The bond's "Let them walk." (THR-1716 U2): on a world whose clock has never
  * run, set the held state to running so time starts when the meeting (and any
  * interrupt stacked on it) closes. Once the clock has run, it does nothing and

@@ -189,7 +189,8 @@ export function useAgentAnimations({
       console.log(`[HexMapV2] ${movedCount} agent(s) moved hex — animations triggered, trailGroup children: ${trailGrp?.children.length ?? 'N/A'}`);
     }
 
-    // Follow mode: pan camera when followed agent changes hex (gated by shouldCenterOnAgent)
+    // Follow mode: pan camera when followed agent changes hex (gated by shouldCenterOnAgent).
+    // DORMANT (THR-2141): `setFollowAgent` has no caller, so `follow.active` stays false.
     const follow = followMode.current;
     if (follow.active && follow.agentId) {
       const followedAgent = agents.find(a => a.id === follow.agentId);

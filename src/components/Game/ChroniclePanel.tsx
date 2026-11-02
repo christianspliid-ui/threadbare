@@ -245,6 +245,10 @@ function BeforeYouWoke({ groups }: { groups: BeforeYouWokeGroup[] }) {
  * The World-Soul line (frame plan § F7): the label, the World-Soul sentence for the
  * dominant sphere, then the mood of the doom stage — in the story face, at most three lines.
  */
+/** Lines the World-Soul sentence may run to; the line always takes this height (THR-2141). */
+export const WORLD_SOUL_LINES = 3;
+const WORLD_SOUL_LINE_HEIGHT = 1.4;
+
 function WorldSoulLine({ worldSoul, newly }: { worldSoul: NonNullable<ChronicleVM['worldSoul']>; newly: boolean }) {
   const tooltipId = LEDGER_LINES.find(l => l.id === 'world_soul')?.tooltipId ?? 'ui.world_soul';
   return (
@@ -261,9 +265,12 @@ function WorldSoulLine({ worldSoul, newly }: { worldSoul: NonNullable<ChronicleV
             fontFamily: 'var(--font-prose)',
             fontSize: 'var(--text-sm)',
             color: 'var(--text-secondary)',
-            lineHeight: 1.4,
+            lineHeight: WORLD_SOUL_LINE_HEIGHT,
+            // THR-2141: the line holds its clamp height whatever the mood says, so a
+            // shorter mood never lifts the tabs below it under the cursor.
+            minHeight: `${WORLD_SOUL_LINES * WORLD_SOUL_LINE_HEIGHT}em`,
             display: '-webkit-box',
-            WebkitLineClamp: 3,
+            WebkitLineClamp: WORLD_SOUL_LINES,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
           }}
@@ -492,6 +499,9 @@ export function ChroniclePanel({
     || (t.id === 'ledger' && !!vmProp && (reveal?.ledger ?? true)),
   );
   const tab: LedgerTabId = rendered.some(t => t.id === storedTab) ? storedTab : 'now';
+  // THR-2141: Years keeps its place in the bar before it opens, so its arrival mid-run
+  // never slides Ledger out from under a click. It draws nothing and takes no focus.
+  const bar = LEDGER_TABS.filter(t => rendered.includes(t) || t.id === 'years');
   const selectTab = (next: string) => {
     if (!(TAB_IDS as readonly string[]).includes(next)) return;
     setStoredTab(next as LedgerTabId);
@@ -533,12 +543,12 @@ export function ChroniclePanel({
       {/* Tabs renders its bar and panels as siblings, so this column holds them both. */}
       <div style={{ display: 'flex', flexDirection: 'column', flex: '1 1 auto', minHeight: 0 }}>
       <Tabs kind="tabs" value={tab} onChange={selectTab} label={CHRONICLE_LABEL}>
-        {rendered.map(t => (
+        {bar.map(t => (
           <Tabs.Tab
             key={t.id}
             value={t.id}
             label={t.label}
-            testId={`chronicle-tab-${t.id}`}
+            {...(rendered.includes(t) ? { testId: `chronicle-tab-${t.id}` } : { reserved: true })}
             {...(t.tooltipId ? { tooltipId: t.tooltipId } : {})}
             {...(t.id === 'ledger'
               ? { count: { value: vm.ledger.unread, label: countWords(vm.ledger.unread, LEDGER_TAB_UNREAD) } }

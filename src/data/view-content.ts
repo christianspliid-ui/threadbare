@@ -144,6 +144,8 @@ export const INSPECTOR_WORDS = {
   },
   /** The interrupt holder name for Full (Law 52): "held by the full view". */
   fullHolder: 'the full view',
+  /** The holder name while a card is armed (THR-2141, Law 52): "held by your armed card". */
+  armedHolder: 'your armed card',
   /** Kind words for headers that have no node subtitle. */
   landKind: 'Land',
   godKind: 'God',

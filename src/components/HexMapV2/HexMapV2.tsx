@@ -437,6 +437,11 @@ export interface HexMapV2Handle {
   /**
    * Enable or disable camera follow mode for a specific agent.
    * Pass null to stop following and free the camera.
+   *
+   * DORMANT (THR-2141): nothing calls this, so follow mode never switches on and the
+   * pan in `useAgentAnimations` never runs. The map does not move the camera while time
+   * runs; what players read as "the camera moving" was the clock (an armed card now
+   * holds it). Wire a caller, or delete this with `camera/FollowMode.ts`.
    */
   setFollowAgent: (agentId: string | null) => void;
   /**
