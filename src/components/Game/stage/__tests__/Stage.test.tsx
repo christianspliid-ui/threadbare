@@ -112,6 +112,18 @@ describe('Stage', () => {
     expect(tag?.textContent).toBe('Millbrook · where it is happening');
   });
 
+  it('keeps the place tag and the hold line to the window’s bottom edge, clear of the toasts (THR-2132)', () => {
+    mount();
+    const foot = document.querySelector('[data-stage-window-foot]') as HTMLElement;
+    expect(foot.parentElement?.hasAttribute('data-stage-window')).toBe(true);
+    expect(foot.style.bottom).toBe('var(--stage-gutter)');
+    expect(foot.style.top).toBe('');
+    const tag = foot.querySelector('[data-stage-place-tag]') as HTMLElement;
+    expect(tag.style.whiteSpace).toBe('normal');
+    expect(tag.style.textOverflow).toBe('');
+    expect(foot.querySelector('[data-stage-hold-line]')).not.toBeNull();
+  });
+
   it('a click on the held map answers with the hold line, for about two seconds', async () => {
     mount();
     const win = document.querySelector('[data-stage-window]') as HTMLElement;
