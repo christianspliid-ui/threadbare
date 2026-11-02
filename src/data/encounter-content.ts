@@ -8722,7 +8722,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The angle slips on the worn stone. {actor} ends up with an edge that cuts rope but will not bite into mail.',
+          narrative: 'The angle slips on the worn stone. The edge comes out too dull for {actor} to fight with.',
           reputationDelta: -0.01,
         },
       },
@@ -9409,7 +9409,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             effectLine: 'Calm the gusts around them for the length of the work.',
             bandProse: {
               success: 'The calmed wind lets {actor} set the anchor before the next gust comes.',
-              near_miss: 'The wind calms only briefly, and the next gust hits while {actor} is still setting the anchor.',
+              near_miss: 'The wind calms only briefly. {actor} sets the anchor just before the next gust hits.',
             },
           },
           {
@@ -9459,8 +9459,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             imageTag: 'generic.dark',
             effectLine: 'Blur the join where the circle closes, so nothing hunting for it can find it.',
             bandProse: {
-              near_miss: 'The join blurs, and the ward takes hold for the night. {actor} marks the join with a stone so the camp can find it.',
-              critical_failure: 'The blurring spreads past the seam. The ward loses its own line and comes apart from the middle.',
+              near_miss: 'The join blurs only after {actor} goes over it a second time, and then the ward takes hold for the night.',
+              critical_failure: 'The blurring spreads past the join and wipes out the traced line. The ward comes apart from the middle.',
             },
           },
         ],
@@ -11083,7 +11083,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             effectLine: 'Keep the day\'s troubles out of their dreams.',
             bandProse: {
               near_miss: 'The day\'s troubles stay out of {actor}\'s dreams, though {they} lie{s} awake over them for a while first.',
-              critical_failure: '{actor} never falls asleep, so the guard on {their} dreams does no good. Regret over {their} own mistakes keeps {them} up instead.',
+              critical_failure: '{actor} never falls asleep, so keeping the day\'s troubles out of {their} dreams does no good. Regret over {their} own mistakes keeps {them} up instead.',
             },
           },
           {
@@ -11188,7 +11188,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             effectLine: 'Sink the small grievances out of their way, so the large ones stand clear.',
             bandProse: {
               near_miss: 'The small grievances fade. {actor} finds the large one only near dawn.',
-              critical_failure: 'With the small grievances gone, {actor} loses track of which day was which.',
+              critical_failure: '{actor} has been marking the days of the month by their small grievances. With those gone, {they} lose{s} track of which day was which.',
             },
           },
           {
@@ -11670,7 +11670,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             effectLine: 'Guide their grip, so the bone goes back in a single motion.',
             bandProse: {
               success: '{actor} pulls once, the bone goes back into place, and the man stops screaming.',
-              near_miss: '{actor} pulls once and cleanly, but the bone sits slightly crooked.',
+              near_miss: '{actor} pulls once and the bone goes back, but only on the second try at the grip.',
             },
           },
           {
@@ -13736,7 +13736,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             effectLine: 'Calm their grip, so the gift goes down cleanly.',
             bandProse: {
               success: '{actor}\'s hands stay steady, and the gift goes into the hollow cleanly.',
-              near_miss: '{actor}\'s hands shake just before letting go, and the gift lands on the edge of the hollow.',
+              near_miss: '{actor}\'s hands shake just before letting go. The gift catches on the edge of the hollow, and {actor} pushes it in.',
             },
           },
           {
@@ -13926,7 +13926,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'No reply comes. The wind blows and the light goes. {actor} gets up cold, with the gift given and no answer to carry home.',
+          narrative: 'No reply comes before dark. {actor} gets up cold, with the gift given and no answer to carry home.',
           reputationDelta: -0.08,
         },
       },
