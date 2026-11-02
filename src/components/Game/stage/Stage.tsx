@@ -299,32 +299,42 @@ export function Stage({ kind, vm, label, onEscape, closeOnEscape = true, left, r
         data-stage-window=""
         style={{ position: 'absolute', top: 0, bottom: 0, right: 0, left: `calc(2 * var(--stage-gutter) + ${panelWidth})` }}
       >
-        {tagPlace && tagSuffix && (
-          <div
-            data-stage-place-tag=""
-            data-stage-place-tag-option={hoveredPlace ? '' : undefined}
-            style={{
-              position: 'absolute', top: 'var(--stage-gutter)', left: '50%', transform: 'translateX(-50%)',
-              maxWidth: 'calc(100% - 2 * var(--stage-gutter))', padding: '4px 10px', borderRadius: 'var(--radius-control)',
-              background: 'var(--scrim-heavy)', color: 'var(--text-primary)', fontSize: 'var(--text-sm)',
-              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'center',
-            }}
-          >
-            <EntityLink id={tagPlace.ref.id} name={tagPlace.name} entityRef={tagPlace.ref} />
-            <span>{tagSuffix}</span>
-          </div>
-        )}
-        <p
-          role="status"
-          data-stage-hold-line=""
+        {/* THR-2132 — the place tag and the hold line sit at the window's bottom edge. The
+            toast stack owns the map area's top-right corner, and a top-anchored tag drew
+            over the first toast during every Stage moment. The tag wraps rather than
+            truncating, so a long place name reads in full. */}
+        <div
+          data-stage-window-foot=""
           style={{
-            position: 'absolute', top: 'calc(var(--stage-gutter) + 2.5em)', left: 'var(--stage-gutter)', right: 'var(--stage-gutter)',
-            margin: 0, textAlign: 'center', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)',
-            opacity: hint ? 1 : 0, transition: 'opacity var(--anim-fast) ease', pointerEvents: 'none',
+            position: 'absolute', bottom: 'var(--stage-gutter)', left: 'var(--stage-gutter)', right: 'var(--stage-gutter)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, pointerEvents: 'none',
           }}
         >
-          {hint ? holdLine : ''}
-        </p>
+          <p
+            role="status"
+            data-stage-hold-line=""
+            style={{
+              margin: 0, textAlign: 'center', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)',
+              opacity: hint ? 1 : 0, transition: 'opacity var(--anim-fast) ease',
+            }}
+          >
+            {hint ? holdLine : ''}
+          </p>
+          {tagPlace && tagSuffix && (
+            <div
+              data-stage-place-tag=""
+              data-stage-place-tag-option={hoveredPlace ? '' : undefined}
+              style={{
+                maxWidth: '100%', padding: '4px 10px', borderRadius: 'var(--radius-control)',
+                background: 'var(--scrim-heavy)', color: 'var(--text-primary)', fontSize: 'var(--text-sm)',
+                whiteSpace: 'normal', overflowWrap: 'anywhere', textAlign: 'center', pointerEvents: 'auto',
+              }}
+            >
+              <EntityLink id={tagPlace.ref.id} name={tagPlace.name} entityRef={tagPlace.ref} />
+              <span>{tagSuffix}</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* The lit hex is a real control: its place's tooltip on hover, its page on click (Law 46). */}
