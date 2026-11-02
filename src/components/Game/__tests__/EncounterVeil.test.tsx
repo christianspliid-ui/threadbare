@@ -264,6 +264,35 @@ describe('EncounterVeil', () => {
   });
 
   /**
+   * THR-2140 — a second click on the chosen option (often on its coloured
+   * stance label) used to clear it and silently disarm Play. It now keeps the
+   * selection; changing the choice is a click on another one. Play is pinned
+   * to the bottom of the scroll column.
+   */
+  it('keeps the selection on a second click, including on the stance label, and pins Play', () => {
+    const onIntervene = vi.fn();
+    render(<EncounterVeil {...defaultProps} onIntervene={onIntervene} />);
+
+    const commit = screen.getByTestId('stage-commit');
+    const support = screen.getAllByTestId('veil-choice').find((r) => r.textContent?.includes('Let the grain through'))!;
+    fireEvent.click(support);
+    expect(commit).toBeEnabled();
+    fireEvent.click(support);
+    expect(commit).toBeEnabled();
+    const stance = within(support).queryByTestId('choice-stance');
+    if (stance) {
+      fireEvent.click(stance);
+      expect(commit).toBeEnabled();
+    }
+    fireEvent.click(commit);
+    expect(onIntervene).toHaveBeenCalledWith('choice-support', 2);
+
+    const pin = screen.getByTestId('stage-commit-pin');
+    expect(pin.style.position).toBe('sticky');
+    expect(pin.contains(commit)).toBe(true);
+  });
+
+  /**
    * THR-1720 — `affordable` used to be computed and never read, so a choice the
    * paying pool could not cover was committable. It now dims with its reason
    * (still readable and selectable), and the commit refuses while it is chosen.

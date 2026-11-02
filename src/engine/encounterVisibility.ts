@@ -32,6 +32,7 @@ import { emitTrace } from './traceBuffer';
 import { getAnyEncounterById } from '../data/encounter-content';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { resolveStepDefinition } from './unifiedActionLifecycle';
+import { SKIP_STEPS_WITHOUT_PLAYER_MOVE, stepOffersPlayerMove } from './playerStepHold';
 import { resolveLocationToHex } from './encounterAwareness';
 import { isForceFullEncounterVisibility } from './debugVisibilityOverride';
 import { stepOutcomeToOutcomeBand } from '../data/outcome-band-content';
@@ -703,6 +704,19 @@ export function phaseEncounterVisibility(
           interventionType: card.interventionType,
           godVoice: card.likelyBurden,
         }));
+      }
+
+      // THR-2140 — a step with no player move is a record, not a beat: it is
+      // posted resolved, so no hold is set on it, it never auto-opens, and it
+      // never badges. The step plays out and its band reaches the next beat's
+      // `outcomeBand` or the Aftermath.
+      if (
+        SKIP_STEPS_WITHOUT_PLAYER_MOVE
+        && resolvedTemplate
+        && !stepOffersPlayerMove(resolvedTemplate, stepIndex, action.choiceHistory)
+      ) {
+        notification.noPlayerMove = true;
+        notification.resolved = true;
       }
 
       notifications.push(notification);

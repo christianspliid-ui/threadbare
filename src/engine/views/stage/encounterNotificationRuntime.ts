@@ -97,8 +97,10 @@ export function selectEncounterRuntimeForNotification(
 }
 
 export function shouldAutoOpenEncounterNotification(
-  notif: Pick<EncounterNotification, 'resolved' | 'autoResolveTick'>,
+  notif: Pick<EncounterNotification, 'resolved' | 'autoResolveTick' | 'noPlayerMove'>,
 ): boolean {
+  // THR-2140 — a step with no player move never opens (it is posted resolved too).
+  if (notif.noPlayerMove) return false;
   return !notif.resolved && notif.autoResolveTick === null;
 }
 
