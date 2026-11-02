@@ -263,7 +263,7 @@ const GATE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
     effectLine:
-      'You close the spacing between them, so the ones behind arrive before the gap opens. A small help.',
+      'Close the spacing in their ranks, so the ones at the back arrive before a gap opens.',
     bandProse: {
       success: 'They fought the width of the gate, not the width of one person.',
       near_miss: 'The spacing held. The gate was still wider than the company was.',
@@ -278,7 +278,7 @@ const GATE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.1,
     imageTag: 'generic.strength',
     effectLine:
-      'You take the strain off the failing hinge, so the gate answers a push it should not survive. A real help.',
+      'Take the strain off the failing iron, so the gate survives one more push.',
     bandProse: {
       critical_success: 'The hinge turned like new work, and the gate came round in one movement.',
       failure: 'The hinge held longer than it had any right to. The gateway was lost anyway.',
@@ -293,7 +293,7 @@ const GATE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     imageTag: 'generic.oath',
     effectLine:
-      'You steady the word they gave each other, so nobody breaks first. A real help.',
+      'Steady the word they gave each other, so nobody breaks first.',
     bandProse: {
       success_at_cost: 'Nobody broke. The line simply ran out of people before it ran out of will.',
       critical_failure: 'The word they gave each other was the last thing to go.',
@@ -308,7 +308,7 @@ const GATE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.09,
     imageTag: 'generic.vigor',
     effectLine:
-      'You find them air they had already spent, so the arms come up one more time. A real help.',
+      'Fill their lungs with air they had already spent, so their arms come up one more time.',
     bandProse: {
       success: 'The arms came up again past the point where they had stopped coming up.',
       near_miss: 'The breath arrived. It was not the breath that decided it.',
@@ -323,7 +323,7 @@ const GATE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.07,
     imageTag: 'generic.dark',
     effectLine:
-      'You thicken the dark past the gateway, so the pursuit cannot count how few are left. A small help.',
+      'Thicken the night past the gateway, so the pursuit cannot see how few are left.',
     bandProse: {
       success: 'The pursuit came on carefully, against a company it could not count.',
       failure: 'The dark bought a few seconds. The gateway needed longer than that.',
@@ -685,7 +685,7 @@ const DISPUTE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
     effectLine:
-      'You slow the exchange so each of them finishes a sentence before the other starts. A small help.',
+      'Slow the exchange, so each of them finishes a sentence before the other starts.',
     bandProse: {
       success: 'They got through it without talking over each other, which was most of it.',
       near_miss: 'Both of them were heard. Being heard was not the thing in short supply.',
@@ -700,7 +700,7 @@ const DISPUTE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.09,
     imageTag: 'generic.oath',
     effectLine:
-      'You surface the arrangement they already agreed to, so who decides stops being the open question. A real help.',
+      'Bring back the arrangement they already agreed to, so the question of who decides settles itself.',
     bandProse: {
       success: 'Somebody had the say, and once that was in the open the road took a minute.',
       failure: 'The arrangement was clear. Neither of them liked what it said, so it decided nothing.',
@@ -715,7 +715,7 @@ const DISPUTE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.09,
     imageTag: 'generic.memory',
     effectLine:
-      'You sharpen what each of them remembers of the country ahead, so the argument runs on the ground instead of on pride. A real help.',
+      'Sharpen what each of them remembers of the country ahead, so they argue about the land instead of their pride.',
     bandProse: {
       critical_success: 'The ground settled it. Once they were arguing about the country, they stopped arguing.',
       near_miss: 'They agreed on the country exactly. They still did not agree on the road.',
@@ -730,7 +730,7 @@ const DISPUTE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     imageTag: 'generic.warmth',
     effectLine:
-      'You raise the thing the company came out here to do, so the road gets measured against it. A real help.',
+      'Remind the company of the job that brought it out here, so the road gets measured against that job.',
     bandProse: {
       success_at_cost: 'The purpose picked the road. It did not do anything for the one who lost.',
       failure: 'They remembered what they were for, and each of them heard his own road in it.',
@@ -745,7 +745,7 @@ const DISPUTE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.07,
     imageTag: 'generic.light',
     effectLine:
-      'You bring the unstated reason into the open, whichever of them is carrying it. A small help.',
+      'Bring the unspoken motive into the open, whichever of them carries it.',
     bandProse: {
       critical_success: 'The real reason came out early and turned out to be a small one, and it went easier after that.',
       critical_failure: 'The real reason came out, and it was not small, and there was no walking it back.',
@@ -1149,7 +1149,7 @@ const THIRD_WATCH_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
     effectLine:
-      'You thin out the traffic past their corner, so the sentence does not have to be started three times. A small help.',
+      'Thin the traffic past their corner, so nobody has to start the sentence over.',
     bandProse: {
       success: 'They got a clear run at it, and used it.',
       near_miss: 'The corner stayed quiet the whole evening. Quiet was not the difficulty.',
@@ -1164,7 +1164,7 @@ const THIRD_WATCH_HAND: readonly StepNudge[] = [
     forecastDelta: 0.09,
     imageTag: 'generic.warmth',
     effectLine:
-      'You let them feel how much of the last year this has been, so it comes out as large as it is. A real help.',
+      'Make them feel how much of the last year this has cost, so it comes out at full size.',
     bandProse: {
       critical_success: 'It came out at its full size, and the company took it at that size.',
       failure: 'They understood exactly how much of it there was. That made it harder to start, not easier.',
@@ -1179,7 +1179,7 @@ const THIRD_WATCH_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     imageTag: 'generic.vigor',
     effectLine:
-      'You settle the pulse and the hands, so the words arrive in the order they were meant in. A real help.',
+      'Settle their pulse, so the words come out in the order they meant them.',
     bandProse: {
       success: 'It came out level, which is most of why it was heard as it was meant.',
       failure: 'The hands stayed steady the whole evening. Steady hands were not the difficulty.',
@@ -1194,7 +1194,7 @@ const THIRD_WATCH_HAND: readonly StepNudge[] = [
     forecastDelta: 0.09,
     imageTag: 'generic.time-slow',
     effectLine:
-      'You stretch the last of the evening, so the company is still sitting when it finally gets started. A real help.',
+      'Stretch the last of the evening, so the company is still sitting when the talk finally starts.',
     bandProse: {
       success: 'The company was still at the table when it got said, which is the only reason it got said to the company.',
       critical_failure: 'The evening ran long enough for all of it to come out, including the part that should have kept.',
@@ -1211,7 +1211,7 @@ const THIRD_WATCH_HAND: readonly StepNudge[] = [
     forecastDelta: 0.07,
     imageTag: 'generic.dark',
     effectLine:
-      'You draw the light down at their end of the table, so it can be settled among the people it concerns. A small help.',
+      'Draw the light down at their end of the table, so the matter settles among the people involved.',
     bandProse: {
       success_at_cost: 'It was settled at their end of the table. The rest of the company worked it out later, and from each other.',
       near_miss: 'The room heard none of it. Neither did the two people it was about.',
@@ -1640,7 +1640,7 @@ const QUIET_OFFER_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
     effectLine:
-      'You make the company\'s work want them — a call across the ground, a load that needs two. A small help.',
+      'Make the camp\'s labour need another pair of hands — a shout across the ground, a load that takes two.',
     bandProse: {
       success: 'The conversation ended because it ran out of privacy, which is a fine reason.',
       near_miss: 'They got called away and came back. The offer had waited.',
@@ -1656,7 +1656,7 @@ const QUIET_OFFER_HAND: readonly StepNudge[] = [
     forecastDelta: 0.09,
     imageTag: 'generic.memory',
     effectLine:
-      'You run the sum forward — what is asked now, and what is asked once it can be asked. A real help.',
+      'Run the sum forward: what is asked now, and what will be asked later.',
     bandProse: {
       critical_success: 'They worked out what it was worth before answering, and the answer came easily after that.',
       failure: 'They followed the sum right to the end and took the offer anyway, which is a worse thing than not having done the sum.',
@@ -1672,7 +1672,7 @@ const QUIET_OFFER_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     imageTag: 'generic.light',
     effectLine:
-      'You move the light so the two of them are standing where the company can see them talking. A real help.',
+      'Move the light, so the company can see the two of them talking.',
     bandProse: {
       success: 'It got settled where people could see it happening, which took most of the weight out of it.',
       critical_failure: 'The company saw the whole conversation and drew the obvious conclusion from the wrong half of it.',
@@ -1688,7 +1688,7 @@ const QUIET_OFFER_HAND: readonly StepNudge[] = [
     forecastDelta: 0.09,
     imageTag: 'generic.time-slow',
     effectLine:
-      'You take the hurry out of it, so the answer does not have to be given while the offer is still warm. A real help.',
+      'Take the hurry away, so the answer need not come while the offer is still warm.',
     bandProse: {
       success_at_cost: 'The hour was taken and the answer was the right one, and the buyer used the hour too.',
       near_miss: 'There was all the time in the world to decide, and it went unused.',
@@ -1706,7 +1706,7 @@ const QUIET_OFFER_HAND: readonly StepNudge[] = [
     forecastDelta: 0.07,
     imageTag: 'generic.rumor',
     effectLine:
-      'You turn the conversation around, so the one asking questions starts answering them. A small help.',
+      'Turn the conversation around, so the questioner starts answering instead.',
     bandProse: {
       critical_success: 'They came out of it knowing who was buying, which is worth more than the offer was.',
       failure: 'They asked a great many questions and answered a few without noticing the trade.',

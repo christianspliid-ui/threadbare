@@ -141,7 +141,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 2,
           forecastDelta: 0.12,
           imageTag: 'generic.oath',
-          effectLine: 'Settle the yard so each household waits its turn to speak. A real help.',
+          effectLine: 'Settle the crowd, so each household waits its turn to speak.',
           bandProse: {
             success: 'The yard went quiet for each household in turn, and the keeper heard both.',
             failure: 'The yard was quiet, and the quiet was the two households not looking at each other.',
@@ -154,8 +154,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 2,
           forecastDelta: 0.1,
           imageTag: 'generic.memory',
-          effectLine: 'Sharpen their sense of which household\'s grievance is the older one, and which is only this '
-            + 'year\'s. A real help.',
+          effectLine: 'Sharpen their sense of which household\'s complaint is the older one, and which is only this '
+            + 'year\'s.',
           bandProse: {
             critical_success: 'They knew the old quarrel under the new one before the yard had named it.',
             success_at_cost: 'They found the older grievance, and it was theirs to carry once they had.',
@@ -239,7 +239,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 2,
           forecastDelta: 0.12,
           imageTag: 'generic.warmth',
-          effectLine: 'Warm the richer household toward carrying a little more than its share. A real help.',
+          effectLine: 'Warm the richer household toward carrying a little more than its share.',
           bandProse: {
             success: 'The richer household offered the larger share before the keeper had asked it.',
             failure: 'The richer household was warm to the keeper and cold to the figure.',

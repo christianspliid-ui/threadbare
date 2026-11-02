@@ -41,7 +41,7 @@ player, the batch is not ready to run.
 | Step counts | <e.g. two 1-step, three 2-step, one 3-step> |
 | Setting class | no class more than twice (packet die C; gap-weighted toward thin classes) |
 | System target | ≤1 middling-maturity system, 0 deferred (packet die D) |
-| P3 stake shapes | no shape more than twice (spec § The Seed Dice, die 1) |
+| P3 stake shapes | no shape more than twice (spec § The Seed Dice, die 1); each stake sentence written for its own scene, never reused across templates (`agents/draft-prompt.md` § Five habits to catch before the critic does) |
 | Opposition | no opposition kind more than twice (die 2) |
 | Disposition | not everything hostile (die 3 floor) |
 | Agent's role | no role more than twice (die 4) |

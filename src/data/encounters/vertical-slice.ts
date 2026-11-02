@@ -804,7 +804,7 @@ const PASS_CLIMB_HAND: readonly StepNudge[] = [
     effectLine: 'Blunt the northern gusts on the exposed stretches, so the climb spends its strength on climbing.',
     bandProse: {
       critical_success: 'The wind stood off the whole climb, and the saddle came early.',
-      failure: 'The wind was held. The light was not, and the last stretch went dark.',
+      failure: 'The wind stayed off, but the light ran out, and they climbed the last stretch in the dark.',
     },
   },
   {
@@ -847,7 +847,7 @@ const PASS_NIGHT_HAND: readonly StepNudge[] = [
     imageTag: 'generic.focus',
     effectLine: 'The fear slows, and the night is spent on staying warm instead of worrying.',
     bandProse: {
-      failure: 'The nerve held all night. The wood did not.',
+      failure: 'They kept calm all night, but the firewood ran out before morning.',
     },
   },
   {
@@ -1409,8 +1409,8 @@ const CARAVAN_SLIP_HAND: readonly StepNudge[] = [
     imageTag: 'generic.oath',
     effectLine: 'The traveler and the hunted one hold each other level — neither can panic alone.',
     bandProse: {
-      near_miss: 'Neither of them broke. The horse they had counted on did.',
-      failure: 'The nerve held in both of them right up to the open ground.',
+      near_miss: 'Both of them kept calm, but the horse they had counted on panicked.',
+      failure: 'Both of them kept calm until the open ground, and there they broke and ran.',
     },
   },
 ];
@@ -2396,7 +2396,7 @@ const FULL_MOON_HAND: readonly StepNudge[] = [
     effectLine: 'Their breathing stays even while the moonlight fills, and the meeting starts with a level head.',
     bandProse: {
       success: 'The appointment was kept with a level head, and it showed.',
-      failure: 'The nerve held through the greeting. The parcel’s weight undid it.',
+      failure: 'They stayed calm through the greeting, then fumbled the heavy parcel.',
     },
   },
   {
@@ -5221,7 +5221,7 @@ const RECKONING_HAND: readonly StepNudge[] = [
     effectLine: 'Their breathing stays even while he waits, and the answer starts with a level head.',
     bandProse: {
       success: 'The answer was given with a level head, and he heard the level in it.',
-      failure: 'The nerve held through the greeting. The silence after it did not.',
+      failure: 'They greeted him calmly, but the long silence that followed shook them.',
     },
   },
   {
