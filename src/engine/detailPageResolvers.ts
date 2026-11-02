@@ -329,6 +329,14 @@ function bondOf(ctx: SectionResolverContext, actor: GraphNode): Pick<ProseSectio
   };
 }
 
+/**
+ * THR-2142 — the bond row's heading names the mortal and speaks to the player. It read
+ * "What she is to him", gendering a god the player never gendered (round-6 cold playtest).
+ */
+export function whatTheyAreToYouLabel(name: string): string {
+  return `What ${name} is to you`;
+}
+
 const whatSheIsToHimResolver: SectionResolver = (ctx) => {
   if (!ctx.protagonistId) return null;
   const actor = ctx.graph.getNode(ctx.nodeId);
@@ -346,7 +354,7 @@ const whatSheIsToHimResolver: SectionResolver = (ctx) => {
   if (!related) {
     const bond = bondOf(ctx, actor);
     if (!bond.bond) return null;
-    return { kind: 'prose', typeId: 'what_she_is_to_him', label: 'What she is to him', gold: false, tier: 'routine', source: 'whatSheIsToHimResolver', prose: `${actor.name} is bound to you by thread.`, ...bond };
+    return { kind: 'prose', typeId: 'what_she_is_to_him', label: whatTheyAreToYouLabel(actor.name), gold: false, tier: 'routine', source: 'whatSheIsToHimResolver', prose: `${actor.name} is bound to you by thread.`, ...bond };
   }
 
   const basis = wordedBasis(related.properties?.basis as string | undefined) ?? 'a thread between you';
@@ -363,7 +371,7 @@ const whatSheIsToHimResolver: SectionResolver = (ctx) => {
   const section: ProseSection = {
     kind: 'prose',
     typeId: 'what_she_is_to_him',
-    label: 'What she is to him',
+    label: whatTheyAreToYouLabel(actor.name),
     gold: false,
     tier: 'routine',
     source: 'whatSheIsToHimResolver',

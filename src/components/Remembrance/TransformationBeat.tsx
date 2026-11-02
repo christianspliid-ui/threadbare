@@ -418,7 +418,9 @@ export function TransformationBeat({ hungers, driveFragment, courtsFor, onSelect
       {step === 'spheres' && selectedHunger && (
         <SpheresStep
           preset={preset}
-          visible={contentVisible}
+          // THR-2142: the pour fades in on the first beat (200 ms), not the content beat —
+          // waiting for 800 ms then a 1 s fade left the screen black after the court's Continue.
+          visible={textVisible}
           onConfirm={reveal}
           onChooseAgain={chooseHungerAgain}
         />

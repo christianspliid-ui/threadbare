@@ -5,6 +5,7 @@ import {
   useRemembranceChoice,
   handleChoiceRowKeyDown,
   ChooseAgainButton,
+  ChoiceHoldCue,
   CHOICE_ATTR,
   STIRRING_CHOSEN_HOLD_MS,
 } from './remembranceChoice';
@@ -159,6 +160,7 @@ export function StirringBeat({ images, onSelect, notice }: StirringBeatProps) {
               {chosenPlaceholder.label}
             </span>
           )}
+          <ChoiceHoldCue key={chosen.id} holdMs={STIRRING_CHOSEN_HOLD_MS} />
           <ChooseAgainButton onClick={chooseAgain} />
         </div>
       )}

@@ -18,6 +18,10 @@ import {
   DEPTH_DILEMMA,
   DEPTH_DIVINE_ACTION,
   DISPOSITION_DILEMMA_THRESHOLD,
+  OVERVIEW_GOSSIP_THRESHOLD,
+  OVERVIEW_BACKSTORY_INTERACTIONS,
+  AMBITION_PRIMARY_INTERACTIONS,
+  AMBITION_SECONDARY_INTERACTIONS,
 } from '../types/agentKnowledge';
 import {
   getOrCreateKnowledge,
@@ -31,6 +35,7 @@ import {
 } from './revelationHooks';
 import { getAnyEncounterById } from '../data/encounter-content';
 import { emitTrace } from './traceBuffer';
+import { reachDisplayName } from './aftermathWords';
 
 // ─── ID Generator ──────────────────────────────────────────────────
 
@@ -52,6 +57,41 @@ export function resetRevEventCounter(): void {
 }
 
 // ─── Constants ─────────────────────────────────────────────────────
+
+/** The order the observe revelation (Piercing Gaze) reveals a mortal's Reaches in, one per cast. */
+export const OBSERVE_DOMAIN_ORDER: readonly ReachDomain[] = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star'];
+
+/**
+ * The interaction depth past which an observe cast's depth gain opens no person-sheet
+ * row: the highest of the depth gates the sheet reads (gossip, the two ambition rows,
+ * backstory). Below it, a cast that reveals no Reach still deepens the read.
+ */
+export const OBSERVE_DEPTH_CEILING = Math.max(
+  OVERVIEW_GOSSIP_THRESHOLD,
+  OVERVIEW_BACKSTORY_INTERACTIONS,
+  AMBITION_PRIMARY_INTERACTIONS,
+  AMBITION_SECONDARY_INTERACTIONS,
+);
+
+/**
+ * THR-2142 — true when an observe cast (Piercing Gaze) would show this mortal nothing
+ * new: every Reach it reveals is known, and the depth it adds opens no further row
+ * (`OBSERVE_DEPTH_CEILING`). Player surfaces lock the card on it.
+ */
+export function observeHasNothingLeft(
+  agentKnowledge: GameState['agentKnowledge'] | undefined,
+  agentId: string,
+): boolean {
+  const knowledge = agentKnowledge?.get(agentId);
+  if (!knowledge?.revealedDomains) return false;
+  return OBSERVE_DOMAIN_ORDER.every(d => knowledge.revealedDomains.has(d))
+    && (knowledge.interactionDepth ?? 0) >= OBSERVE_DEPTH_CEILING;
+}
+
+/** THR-2142 — the Chronicle line an observe cast leaves: the spell's name and the Reach, in words. */
+export function observeRevealMessage(agentName: string, reach: string): string {
+  return `Piercing Gaze reads ${agentName}: their ${reachDisplayName(reach)} reach now shows on their sheet`;
+}
 
 /**
  * Maps reach domain to its primary axiological pair (for encounter value reveals).
@@ -371,8 +411,7 @@ export function resolveRevelationAction(
     switch (actionType) {
       case 'observe': {
         // Reveal the first domain in canonical order that isn't yet revealed
-        const DOMAIN_ORDER = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star'];
-        const unrevealed = DOMAIN_ORDER.find(d => !knowledge.revealedDomains.has(d));
+        const unrevealed = OBSERVE_DOMAIN_ORDER.find(d => !knowledge.revealedDomains.has(d));
 
         if (unrevealed) {
           revealDomain(knowledge, unrevealed);
@@ -381,7 +420,7 @@ export function resolveRevelationAction(
             id: nextRevEventId(state.tick),
             tick: state.tick,
             type: 'domain_revealed' as TickEvent['type'],
-            message: `${agentName}'s skill in ${unrevealed} becomes apparent through divine sight`,
+            message: observeRevealMessage(agentName, unrevealed),
             significance: REVELATION_EVENT_SIGNIFICANCE,
             actorId: targetAgentId,
           });

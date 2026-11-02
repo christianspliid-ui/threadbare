@@ -9,7 +9,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { REMEMBRANCE_CHOOSE_AGAIN } from '../../data/ui-content';
+import { REMEMBRANCE_CHOOSE_AGAIN, REMEMBRANCE_MOVING_ON } from '../../data/ui-content';
 import { useEscapeLayer } from '../shared/useEscapeLayer';
 import { Z_BAND } from '../shared/zBands';
 
@@ -109,6 +109,44 @@ export function handleChoiceRowKeyDown(e: ReactKeyboardEvent<HTMLElement>): void
   const next = at < 0 ? 0 : (at + step + buttons.length) % buttons.length;
   e.preventDefault();
   buttons[next].focus();
+}
+
+/**
+ * THR-2142 — the cue that a screen moves on by itself: "Moving on" over a thin bar
+ * that fills across the hold. Without it the hold showed only "Choose again", and
+ * players waited for a Continue that never comes. Keyed by the caller on the chosen
+ * item, so a new choice restarts the fill.
+ */
+export function ChoiceHoldCue({ holdMs }: { holdMs: number }) {
+  return (
+    <div
+      data-testid="remembrance-hold-cue"
+      role="status"
+      className="flex flex-col items-center"
+      style={{ gap: '6px', marginBottom: '8px' }}
+    >
+      <span style={{
+        fontFamily: 'var(--font-prose)',
+        fontStyle: 'italic',
+        fontSize: 'var(--text-base)',
+        letterSpacing: '0.08em',
+        color: 'var(--text-muted)',
+      }}>
+        {REMEMBRANCE_MOVING_ON}
+      </span>
+      <div style={{ width: '160px', height: '2px', background: 'var(--border-subtle)', overflow: 'hidden' }}>
+        <div
+          style={{
+            width: '100%',
+            height: '100%',
+            background: 'var(--accent-gold-dim)',
+            transformOrigin: 'left center',
+            animation: `remembranceHoldFill ${holdMs}ms linear forwards`,
+          }}
+        />
+      </div>
+    </div>
+  );
 }
 
 /** The "Choose again" text button shown while a choice holds. */

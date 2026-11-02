@@ -123,6 +123,9 @@ export const JOURNEY_CHOICE_UNAFFORDABLE = 'not enough essence';
 /** THR-1716 — the remembrance's undo while a chosen picture holds before the flow moves on. */
 export const REMEMBRANCE_CHOOSE_AGAIN = 'Choose again';
 
+/** THR-2142 — beside the hold bar on a screen that moves on by itself once a picture is chosen. */
+export const REMEMBRANCE_MOVING_ON = 'Moving on';
+
 /**
  * THR-1820 — the Chapter Ledger's fail-soft line, shown in the chapter column when a
  * clicked row's record does not build (a click always answers, never the previous chapter).

@@ -145,6 +145,8 @@ export const TARGET_ACTION_CONSTANTS = {
   ALREADY_HELD_REASON: 'Already held',
   /** THR-1672: a teaching card on a mortal who already knows all the god could teach. */
   NOTHING_TO_TEACH_REASON: 'They know everything you could teach',
+  /** THR-2142: an observe card on a mortal whose every Reach the god already knows. */
+  NOTHING_TO_REVEAL_REASON: 'You already see all it would show',
   /** Default angle step for laying out target_action slots */
   ANGLE_STEP_DEG: 36,
   /** Max range in hexes for local-range target actions (when no delivery info) */
@@ -243,6 +245,12 @@ export interface TargetActionParams {
    * Omit to skip both (fail-open, like the other viewer-scoped inputs).
    */
   spellTeachingPreview?: SpellTeachingPreview | null;
+  /**
+   * THR-2142 — true when the god already knows every Reach the observe revelation can
+   * show on this target (`observeHasNothingLeft`). Locks an observe card: a cast would
+   * charge and reveal nothing. Omit to skip (fail-open).
+   */
+  observeNothingLeft?: boolean;
 }
 
 /** What a teaching card would teach its target (THR-1672). */
@@ -559,6 +567,12 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     if (teaching && available && (preview === null || (preview && 'lockedReason' in preview))) {
       available = false;
       lockedReason = preview && 'lockedReason' in preview ? preview.lockedReason : TARGET_ACTION_CONSTANTS.NOTHING_TO_TEACH_REASON;
+    }
+    // 12. Nothing to reveal (THR-2142) — an observe card on a mortal whose every Reach
+    //     the god already knows is shown locked, so it is never paid for nothing.
+    if (available && params.observeNothingLeft && template.revelationAction === 'observe') {
+      available = false;
+      lockedReason = TARGET_ACTION_CONSTANTS.NOTHING_TO_REVEAL_REASON;
     }
     const teachingLine = teaching && preview && 'spellName' in preview
       ? `Will teach ${preview.spellName}${preview.dark ? ' — dark magic' : ''}.`

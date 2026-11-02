@@ -5,6 +5,7 @@ import {
   useRemembranceChoice,
   handleChoiceRowKeyDown,
   ChooseAgainButton,
+  ChoiceHoldCue,
   DRIVE_CHOSEN_HOLD_MS,
 } from './remembranceChoice';
 
@@ -116,6 +117,7 @@ export function DriveBeat({ fragments, onSelect }: DriveBeatProps) {
               }}>
                 {chosen.prose}
               </p>
+              <ChoiceHoldCue key={chosen.id} holdMs={DRIVE_CHOSEN_HOLD_MS} />
               <ChooseAgainButton onClick={chooseAgain} />
             </div>
           )}

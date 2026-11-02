@@ -28,6 +28,7 @@ import {
   NEEDS_YOU_LIST_ARIA,
   NEEDS_YOU_PILL_LABEL,
   NEEDS_YOU_PILL_NEWS_ONLY_LABEL,
+  NEEDS_YOU_NEWS_ONLY_WORD,
   countWords,
   needsYouNewsTooltipDesc,
 } from '../../../data/frame-content';
@@ -191,7 +192,7 @@ export function NeedsYou({ vm, open, onOpenChange, guarded, raised, onPressRow, 
       of="needs-you"
       count={vm.count}
       icon="needs-you"
-      word={NEEDS_YOU_LABEL}
+      word={vm.count > 0 ? NEEDS_YOU_LABEL : NEEDS_YOU_NEWS_ONLY_WORD}
       showWhenZero
       label={label}
       desc={desc}
