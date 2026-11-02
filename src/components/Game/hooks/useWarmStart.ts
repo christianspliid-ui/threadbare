@@ -37,8 +37,19 @@ import type { DebugTickStopReason } from '../../../engine/debugTickBatch';
 
 /** URL param name. */
 export const WARM_START_PARAM = 'warm';
-/** Clamp. 300 ticks measured at 93 s headless on seed 42; tick cost grows with population. */
+/**
+ * Clamp. 300 ticks measured at 93 s headless on seed 42 (2026-10), then 331 s on the
+ * deployed medium seeded world (2026-11-02, THR-2133); tick cost grows with population,
+ * which is why the overlay states a live estimate rather than a fixed duration.
+ */
 export const WARM_START_MAX_TICKS = 600;
+/**
+ * Ticks the warm-up runs before the overlay states how long is left (THR-2133). The
+ * first ticks carry one-off costs, so an estimate from fewer would undershoot.
+ */
+export const WARM_START_ESTIMATE_MIN_TICKS = 5;
+/** Below this many milliseconds left, the overlay says "almost there" instead of minutes. */
+export const WARM_START_ALMOST_DONE_MS = 60_000;
 /**
  * Ticks per `runTicksSync` call between yields. 1 so every tick's `tickEvents` reaches
  * the notification layer (a batch commits only its final state) and the page stays
@@ -102,6 +113,31 @@ const SEASON_WORDS = ['Spring', 'Summer', 'Autumn', 'Winter'] as const;
 export function formatWarmSeason(tick: number, ticksPerSeason: number = TICKS_PER_SEASON): string {
   const { season, year } = deriveSeasonAndYear(tick, ticksPerSeason);
   return `${SEASON_WORDS[season] ?? 'Spring'}, year ${year + 1}`;
+}
+
+// ── Time left (THR-2133) ────────────────────────────────────────────────────
+
+/**
+ * Milliseconds left at the pace measured so far, or null until
+ * `WARM_START_ESTIMATE_MIN_TICKS` ticks have run. Linear in ticks: tick cost
+ * drifts upward as the world fills, so the estimate is re-taken every tick.
+ */
+export function estimateWarmRemainingMs(
+  progress: Pick<WarmStartProgress, 'startTick' | 'targetTick' | 'currentTick'>,
+  elapsedMs: number,
+  minTicks: number = WARM_START_ESTIMATE_MIN_TICKS,
+): number | null {
+  const done = progress.currentTick - progress.startTick;
+  const left = progress.targetTick - progress.currentTick;
+  if (left <= 0) return 0;
+  if (done < Math.max(1, minTicks) || !Number.isFinite(elapsedMs) || elapsedMs < 0) return null;
+  return Math.round((elapsedMs / done) * left);
+}
+
+/** "a minute" / "6 minutes" — whole minutes, rounded up so the wait never overruns its words. */
+export function formatWarmRemaining(ms: number): string {
+  const minutes = Math.max(1, Math.ceil(ms / 60_000));
+  return minutes === 1 ? 'a minute' : `${minutes} minutes`;
 }
 
 // ── Orchestration ───────────────────────────────────────────────────────────
@@ -253,6 +289,8 @@ export interface WarmStartProgress {
   startTick: number;
   targetTick: number;
   currentTick: number;
+  /** Estimated milliseconds left (`estimateWarmRemainingMs`); null while still measuring. */
+  remainingMs: number | null;
 }
 
 export interface UseWarmStartArgs {
@@ -290,9 +328,10 @@ export function useWarmStart(args: UseWarmStartArgs): UseWarmStartResult {
     const a = argsRef.current;
     const startTick = a.startTick;
     setRunningState(true);
-    setProgress({ startTick, targetTick: startTick + a.requested, currentTick: startTick });
+    setProgress({ startTick, targetTick: startTick + a.requested, currentTick: startTick, remainingMs: null });
     // Let the overlay paint before the first chunk.
     await defaultYield();
+    const t0 = Date.now();
     const result = await runWarmStart({
       requested: a.requested,
       startTick,
@@ -302,7 +341,14 @@ export function useWarmStart(args: UseWarmStartArgs): UseWarmStartResult {
       setSuppressedUntil: t => argsRef.current.setSuppressedUntil(t),
       settleMoments: since => argsRef.current.settleMoments(since),
       settleOpening: ids => argsRef.current.settleOpening(ids),
-      onProgress: tick => setProgress(p => (p ? { ...p, currentTick: tick } : p)),
+      onProgress: tick => {
+        const elapsedMs = Date.now() - t0;
+        setProgress(p => {
+          if (!p) return p;
+          const next = { ...p, currentTick: tick };
+          return { ...next, remainingMs: estimateWarmRemainingMs(next, elapsedMs) };
+        });
+      },
     });
     setArrival(result);
     setRunningState(false);
