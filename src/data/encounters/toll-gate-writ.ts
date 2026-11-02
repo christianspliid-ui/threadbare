@@ -452,8 +452,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'A toll-master asks a stranger with a trained eye to judge a travelling family\'s writ of '
-      + 'passage.',
+    initiation: 'A toll-master asks {actor} to judge a travelling family\'s writ of passage.',
     success: 'The stranger\'s reading of a forged writ held at the toll gate.',
     failure: 'The stranger\'s reading of a forged writ failed at the toll gate, and their name suffered for '
       + 'it.',
@@ -1504,9 +1503,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   },
   description:
-    'A traveling family\'s writ of passage is a good forgery. At the town gate, someone has to '
-    + 'name it false and hunt the seal-cutter who made it, or vouch for the family and answer for '
-    + 'the writ.',
+    'A travelling family carries a writ of passage that frees them of the town\'s toll, and the '
+    + 'toll-master doubts it. Under the toll charter, whoever approves a writ answers for it.',
   locationSubtypes: expandSettings(['urban']),
   consequenceDraw: ['knowledge', 'movement'],
 };

@@ -132,7 +132,7 @@ export const WELL_GONE_FOUL: UnifiedActionTemplate = {
         'An untended new well silts up and sours, and this one went foul. ' +
         '{cast:reeve} has found {name} with the second half of the fee held back, and wants the well cleared before any of it is paid.',
       successAfterimage: '{cast:reeve} paid part of the fee and took {name}\'s word that the well will be cleared.',
-      failureAfterimage: '{cast:reeve} kept the second half of the fee, and the people who paid for the well think less of the one who sank it.',
+      failureAfterimage: '{cast:reeve} kept the second half of the fee, and the people who paid for the well drink foul water again and lay it on {name}.',
       successMetadata: {
         effects: [
           { kind: 'bond_change', withAgentId: '$cast:reeve', sentimentDelta: -0.02, trustDelta: 0.02 },

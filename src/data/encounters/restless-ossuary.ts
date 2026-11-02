@@ -544,8 +544,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         failure: {
-          overview: 'The dead under the cathedral are still restless, and the guilds have torn up the ruling. {actor} '
-            + 'was sent for as a master, and every guild watched the work fail.',
+          overview: 'The dead under the cathedral are still restless, and the guilds have torn up the ruling. The '
+            + 'weavers say {actor} broke the rite, and the dean has to find someone else to say it.',
           changes: [
             {
               id: 'ossuary.fail.found_wanting',
@@ -598,8 +598,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         critical_failure: {
-          overview: 'The dead under the cathedral are still restless, and the dean has sent {actor} away. Every guild '
-            + 'says a master should not have failed so badly.',
+          overview: 'The dead under the cathedral are still restless, and the dean has sent {actor} away. The bones '
+            + 'moved in front of every guild, while {actor} was saying the rite over them.',
           changes: [
             {
               id: 'ossuary.critfail.blamed_for_the_dead',

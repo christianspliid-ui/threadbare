@@ -642,8 +642,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         failure: {
-          overview: 'A master is judged by what they save. The chapter sent for {actor} by name to save its plate, '
-            + 'and the plate is lost.',
+          overview: 'The bailiffs loaded the plate while {actor} was still at the table with the factor. '
+            + '{cast:dean} watched the carts leave for the melting pot.',
           changes: [
             {
               id: 'cathedral.f.plate',

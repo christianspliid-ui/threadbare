@@ -684,8 +684,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         failure: {
-          overview: '{cast:mother} has lost her son. A master\'s plea was meant to move the justice, and this one did '
-            + 'not.',
+          overview: '{cast:mother} has lost her son. {actor} pleaded for the youth, and {cast:justice} gave the '
+            + 'word all the same.',
           changes: [
             {
               id: 'gallows.fail.town_regard',

@@ -74,8 +74,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       narrativeTemplate: 'Since the snow came, wolves take ewes from the folds each night. The pack passes the next '
         + 'village by. {cast:drover}, a drover from there, says the pack likes this side of the valley, and '
         + 'offers to buy the flock at half price. The reeve sent for {actor} to size up the watch and '
-        + 'command it for a fee. If the folds fall under that command, {location} will think less of '
-        + '{actor}.',
+        + 'command it for a fee. If the folds fall under that command, the '
+        + 'drover gets the flock cheap.',
       successAfterimage: 'They found carrion staked past the last fold, left there by {cast:drover} to draw the pack.',
       failureAfterimage: 'They walked the folds and the hill until dark and found only tracks.',
       successAtCostAfterimage: 'They found the carrion and who staked it, and {cast:drover} saw them find it.',
@@ -700,9 +700,9 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   },
   description:
-    'A wolf pack keeps coming to a village\'s folds, drawn by carrion a drover from the next '
-    + 'village has staked past the last fold. The great fold\'s gate has to hold until dawn, while '
-    + 'the drover waits to buy whatever is left.',
+    'Since the snow came, a wolf pack has taken ewes from a village\'s folds each night and passed '
+    + 'the next village by. A drover from there offers to buy the flock at half price, and the folds '
+    + 'need a watch that can hold them.',
   locationSubtypes: expandSettings(['rural']),
   consequenceDraw: ['secret', 'place'],
 };

@@ -497,7 +497,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         success_at_cost: {
-          overview: '{cast:coroner} ruled for {actor}, but the guild has not forgiven the master who named one of its '
+          overview: '{cast:coroner} ruled for {actor}, but the guild has not forgiven {actor} for naming one of its '
             + 'own.',
           changes: [
             {

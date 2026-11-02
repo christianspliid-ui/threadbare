@@ -134,7 +134,7 @@ const STEP_0_HAND: readonly StepNudge[] = [
       },
     ],
     bandProse: {
-      near_miss: 'The tongs closed on it and held. Their arms did not.',
+      near_miss: 'The tongs gripped it, but their arms gave out before they could lift it.',
       failure: 'The tongs came away with frost welded along the jaws, and would not open again until evening.',
     },
   },

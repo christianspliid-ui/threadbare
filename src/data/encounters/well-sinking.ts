@@ -163,8 +163,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 2,
           forecastDelta: 0.12,
           imageTag: 'generic.memory',
-          effectLine: 'Bring the old digger\'s shafts back to the reeve\'s mind, so they are named before anyone digs. '
-            + 'A real help.',
+          effectLine: 'Bring the old digger\'s shafts back to the reeve\'s mind, so they are named before anyone digs.',
           bandProse: {
             success: 'The reeve remembered where the old digger had worked and pointed out two spots before the spade '
               + 'went in.',
@@ -179,8 +178,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 2,
           forecastDelta: 0.11,
           imageTag: 'generic.matter',
-          effectLine: 'Make the loose ground in the shaft walls cling together, so the sides stand while they dig. A '
-            + 'real help.',
+          effectLine: 'Make the loose ground in the shaft walls cling together, so the sides stand while they dig.',
           bandProse: {
             critical_success: 'The walls held like packed clay, and not a spadeful slid back in.',
             failure: 'The upper walls held firm and the ground ran loose where it met the old shaft.',
@@ -283,7 +281,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 2,
           forecastDelta: 0.12,
           imageTag: 'generic.ward',
-          effectLine: 'Keep the clouds back until after dark, so the lining goes in against dry walls. A real help.',
+          effectLine: 'Keep the clouds back until after dark, so the lining goes in against dry walls.',
           bandProse: {
             success: 'The rain held off until the last course was set.',
             failure: 'The rain held off for an hour and came down before the lining was halfway up.',
@@ -296,8 +294,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 1,
           forecastDelta: 0.1,
           imageTag: 'generic.warmth',
-          effectLine: 'Move the well-wright next door to send spare facing over, so the lining is finished before dark. '
-            + 'A small help.',
+          effectLine: 'Move the well-wright next door to send spare facing over, so the lining is finished before dark.',
           bandProse: {
             success: 'The well-wright sent a barrow of spare facing over, and the lining was finished before dark.',
             success_at_cost: 'The well-wright sent spare facing over, and the lord\'s well went unlined an hour longer for it.',

@@ -179,7 +179,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 2,
           forecastDelta: 0.1,
           imageTag: 'generic.matter',
-          effectLine: 'Pull the water off the crossing overnight, so a ford that ran deep runs shallow. A real help.',
+          effectLine: 'Pull the water off the crossing overnight, so a ford that ran deep runs shallow.',
           bandProse: {
             critical_success: 'The river dropped in the night, and the short road was open to them after all.',
             success: 'The river fell by dawn, so whichever road they took, the water did not stop them.',
@@ -194,7 +194,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 2,
           forecastDelta: 0.12,
           imageTag: 'generic.time-slow',
-          effectLine: 'Hold the evening light past its hour, so more road is walked before dark. A real help.',
+          effectLine: 'Hold the evening light past its hour, so more road is walked before dark.',
           bandProse: {
             success_at_cost: 'The evening held its light past the hour, and they were over the worst of the road before dark.',
             failure: 'The light held late into the evening, and the court sat at its hour all the same.',

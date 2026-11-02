@@ -185,8 +185,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       narrativeTemplate: '{cast:champion}, the order\'s champion, faces {actor} in the middle of the lists. The champion '
         + 'will not leave the lists without a yield, and the young noble will still not give one. The '
         + 'champion says no marshal\'s word can end a grudge bout. If {actor} cannot make the champion '
-        + 'lower the sword, the young noble will be maimed in front of the whole town, and the town will '
-        + 'blame its marshal.',
+        + 'lower the sword, the young noble will be maimed in front of the whole town, in lists the town gave '
+        + '{actor} to keep.',
       criticalSuccessAfterimage: '{cast:champion} lowered the sword, and the order agreed before the whole field to call the bout '
         + 'ended.',
       successAfterimage: '{cast:champion} lowered the sword, and the heralds called the bout ended.',
@@ -198,7 +198,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         + 'reached the fighters.',
       carryoverFactorLines: {
         critical_success: {
-          text: 'The marshal has already stopped the champion\'s sword once.',
+          text: 'They have already stopped the champion\'s sword once.',
           polarity: 'for',
           forecastDelta: 0.06,
         },
@@ -218,7 +218,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           forecastDelta: -0.03,
         },
         failure: {
-          text: 'The marshal is tired from driving the house\'s men out.',
+          text: 'They are tired from driving the house\'s men out.',
           polarity: 'against',
           forecastDelta: -0.05,
         },
@@ -279,8 +279,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           imageTag: 'generic.oath',
           effectLine: 'Make a spoken command carry the force of law, so sworn fighters feel bound to obey it.',
           bandProse: {
-            critical_success: '{cast:champion} heard the marshal\'s command as law, and set the sword point-down in the sand.',
-            success: '{cast:champion} stopped at the marshal\'s command, as a sworn knight stops for a herald.',
+            critical_success: '{cast:champion} heard {actor}\'s command as law, and set the sword point-down in the sand.',
+            success: '{cast:champion} stopped at {actor}\'s command, as a sworn knight stops for a herald.',
             success_at_cost: '{cast:champion} stopped at the command, but swung once more before stopping.',
             near_miss: '{cast:champion} stopped at the command, then said the doctrine stood above it.',
             failure: '{cast:champion} heard the command, and said only the order\'s grand master could give one.',
@@ -340,8 +340,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'A knightly order is fighting a grudge bout to the yield, and the tourney\'s marshal has to stop '
-      + 'it.',
+    initiation: 'A knightly order is fighting a grudge bout to the yield, and {actor} has to stop it as the '
+      + 'tourney\'s marshal.',
     success: '{actor} stopped the grudge bout, and both fighters left the lists alive.',
     failure: 'The order\'s champion beat the young noble down, and {actor} could not stop it.',
   },
@@ -423,7 +423,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             {
               id: 'tourney.cs.honour_the_order',
               label: 'Give the order its honour',
-              intent: 'Announce that the champion lowered the sword at the marshal\'s word. The champion will remember '
+              intent: 'Announce that the champion lowered the sword at {actor}\'s word. The champion will remember '
                 + 'it, and the young noble\'s house will not like it.',
               effects: [
                 {
@@ -529,7 +529,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             {
               id: 'tourney.s.honour_the_order',
               label: 'Give the order its honour',
-              intent: 'Announce that the champion lowered the sword at the marshal\'s word. The champion will remember '
+              intent: 'Announce that the champion lowered the sword at {actor}\'s word. The champion will remember '
                 + 'it, and the young noble\'s house will not like it.',
               effects: [
                 {
@@ -565,8 +565,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         success_at_cost: {
-          overview: 'The bout is ended and {cast:heir} is alive, but it came closer to a killing than a marshal '
-            + 'should allow. The order\'s knights left the field that evening without a word to {actor}.',
+          overview: 'The bout is ended and {cast:heir} is alive, but the champion\'s sword came down on '
+            + 'the young noble before it stopped. The order\'s knights left the field that evening without a word to {actor}.',
           changes: [
             {
               id: 'tourney.sac.favour',
@@ -635,7 +635,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             {
               id: 'tourney.sac.honour_the_order',
               label: 'Give the order its honour',
-              intent: 'Announce that the champion lowered the sword at the marshal\'s word. The champion will remember '
+              intent: 'Announce that the champion lowered the sword at {actor}\'s word. The champion will remember '
                 + 'it, and the young noble\'s house will not like it.',
               effects: [
                 {
@@ -769,7 +769,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         },
         critical_failure: {
           overview: '{cast:heir} was carried off the field more dead than alive. The young noble\'s house told the '
-            + 'whole town that its marshal could not keep the lists.',
+            + 'whole town that {actor} could not keep the lists.',
           changes: [
             {
               id: 'tourney.cf.regard',
@@ -847,7 +847,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   },
   description: 'A knightly order is fighting a grudge bout against a young noble who will not yield. The '
-    + 'tourney\'s marshal has to hold the lists and make the order\'s champion lower the sword before '
+    + 'tourney\'s lists have to be held, and the order\'s champion made to lower the sword, before '
     + 'the bout ends in a killing.',
   locationSubtypes: expandSettings(['urban']),
   consequenceDraw: ['condition', 'secret'],

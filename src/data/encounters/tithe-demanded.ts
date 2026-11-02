@@ -200,8 +200,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 2,
           forecastDelta: 0.12,
           imageTag: 'generic.focus',
-          effectLine: 'Stretch the moment before the collector names a figure, so the argument gets made first. A real '
-            + 'help.',
+          effectLine: 'Stretch the moment before the collector names a figure, so the argument gets made first.',
           bandProse: {
             success: 'The collector heard them out before he wrote anything down.',
             failure: 'The collector heard the whole argument and wrote the figure he had come with.',
@@ -214,7 +213,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 2,
           forecastDelta: 0.13,
           imageTag: 'generic.crowd',
-          effectLine: 'Give the people watching the will to stand behind what is being said. A real help.',
+          effectLine: 'Give the people watching the will to stand behind what is being said.',
           bandProse: {
             critical_success: 'Half the square said the same year out loud, and the collector struck the figure.',
             success_at_cost: 'The square backed them, and the collector took the difference off the nearest cart anyway.',

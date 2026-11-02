@@ -676,8 +676,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         failure: {
-          overview: 'Both heirs are still hostages, and the two houses are counting the days again. They sent for a '
-            + 'master so the haggling would end, and the captain outlasted {actor}.',
+          overview: 'Both heirs are still hostages, and the two houses are counting the days again. The '
+            + 'captain kept the ransom demand on the table until {actor} had nothing left to offer.',
           changes: [
             {
               id: 'hostage.fail.town_regard',

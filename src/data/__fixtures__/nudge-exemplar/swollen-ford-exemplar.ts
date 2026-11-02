@@ -218,7 +218,7 @@ const STEP_0_HAND: readonly StepNudge[] = [
       'Settle their nerve, so the eye rests on the water and not on the crossing to come.',
     bandProse: {
       success: 'Read calm, the river showed its seams.',
-      near_miss: 'The calm held to the end. The daylight did not.',
+      near_miss: 'They stayed calm, but the daylight ran out before they were across.',
     },
   },
   {
@@ -452,7 +452,7 @@ const STEP_1_HAND: readonly StepNudge[] = [
       'Only in company: the group crosses as one body, each pair of hands steadying the next through the water.',
     bandProse: {
       success: 'They went over as a chain, and the chain held to the last link.',
-      near_miss: 'The chain held to the far bank. The last pack on the last back did not.',
+      near_miss: 'The chain reached the far bank, but the river took the last pack.',
     },
   },
 ];

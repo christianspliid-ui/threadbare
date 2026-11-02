@@ -138,7 +138,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       narrativeTemplate: 'The feud began last spring with an insulting letter from the house of {cast:accused}. It broke '
         + 'off the mill contract the two houses shared. {cast:accused} swears the house never sent it, and '
         + 'no one will say who did. The heads will meet only once, at sundown in the hall. If the feud '
-        + 'outlasts that meeting, {location} will think less of {actor}.',
+        + 'outlasts that meeting, the shared mill stays shut.',
       successAfterimage: 'They found that the house scribe sent the letter in error, copied from a draft that was meant to '
         + 'be burned.',
       failureAfterimage: 'They asked in both houses until noon and learned only that the letter was real.',
@@ -206,7 +206,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       onFailure: [],
       failBehavior: 'continue_weakened',
       narrativeTemplate: 'Each house has sent {actor} a purse to take its side. {cast:aggrieved}, head of the other house, '
-        + 'says a peacemaker who keeps either purse has been bought. {actor} has until sundown to go '
+        + 'says that if {actor} keeps either purse, {actor} has been bought. {actor} has until sundown to go '
         + 'between the two houses and win the trust of both heads.',
       successAfterimage: 'They sent both purses back, and both heads agreed to hear them out.',
       failureAfterimage: 'One head still believes they were bought, and will say so in the hall.',
@@ -261,7 +261,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           effectLine: 'Make doubters lose their train of thought mid-accusation, so their charge comes out weaker than '
             + 'they meant.',
           bandProse: {
-            success: '{cast:aggrieved} began the charge of a bought peacemaker and could not finish it.',
+            success: '{cast:aggrieved} began to call {actor} bought and could not finish the charge.',
             failure: '{cast:aggrieved} faltered, then started the charge again louder.',
           },
         },
@@ -420,7 +420,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   ],
   narrativeTemplates: {
     initiation: 'Two powerful houses of the town have been in a feud since an insulting letter broke off their '
-      + 'mill contract. The town has sent for a peacemaker before the heads\' one meeting at sundown.',
+      + 'mill contract. The town has sent for {actor} to make the peace at the heads\' one meeting at sundown.',
     success: 'The two houses signed a new mill contract, and the feud ended at the one meeting.',
     failure: 'The heads walked out of the one meeting, and the feud between the two houses goes on.',
   },
@@ -728,8 +728,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         critical_failure: {
-          overview: 'Each head tells their own house that {actor} took the other side. A peacemaker both sides call '
-            + 'bought has lost the name that got them sent for.',
+          overview: 'Each head tells their own house that {actor} took the other side. Neither house will bring '
+            + '{actor} a quarrel again.',
           changes: [
             {
               id: 'feud.crit_fail.the_towns_regard',
@@ -791,8 +791,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   },
   description:
-    'An insulting letter has started a feud between two powerful houses, and each head has tried '
-    + 'to buy the peacemaker. There is one meeting at sundown to make the peace.',
+    'An insulting letter has started a feud between two powerful houses, and each head has sent a '
+    + 'purse to buy a side. There is one meeting at sundown to make the peace.',
   locationSubtypes: expandSettings(['urban', 'rural']),
   consequenceDraw: ['companion', 'secret'],
 };

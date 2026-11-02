@@ -131,7 +131,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       narrativeTemplate: 'A river trader drowned last week. He told the almshouse he had made a will, but none has been '
         + 'found. His only kin, {cast:heir}, claims the whole estate and calls dream-reading a trick. The '
         + 'magistrate has sent for {actor}, who is said to read dreams truly, to ask the dead man what '
-        + 'he wanted. A wrong reading in court will cost {actor} their good name in {location}.',
+        + 'he wanted. If the reading is wrong, {cast:heir} takes everything and the almshouse nothing.',
       criticalSuccessAfterimage: 'They said the will was under the stern seat of his boat, and the bailiff found it there within '
         + 'the hour.',
       successAfterimage: 'They read the dream as the dead man lifting a board in his boat, and the will was under it.',
@@ -225,7 +225,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             success_at_cost: 'The dead man came when called, but talked of old quarrels before the will.',
             near_miss: 'The dead man came, and showed the boat only as the dream was ending.',
             failure: 'The dead man came, but said only the name {cast:heir}, over and over.',
-            critical_failure: 'The dead man came, and the reader took his silence for an answer.',
+            critical_failure: 'The dead man came, and they took his silence for an answer.',
           },
         },
       ],
@@ -243,10 +243,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'A magistrate has sent for a dream reader to ask a drowned man who he left his estate to, and his '
+    initiation: 'A magistrate has sent for {actor} to ask a drowned man who he left his estate to, and his '
       + 'only kin claims all of it.',
-    success: 'The reading was right. The will was found, and the court paid the reader\'s fee.',
-    failure: 'The reading was wrong. {cast:heir} took the whole estate, and the town trusts the reader less.',
+    success: 'The reading was right. The will was found, and the court paid {actor}\'s fee.',
+    failure: 'The reading was wrong. {cast:heir} took the whole estate, and the town trusts {actor} less.',
   },
   aftermathConfig: {
     branchOnStep: 0,
@@ -340,7 +340,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         },
         success: {
           overview: 'The magistrate read the will aloud. It splits the estate between {cast:heir} and the almshouse. '
-            + 'The court paid the reader\'s fee from the dead man\'s river finds.',
+            + 'The court paid {actor}\'s fee from the dead man\'s river finds.',
           changes: [
             {
               id: 'testimony.success.town_trust',
@@ -609,8 +609,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   },
   description:
-    'A magistrate has sent for a dream reader to ask a drowned man who he left his estate to. His '
-    + 'only kin claims all of it and calls the rite a trick.',
+    'A drowned river trader\'s will cannot be found. His only kin claims the whole estate and calls '
+    + 'dream-reading a trick, and the magistrate wants the dead man asked in open court.',
   locationSubtypes: expandSettings(['urban', 'rural']),
   consequenceDraw: ['thread', 'drive'],
 };

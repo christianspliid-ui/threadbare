@@ -136,7 +136,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 2,
           forecastDelta: 0.11,
           imageTag: 'generic.memory',
-          effectLine: 'Put last season\'s rate back in the sergeant\'s head, plain and next to this one. A real help.',
+          effectLine: 'Put last season\'s rate back in the sergeant\'s head, plain and next to this one.',
           bandProse: {
             success: 'The sergeant remembered last season\'s rate and could not unremember it.',
             failure: 'The sergeant remembered the old rate and said this year was not last year.',
@@ -149,8 +149,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 2,
           forecastDelta: 0.12,
           imageTag: 'generic.crowd',
-          effectLine: 'Give the people waiting behind them the urge to say out loud what they are all thinking. A real '
-            + 'help.',
+          effectLine: 'Give the people waiting behind them the urge to say out loud what they are all thinking.',
           bandProse: {
             critical_success: 'Four carters behind them said the same figure at once, and the rope came down.',
             failure: 'The people behind them spoke up, and the sergeant took the names of two.',

@@ -57,6 +57,21 @@ export const FIRED_TEMPLATE_COMPLETION: readonly string[] = [
   // THR-2105 slice 1: the one top-ten board template (2026-10-31 attended census)
   // not yet complete.
   'encounter.market_day_festival',
+  // THR-2108 wave 2a: the one board template among ranks 11–20 (2026-11-02 attended
+  // census) not yet complete — its ladder and dealt hand were added in the rewrite.
+  'encounter.investigate_anomaly',
+  // THR-2128 wave 2b: the nine of its thirteen board templates (ranks 21–30 plus the
+  // audit's P5 three, 2026-11-02 attended census) not yet complete — their ladders and
+  // dealt hands were added in the rewrite.
+  'encounter.dead_drop',
+  'encounter.rally_the_locals',
+  'encounter.negotiate_passage',
+  'encounter.festival_of_spheres',
+  'encounter.master_local_craft',
+  'encounter.confront_the_unknown',
+  'encounter.master_craftsman_challenge',
+  'encounter.tribute_exchange',
+  'encounter.vault_heist',
 ];
 
 /** Templates per slice: one executor run's worth of prose (~60–80 lines). */

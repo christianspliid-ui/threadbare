@@ -127,7 +127,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       failureAfterimage: 'They got in, but left a shutter unlatched, and the clerk will see it on the next walk.',
       successAtCostAfterimage: 'They got in unseen, but only by forcing a shutter that will not close again.',
       criticalSuccessAfterimage: 'They got in unseen and had the whole time between the walks to work.',
-      criticalFailureAfterimage: 'The clerk saw a shadow at the shutter and doubled his walks. They are inside, with little time '
+      criticalFailureAfterimage: 'The clerk saw a shadow at the shutter and doubled the walks. They are inside, with little time '
         + 'to work.',
       deal: {
         count: 4,
@@ -141,8 +141,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 2,
           forecastDelta: 0.12,
           imageTag: 'generic.dark',
-          effectLine: 'Put out every light along the house\'s street side, so nobody sees who stands at the shutter. A '
-            + 'real help.',
+          effectLine: 'Put out every light along the house\'s street side, so nobody sees who stands at the shutter.',
           bandProse: {
             success: 'The lamps on the street side went out together, and nobody saw the shutter open.',
             failure: 'The lamps went out together, and the clerk came to the window to see why.',
@@ -155,7 +154,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 1,
           forecastDelta: 0.1,
           imageTag: 'generic.time-slow',
-          effectLine: 'Draw out the clerk\'s walk, so the gap between one pass and the next runs longer. A small help.',
+          effectLine: 'Draw out the clerk\'s walk, so the gap between one pass and the next runs longer.',
           bandProse: {
             critical_success: 'The clerk sat down at the far end of the house, and did not get up for a long while.',
             failure: 'The clerk walked slower, and stopped by the ledger room door to rest.',
@@ -240,8 +239,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 2,
           forecastDelta: 0.13,
           imageTag: 'generic.matter',
-          effectLine: 'Warm the wax under their knife, so it lifts in one piece and presses back without a mark. A real '
-            + 'help.',
+          effectLine: 'Warm the wax under their knife, so it lifts in one piece and presses back without a mark.',
           bandProse: {
             success: 'The wax came up whole and went back down whole.',
             failure: 'The wax lifted cleanly, and cracked anyway when the press was shut too fast.',
@@ -254,8 +252,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 2,
           forecastDelta: 0.11,
           imageTag: 'generic.focus',
-          effectLine: 'Hold the columns steady in their memory, so the figures go down right on the first pass. A real '
-            + 'help.',
+          effectLine: 'Hold the columns steady in their memory, so the figures go down right on the first pass.',
           bandProse: {
             success: 'They copied the page once, without a blot, and had time to check it.',
             success_at_cost: 'They copied fast and clean, and still ran out of time halfway down.',

@@ -133,7 +133,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 2,
           forecastDelta: 0.12,
           imageTag: 'generic.strength',
-          effectLine: 'Put iron in the townsmen\'s legs so the wall fills before the marshal counts it. A real help.',
+          effectLine: 'Put iron in the townsmen\'s legs so the wall fills before the marshal counts it.',
           bandProse: {
             success: 'The men came up out of the fields at a run and the wall filled.',
             failure: 'The men came up at a run and there were still not enough of them.',
@@ -146,8 +146,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 2,
           forecastDelta: 0.1,
           imageTag: 'generic.ward',
-          effectLine: 'Still the town\'s fear of the border so the wall is a place to stand rather than a place to be '
-            + 'seen from. A real help.',
+          effectLine: 'Still the town\'s dread of the border, sothe wall is a place to stand rather than a place to be '
+            + 'seen from.',
           bandProse: {
             critical_success: 'Nobody on the wall looked at the border, and the marshal noticed that first.',
             success_at_cost: 'The men stood the wall steady, and the fields paid for the steadiness.',
@@ -230,7 +230,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 2,
           forecastDelta: 0.12,
           imageTag: 'generic.memory',
-          effectLine: 'Bring back to the marshal the last season this town gave and was not thanked. A real help.',
+          effectLine: 'Bring back to the crown\'s rider the last season this town gave and was not thanked.',
           bandProse: {
             success: 'The marshal remembered the last season\'s carts before the keeper had named them.',
             failure: 'The marshal remembered the carts and said the crown remembered them too, which was why it was '

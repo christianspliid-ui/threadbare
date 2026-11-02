@@ -131,8 +131,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       failBehavior: 'fail_action',
       narrativeTemplate: 'Her house has had no luck since her husband was buried. Her fire smokes, and she dreams of him '
         + 'each night. She offers a keepsake of his to whoever finds the cause. {cast:rival}, a rival '
-        + 'reader, says the dead man is restless and sells a charm to calm him. Whoever reads it wrong in '
-        + 'front of the fair loses face in {location}.',
+        + 'reader, says the dead man is restless and sells a charm to calm him. If {actor} reads it wrong, '
+        + 'the widow pays the rival for the charm.',
       criticalSuccessAfterimage: 'They said the dead man was pointing up his own chimney before the widow had finished telling the '
         + 'dream.',
       successAfterimage: 'They read the dream as the dead man pointing up at his own chimney.',
@@ -238,7 +238,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     initiation: 'A widow at the fair will pay whoever finds the cause of her house\'s trouble, and a rival reader '
       + 'is already selling a charm for it.',
     success: 'The reading was right. The widow\'s fire burns again, and the keepsake is theirs.',
-    failure: 'The reading was wrong. The widow bought the rival\'s charm, and the fair trusts the reader less.',
+    failure: 'The reading was wrong. The widow bought the rival\'s charm, and the fair trusts {actor} less.',
   },
   aftermathConfig: {
     branchOnStep: 0,
@@ -557,7 +557,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   },
   description:
     'A widow at the fair wants her dream read, and a rival reader is already selling her a charm. '
-    + 'A wrong reading costs the reader their good name in the settlement.',
+    + 'Read it wrong, and the widow buys the charm instead.',
   locationSubtypes: expandSettings(['urban', 'rural']),
   consequenceDraw: ['secret', 'thread'],
 };

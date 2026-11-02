@@ -150,7 +150,7 @@ export const BELL_TOWER_CRACKED: UnifiedActionTemplate = {
         'A new crack opened above the new courses as the bell swung, and nobody from the work was there to see it. ' +
         '{cast:councillor} has come looking for {name}, and holds back the rest of the fee.',
       successAfterimage: '{cast:councillor} paid part of the fee on {name}\'s word about the new crack.',
-      failureAfterimage: '{cast:councillor} kept the rest of the fee, and thinks less of the mason who left before the bell rang.',
+      failureAfterimage: '{cast:councillor} kept the rest of the fee, and tells the council that {name} left before the bell rang.',
       successMetadata: {
         rewardPool: {
           categoryWeights: { possession: 1 },
