@@ -393,10 +393,21 @@ export function buildConnections(graph: WorldGraph, state: GameState | null, sub
     if (!steps) continue;
     const seen = new Set<string>();
     const items: Collected[] = [];
-    const push = (row: LinkRowVM, sortKey: [number, string], tick: number) => {
+    // THR-2139 — one Story row per action instance: a two-step chapter mints one event
+    // node per step, so its steps share an `actionId`, and the latest step's row stands.
+    const byInstance = new Map<string, number>();
+    const push = (row: LinkRowVM, sortKey: [number, string], tick: number, instanceKey?: string) => {
       const key = `${row.ref.kind}:${row.ref.id}`;
       if (seen.has(key) || row.ref.id === subjectId) return;
       seen.add(key);
+      if (instanceKey) {
+        const at = byInstance.get(instanceKey);
+        if (at !== undefined) {
+          if (tick >= items[at].tick) items[at] = { row, sortKey, tick };
+          return;
+        }
+        byInstance.set(instanceKey, items.length);
+      }
       items.push({ row, sortKey, tick });
     };
     for (const step of steps) {
@@ -419,7 +430,10 @@ export function buildConnections(graph: WorldGraph, state: GameState | null, sub
         const sortKey: [number, string] = step.fact === 'occupancy'
           ? [-graph.getIncomingEdges(n.id, 'located_at').length, '']
           : [0, row.fact];
-        push(row, sortKey, typeof n.properties.tick === 'number' ? (n.properties.tick as number) : 0);
+        const instanceKey = n.type === 'event' && typeof n.properties.actionId === 'string'
+          ? `action:${n.properties.actionId as string}`
+          : undefined;
+        push(row, sortKey, typeof n.properties.tick === 'number' ? (n.properties.tick as number) : 0, instanceKey);
       }
     }
     if (items.length === 0) continue; // Law 25: no heading over nothing

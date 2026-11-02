@@ -8,7 +8,7 @@
  * corruption and compromise, encounter seeds for institutional consequences).
  */
 
-import type { UnifiedActionTemplate } from '../types/unifiedAction';
+import type { AftermathOutcomeOverride, UnifiedActionTemplate } from '../types/unifiedAction';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { FactionEncounterMeta } from '../types/faction';
 import { withEncounterContract } from './encounter-contract-builder';
@@ -2122,6 +2122,25 @@ export const CIVIC_GUARD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
 // ─── Join & Promotion ───────────────────────────────────────────────────
 
+/** THR-2139 — `cg.join`'s ending when the trial is lost: sent away, door left open. */
+const CG_JOIN_DEFERRED_BAND: AftermathOutcomeOverride = {
+  overview:
+    '{name} did not pass the trial. The recruiter sends {them} away with a time to come back, ' +
+    'and the guard\'s door stays open.',
+  // No chip: nothing is written on a deferral, and a chip without a write breaks Law 56.
+  changes: [],
+  reactionPrompt: 'The trial said {name} is not ready yet.',
+  reactions: [
+    {
+      id: 'join_deferred',
+      label: 'Sent away, to come back later.',
+      intent: 'Not yet. {name} can come back to the trial another day.',
+      effects: [],
+      closeAfterSelection: true,
+    },
+  ],
+};
+
 export const CG_JOIN_TEMPLATE: UnifiedActionTemplate = {
   id: 'cg.join',
   stakes: {
@@ -2208,6 +2227,13 @@ export const CG_JOIN_TEMPLATE: UnifiedActionTemplate = {
           closeAfterSelection: true,
         },
       ],
+      // THR-2139 — a lost trial must not read "Passed": the loss bands carry their
+      // own overview and reaction, the deferral `stakes.lost` already names.
+      byOutcome: {
+        failure: CG_JOIN_DEFERRED_BAND,
+        critical_failure: CG_JOIN_DEFERRED_BAND,
+        contested_lost: CG_JOIN_DEFERRED_BAND,
+      },
     },
   },
 };
