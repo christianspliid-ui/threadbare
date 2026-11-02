@@ -7172,7 +7172,7 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: NARRATIVE,
     consumerSystem: ENCOUNTERS,
     intent:
-      'The player sets a pause-tier encounter step down (Escape, or Show on map) and it waits for them: the minimise writes a per-step hold on the unified action, and Phase 1 of the unified-action pipeline does not advance a step whose hold is live. A commit or a dismiss clears it; the engine releases it when the step changes, the thread is switched to Lives on, or the action ends. Without it a minimise is a second, accidental "let fate decide". THR-2052: the engine also writes the hold the tick a pause-tier step\x27s beat is posted (holdStepsForPostedBeats, after both visibility passes), so a step whose veil never opened or was replaced waits too.',
+      'The player sets a pause-tier encounter step down (Escape, or Show on map) and it waits for them: the minimise writes a per-step hold on the unified action, and Phase 1 of the unified-action pipeline does not advance a step whose hold is live. A commit or a dismiss clears it; the engine releases it when the step changes, the thread is switched to Lives on, or the action ends. Without it a minimise is a second, accidental "let fate decide". THR-2052: the engine also writes the hold the tick a pause-tier step\x27s beat is posted (holdStepsForPostedBeats, after both visibility passes), so a step whose veil never opened or was replaced waits too. THR-2140: a step that offers the player no move (no authored choices, nudges or dealt hand) is posted resolved with noPlayerMove, is never held and never auto-opens; it plays out.',
     ulTerms: ['Encounter'],
     mechanism: {
       kind: 'state-field',
