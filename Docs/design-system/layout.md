@@ -143,10 +143,35 @@ Text containers are rem and declared once, so they follow the root step-up: thei
 | `--toast-w` | 20rem | 320px | 360px | `ToastStack` |
 | `--stage-compact-w` | 53.75rem | 860px | 967.5px | The Stage's compact tier (THR-1829) |
 | `--measure-prose` | 34em | 680px | 765px | Story-column reading measure |
+| `--measure-ui` | 26em | 468px | 526.5px | UI text of 3+ lines at `--text-sm` (~70 characters; THR-2118 § 3.4) |
 | `--modal-max-h` | 85vh | 918px | 1224px | Every dialog's height cap (Law 33) |
 | `--space-1..8` | 4–32px | | | Spacing grid (4px base) |
 
 ---
+
+## Spacing rhythm
+
+Three distances on the existing grid (THR-2120 § 2; applied in `shared/Section.tsx` by THR-2122). No new spacing token.
+
+| Distance | Token |
+|---|---|
+| Between blocks (above a section heading; between Header / Now / Act / Detail / Out) | `--space-6` (24 px) |
+| From a heading to its body; between rows inside a block | `--space-2` (8 px) |
+| Facts-block label-to-value gap; picture-to-words gap | `--space-3` (12 px) |
+
+Panel inner padding stays `--panel-padding`. A framed block pads `--space-2` / `--space-3`. In `Section`, the between-block distance lives in one line (the local `SectionShell`); if a docked page at 1920×1080 would scroll because of it, it drops to `--space-5` there (THR-2122 kill criterion).
+
+## Frames
+
+Whitespace first; a box only for a thing you press (THR-2120 § 3).
+
+- **A block gets a frame only when it is one object the player acts on as a whole**: a card, a tile, a dialog option, a list entry that opens something — plus the surface's one Now highlight (R5, Law 31).
+- **Sections, facts blocks, chip rows, lists and link groups are grouped by space and their heading, never a box.** An `event-card` section is framed only while it opens something.
+- **Depth ≤ 2 containers: surface → card.** Controls inside a card (a chip, a toggle, a button) do not count.
+
+## Facts block
+
+The `panel` section kind (THR-2119 rule 1). A two-column grid — `max-content minmax(0, 1fr)`, column gap `--space-3`, row gap `--space-2`, baseline-aligned. Labels take the label rule and are **right-aligned on the seam**, flush against their values; values are Text (`--text-sm`). **Never `space-between`**, never a per-row rule — rows group by space. A pole bar's first pole word sits in the label column; its track, second pole word and leaning word sit in the value column, so the block keeps one seam.
 
 ## HexChronicle Prose Width
 

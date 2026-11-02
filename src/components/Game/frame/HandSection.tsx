@@ -17,6 +17,7 @@ import type { SphereName } from '../../../types';
 import { Tooltip } from '../../shared/Tooltip';
 import { Button } from '../../shared/Button';
 import { Icon } from '../../shared/Icon';
+import { SectionLabel } from '../../shared/Section';
 import { getSphereColor } from '../../../data/sphereIcons';
 import { sphereWord } from '../../../data/essence-format';
 import { countWords } from '../../../data/frame-content';
@@ -225,15 +226,12 @@ export function HandSection({ hand, showInvestiture, investitureNewlyRevealed = 
       aria-label={HAND_HEADER}
       style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1, minHeight: 0 }}
     >
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline' }}>
         <Tooltip id="ui.your_cards" focusable={false}>
-          {/* THR-2099 (R2) — the heading's carved shape, read from its rail row. */}
-          <span style={{ ...labelStyle, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-            {HAND_ICON && <Icon name={HAND_ICON} size="floor" decorative />}
-            {HAND_HEADER}
-          </span>
+          {/* THR-2099 (R2) — the heading's carved shape, read from its rail row. THR-2122 (U3.4):
+              the one section heading, its count beside the words ("Your cards · 2"). */}
+          <SectionLabel label={HAND_HEADER} count={cards.length} icon={HAND_ICON ?? undefined} flush />
         </Tooltip>
-        <span style={{ ...labelStyle, marginLeft: 'auto', fontVariantNumeric: 'tabular-nums' }}>{cards.length}</span>
       </div>
       {restLine && (
         <div data-testid="hand-rest-line" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontStyle: 'italic' }}>

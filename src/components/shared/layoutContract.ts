@@ -200,6 +200,9 @@ export const TEXT_TOKENS_REM = {
 /** Story-column reading measure (`--measure-prose`), in em. */
 export const MEASURE_PROSE_EM = 34;
 
+/** UI-text reading measure (`--measure-ui`, THR-2118 § 3.4), in em. */
+export const MEASURE_UI_EM = 26;
+
 /** The one dialog height cap (`--modal-max-h`, Law 33). */
 export const MODAL_MAX_HEIGHT_VH = 85;
 

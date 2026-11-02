@@ -1,5 +1,5 @@
 import type { IconName } from '../../data/icons/iconRegistry';
-import { Icon } from './Icon';
+import { SectionLabel } from './Section';
 
 interface SectionHeadingProps {
   children: React.ReactNode;
@@ -15,40 +15,24 @@ interface SectionHeadingProps {
   icon?: IconName | null;
 }
 
-function HeadingText({ children, count, icon }: Pick<SectionHeadingProps, 'children' | 'count' | 'icon'>) {
-  if (!icon) {
-    return (
-      <>
-        {children}
-        {count !== undefined && ` (${count})`}
-      </>
-    );
-  }
-  return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-      <Icon name={icon} size="chip" decorative />
-      <span>
-        {children}
-        {count !== undefined && ` (${count})`}
-      </span>
-    </span>
+/**
+ * THR-2122 (U3.3) — a wrapper over `SectionLabel`, the one section heading (Law 27). The
+ * count reads "Retinue · 3"; the `.section-heading` class stays as the CSS hook. Its parent
+ * spaces it, so it carries no margin of its own.
+ */
+export function SectionHeading({ children, count, as = 'h3', ornamental, icon }: SectionHeadingProps) {
+  const heading = (
+    <SectionLabel
+      as={as}
+      className="section-heading"
+      label={children}
+      count={count}
+      icon={icon ?? undefined}
+      flush
+      attrs={icon ? { 'data-heading-icon': icon } : undefined}
+      style={ornamental ? { whiteSpace: 'nowrap' } : undefined}
+    />
   );
-}
-
-export function SectionHeading({ children, count, as: Tag = 'h3', ornamental, icon }: SectionHeadingProps) {
-  const iconAttr = icon ? { 'data-heading-icon': icon } : {};
-  if (ornamental) {
-    return (
-      <div className="ornamental-rule">
-        <Tag className="section-heading" style={{ whiteSpace: 'nowrap' }} {...iconAttr}>
-          <HeadingText count={count} icon={icon}>{children}</HeadingText>
-        </Tag>
-      </div>
-    );
-  }
-  return (
-    <Tag className="section-heading" {...iconAttr}>
-      <HeadingText count={count} icon={icon}>{children}</HeadingText>
-    </Tag>
-  );
+  if (ornamental) return <div className="ornamental-rule">{heading}</div>;
+  return heading;
 }
