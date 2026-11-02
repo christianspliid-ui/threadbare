@@ -25,7 +25,8 @@ const SPHERE_MARK_REM: Readonly<Record<'floor' | 'chip', string>> = {
 };
 
 export function OmenMark({ omen, currentTick, size = 'floor' }: {
-  omen: ActiveOmen;
+  /** The omen's kind and sphere; a past omen passes its template's (THR-2103). */
+  omen: Pick<ActiveOmen, 'category' | 'sphere'>;
   currentTick: number;
   size?: Extract<IconSize, 'floor' | 'chip'>;
 }) {

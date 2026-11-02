@@ -10,6 +10,7 @@ import { getOmenTemplateById } from '../../data/omenTemplates';
 import { getSphereColor } from '../../data/sphereIcons';
 import { durationLabel, elapsedLabel } from '../../engine/aftermathWords';
 import { OmenMark } from './OmenMark';
+import { ListHeadingIcon } from '../shared/ListHeadingIcon';
 
 const OMEN_CATEGORY_LABELS: Record<string, string> = {
   doom_echo: 'Doom Echo',
@@ -100,9 +101,10 @@ export function OmenDetail({ omenState, currentTick, onClose }: OmenDetailProps)
 
   return (
     <Modal open onClose={onClose} size="s" aria-label="World omen details">
-      <div style={{ padding: '20px' }}>
+      <div style={{ padding: '20px' }} data-testid="omen-detail">
         <div style={{ marginBottom: '16px' }}>
-          <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--accent-gold)', marginBottom: '4px', fontFamily: 'var(--font-display)' }}>
+          <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--accent-gold)', marginBottom: '4px', fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <ListHeadingIcon id="worldOmens" />
             World Omens
           </h2>
           <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
@@ -131,7 +133,7 @@ export function OmenDetail({ omenState, currentTick, onClose }: OmenDetailProps)
             {recentHistory.map((h, i) => {
               const t = getOmenTemplateById(h.templateId);
               return (
-                <div key={i} style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginBottom: '4px', display: 'flex', gap: '8px' }}>
+                <div key={i} data-testid="omen-history-row" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginBottom: '4px', display: 'flex', gap: '8px', alignItems: 'center' }}>
                   {/* THR-1426 (Shape 1): `t120–168` is a pair of absolute tick indices — the
                       engine's clock on a player-facing row (Laws 13/14). A past omen's span
                       is read as when it ended, not as two indices the player must subtract;
@@ -139,6 +141,13 @@ export function OmenDetail({ omenState, currentTick, onClose }: OmenDetailProps)
                   <span style={{ color: 'var(--text-muted)', minWidth: '90px' }}>
                     {elapsedLabel(currentTick - h.endTick)} ago
                   </span>
+                  {/* THR-2103 (decision 6): a past omen carries the same mark as the current one,
+                      drawn from its template's kind and sphere, in the season it rose. */}
+                  {t && (
+                    <span data-testid="omen-history-mark" style={{ display: 'inline-flex', color: t.sphereTrigger?.sphere ? getSphereColor(t.sphereTrigger.sphere) : 'var(--accent-gold)' }}>
+                      <OmenMark omen={{ category: t.category, sphere: t.sphereTrigger?.sphere }} currentTick={h.startTick} size="chip" />
+                    </span>
+                  )}
                   <span>{t?.name ?? h.templateId}</span>
                 </div>
               );

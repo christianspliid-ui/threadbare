@@ -5,6 +5,8 @@ import { Icon } from '../shared/Icon';
 import { DOOM_ARCHETYPE_COLORS } from '../../data/uiColorPalette';
 import { DOOM_CLIMAX_START } from '../../data/game-config';
 import { durationLabel } from '../../engine/aftermathWords';
+// THR-2103 (decision 8, Law 58): the doom marks live in one list; this file kept a second copy.
+import { DOOM_ARCHETYPE_FALLBACK_GLYPH, DOOM_ARCHETYPE_GLYPHS } from '../../data/doom-archetype-presentation';
 
 interface DoomClockDetailProps {
   open: boolean;
@@ -13,16 +15,6 @@ interface DoomClockDetailProps {
   state: DoomClockState;
   journeyLabel?: string;
 }
-
-const DOOM_ARCHETYPE_GLYPHS: Record<string, string> = {
-  breach: '◈',
-  convergence: '⬡',
-  changing: '∿',
-  sundering: '⚡',
-  failing: '◇',
-  ascension: '✦',
-  reckoning: '⚔',
-};
 
 const DOOM_ARCHETYPE_FLAVOR: Record<string, string> = {
   breach: 'An outside force tears at the fabric of reality. Each stage weakens the veil further.',
@@ -70,7 +62,7 @@ export function DoomClockDetail({
   journeyLabel,
 }: DoomClockDetailProps) {
   const color = DOOM_ARCHETYPE_COLORS[definition.archetype] ?? DOOM_ARCHETYPE_COLORS.breach;
-  const glyph = DOOM_ARCHETYPE_GLYPHS[definition.archetype] ?? '◈';
+  const glyph = (DOOM_ARCHETYPE_GLYPHS as Readonly<Record<string, string>>)[definition.archetype] ?? DOOM_ARCHETYPE_FALLBACK_GLYPH;
   const flavor = DOOM_ARCHETYPE_FLAVOR[definition.archetype] ?? '';
   const ticksRemaining = Math.max(0, state.totalTicks - state.currentTick);
   const nextBeatLabel = getNextBeatLabel(definition, state);

@@ -19,6 +19,8 @@ import type { GraphNode } from '../../types/graph';
 import type { GameState } from '../../types/gameState';
 import type { HexKey } from '../hexActorIndex';
 import { readView, type ViewSelector } from './readView';
+import { rowVisual, ROW_VISUAL_KIND } from './rowVisual';
+import type { EntityVisualDescriptor } from './entityVisualResolver';
 import type { ViewContext } from './viewContext';
 import { hexContentsIndexSelector } from './hexContents';
 import { createSeenFloor, godsPeopleIds, isHexKnown } from './knowledge';
@@ -99,6 +101,12 @@ export interface FindEntryVM {
   group: FindGroup;
   /** The folded name the matcher reads. */
   searchKey: string;
+  /**
+   * THR-2103 (S7.1) — a world row's picture (a face, knowledge-gated; a place; arms; a
+   * relic). Absent on card and Codex rows, which keep their kind icon. Resolved once per
+   * index build, which already reruns as the god's knowledge grows (`findIndexStamp`).
+   */
+  visual?: EntityVisualDescriptor | null;
 }
 
 export interface FindIndexVM {
@@ -321,6 +329,13 @@ export function buildFindIndex(ctx: ViewContext, args: FindIndexArgs = {}): Find
   // The Codex's entries, handed in by the UI.
   for (const c of args.codex ?? []) {
     push(entry({ kind: c.contentKind ?? 'action_template', id: c.id, name: c.name }, 'codex', c.name, c.fact || FIND_FACT_WORDS.codex, null, false));
+  }
+
+  // THR-2103 — every world row that names a person, place, faction, army or relic gets its picture.
+  const visualCtx = { graph, familiarityMap: state.familiarityMap, tiles };
+  for (const e of out) {
+    if (e.entryKind === 'card' || e.entryKind === 'codex' || !ROW_VISUAL_KIND[e.entryKind]) continue;
+    e.visual = rowVisual(visualCtx, { kind: e.entryKind, id: e.ref.id, name: e.name });
   }
   return { entries: out };
 }

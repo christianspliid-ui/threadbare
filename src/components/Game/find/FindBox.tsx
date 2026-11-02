@@ -24,7 +24,9 @@ import type { SimulationRuntime } from '../../../engine/simulationRuntime';
 import { readView } from '../../../engine/views/readView';
 import { findIndexSelector, findIndexStamp, matchFind, type FindCodexSeed, type FindEntryVM, type FindIndexVM, type FindListId } from '../../../engine/views/find';
 import { FIND_BOX_MAX_VH } from '../../../engine/views/viewConstants';
-import { FIND_WORDS } from '../../../data/view-content';
+import { FIND_WORDS, type ListHeadingId } from '../../../data/view-content';
+import { ListHeadingIcon } from '../../shared/ListHeadingIcon';
+import { RowPicture, rowDressingAttrs } from '../../shared/RowPicture';
 import { FIND_CTRL_KEY, FIND_HOTKEYS } from '../../../data/top-bar-keys';
 import { ICON_FOR_WORLD_REF_KIND } from '../../../data/icons/conceptIcons';
 import type { IconName } from '../../../data/icons/iconRegistry';
@@ -52,6 +54,18 @@ export interface FindBoxProps {
   /** An encounter holds the screen: the field dims and its keys are ignored (THR-1814). */
   disabled?: boolean;
 }
+
+/** THR-2103 (S7.3) — each Find group's row in `LIST_HEADING_ICONS` (Law 58). */
+const FIND_GROUP_HEADING: Readonly<Record<FindListId, ListHeadingId>> = {
+  places: 'findPlaces',
+  people: 'findPeople',
+  yourPeople: 'findYours',
+  powers: 'findPowers',
+  things: 'findThings',
+  cards: 'findCards',
+  codex: 'findCodex',
+  recent: 'findRecent',
+};
 
 function iconFor(e: FindEntryVM): IconName {
   if (e.entryKind === 'card') return 'cards';
@@ -228,7 +242,10 @@ export function FindBox({ gameState, runtime, fogOff, recentKeys, codex, onPickW
               )}
               {groups.map(g => (
                 <div key={g.id} role="group" aria-label={g.label} data-find-group={g.id} style={{ marginTop: 'var(--space-2)' }}>
-                  <div style={{ padding: '0 var(--space-2)', fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)' }}>{g.label}</div>
+                  <div style={{ padding: '0 var(--space-2)', fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+                    <ListHeadingIcon id={FIND_GROUP_HEADING[g.id]} />
+                    {g.label}
+                  </div>
                   {g.rows.map(row => {
                     const isActive = row === activeRow;
                     return (
@@ -238,6 +255,7 @@ export function FindBox({ gameState, runtime, fogOff, recentKeys, codex, onPickW
                         role="option"
                         aria-selected={isActive}
                         data-find-row={row.key}
+                        {...rowDressingAttrs(row.visual, row.visual !== undefined)}
                         onMouseDown={e => e.preventDefault()}
                         onClick={() => pick(row)}
                         onMouseEnter={() => setActive(flat.indexOf(row))}
@@ -247,7 +265,15 @@ export function FindBox({ gameState, runtime, fogOff, recentKeys, codex, onPickW
                           background: isActive ? 'var(--bg-hover)' : 'transparent',
                         }}
                       >
-                        <Icon name={iconFor(row)} size="chip" label={row.kindLabel} />
+                        {/* THR-2103: a world row's picture replaces its kind icon; the kind word stays its accessible name. */}
+                        {row.visual ? (
+                          <span title={row.kindLabel} style={{ display: 'inline-flex', flexShrink: 0 }}>
+                            <span className="sr-only">{row.kindLabel}</span>
+                            <span aria-hidden="true" style={{ display: 'inline-flex' }}><RowPicture visual={row.visual} /></span>
+                          </span>
+                        ) : (
+                          <Icon name={iconFor(row)} size="chip" label={row.kindLabel} />
+                        )}
                         <span style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: 'var(--text-sm)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: '0 1 auto', minWidth: 0 }}>{row.name}</span>
                         <span style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-xs)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: '1 1 auto', minWidth: 0 }}>{row.fact}</span>
                         {row.mapLocated && row.hexKey && (

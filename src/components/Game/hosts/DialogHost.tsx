@@ -47,6 +47,7 @@ import { previewHomeSeat } from '../../../engine/ascendantBeatSeeding';
 import { describeOffering, isRungOpeningOffer } from '../../../engine/godProgression';
 import { isSpineBeatId } from '../../../data/ascendant-beat-content';
 import { courtFaces, dialogSubjectFace, receiptChangeArt, receiptTargetVisual } from '../../../engine/views/dialogDressing';
+import { agentRowVisuals } from '../../../engine/views/rowVisual';
 import { buildCodexRunContext, type CodexRunStateFilter } from '../../Codex/codexRunState';
 import { AnimateMount } from '../../shared/AnimateMount';
 import { Modal } from '../../shared/Modal';
@@ -346,6 +347,10 @@ export function DialogHost({
         lastReadTick={lastReadThreadsTick}
         attentionPool={attentionPool}
         attentionCapacity={attentionCapacity}
+        // THR-2103 (S7.1): the digest's faces, resolved here (knowledge-gated, Law 8) and only while it is open.
+        digestVisuals={readThreadsOpen
+          ? agentRowVisuals({ graph: gameState.graph, familiarityMap: gameState.familiarityMap }, gameState.digestBuffer ?? [])
+          : undefined}
         onSpendEssence={(cost) => {
           setLastReadThreadsTick(gameState.tick);
           setGameState(prev => {

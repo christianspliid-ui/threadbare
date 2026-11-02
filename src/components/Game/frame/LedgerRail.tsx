@@ -30,6 +30,8 @@ import { Tooltip } from '../../shared/Tooltip';
 import { Z_BAND } from '../../shared/zBands';
 import { useView } from '../../../hooks/useView';
 import { ledgerRailSelector } from '../../../engine/views/ledgerRail';
+import { rowVisual } from '../../../engine/views/rowVisual';
+import type { EntityVisualDescriptor } from '../../../engine/views/entityVisualResolver';
 import { LEDGER_RAIL_SECTIONS, LEDGER_TABS, type LedgerSectionId } from '../../../data/frame-registry';
 import { LEDGER_FLYOUT_ARIA, LEDGER_FOLD_LABEL, LEDGER_RAIL_ARIA } from '../../../data/frame-content';
 import { useGameScreenState } from './GameScreenState';
@@ -174,6 +176,19 @@ export function LedgerRail({
     window.__DEBUG?._registerFrameBridge?.({ setInspectorOpen: (open: boolean) => { setInspectorOpen(open); return open; } });
   }, [setInspectorOpen]);
 
+  // THR-2103 (S7.1) — every threaded row's picture, resolved here so the panel never reads
+  // the graph. Rebuilt when the threaded list is (it is rebuilt each tick), and when the
+  // god's knowledge of a mortal or the map changes.
+  const familiarityMap = gameState.familiarityMap;
+  const tiles = gameState.tiles;
+  const threadVisuals = useMemo(() => {
+    const out: Record<string, EntityVisualDescriptor | null> = {};
+    const ctx = { graph: gameState.graph, familiarityMap, tiles };
+    for (const node of threadedNodes) out[node.id] = rowVisual(ctx, { kind: node.category, id: node.id, name: node.name });
+    return out;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the graph mutates in place; the list is the rebuild signal
+  }, [threadedNodes, familiarityMap, tiles]);
+
   const sectionRefs = useRef<Partial<Record<LedgerSectionId, HTMLDivElement | null>>>({});
 
   const bag: LedgerSectionBag = {
@@ -205,6 +220,7 @@ export function LedgerRail({
       // the chip then showed nothing, or the previously selected
       // mortal's sheet under the champion's id (Laws 1, 21, 33).
       onChampionChipClick: openAgentSheetForId,
+      threadVisuals,
     },
     chronicle: {
       entries,

@@ -10,6 +10,9 @@ import { TOPBAR_LOCKED_SUFFIX } from '../../data/ui-content';
 import { BAND_ACCENT } from './outcomeBandAccent';
 import { Icon } from '../shared/Icon';
 import { ICON_FOR_WORLD_REF_KIND } from '../../data/icons/conceptIcons';
+import { RowPicture, rowDressingAttrs } from '../shared/RowPicture';
+import { ROW_VISUAL_KIND } from '../../engine/views/rowVisual';
+import type { EntityVisualDescriptor } from '../../engine/views/entityVisualResolver';
 
 // What clicking a notification navigates to draws the object-kind icon from
 // `ICON_FOR_WORLD_REF_KIND` (THR-1906, Law 9) — one shape per kind, shared with Find and Connections.
@@ -55,6 +58,12 @@ interface ToastStackProps {
    * nothing: the receipt waits for the moment, like the guarded top bar.
    */
   receiptOpenLocked?: boolean;
+  /**
+   * THR-2103 (decision 4) — each toast's subject picture, keyed by toast id, resolved by the
+   * host (`GameView`): the picture of what the click opens. It leads the toast; the trailing
+   * kind icon stays, because that is the click affordance, not the subject.
+   */
+  toastVisuals?: Readonly<Record<string, EntityVisualDescriptor | null>>;
 }
 
 function formatCount(count: number): string {
@@ -65,9 +74,14 @@ function filterActive(toasts: ToastItem[], now: number): ToastItem[] {
   return toasts.filter(t => t.expiresAt > now);
 }
 
+/** Whether a navigation target's kind draws a row picture (`ROW_VISUAL_KIND`). */
+function navTargetHasPicture(target: NavigationTarget): boolean {
+  return !!(ROW_VISUAL_KIND as Readonly<Record<string, unknown>>)[target.kind];
+}
+
 export const toastStackTestHelpers = { formatCount, filterActive };
 
-export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate, receiptOpenLocked = false }: ToastStackProps) {
+export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate, receiptOpenLocked = false, toastVisuals }: ToastStackProps) {
   // Track which toasts are in exit animation (right-click dismissed)
   const [dismissingIds, setDismissingIds] = useState<Set<string>>(new Set());
   // THR-1877 — the receipt toast whose click was refused, and a counter that restarts its shake.
@@ -114,11 +128,16 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate, recei
         const isDismissing = dismissingIds.has(toast.id);
         const receiptLocked = receiptOpenLocked && navTarget?.kind === 'receipt';
         const showLockedHint = receiptLocked && lockedHint?.id === toast.id;
+        const visual = toastVisuals?.[toast.id] ?? null;
+        // A toast names a subject when what its click opens is a person, place, faction, army or relic.
+        const namesSubject = !!toastVisuals && !!navTarget && navTargetHasPicture(navTarget);
         return (
           <AnimateMount key={toast.id} show={!isDismissing} animation="anim-fade-up" duration={150}>
             <div
               key={showLockedHint ? `locked-${lockedHint?.n}` : 'toast'}
               data-receipt-locked={receiptLocked ? 'true' : undefined}
+              data-testid="toast"
+              {...rowDressingAttrs(visual, namesSubject)}
               className={`pointer-events-auto rounded-md shadow-lg backdrop-blur-sm border-l-[3px] px-3 py-2 flex items-start gap-2 cursor-pointer group${showLockedHint ? ' anim-shake-no' : ''}`}
               style={{
                 backgroundColor: 'var(--bg-raised)',
@@ -152,6 +171,7 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate, recei
               }
               aria-description="Right-click to dismiss"
             >
+              <RowPicture visual={visual} />
               <span
                 className="flex-1 leading-snug"
                 style={{

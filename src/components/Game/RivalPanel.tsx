@@ -3,6 +3,7 @@ import type { RivalBehavior, RivalDefinition, RivalState } from '../../types/riv
 import { RivalIcon } from '../shared/RivalIcon';
 import { Tooltip } from '../shared/Tooltip';
 import { SectionHeading } from '../shared/SectionHeading';
+import { listHeadingIcon } from '../../data/view-content';
 import { ListRow } from '../shared/ListRow';
 import { BEHAVIOR_COLORS, BEHAVIOR_COLOR_DEFAULT, BEHAVIOR_ICONS, getHostilityColor, hostilityLabel } from '../../data/uiColorPalette';
 
@@ -53,10 +54,10 @@ export const RivalPanel = React.memo(function RivalPanel({ definitions, states }
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-testid="rival-panel">
       <div>
         <Tooltip id="ui.rival_panel">
-          <SectionHeading as="h2" count={definitions.length}>Rival gods</SectionHeading>
+          <SectionHeading as="h2" count={definitions.length} icon={listHeadingIcon('rivalGods')}>Rival gods</SectionHeading>
         </Tooltip>
       </div>
       <div role="list" aria-label="Rival gods">

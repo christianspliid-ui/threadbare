@@ -16,7 +16,7 @@
  *   - Cooldown: READ_THREADS_COOLDOWN ticks between uses, button shows countdown
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, createContext, useContext } from 'react';
 import { Modal } from '../shared/Modal';
 import { Button } from '../shared/Button';
 import { formatEssence, formatEssencePool } from '../shared/formatEssence';
@@ -33,6 +33,10 @@ import {
   ATTENTION_BASE_CAPACITY,
   ATTENTION_POOL_STRAINED_THRESHOLD,
 } from '../../data/attention-constants';
+import type { EntityVisualDescriptor } from '../../engine/views/entityVisualResolver';
+import { RowPicture, rowDressingAttrs } from '../shared/RowPicture';
+import { ListHeadingIcon } from '../shared/ListHeadingIcon';
+import { listHeadingIcon, type ListHeadingId } from '../../data/view-content';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -67,6 +71,25 @@ interface ReadTheThreadsPanelProps {
    * Attention pool capacity. Paired with attentionPool for ratio computation.
    */
   attentionCapacity?: number;
+  /**
+   * THR-2103 (S7.1) — each digest mortal's face, keyed by agent id, resolved by the host
+   * (`DialogHost`) and knowledge-gated (Law 8). Absent ⇒ the rows draw as text.
+   */
+  digestVisuals?: Readonly<Record<string, EntityVisualDescriptor | null>>;
+}
+
+/** THR-2103 — the host's faces, read by every digest row without threading a prop through each group. */
+const DigestVisualsContext = createContext<Readonly<Record<string, EntityVisualDescriptor | null>> | undefined>(undefined);
+
+/** The face a digest row leads with, and the row's debug attributes; nothing when the host passed no faces. */
+function useDigestFace(agentId: string): { picture: React.ReactNode; attrs: Record<string, string> } {
+  const visuals = useContext(DigestVisualsContext);
+  if (!visuals) return { picture: null, attrs: {} };
+  const visual = visuals[agentId] ?? null;
+  return {
+    picture: visual ? <RowPicture visual={visual} /> : null,
+    attrs: rowDressingAttrs(visual, true),
+  };
 }
 
 interface LookbackOption {
@@ -123,10 +146,12 @@ function computeFidelity(lookbackTicks: number, isOverwhelmed: boolean): Fidelit
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function SectionLabel({ children, headingId = 'digestOther' }: { children: React.ReactNode; headingId?: ListHeadingId }) {
+  const icon = listHeadingIcon(headingId);
   return (
     <div
       style={{
+        ...(icon ? { display: 'flex', alignItems: 'center', gap: '6px' } : {}),
         fontSize: 'var(--text-xs)',
         color: 'var(--text-tertiary)',
         fontFamily: 'var(--font-body)',
@@ -135,6 +160,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
         marginTop: 'var(--space-3)',
       }}
     >
+      {icon && <ListHeadingIcon id={headingId} />}
       {children}
     </div>
   );
@@ -145,6 +171,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
  * Returns null for 'vague' fidelity — those entries are rendered at group level.
  */
 function DigestRow({ entry, fidelity }: { entry: DigestEntry; fidelity: Fidelity }) {
+  const face = useDigestFace(entry.agentId);
   // vague: no individual entries — handled at group level
   if (fidelity === 'vague') return null;
 
@@ -154,16 +181,19 @@ function DigestRow({ entry, fidelity }: { entry: DigestEntry; fidelity: Fidelity
     // No deltas, no attachment names — encounter type and outcome only
     return (
       <div
+        data-testid="digest-row"
+        {...face.attrs}
         style={{
           padding: 'var(--space-2) 0',
           borderBottom: '1px solid rgba(255,255,255,0.04)',
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'baseline',
+          alignItems: 'center',
           gap: 'var(--space-2)',
         }}
       >
-        <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
+        <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          {face.picture}
           {entry.agentName}
         </span>
         <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
@@ -182,14 +212,18 @@ function DigestRow({ entry, fidelity }: { entry: DigestEntry; fidelity: Fidelity
 
   return (
     <div
+      data-testid="digest-row"
+      {...face.attrs}
       style={{
         padding: 'var(--space-2) 0',
         borderBottom: '1px solid rgba(255,255,255,0.04)',
         display: 'flex',
-        flexDirection: 'column',
-        gap: 'var(--space-1)',
+        gap: 'var(--space-2)',
+        alignItems: 'flex-start',
       }}
     >
+      {face.picture}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)', flex: '1 1 auto', minWidth: 0 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
         <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
           {entry.agentName}
@@ -211,6 +245,28 @@ function DigestRow({ entry, fidelity }: { entry: DigestEntry; fidelity: Fidelity
           - Lost: {entry.attachmentsLost.join(', ')}
         </div>
       )}
+      </div>
+    </div>
+  );
+}
+
+/** A one-line digest row naming a mortal (missed opportunities, the dormant court), led by their face. */
+function NamedDigestLine({ entry, children }: { entry: DigestEntry; children: React.ReactNode }) {
+  const face = useDigestFace(entry.agentId);
+  return (
+    <div
+      data-testid="digest-row"
+      {...face.attrs}
+      style={{
+        padding: 'var(--space-1) 0',
+        borderBottom: '1px solid rgba(255,255,255,0.04)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--space-2)',
+      }}
+    >
+      {face.picture}
+      {children}
     </div>
   );
 }
@@ -394,7 +450,7 @@ function PostReadState({ entries, fidelity }: { entries: DigestEntry[]; fidelity
       {/* Watched locations — vaguer */}
       {locationEntries.length > 0 && (
         <div style={{ marginBottom: 'var(--space-2)' }}>
-          <SectionLabel>Watched locations</SectionLabel>
+          <SectionLabel headingId="digestWatchedLocations">Watched locations</SectionLabel>
           {locationEntries.map((e, i) => (
             <div
               key={`loc-${i}`}
@@ -416,13 +472,7 @@ function PostReadState({ entries, fidelity }: { entries: DigestEntry[]; fidelity
         <div style={{ marginBottom: 'var(--space-2)' }}>
           <SectionLabel>Missed opportunities</SectionLabel>
           {curatedOut.map((e, i) => (
-            <div
-              key={`curated-${i}`}
-              style={{
-                padding: 'var(--space-1) 0',
-                borderBottom: '1px solid rgba(255,255,255,0.04)',
-              }}
-            >
+            <NamedDigestLine key={`curated-${i}`} entry={e}>
               <span
                 style={{
                   fontSize: 'var(--text-xs)',
@@ -432,7 +482,7 @@ function PostReadState({ entries, fidelity }: { entries: DigestEntry[]; fidelity
               >
                 {e.agentName} — {e.encounterName}
               </span>
-            </div>
+            </NamedDigestLine>
           ))}
         </div>
       )}
@@ -442,17 +492,11 @@ function PostReadState({ entries, fidelity }: { entries: DigestEntry[]; fidelity
         <div style={{ marginBottom: 'var(--space-2)' }}>
           <SectionLabel>Dormant court</SectionLabel>
           {dormant.map((e, i) => (
-            <div
-              key={`dormant-${i}`}
-              style={{
-                padding: 'var(--space-1) 0',
-                borderBottom: '1px solid rgba(255,255,255,0.04)',
-              }}
-            >
+            <NamedDigestLine key={`dormant-${i}`} entry={e}>
               <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
                 {e.agentName} — faint signs of movement
               </span>
-            </div>
+            </NamedDigestLine>
           ))}
         </div>
       )}
@@ -472,6 +516,7 @@ export function ReadTheThreadsPanel({
   lastReadTick = 0,
   attentionPool,
   attentionCapacity,
+  digestVisuals,
 }: ReadTheThreadsPanelProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [readEntries, setReadEntries] = useState<DigestEntry[] | null>(null);
@@ -514,8 +559,14 @@ export function ReadTheThreadsPanel({
       size="m"
       aria-label="Read the Threads"
     >
-      <Modal.Header onClose={handleClose}>Read the Threads</Modal.Header>
+      <Modal.Header onClose={handleClose}>
+        <span data-testid="read-the-threads" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+          <ListHeadingIcon id="readTheThreads" />
+          Read the Threads
+        </span>
+      </Modal.Header>
       <Modal.Body>
+        <DigestVisualsContext.Provider value={digestVisuals}>
         {!hasRead ? (
           <PreReadState
             essenceAvailable={essenceAvailable}
@@ -527,6 +578,7 @@ export function ReadTheThreadsPanel({
         ) : (
           <PostReadState entries={readEntries} fidelity={readFidelity} />
         )}
+        </DigestVisualsContext.Provider>
       </Modal.Body>
       {hasRead && (
         <Modal.Footer>

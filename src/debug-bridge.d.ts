@@ -293,6 +293,17 @@ export interface DebugStageState {
  * `getCeremonyDressing()` (THR-2102, art-led pass slice 6) — what the open ceremony drew, read
  * off its DOM. Reports what was drawn, not why.
  */
+/** `getListDressing()` (THR-2103, art-led pass slice 7) — one open list surface's dressing. */
+export interface DebugListDressing {
+  surface: 'chronicle' | 'notables' | 'rivals' | 'threads' | 'read-the-threads' | 'omens' | 'toasts' | 'find' | 'hover-card';
+  /** Rows naming a person, place, faction, army or relic. */
+  subjectRows: number;
+  /** Of those, rows that drew no picture — the Done-when wants zero. */
+  subjectRowsBare: number;
+  /** Every heading shape drawn on the surface. */
+  headingIcons: string[];
+}
+
 export interface DebugCeremonyDressing {
   kind: 'cycle-harvest' | 'age-twilight' | 'threading-rite';
   /** Every face drawn (`data-ceremony-face`): the god at the harvest, the First at the end, the rite's mortal. */
@@ -3014,10 +3025,24 @@ export interface DebugBridge {
    * gate, `omenName` and `heldBy` are display-only names. Never touches GameState. `null` clears.
    */
   setFrameFixture: (fixture: { revealAll?: boolean; omenName?: string; heldBy?: string } | null) => Promise<boolean>;
+  /**
+   * THR-2103 (art-led pass slice 7) — dev lever: push one toast whose click opens `target`, so
+   * its subject picture can be read (`data-row-art` on `[data-testid="toast"]`). Follows
+   * `pushNeedsYouFixture`. No-op before GameView mounts.
+   */
+  pushToastFixture: (target: import('./types/notification').NavigationTarget, message?: string) => Promise<void>;
+  /**
+   * THR-2103 — what every open list surface drew, read off its DOM: per surface, how many rows
+   * name a person, place, faction, army or relic (`data-row-subject`), how many of those drew
+   * no picture (`data-row-art="none"`), and its heading shapes (`data-heading-icon`). `[]` when
+   * none is open. Reports what was drawn, not why.
+   */
+  getListDressing: () => Promise<DebugListDressing[]>;
   /** @internal GameView registers the top bar's levers here (THR-1875). */
   _registerTopBarBridge: (bridge: {
     pushNeedsYouFixture: (opts?: { news?: number; burst?: number; heldPopup?: boolean }) => { pushed: number };
     setFrameFixture: (fixture: { revealAll?: boolean; omenName?: string; heldBy?: string } | null) => boolean;
+    pushToastFixture?: (target: import('./types/notification').NavigationTarget, message?: string) => void;
   }) => void;
   /** THR-1902 — the map's chrome state (`fog`: what uncharted land shows). Null before the map mounts. */
   getMapChrome: () => Promise<DebugMapChromeResult | null>;

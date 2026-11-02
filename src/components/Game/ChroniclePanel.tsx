@@ -20,6 +20,8 @@ import { Tabs } from '../shared/Tabs';
 import { Icon } from '../shared/Icon';
 import { Button } from '../shared/Button';
 import { ListRow } from '../shared/ListRow';
+import { RowPicture, rowDressingAttrs } from '../shared/RowPicture';
+import { ListHeadingIcon } from '../shared/ListHeadingIcon';
 import { renderProseWithIPK } from '../ProseKeyword';
 import { NEWLY_REVEALED_STYLE } from './GameView/openingReveal';
 import type { LedgerRailVM } from '../../engine/views/ledgerRail';
@@ -36,7 +38,7 @@ import {
   countWords,
 } from '../../data/frame-content';
 
-type ChronicleVM = Pick<LedgerRailVM, 'worldSoul' | 'now' | 'years' | 'ledger'>;
+type ChronicleVM = Pick<LedgerRailVM, 'worldSoul' | 'now' | 'years' | 'ledger' | 'entryVisuals'>;
 
 interface ChroniclePanelProps {
   entries: ChronicleEntry[];
@@ -289,9 +291,10 @@ function readYearsChosen(): Record<string, boolean> {
  * starts open and the older ones folded; a toggled year flips that default, remembered.
  */
 function YearsList({
-  years, byId, voiceMode, currentTick,
+  years, byId, voiceMode, currentTick, entryVisuals,
 }: {
   years: ChronicleVM['years'];
+  entryVisuals?: ChronicleVM['entryVisuals'];
   byId: Map<string, ChronicleEntry>;
   voiceMode: ChronicleVoiceMode;
   currentTick?: number;
@@ -314,7 +317,7 @@ function YearsList({
             </button>
             {open && group.entryIds.map(id => {
               const entry = byId.get(id);
-              return entry ? <ChronicleEntryCard key={id} entry={entry} voiceMode={voiceMode} currentTick={currentTick} /> : null;
+              return entry ? <ChronicleEntryCard key={id} entry={entry} voiceMode={voiceMode} currentTick={currentTick} visual={entryVisuals?.[id]} /> : null;
             })}
           </div>
         );
@@ -359,11 +362,12 @@ function LedgerTab({
         ledger.rows.map(row => {
           const isNew = marked.has(row.recordId) || row.isNew;
           return (
-            <div key={row.recordId} data-testid="chronicle-ledger-row" data-record-id={row.recordId} data-new={isNew ? 'true' : undefined}>
+            <div key={row.recordId} data-testid="chronicle-ledger-row" data-record-id={row.recordId} data-new={isNew ? 'true' : undefined} {...rowDressingAttrs(row.visual, 'visual' in row)}>
               <ListRow
                 onClick={() => onOpenLedger?.(row.recordId)}
                 trailing={isNew ? <span style={{ ...LABEL_STYLE, color: 'var(--text-secondary)' }}>{LEDGER_TAB_NEW}</span> : undefined}
               >
+                {row.visual && <ListRow.Leading><RowPicture visual={row.visual} /></ListRow.Leading>}
                 <span style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}>
                   <ListRow.Title>{row.name}</ListRow.Title>
                   <ListRow.Subtitle>{row.mortalName} · {row.state}</ListRow.Subtitle>
@@ -429,7 +433,7 @@ function NowPanel({ vm, byId, voiceMode, setVoiceMode, currentTick, past }: Chro
           </p>
         ) : (
           nowEntries.map(entry => (
-            <ChronicleEntryCard key={entry.id} entry={entry} voiceMode={voiceMode} currentTick={currentTick} />
+            <ChronicleEntryCard key={entry.id} entry={entry} voiceMode={voiceMode} currentTick={currentTick} visual={vm.entryVisuals?.[entry.id]} />
           ))
         )}
       </div>
@@ -438,7 +442,7 @@ function NowPanel({ vm, byId, voiceMode, setVoiceMode, currentTick, past }: Chro
 }
 
 function YearsPanel({ vm, byId, voiceMode, currentTick }: ChronicleTabPanelProps) {
-  return <YearsList years={vm.years} byId={byId} voiceMode={voiceMode} currentTick={currentTick} />;
+  return <YearsList years={vm.years} byId={byId} voiceMode={voiceMode} currentTick={currentTick} entryVisuals={vm.entryVisuals} />;
 }
 
 function LedgerPanel({ vm, shown, onOpenLedger, onLedgerSeen }: ChronicleTabPanelProps) {
@@ -513,7 +517,10 @@ export function ChroniclePanel({
       }}
     >
       <Tooltip id="ui.chronicle" desc={chronicleTooltipDesc()}>
-        <span style={{ ...LABEL_STYLE, cursor: 'help', alignSelf: 'flex-start' }}>{CHRONICLE_LABEL}</span>
+        <span style={{ ...LABEL_STYLE, cursor: 'help', alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <ListHeadingIcon id="chronicle" />
+          {CHRONICLE_LABEL}
+        </span>
       </Tooltip>
 
       {vm.worldSoul && (reveal?.worldSoul ?? true) && (

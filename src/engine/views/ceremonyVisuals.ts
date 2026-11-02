@@ -12,11 +12,10 @@
 import type { GameState } from '../../types/gameState';
 import type { EchoDefinition } from '../../types/echo';
 import { echoDisplayName } from '../../data/account-content';
-import { locationHex } from '../effects/castRelocation';
 import { godName } from '../twilight';
-import { landProseInputFor } from './subjects/pageResolvers';
 import { ascendantPortraitSrc } from './subjects/godSheet';
-import { mortalFace, resolveEntityVisual, type EntityVisualDescriptor } from './entityVisualResolver';
+import { resolveEntityVisual, type EntityVisualDescriptor } from './entityVisualResolver';
+import { rowVisual } from './rowVisual';
 
 /**
  * Decision 3 — the picture of what an echo is of: a legacy's face (knowledge-gated, Law 8),
@@ -33,17 +32,15 @@ export function echoVisual(state: GameState, def: EchoDefinition): EntityVisualD
       const kind = def.echoType === 'legacy' ? 'agent' : def.echoType === 'monument' ? 'location' : 'artifact';
       return resolveEntityVisual({ id: def.originNodeId, kind, name }, null);
     }
-    if (node.type === 'actor') {
-      const face = mortalFace(state.graph, node.id, state.familiarityMap);
-      return face ? { ...face, alt: name } : resolveEntityVisual({ id: node.id, name }, state.graph);
-    }
-    if (node.type === 'location') {
-      const hex = locationHex(state.graph, node.id);
-      const land = hex ? landProseInputFor(state, hex.col, hex.row) : null;
-      return resolveEntityVisual({ id: node.id, name }, state.graph, {
-        terrain: land?.terrain,
-        sphereInfluence: land?.sphereInfluence ?? null,
-      });
+    // THR-2103 (one path, Law 3): a person's knowledge gate and a place's terrain are read by
+    // the list rows' helper, so the harvest and the lists cannot disagree about a picture.
+    if (node.type === 'actor' || node.type === 'location') {
+      const kind = node.type === 'actor' ? 'agent' : 'location';
+      const visual = rowVisual(
+        { graph: state.graph, familiarityMap: state.familiarityMap, tiles: state.tiles, withSphereInfluence: true },
+        { kind, id: node.id, name },
+      );
+      if (visual) return visual;
     }
     return resolveEntityVisual({ id: node.id, name }, state.graph);
   } catch {

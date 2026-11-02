@@ -186,6 +186,7 @@ if (import.meta.env.DEV) {
   let _topBarBridge: {
     pushNeedsYouFixture: (opts?: { news?: number; burst?: number; heldPopup?: boolean }) => { pushed: number };
     setFrameFixture: (fixture: { revealAll?: boolean; omenName?: string; heldBy?: string } | null) => boolean;
+    pushToastFixture?: (target: import('./types/notification').NavigationTarget, message?: string) => void;
   } | null = null;
   // THR-1813 — the account record, registered by GameView.
   let _accountBridge: {
@@ -1193,6 +1194,8 @@ if (import.meta.env.DEV) {
     _registerFrameBridge: (bridge) => { _frameBridge = bridge; },
     pushNeedsYouFixture: async (opts) => _topBarBridge?.pushNeedsYouFixture(opts) ?? { pushed: 0 },
     setFrameFixture: async (fixture) => _topBarBridge?.setFrameFixture(fixture) ?? false,
+    pushToastFixture: async (target, message) => { _topBarBridge?.pushToastFixture?.(target, message); },
+    getListDressing: async () => (await import('./components/Game/listDressing')).readListDressing(),
     _registerTopBarBridge: (bridge) => { _topBarBridge = bridge; },
     getAccountRecord: async () => _accountBridge?.get() ?? null,
     /** THR-1843 — the echoes this world placed at creation (host, band, lift). Null before a game. */
