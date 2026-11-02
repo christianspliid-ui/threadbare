@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-02 01:58 local (00:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-02 02:56 local (01:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,6 +46,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-02: a long Chronicle "Now" tab no longer squeezes the Threads list, and it is live** ([THR-2126](https://linear.app/threadbare/issue/THR-2126)). Merged via [#2696](https://github.com/christianspliid-ui/threadbare/pull/2696).
 - **2026-11-01: the ceremonies (the harvest, the end of the age, the threading rite) now lead with art, and it is live** ([THR-2102](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the)). Merged via [#2693](https://github.com/christianspliid-ui/threadbare/pull/2693).
 - **2026-11-01: the dialogs (chapter ledger, what your act bought) now lead with art, and it is live** ([THR-2101](https://linear.app/threadbare/issue/THR-2101/art-led-pass-slice-5-the-dialogs-chapter-ledger-what-your-act-bought)). Merged via [#2690](https://github.com/christianspliid-ui/threadbare/pull/2690).
 - **2026-11-01: type-size question handed to the design lane** ("Let the design lane do the work", Discord 19:04). [THR-2118](https://linear.app/threadbare/issue/THR-2118/type-hierarchy-can-a-player-tell-title-heading-value-and-label-apart) is no longer reserved; the design lane decides it and invites your veto.
@@ -55,7 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-01: the rulebook's monthly review (14 fixes to the rules text) is merged** ([THR-2112](https://linear.app/threadbare/issue/THR-2112/rulebook-review-2026-11-14-findings)). Merged via [#2677](https://github.com/christianspliid-ui/threadbare/pull/2677).
 - **2026-11-01: a faction's page now lists the reputations its living members hold, and it is live** ([THR-2111](https://linear.app/threadbare/issue/THR-2111/faction-page-reputations-they-hold-reads-a-property-nothing-writes)). Merged via [#2675](https://github.com/christianspliid-ui/threadbare/pull/2675).
 - **2026-11-01: every other Inspector page (places, lands, factions, armies, relics, the god, cards, records) now leads with its art, and it is live** ([THR-2098](https://linear.app/threadbare/issue/THR-2098/art-led-pass-slice-2-every-other-inspector-page-places-lands-factions)). Merged via [#2674](https://github.com/christianspliid-ui/threadbare/pull/2674).
-- **2026-11-01: the ten most-met encounters now read in the new story-text style, and it is live** ([THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets), slice 1). Merged via [#2672](https://github.com/christianspliid-ui/threadbare/pull/2672).
 
 ---
 

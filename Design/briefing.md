@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-02 01:58 local (00:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-02 02:56 local (01:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -37,13 +37,8 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 - Same ticket: a count stays next to its heading ("Your cards 2"), not pushed to the far edge. Veto line: "counts on the right".
 - Same ticket: the words about a small picture sit to its right; a big picture has its name above it; a label under a grid tile lines up with the tile's left edge. Veto line: "captions under pictures".
 - Same ticket: a small tag about a row comes after the row's name, and a count badge sits right after its word. Tooltips open where they do today. Veto line: "tags before the name".
-- [Panel anatomy — one reading order that every core panel follows](https://linear.app/threadbare/issue/THR-2117/panel-anatomy-one-reading-order-that-every-core-panel-follows) ([decision](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-11-01-ui-panel-anatomy.md)): every panel reads in the same order. First who or what it is, then one line saying what is going on with it now, then what your god can do, then the detail, then the links out. Veto line: "a different panel order".
-- Same ticket: on a wide page, a mortal's or god's name sits above their portrait, not under it. Veto line: "the portrait comes first".
-- Same ticket: an encounter's title becomes the strongest words at the top of the Stage, with the stakes line right under it. Veto line: "keep the encounter header as it is".
-- Same ticket: a dialog shows its title once, and the button you press comes last. Veto line: "keep the dialog titles".
-- Same ticket: a panel has at most two levels of heading and at most two frames. Text lines up on one left edge. Veto line: "keep the centred headers".
 
-Say "veto <title>" to reverse any of these. *— from the design lane ([15:24](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01e.md), [18:25](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01f.md), [21:27](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01g.md), [00:27](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01h.md))*
+Say "veto <title>" to reverse any of these. The panel-anatomy decisions ([THR-2117](https://linear.app/threadbare/issue/THR-2117/panel-anatomy-one-reading-order-that-every-core-panel-follows)) have passed their 12-hour veto window and stand. *— from the design lane ([18:25](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01f.md), [21:27](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01g.md), [00:27](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01h.md))*
 
 ## This week's screens
 
@@ -51,12 +46,12 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([15:24](h
 
 ## Queue
 
-**Starved (0 ready).** The builder took [THR-2103](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) (pictures in the lists and notices, [plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-01-thr-2103-art-led-lists.md)) as soon as its hold lifted, built it, and armed it as [PR #2695](https://github.com/christianspliid-ui/threadbare/pull/2695); it merges itself on green. Nothing else is ready. The UI legibility map is closed and split into four plans (above), which refills the shelf once they reach Ready for Dev.
+**Starved (0 ready).** The orchestrator promoted two small UI bugs an hour ago and the builder has taken both. [THR-2126](https://linear.app/threadbare/issue/THR-2126) (a long Chronicle tab squeezed the Threads list) is merged and live via [PR #2696](https://github.com/christianspliid-ui/threadbare/pull/2696). [THR-2127](https://linear.app/threadbare/issue/THR-2127/hand-sections-disclosure-chevron-points-right-when-open-rotate90deg-on) (the Hand's open-section arrow pointed the wrong way) is built and armed as [PR #2697](https://github.com/christianspliid-ui/threadbare/pull/2697); it merges itself on green. The next real refill is the four legibility plans ([THR-2122](https://linear.app/threadbare/issue/THR-2122)–[THR-2125](https://linear.app/threadbare/issue/THR-2125)), which the design lane writes next.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (13 days). It is parked because unattended runs are refused the gate and CI edits it needs. No local worktree carries its id this hour. Agents can un-park it in an attended run.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (13 days). It is parked because unattended runs are refused the gate and CI edits it needs. No pushed branch or local worktree carries its id this hour. Agents can un-park it in an attended run.
 
 ## Health
 
-All green. One pull request is open ([#2695](https://github.com/christianspliid-ui/threadbare/pull/2695), THR-2103), armed and waiting on checks. The live site is current: the only commit since the ceremonies slice (8d8e7538) is the modules decision doc, which needs no rebuild. Checks on main and the scheduled background jobs pass. All nine enabled scheduled tasks are on time, and the worktree reaper last ran at 00:40 UTC. Engine speed is normal (182 ms per tick, 15% over the weekly median, inside the 25% line).
+All green. One pull request is open ([#2697](https://github.com/christianspliid-ui/threadbare/pull/2697), THR-2127), armed and waiting on checks. The live site serves the latest main (7c720ffd). Checks on main and the scheduled background jobs pass. All nine enabled scheduled tasks are on time; the weekly screen review runs for the first time at 07:34 this morning. The worktree reaper last ran at 01:40 UTC. Engine speed is normal (174 ms per tick, 10% over the weekly median, inside the 25% line).
