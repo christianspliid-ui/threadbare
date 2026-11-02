@@ -951,10 +951,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Domain Capability*, *UnifiedActionTemplate*
 - **Module:** `src/engine/unifiedActionResolution.ts`
-- **Production hits:** 256 total — 1 write, 3 read, 252 unclassified
+- **Production hits:** 255 total — 1 write, 3 read, 251 unclassified
 - **Write sites:** `src/data/unified-action-templates.ts`
 - **Read sites:** `src/engine/playerCastReadout.ts`, `src/engine/targetActions.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts` +247 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts` +246 more
 - **Verdict:** Verified 2026-09-10: THR-728: `unified-action-templates.ts` authors `steps[].difficulty`; `resolveUncontestedStep` reads it for `source === 'player'` (the auto-success early-return is now gated behind `PLAYER_CAST_VARIANCE_ENABLED`), and `targetActions.ts` reads the same field via `maxStepDifficulty` to render the focused card's risk line. Measured over 400 seeds: the outcome set for a positive-difficulty cast is >1 band. THR-1073 rerouted both read sites through `tierScaledDifficulty`: a step declaring `difficultyContext: 'target_tier_scaled'` treats its authored `difficulty` as a tier-1 baseline and resolves the real value from the target's tier. Both sites resolve through the same helper, so the card's risk line cannot drift from the roll; a step without the marker is returned unchanged. THR-1002 moved the card's read from a risk *sentence* to a forecast tier *word*: `castForecastProbability` (`playerCastReadout.ts`) is now the third read site, and the word is `classifyForecastTier` of the probability the roll uses. Re-verified 2026-09-10 by pinning it against `resolveUncontestedStep` driven for real rather than against `computeResolutionThreshold` — which found two live divergences the threshold-only pin had been green over: the below-floor lift is to the *scale* floor (a fresh god's local cast read `perilous` at 0.354 where the roll gives 0.65 → `favorable`), and a difficulty-0 step short-circuits to `probability: 1` above every scale adjustment, so it is `fated` at every scale.
 
 ### `authored-tier-ramp-target-scaled-price` — 🟢 LIVE
@@ -1262,10 +1262,10 @@ exit
 - **Intent:** A member of a group — a company, and since THR-1297 a network — is not a member of a faction by that name; faction rank, allegiance display and heraldry must keep reading the faction.
 - **Producer → Consumer:** Companies & Group Travel → Factions & Succession
 - **UL terms:** *Company*, *Faction*
-- **Production hits:** 55 total — 2 write, 9 read, 44 unclassified
+- **Production hits:** 54 total — 2 write, 9 read, 43 unclassified
 - **Write sites:** `src/engine/graphQueries.ts`, `src/engine/groupShape.ts`
 - **Read sites:** `src/engine/anointSuccessor.ts`, `src/engine/contextBuilder.ts`, `src/engine/detailPageResolvers.ts`, `src/engine/factionReputation.ts`, `src/engine/notableAgendas.ts` +4 more
-- **Other hits:** `src/components/Game/debug/RelationshipGraph.tsx`, `src/engine/agentDetail.ts`, `src/engine/armyNotifications.ts`, `src/engine/binding/binder.ts`, `src/engine/callbackEligibility.ts` +39 more
+- **Other hits:** `src/components/Game/debug/RelationshipGraph.tsx`, `src/engine/agentDetail.ts`, `src/engine/armyNotifications.ts`, `src/engine/binding/binder.ts`, `src/engine/complicationEffects.ts` +38 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 1 completed the sweep THR-74 started: 48 further agent-sourced `member_of` reads that treated any target as "their faction" now route through getFactionMembershipEdges, taking the routed total to 62 of the 69 raw call sites. The 7 that remain raw are deliberate and annotated in place — army-sourced reads (an army really is member_of its faction), the three group-scoped resolvers that exist to find the company, and reputation.ts's target-addressed a→b finder, whose membership leg must keep resolving standing with one's own company. The rule itself moved to engine/groupShape.ts (getGroupKind → groupKind tag first, pre-THR-1297 property-presence as back-compat fallback), retiring the hand-mirrored copy in graphQueries.ts. This is what makes the network kind safe: isFactionMembershipEdge rested on "companies are the only non-faction member_of target", which a network (THR-1288, member_of contact edges) makes false. One live defect fixed in passing — strategicActionCandidates.ts's `faction` target rule returned a company as a faction target. Non-vacuous by src/engine/__tests__/factionMembershipGolden.test.ts (11 tests): a differential over real seeded worlds (42, 99) re-deriving the pre-THR-1297 rule inline and asserting the wrapper agrees agent-by-agent, with a company constructed into each world because a tick-0 world has none — falsified 5-of-11 red with isGroupMembershipTarget stubbed to false (the per-seed differentials stayed green before the constructed company was added, which is the vacuity the pin closes). Full suite 18532 green; 30-tick seed-42 CLI smoke reached tick 30 with 377 agents.
 
 ### `company-position-derives-from-leader` — 🟢 LIVE
@@ -1781,10 +1781,10 @@ exit
 - **Intent:** An encounter lights its own place on the Stage (THR-1895, plan THR-1877 § D9; THR-1822 D16 step 5). Every encounter adapter (unified, simple, gate duty) writes the notification hexCol / hexRow into the stage model header; GameView hands it to the stage selector, and resolveMomentHexes lights that hex first (litSource beat), else the Location of the mortal, so the camera eases the place into the Stage window.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Encounter*, *Location*
-- **Production hits:** 169 total — 3 write, 1 read, 165 unclassified
+- **Production hits:** 167 total — 3 write, 1 read, 163 unclassified
 - **Write sites:** `src/engine/views/stage/buildGateDutyEncounterStageModel.ts`, `src/engine/views/stage/buildSimpleEncounterStageModel.ts`, `src/engine/views/stage/buildUnifiedEncounterStageModel.ts`
 - **Read sites:** `src/components/Game/GameView.tsx`
-- **Other hits:** `src/components/Game/debug/BeatsDebugTab.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/hooks/useAgentInteraction.ts` +160 more
+- **Other hits:** `src/components/Game/debug/BeatsDebugTab.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/hooks/useAgentInteraction.ts` +158 more
 - **Verdict:** Verified 2026-10-20: THR-1895. On ?view=game&seeded&size=medium&forceencounters at 1920x1080, getStage() reported the encounter with vm.litSource beat and litHex 16,12 inside the 280 px window (litHexInWindow true); buildGateDutyEncounterStageModel.test.ts pins the gate-duty header hex.
 
 ### `encounter-outcome-guild-holds-a-building` — 🔵 UNVERIFIED-OK
@@ -2612,10 +2612,10 @@ exit
 - **Producer → Consumer:** Strategic Projects & Control → Factions & Succession
 - **UL terms:** *hold*, *Realm*, *Faction*
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 69 total — 2 write, 3 read, 64 unclassified
+- **Production hits:** 68 total — 2 write, 3 read, 63 unclassified
 - **Write sites:** `src/engine/phaseStrategicProjects.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/factionQuestGeneration.ts`, `src/engine/factionReputation.ts`
-- **Other hits:** `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/RelationshipGraph.tsx`, `src/components/Game/DebugPanel.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/data/strategic-action-constants.ts` +59 more
+- **Other hits:** `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/RelationshipGraph.tsx`, `src/components/Game/DebugPanel.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/data/strategic-action-constants.ts` +58 more
 - **Verdict:** Verified 2026-09-22: THR-1448. On a fixture (`holdStanding.test.ts`): a stance on a town inside a Realm’s projection mints `member_of` with `reputation = HOLD_STANDING_REPUTATION_SEED`, `rank` stays 0 and derives to *subject*; a second pass writes and announces nothing; an existing member reads `membershipMinted: false` and keeps their reputation; a wilds stance opens nothing; a gone stance traces `position_closed` and leaves the edge. On a **generated** world (`holdStandingReach.test.ts`, heavy lane, seed 42 small): a real mortal claims a real town on a Realm’s ground through `claimControl`, one `runTick` traces `position_opened` naming the projection’s Realm with the membership minted at the seed, and collapsing the stance closes the standing with the membership present.
 
 ### `held-town-supplies-keeper-content-past-rank-access` — 🟢 LIVE
@@ -3147,10 +3147,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **UL terms:** *Undertaking*
 - **Module:** `src/engine/naming/workNames.ts`
-- **Production hits:** 32 total — 3 write, 1 read, 28 unclassified
+- **Production hits:** 31 total — 3 write, 1 read, 27 unclassified
 - **Write sites:** `src/engine/binding/creationEffects.ts`, `src/engine/naming/workNames.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/groups/groupNames.ts`
-- **Other hits:** `src/data/backstory-content.ts`, `src/data/complication-templates.ts`, `src/data/content-eval/nudgeAuditDetectors.ts`, `src/data/foreshadowing-content.ts`, `src/data/item-generator-cores.ts` +23 more
+- **Other hits:** `src/data/backstory-content.ts`, `src/data/complication-templates.ts`, `src/data/content-eval/nudgeAuditDetectors.ts`, `src/data/foreshadowing-content.ts`, `src/data/item-generator-cores.ts` +22 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 4. `groupNames.ts` becomes the first caller: its local `hashSeed` / `pick` / `possessive` are deleted and imported from the shared module. The group *grammar* is deliberately NOT folded in — folding companies onto the work patterns would have re-rolled every company name in every existing world, a player-facing rename with no ticket behind it, so this row guards shared primitives and two grammars rather than one namer with two callers. Pinned by `groups/__tests__/groupNameStability.test.ts`, a DIFFERENTIAL against a byte-copy of origin/main's implementation (a captured-literal golden would agree with itself the moment anyone regenerated it) across 17 contexts chosen to hit every pattern fork; falsified twice — stubbing `possessive` to always add `'s` went 2-of-20 red, and offsetting `pickFrom` by one went 12-of-20 red. The possessive rule reaches the strategic packs for the first time: `renderNameTemplate` matches `{actor}'s` as a unit so all seven shipped possessive templates render "Silas' Workshop" instead of "Silas's Workshop", and the two legacy hand-rolled name strings in `executeInstantMutation` now share it (falsified 9-of-22 red by restoring raw substitution). Christening is live: 93 firings in a 150-tick seed-42 run, producing "The Deepset Granary of Thornhaven", "Miriel's Surveyed Research Circle", "Elior's Auspice Shrine". Two defects the live run caught and unit tests could not: a concatenating `{root}{noun}` pattern produced "The StandingHouse" (removed; a legibility guard over a 200-name sample now falsifies at 55 offenders), and christening initially replaced a specific noun with a generic family one ("Rill's Research Circle at Ardenmor Keep" became "The Ardenmor Keep House") because `createSublocation` stamps `sublocationTypeId`, not `locationSubtype`. Names outlive owners: `transferHolding` never renames, `razeHolding` retires the name into the site's `nameEchoes`, and `refreshHoldingFaceNames` closes the stale-face gap slice 3's checkpoint predicted. The christened name rides the existing completion trace rather than an emission of its own — a separate trace measurably evicted `decision_board_comparison` entries from the per-tick ring buffer and reddened `decisionBoardLiveness`'s frozen-desire pin on a diff that authored no `motivations`. Full suite 18683 green ×2; ratchet 2973 unchanged; 30-tick seed-42 smoke reached tick 30, 377 agents.
 
 ### `opened-markets-draw-a-thieves-guild` — 🟢 LIVE
@@ -3307,10 +3307,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 475 total — 1 write, 1 read, 473 unclassified
+- **Production hits:** 474 total — 1 write, 1 read, 472 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +468 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +467 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `recovered-town-keeps-faith` — 🟢 LIVE
@@ -3410,10 +3410,10 @@ exit
 - **Intent:** A Restless town loses people (THR-1934 S1). Every RESTLESS_LEAVE_DAYS 3 days of the restless trait, the nearest fed, calm settlement within MIGRATION_RADIUS_HEXES 6 (same tax holder first) gains a person and the town loses one — once the settlement economy counts population; before it, skipped and traced — and the town's most recent arrival gets a relocationIntent (source unrest) toward it, which the movement pull scores like any intent.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Movement & Colocation
 - **UL terms:** *Settlement*, *Unrest*
-- **Production hits:** 85 total — 1 write, 1 read, 83 unclassified
+- **Production hits:** 84 total — 1 write, 1 read, 82 unclassified
 - **Write sites:** `src/engine/unrestPressure.ts`
 - **Read sites:** `src/engine/relocationIntent.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/Codex.tsx`, `src/components/Codex/codexRegistry.ts`, `src/components/Codex/codexRunState.ts` +78 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/Codex.tsx`, `src/components/Codex/codexRegistry.ts`, `src/components/Codex/codexRunState.ts` +77 more
 - **Verdict:** Verified 2026-10-17: THR-1934. unrestPressure.test.ts: the latest arrival leans to the nearest fed, calm town (not the nearer hungry one, not the nearer Restless one, not the one past 6 hexes); with population counted the two towns move −1 / +1. measure:unrest: 0 leave-rule violations on seeds 42 / 99 / 7.
 
 ### `restless-road-reaches-chronicle` — 🔵 UNVERIFIED-OK
@@ -3546,10 +3546,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Ruins, Clues & Delves
 - **UL terms:** *Undertaking*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 142 total — 1 write, 1 read, 140 unclassified
+- **Production hits:** 141 total — 1 write, 1 read, 139 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/ruins/delveVariant.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAvatarData.ts` +135 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAvatarData.ts` +134 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R2. The `destroy × Location` semantic stamps `ruinMagnitude` from `RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE`; `phaseDelveAdmission` widens its filter from `locationType === 'elder_ruin'` to also admit a `ruins`-subtype Location once `ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick`, with the located-clue requirement unchanged. Non-vacuous by four tests in `src/engine/ruins/__tests__/delveVariant.test.ts` that assert the admit arm, the still-fresh refuse arm, the worldgen-ruin refuse arm (no `ruinedTick`) and the narrowed-clue refuse arm — a scan that admitted every `ruins` location passes the first alone, one that admitted none passes the second alone. **`sphereAlignment` is deliberately not written:** the plan named a new `ruinSphereAlignment`, but `delveVariant` reads `sphereAlignment`, so the new name would have been another write nobody reads; the existing property is carried through untouched and a settlement without one takes the vault archetype.
 
 ### `rule-overrides-reach-owning-sites` — 🟢 LIVE
@@ -3740,10 +3740,10 @@ exit
 - **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 429 total — 1 write, 1 read, 427 unclassified
+- **Production hits:** 427 total — 1 write, 1 read, 425 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +422 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +420 more
 - **Verdict:** Verified 2026-09-10: THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.
 
 ### `settlement-economy-drives-tier` — 🟢 LIVE
@@ -3923,10 +3923,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Factions & Succession
 - **UL terms:** *Faction*, *Spotlight tier*
 - **Module:** `src/engine/factionOutcome.ts`
-- **Production hits:** 55 total — 2 write, 2 read, 51 unclassified
+- **Production hits:** 54 total — 2 write, 2 read, 50 unclassified
 - **Write sites:** `src/engine/factionOutcome.ts`, `src/engine/orchestrator.ts`
 - **Read sites:** `src/engine/factionQuestGeneration.ts`, `src/engine/guildJoinFunnel.ts`
-- **Other hits:** `src/components/Game/debug/RelationshipGraph.tsx`, `src/engine/agentDetail.ts`, `src/engine/anointSuccessor.ts`, `src/engine/armyNotifications.ts`, `src/engine/binding/binder.ts` +46 more
+- **Other hits:** `src/components/Game/debug/RelationshipGraph.tsx`, `src/engine/agentDetail.ts`, `src/engine/anointSuccessor.ts`, `src/engine/armyNotifications.ts`, `src/engine/binding/binder.ts` +45 more
 - **Verdict:** Verified 2026-09-28: THR-1640. `readers/guild-join.ts 42,99 200` with `PROBE=0` (the probe writes engine state, so the probed world is not the unprobed one): on `origin/main` 7 joins fired on seed 99, 3 landed in a success band, 0 memberships; with the live hook, joins resolved `success`/`success_at_cost`/`critical_success` write `member_of` every time (seed 42: 13 of 13 landed joins, seed 99: 17 of 17), and spotlight mortals belong to 7 · 5 non-Realm guilds at t200 (was 1 · 1). `readers/reach.ts 42,99 200`: first-gate `no_deciding_member` 83 · 84 → 35 · 37; drawable fired 161 → 159 (floor 121). Spotlight count at t200 19 · 20, unchanged. Unit: `guildJoinsSpotlight.test.ts` (13).
 
 ### `starve-faithful-drains-faith` — 🟢 LIVE

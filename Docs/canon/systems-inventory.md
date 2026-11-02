@@ -268,7 +268,6 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `binding` (9) | `binding/applyBinding.ts`, `binding/binder.ts`, `binding/bindingRegistry.ts`, `binding/creationEffects.ts`, `binding/encounterBinderContext.ts`, `binding/mintInhabitant.ts`, `binding/remoteAnchor.ts`, `binding/roleCensus.ts`, `binding/undertakingBindPass.ts` | `THR-1289`, `THR-1290`, `THR-1292`, `THR-1296`, `THR-1305` |
 | `bond` (1) | `bondTestVoice.ts` | `THR-2057` |
 | `broken` (1) | `brokenState.ts` | `THR-773` |
-| `callback` (1) | `callbackEligibility.ts` | — |
 | `calling` (1) | `calling.ts` | `THR-1281`, `THR-1299` |
 | `capability` (1) | `capabilityGrowth.ts` | — |
 | `cast` (4) | `castChannel.ts`, `castEconomyReceipt.ts`, `castInfluenceDrift.ts`, `castTargetChanges.ts` | `THR-1606`, `THR-1651`, `THR-1683`, `THR-1968` |
@@ -286,7 +285,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `contentcensus` (5) | `contentCensus/adapters.ts`, `contentCensus/constants.ts`, `contentCensus/index.ts`, `contentCensus/matrix.ts`, `contentCensus/types.ts` | — |
 | `contestation` (1) | `contestation.ts` | `Phase 3`, `THR-731` |
 | `context` (1) | `contextBuilder.ts` | — |
-| `control` (2) | `controlContestationResolver.ts`, `controlEffectSpawn.ts` | `Phase 1`, `Phase 2`, `TB-045`, `THR-518`, `THR-662` |
+| `control` (1) | `controlEffectSpawn.ts` | `Phase 1`, `Phase 2`, `THR-518`, `THR-662` |
 | `core` (2) | `core/coreConstants.ts`, `core/coreMechanics.ts` | `THR-542`, `THR-544` |
 | `cosmology` (1) | `cosmology.ts` | — |
 | `crown` (8) | `crown.ts`, `crown/brokeredOath.ts`, `crown/crownView.ts`, `crown/eligibility.ts`, `crown/fealtySentences.ts`, `crown/offer.ts`, `crown/types.ts`, `crown/wages.ts` | `THR-1917`, `THR-1932`, `THR-1934`, `THR-1939`, `THR-1944`, `THR-1974`, `THR-2051` |
@@ -321,7 +320,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `elder` (1) | `elderEssenceReward.ts` | `TB-043`, `THR-153`, `THR-1753` |
 | `embargo` (1) | `embargo.ts` | `THR-1955` |
 | `encounter` (19) | `encounter-contract-adapter.ts`, `encounter.ts`, `encounter/branchingConstants.ts`, `encounter/branchingCurator.ts`, `encounterAftermath.ts`, `encounterAwareness.ts`, `encounterCache.ts`, `encounterChains.ts`, `encounterChoiceMemory.ts`, `encounterEventNode.ts`, `encounterFilterPipeline.ts`, `encounterLogExporter.ts`, `encounterRuntime.ts`, `encounterScoring.ts`, `encounterSeeding.ts`, `encounterSupportBundle.ts`, `encounterSurface.ts`, `encounterTimeline.ts`, `encounterVisibility.ts` | `Phase 4`, `TB-035`, `TB-077`, `THR-1123`, `THR-1488`, `THR-1580`, `THR-1715`, `THR-1982`, `THR-452`, `THR-465`, `THR-475`, `THR-697`, `THR-924` |
-| `encounters` (16) | `encounters/branchDecision.ts`, `encounters/dealHand.ts`, `encounters/detectionPressure.ts`, `encounters/driftAccumulator.ts`, `encounters/encounterTemplateGraph.ts`, `encounters/generateEncounterCandidates.ts`, `encounters/handFilter.ts`, `encounters/motiveClassifier.ts`, `encounters/nudgeDispatch.ts`, `encounters/nudges.ts`, `encounters/outcomeForecast.ts`, `encounters/placeGating.ts`, `encounters/poleLean.ts`, `encounters/reactionChooser.ts`, `encounters/stakesLine.ts`, `encounters/stepFactorLines.ts` | `THR-1247`, `THR-1432`, `THR-1727`, `THR-327`, `THR-528`, `THR-530`, `THR-631`, `THR-773`, `THR-883`, `THR-885`, `THR-887`, `THR-892`, `THR-894`, `THR-898`, `THR-963`, `THR-972` |
+| `encounters` (15) | `encounters/branchDecision.ts`, `encounters/dealHand.ts`, `encounters/detectionPressure.ts`, `encounters/driftAccumulator.ts`, `encounters/encounterTemplateGraph.ts`, `encounters/handFilter.ts`, `encounters/motiveClassifier.ts`, `encounters/nudgeDispatch.ts`, `encounters/nudges.ts`, `encounters/outcomeForecast.ts`, `encounters/placeGating.ts`, `encounters/poleLean.ts`, `encounters/reactionChooser.ts`, `encounters/stakesLine.ts`, `encounters/stepFactorLines.ts` | `THR-1247`, `THR-1432`, `THR-1727`, `THR-327`, `THR-528`, `THR-530`, `THR-631`, `THR-773`, `THR-883`, `THR-885`, `THR-887`, `THR-892`, `THR-894`, `THR-898`, `THR-963`, `THR-972` |
 | `engagement` (1) | `engagementWindow.ts` | `THR-1582` |
 | `engine` (1) | `engineEffectRegistry.ts` | `THR-604`, `THR-996` |
 | `essence` (7) | `essenceEarned.ts`, `essenceEconomyBridge.ts`, `essenceIncome.ts`, `essenceMovement.ts`, `essenceSourceSeeding.ts`, `essenceSourceWrite.ts`, `essenceSources.ts` | `THR-1180`, `THR-1713`, `THR-1935`, `THR-611`, `THR-615`, `THR-618` |
@@ -346,7 +345,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `group` (1) | `groupShape.ts` | `THR-1297` |
 | `groups` (16) | `groups/bandOpposition.ts`, `groups/bandSpawner.ts`, `groups/groupCohesion.ts`, `groups/groupCommand.ts`, `groups/groupDissolution.ts`, `groups/groupEligibility.ts`, `groups/groupFormation.ts`, `groups/groupFray.ts`, `groups/groupMovement.ts`, `groups/groupNames.ts`, `groups/groupParting.ts`, `groups/groupQueries.ts`, `groups/groupResolution.ts`, `groups/groupReunion.ts`, `groups/groupSeeking.ts`, `groups/phaseGroups.ts` | `TB-044`, `THR-1174`, `THR-1297`, `THR-1438`, `THR-731`, `THR-732`, `THR-74` |
 | `guild` (2) | `guildJoinFunnel.ts`, `guildSeeding.ts` | `THR-1632`, `THR-1640` |
-| `hex` (8) | `hexActionBridge.ts`, `hexActorIndex.ts`, `hexGrid.ts`, `hexMovementPath.ts`, `hexPressureTarget.ts`, `hexRegion.ts`, `hexVignette.ts`, `hexZoom.ts` | `TB-046`, `THR-1616`, `THR-1631`, `THR-1857`, `THR-188`, `THR-2087` |
+| `hex` (7) | `hexActionBridge.ts`, `hexActorIndex.ts`, `hexGrid.ts`, `hexMovementPath.ts`, `hexPressureTarget.ts`, `hexRegion.ts`, `hexZoom.ts` | `TB-046`, `THR-1616`, `THR-1631`, `THR-1857`, `THR-188`, `THR-2087` |
 | `hidden` (2) | `hiddenMarkProse.ts`, `hiddenMarks.ts` | `THR-132` |
 | `historical` (1) | `historicalCulture.ts` | — |
 | `hold` (1) | `holdStanding.ts` | `THR-1211`, `THR-1448` |
@@ -358,7 +357,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `insider` (1) | `insiderBeatDetection.ts` | — |
 | `intelligence` (1) | `intelligence.ts` | `THR-113`, `THR-140` |
 | `intention` (1) | `intentionReading.ts` | `THR-1404`, `THR-1433` |
-| `intervention` (4) | `interventionCost.ts`, `interventionEffects.ts`, `interventionStanceWords.ts`, `interventionTracking.ts` | `THR-1048`, `THR-772` |
+| `intervention` (2) | `interventionEffects.ts`, `interventionStanceWords.ts` | `THR-1048`, `THR-772` |
 | `itemgenerator` (10) | `itemGenerator/describeItem.ts`, `itemGenerator/generateItem.ts`, `itemGenerator/mintGeneratedItem.ts`, `itemGenerator/readBack.ts`, `itemGenerator/reviewBatch.ts`, `itemGenerator/reviewWorld.ts`, `itemGenerator/rewardMinting.ts`, `itemGenerator/types.ts`, `itemGenerator/validateGeneratedItem.ts`, `itemGenerator/worldContext.ts` | `THR-1155`, `THR-1235`, `THR-1236`, `THR-1528`, `THR-1570`, `THR-1626`, `THR-1637` |
 | `journey` (1) | `journeyEngine.ts` | `Phase 2`, `TB-035` |
 | `kpi` (4) | `kpi/branchingDistance.ts`, `kpi/engagementKpi.ts`, `kpi/gameplayKpi.ts`, `kpi/kpiConstants.ts` | `THR-1578`, `THR-1740`, `THR-452`, `THR-457`, `THR-571` |
@@ -368,7 +367,6 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `leverage` (1) | `leverageOps.ts` | `THR-1439` |
 | `location` (1) | `locationTraitBonus.ts` | `THR-1481`, `THR-790` |
 | `luck` (1) | `luck.ts` | — |
-| `magic` (1) | `magicPower.ts` | — |
 | `mandate` (4) | `mandate.ts`, `mandateGenerator.ts`, `mandateLedger.ts`, `mandateMilestoneProse.ts` | `THR-1197`, `THR-1198`, `THR-1618`, `THR-1935`, `THR-2081`, `THR-2090` |
 | `meeting` (2) | `meetingEncounter.ts`, `meetingFateLine.ts` | `THR-1213`, `THR-1714` |
 | `mentorship` (2) | `mentorshipOutcomes.ts`, `mentorshipUndertaking.ts` | `THR-1292`, `THR-75` |
@@ -474,7 +472,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `unrestpressure` (8) | `unrestPressure/bands.ts`, `unrestPressure/defection.ts`, `unrestPressure/describe.ts`, `unrestPressure/hunger.ts`, `unrestPressure/inputs.ts`, `unrestPressure/leave.ts`, `unrestPressure/rising.ts`, `unrestPressure/turns.ts` | `THR-1923`, `THR-1934`, `THR-1957`, `THR-2033` |
 | `view` (1) | `viewLevel.ts` | — |
 | `views` (68) | `views/armedTargets.ts`, `views/ceremonyVisuals.ts`, `views/connections.ts`, `views/contentTagChips.ts`, `views/dialogDressing.ts`, `views/entityVisualResolver.ts`, `views/essenceRefill.ts`, `views/find.ts`, `views/godRail.ts`, `views/hexContents.ts`, `views/interruptRegistry.ts`, `views/knowledge.ts`, `views/landIndex.ts`, `views/ledgerRail.ts`, `views/lenses/lensTypes.ts`, `views/lenses/lensView.ts`, `views/lenses/threadsLens.ts`, `views/lenses/tradeLens.ts`, `views/lenses/troubleLens.ts`, `views/map/activityIcons.ts`, `views/map/agentVisibility.ts`, `views/map/agents.ts`, `views/map/armiesAndBattles.ts`, `views/map/companies.ts`, `views/map/focusTargets.ts`, `views/map/mapPosition.ts`, `views/map/mapTypes.ts`, `views/map/minimap.ts`, `views/map/places.ts`, `views/map/realmInk.ts`, `views/map/threadLines.ts`, `views/needsYou.ts`, `views/readView.ts`, `views/rowVisual.ts`, `views/selectors.ts`, `views/stage/buildAftermathConsequences.ts`, `views/stage/buildFightChanges.ts`, `views/stage/buildGateDutyEncounterStageModel.ts`, `views/stage/buildLairMonsterCardModel.ts`, `views/stage/buildNudgePhaseModel.ts`, `views/stage/buildOpponentHeaderModel.ts`, `views/stage/buildSimpleEncounterStageModel.ts`, `views/stage/buildStepCastModel.ts`, `views/stage/buildUnifiedEncounterStageModel.ts`, `views/stage/chipCollaborators.ts`, `views/stage/encounterIllustration.ts`, `views/stage/encounterNotificationRuntime.ts`, `views/stage/momentCardModel.ts`, `views/stage/narrativeLinker.ts`, `views/stage/stageView.ts`, `views/stage/types.ts`, `views/subjects/actOn.ts`, `views/subjects/factionRows.ts`, `views/subjects/godSheet.ts`, `views/subjects/itemRows.ts`, `views/subjects/landName.ts`, `views/subjects/landProse.ts`, `views/subjects/linkedProse.ts`, `views/subjects/pageResolvers.ts`, `views/subjects/personRows.ts`, `views/subjects/placeRows.ts`, `views/subjects/relicGallery.ts`, `views/subjects/sentenceRows.ts`, `views/subjects/subjectPage.ts`, `views/subjects/subjectTypes.ts`, `views/types.ts`, `views/viewConstants.ts`, `views/viewContext.ts` | `THR-1004`, `THR-1164`, `THR-1173`, `THR-1282`, `THR-1298`, `THR-1299`, `THR-1486`, `THR-1498`, `THR-1521`, `THR-1550`, `THR-1551`, `THR-1552`, `THR-1553`, `THR-1557`, `THR-1561`, `THR-1608`, `THR-1670`, `THR-1750`, `THR-1792`, `THR-1800`, `THR-1820`, `THR-1822`, `THR-1827`, `THR-1829`, `THR-1831`, `THR-1832`, `THR-184`, `THR-1846`, `THR-1853`, `THR-1875`, `THR-1876`, `THR-1877`, `THR-1878`, `THR-1879`, `THR-1892`, `THR-1893`, `THR-1894`, `THR-1896`, `THR-1898`, `THR-1899`, `THR-1900`, `THR-1901`, `THR-1902`, `THR-1906`, `THR-1909`, `THR-1910`, `THR-1911`, `THR-1913`, `THR-1914`, `THR-1915`, `THR-1955`, `THR-1957`, `THR-1985`, `THR-2097`, `THR-2098`, `THR-2101`, `THR-2102`, `THR-2103`, `THR-502`, `THR-637`, `THR-638`, `THR-668`, `THR-670`, `THR-775`, `THR-880`, `THR-971`, `THR-978` |
-| `vignette` (2) | `vignetteNotification.ts`, `vignetteProse.ts` | — |
+| `vignette` (1) | `vignetteProse.ts` | — |
 | `visibility` (1) | `visibility.ts` | — |
 | `war` (1) | `warAims.ts` | `THR-1868`, `THR-1933` |
 | `waraims` (6) | `warAims/context.ts`, `warAims/defence.ts`, `warAims/enemy.ts`, `warAims/score.ts`, `warAims/sheetView.ts`, `warAims/townValue.ts` | `THR-1922`, `THR-1933`, `THR-1974` |
@@ -487,4 +485,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 114 tick phases · 242 engine domains · 812 modules._
+_Counts: 28 registered subsystems (2 dormant) · 114 tick phases · 240 engine domains · 804 modules._
