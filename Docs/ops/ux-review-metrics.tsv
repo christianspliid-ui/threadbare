@@ -11,3 +11,15 @@ date	journeyVersion	deployedCommit	moment	status	words	interactive	smallTargets	
 2026-10-27	1	b1b18055	10-mid-game	reached	76	2	0	0	1	0	4	0
 2026-10-27	1	b1b18055	11-mid-game-notables	not-reached	90	2	0	0	1	0	4	0
 2026-10-27	1	b1b18055	12-mid-game-chapter	reached	90	2	0	0	1	0	4	0
+2026-11-02	2	98de22a3	01-front-door	reached	21	5	0	0	0	0	3	0
+2026-11-02	2	98de22a3	02-first-thread	reached	120	3	0	0	1	0	5	0
+2026-11-02	2	98de22a3	03-opening	reached	220	45	2	0	0	2	6	0
+2026-11-02	2	98de22a3	04-first-encounter	reached	255	34	1	0	1	1	3	0
+2026-11-02	2	98de22a3	05-first-page	reached	272	52	0	0	0	1	7	0
+2026-11-02	2	98de22a3	06-your-page	reached	278	50	0	0	0	1	7	0
+2026-11-02	2	98de22a3	07-read-the-threads	reached	47	6	0	0	1	0	3	0
+2026-11-02	2	98de22a3	08-doom	reached	81	1	0	0	1	0	2	0
+2026-11-02	2	98de22a3	09-search	reached	223	45	2	0	0	2	6	0
+2026-11-02	2	98de22a3	10-mid-game	reached	214	40	0	0	1	1	3	0
+2026-11-02	2	98de22a3	11-mid-game-notables	not-reached	155	3	0	0	1	0	6	0
+2026-11-02	2	98de22a3	12-mid-game-chapter	reached	155	3	0	0	1	0	6	0
