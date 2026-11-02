@@ -178,12 +178,12 @@ describe('each pole reaches its OWN authored ending, never the fallback', () => 
   it('the Martyr ending is the vessel opening', () => {
     const { ending } = draw(0.9);
     expect(ending.overview).not.toBe(FALLBACK_OVERVIEW);
-    expect(ending.overview).toContain('aspect of the god moves among mortals');
+    expect(ending.overview).toContain('is an aspect of the god now');
   });
 
   it('the Survivor ending is the doorway closing', () => {
     const { ending } = draw(-0.9);
-    expect(ending.overview).toContain('wholly and finitely their own');
+    expect(ending.overview).toContain('The bond to the god held');
   });
 
   it('a band override reaches the player, layered on the decided pole', () => {
@@ -195,7 +195,7 @@ describe('each pole reaches its OWN authored ending, never the fallback', () => 
     const unmade = resolveAftermathVariant(
       TEMPLATE.aftermathConfig!, applied.action.choiceHistory, 'failure',
     );
-    expect(unmade.overview).toContain('The frame did not hold');
+    expect(unmade.overview).toContain('The body did not hold');
     expect(unmade.changes.some(c => c.title === 'Unmade')).toBe(true);
   });
 });

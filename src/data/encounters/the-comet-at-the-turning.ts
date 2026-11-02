@@ -46,8 +46,8 @@ const step0TheSkyOpens: ActionStep = {
   // THR-2134: all player text rewritten to Prose Doctrine v2 (opening skeleton).
   narrativeTemplate:
     '{actor}, a prophet, climbs the hill above {location} on the third night of the comet.\n\n' +
-    'The whole town has stopped work to watch the sky. Couriers wait at the foot of the hill with ' +
-    'saddled horses. At dawn they will carry {actor}\'s reading to the capitals, and the nations will act on it.\n\n' +
+    'The whole town has stopped work to watch the sky. Some farmers have already burned their seed ' +
+    'grain in fear. Couriers wait below with saddled horses. At dawn they will carry {actor}\'s reading to the capitals, and the nations will act on it.\n\n' +
     '{actor} must say what the comet means: the end of the old age, or a sign that the age holds.',
   successAfterimage: '{actor} kept watch on the hilltop all night, under the comet.',
   failureAfterimage: '{actor} lost their nerve at the top of the hill and nearly came back down.',
@@ -56,9 +56,9 @@ const step0TheSkyOpens: ActionStep = {
   successAtCostAfterimage:
     '{actor} kept watch through the night, but the cold took the feeling from two fingers for good.',
   criticalSuccessAfterimage:
-    'Before dawn, {actor} saw the comet split in two. No one else on the hill saw it.',
+    'Before dawn, {actor} saw a clear sign in the comet, and is sure of the reading.',
   criticalFailureAfterimage:
-    '{actor} slipped on the icy path and came down with a cut head and no reading. The couriers waited until dawn.',
+    '{actor} slipped on the icy path and cut their head. {actor} will give the reading hurt and shaken.',
 };
 
 /**
@@ -109,19 +109,18 @@ const step1LetThemReadIt: ActionStep = {
   failBehavior: 'continue_weakened',
   narrativeTemplate:
     'The god holds back and only keeps {actor} steady on the hill. {actor} reads the sky alone, with a ' +
-    'frightened town praying below. At dawn {actor} tells the couriers that the comet is a sign of ' +
-    'constancy. The heavens keep their old order, and the people should hold to what they know.',
+    'frightened town praying below. At dawn {actor} must give the couriers a reading the town can ' +
+    'live with.',
   successAfterimage: '{actor} read the comet as constancy, and the nations were told to hold fast.',
   failureAfterimage:
-    '{actor} could not settle on one meaning. The reading came out hedged, and the nations argued over it.',
+    '{actor} read the comet as constancy, but sounded unsure. Some of the nations doubted the reading.',
   criticalSuccessAfterimage:
     'The reading outlasted the comet. Priests repeated it for a generation as proof that the heavens keep their order.',
   criticalFailureAfterimage:
     '{actor} told the nations to hold fast, though hard years were coming. The nations obeyed and stored no grain.',
   // THR-1667 S3: the missing at-cost line and a dealt hand.
   successAtCostAfterimage:
-    '{actor} read constancy in the comet, but left out a second meaning. They wrote it down that night ' +
-    'and burned the page.',
+    '{actor} read the comet as constancy, but kept quiet about a second sign that pointed to an ending.',
   deal: { count: DEAL_DEFAULT_COUNT, tags: ['presence', 'insight'] },
   successMetadata: { reputationDelta: 0.1 },
   failureMetadata: { reputationDelta: -0.08 },
@@ -142,7 +141,7 @@ const TURNING_AFTERMATH = {
   overview:
     'The nations have been told the age may end. In the first season a border lord pressed an old claim ' +
     'on his neighbour\'s land. Apprentices left their guilds without waiting their turn. Pilgrims left ' +
-    'their fields and walked away from home. Some of this is freedom, and some of it is ruin.',
+    'their fields and walked away from home. Some apprentices found new work, and some border towns burned.',
   changes: [
     {
       id: 'turning_age_proclaimed',
@@ -227,8 +226,7 @@ const TURNING_AFTERMATH = {
 const ANCHORED_AFTERMATH = {
   overview:
     'The nations have been told to hold fast. Border lords left their old claims alone. Apprentices stayed ' +
-    'in their guilds, and the pilgrims went home to their fields. Much grief was spared. A new age could ' +
-    'have begun that night, and it did not.',
+    'in their guilds, and the pilgrims went home to their fields.',
   changes: [
     {
       id: 'anchored_age_held',
@@ -282,7 +280,7 @@ const ANCHORED_AFTERMATH = {
     },
     {
       id: 'anchored_react_grieve_the_unborn',
-      label: 'Watch for the next sign.',
+      label: 'Wait for the turn to come again.',
       intent: 'Keep watch for the next sign that could turn the age, and choose again when it comes.',
       effects: [
         {
@@ -346,10 +344,10 @@ const ANCHORED_ENDINGS: AftermathVariant = {
     critical_failure: {
       overview:
         'The nations held fast, as they were told. Border lords stayed behind walls that are already failing. ' +
-        'The pilgrims went home to fields that cannot feed them through the hard years ahead. The grief was ' +
-        'not spared. It was only put off.',
+        'The pilgrims went home to fields that cannot feed them through the hard years ahead. Famine will ' +
+        'reach them unprepared.',
       changes: keepChanges(ANCHORED_AFTERMATH, ['anchored_age_held', 'anchored_unborn']),
-      reactionPrompt: 'The hard years are still coming, and no one is ready. What does the god do next?',
+      reactionPrompt: 'The nations are unready. What does the god do now?',
     },
   },
 };
@@ -411,7 +409,7 @@ export const COMET_AT_THE_TURNING_TEMPLATE: UnifiedActionTemplate = withEncounte
         id: 'proclaim_the_turning',
         label: 'Show them the size of the sky.',
         intent:
-          'Show the prophet how small the age is beside the sky, and push them toward a reading of endings.',
+          'Make the age look small to the prophet, and push them toward a reading of endings.',
         targetLabel: 'The prophet',
         essenceCost: 2, // THR-1800 — the god's push is paid for
         interventionType: 'coercive',
@@ -419,7 +417,7 @@ export const COMET_AT_THE_TURNING_TEMPLATE: UnifiedActionTemplate = withEncounte
       {
         id: 'let_them_read_it',
         label: 'Hold back. Let them read the sky alone.',
-        intent: 'Push nothing. Only keep the prophet steady on the cold hill, and let them read the sky on their own.',
+        intent: 'Push nothing. Only keep the prophet steady on the cold hill, and let them decide alone.',
         targetLabel: 'The prophet',
         essenceCost: 0, // THR-1800 — staying your hand costs nothing
         interventionType: 'withdrawn',

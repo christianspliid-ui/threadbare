@@ -177,8 +177,8 @@ const APOTHEOSIS_HAND: readonly StepNudge[] = [
     imageTag: 'generic.light',
     effectLine: 'Show them one ordinary day: bread, a cold floor, a neighbour shouting. This argues for saying no.',
     bandProse: {
-      near_miss: 'The bread smelled right, and they nearly turned toward it.',
-      failure: 'The ordinary day came in thin and grey, and made no case for itself.',
+      near_miss: 'They thought of their own kitchen, and nearly turned back toward it.',
+      failure: 'The ordinary day did not seem worth staying for.',
     },
   },
   {
@@ -207,7 +207,7 @@ const APOTHEOSIS_HAND: readonly StepNudge[] = [
     imageTag: 'generic.oath',
     effectLine: 'Show them the true price: the strain on a body that must carry a god. This argues for saying no.',
     bandProse: {
-      near_miss: 'They weighed the price twice and still could not make it come out even.',
+      near_miss: 'They weighed the price twice and still could not decide.',
       failure: 'The price was too much to take in, and they stopped weighing it.',
     },
   },
@@ -221,10 +221,10 @@ const APOTHEOSIS_HAND: readonly StepNudge[] = [
     forecastDelta: 0.04,
     rider: 'no_crit_fail',
     imageTag: 'generic.ward',
-    effectLine: 'Set a rule under the scene, so the worst ending cannot happen.',
+    effectLine: 'Guard their body and faith, so the worst cannot happen.',
     bandProse: {
-      near_miss: 'The rule held everything together while the room shook.',
-      failure: 'It went badly, but the rule kept it from going worse.',
+      near_miss: 'The ward held while the doorway shook.',
+      failure: 'It went badly, but the ward kept it from the worst.',
     },
   },
   {
@@ -240,7 +240,7 @@ const APOTHEOSIS_HAND: readonly StepNudge[] = [
     effectLine: 'Give their body more room to carry a god. This argues for saying yes.',
     bandProse: {
       near_miss: 'The body took the extra room and was still one breath short.',
-      failure: 'The extra strength went in and came straight back out.',
+      failure: 'The extra room closed again at once.',
     },
   },
 ];
@@ -278,10 +278,10 @@ const step0TheThreshold: ActionStep = {
     'The doorway will not stay open long. The god can hold it while {actor} answers, but the answer is ' +
     '{actor}\'s.',
   successAfterimage: 'The god held the doorway steady, and {actor} stood in it and decided.',
-  failureAfterimage: 'The doorway shook under the god’s hold, and {actor} decided in a shaking room.',
-  successAtCostAfterimage: 'The doorway held, but holding it cost the god more essence than it meant to spend.',
+  failureAfterimage: 'The doorway shook under the god’s hold, and {actor} answered while it shook.',
+  successAtCostAfterimage: 'The doorway held, but holding it cost the god extra essence.',
   criticalSuccessAfterimage: 'The doorway stood open and still, and {actor} had all the time they needed to think.',
-  criticalFailureAfterimage: 'The doorway tore at the edges and closed, with {actor}\'s answer half-spoken.',
+  criticalFailureAfterimage: 'The doorway tore at the edges, and {actor} had to answer in a rush.',
 };
 
 /**
@@ -340,7 +340,7 @@ const step1Ascend: ActionStep = {
   successAfterimage: 'The body held. {actor} is an aspect of the god now, walking the world on mortal feet.',
   failureAfterimage: '{actor}\'s body split under the strain, and what was poured in ran back out.',
   successAtCostAfterimage: 'The body held, but it left a tremor in {actor}\'s left hand that will not go away.',
-  criticalSuccessAfterimage: 'The god filled {actor} to the brim, and the body took it as if built for it.',
+  criticalSuccessAfterimage: '{actor} took the god in to the brim, and the body held as if built for it.',
   criticalFailureAfterimage: '{actor}\'s body came apart under the pouring, and the god pulled back from the ruin.',
 };
 
@@ -402,8 +402,7 @@ const step1Branch: ActionStepBranch = {
 const ASCEND_AFTERMATH = {
   overview:
     '{actor} is an aspect of the god now. They look the same, speak the same and answer to the same name. ' +
-    'But the people near them feel something strange in the air. The faithful call it a blessing, and the ' +
-    'fearful call it wrong.',
+    'People near {actor} grow uneasy, and some grow devout.',
   changes: [
     {
       id: 'apotheosis_aspect_attained',
@@ -417,34 +416,34 @@ const ASCEND_AFTERMATH = {
     critical_success: {
       overview:
         'The filling ran clean. {actor} came through without a mark, and by dawn was cooking breakfast as on ' +
-        'any other day. The bread rose higher than bread should.',
+        'any other day.',
       changes: [
         {
           id: 'apotheosis_clean_vessel',
           kind: 'future_hook' as const,
           title: 'A Clean Vessel',
-          detail: 'The aspect is made, and {actor}\'s body came through unharmed.',
+          detail: 'The bond to the god is strong, and the body is fit to carry it.',
           polarity: 'gain' as const,
         },
       ],
     },
     success_at_cost: {
       overview:
-        'The aspect is made, but the body paid for it. {actor} has a tremor in the left hand that was not ' +
-        'there at dusk. {actor} notices it while pouring water, sets the jug down, and then goes on pouring.',
+        'The aspect is made, but the body paid for it. {actor} now has a tremor in the left hand that will ' +
+        'not go away.',
       changes: [
         {
           id: 'apotheosis_the_tremor',
           kind: 'trait' as const,
           title: 'What The Filling Cost',
-          detail: 'The aspect is made, and {actor}\'s body shows the strain.',
+          detail: 'The tremor marks where the god\'s power passed through.',
           polarity: 'mixed' as const,
         },
       ],
     },
     failure: {
       overview:
-        'The body did not hold. The god pulled back before more went in than could come out again. {actor} ' +
+        'The body did not hold. The god pulled back before the pouring could kill {actor}. {actor} ' +
         'lived, and by morning sits at the table, eating and answering to their name. But {actor} is a beat ' +
         'slow to everything now.',
       changes: [
@@ -452,7 +451,7 @@ const ASCEND_AFTERMATH = {
           id: 'apotheosis_unmade',
           kind: 'trait' as const,
           title: 'Unmade',
-          detail: 'No aspect was made. {actor} was opened and not filled, and is worn through.',
+          detail: 'No aspect was made. The failed pouring left {actor} worn through.',
           polarity: 'loss' as const,
         },
       ],
@@ -481,15 +480,14 @@ const ASCEND_AFTERMATH = {
     },
     critical_failure: {
       overview:
-        'The body came apart. Part of the god was already inside when {actor} gave way, and pulling back ' +
-        'tore what was left. What sits at the table now eats when food is set before it. The neighbours ' +
-        'still use the old name, and do not ask aloud whether it still fits.',
+        '{actor}\'s body and mind broke under the pouring. Part of the god was already inside when {actor} ' +
+        'gave way, and pulling back tore what was left. {actor} lives, but needs others to care for them now.',
       changes: [
         {
           id: 'apotheosis_ruined_vessel',
           kind: 'trait' as const,
           title: 'What Came Back',
-          detail: 'No aspect was made. The pouring broke {actor}, and the damage shows.',
+          detail: 'No aspect was made. {actor} lives, but is broken in body and mind.',
           polarity: 'loss' as const,
         },
       ],
@@ -499,7 +497,7 @@ const ASCEND_AFTERMATH = {
         {
           id: 'apotheosis.ruined.let_them_be',
           label: 'Let them be',
-          intent: 'Ask nothing of what sits there. The god does not try to mend what it tore.',
+          intent: 'Ask nothing more of {actor}. The god does not try to mend what it broke.',
           effects: [
             {
               kind: 'condition_attachment' as const,
@@ -548,37 +546,35 @@ const WITHHOLD_AFTERMATH = {
   byOutcome: {
     critical_success: {
       overview:
-        'The closing was so gentle that {actor} kept only a good morning. {actor} woke rested for the first ' +
-        'time in a season, and prayed at the usual hour with more feeling than in years.',
+        '{actor} woke rested for the first time in a season, and prayed at the usual hour with more feeling ' +
+        'than in years.',
       changes: [
         {
           id: 'apotheosis_closed_clean',
           kind: 'reputation_tally' as const,
           title: 'Closed Clean',
-          detail: 'The doorway shut before {actor} knew it had opened, and the faith came through stronger.',
+          detail: 'The doorway closed without harm, and {actor}\'s faith came through stronger.',
           polarity: 'gain' as const,
         },
       ],
     },
     success_at_cost: {
       overview:
-        'The doorway closed, but closing it drained the god more than opening it had. {actor} slept through ' +
-        'it and is well. The god spent the rest of the night holding the doorway shut.',
+        'The doorway closed. {actor} slept through it and woke well.',
       changes: [
         {
           id: 'apotheosis_held_shut',
           kind: 'shell_state' as const,
           title: 'Held Shut',
-          detail: '{actor} came through whole. The closing drew on the god’s own essence.',
+          detail: '{actor} came through whole. The closing drew down the god’s own essence.',
           polarity: 'mixed' as const,
         },
       ],
     },
     failure: {
       overview:
-        'The closing was clumsy, and {actor} knew something had happened. {actor} could not name it, only ' +
-        'that a door had been open and was now shut, and that it had been about them. The next morning ' +
-        '{actor} prayed at the usual hour, and then listened for an answer.',
+        'The closing was clumsy, and {actor} felt the doorway close. {actor} does not know what it was. The ' +
+        'next morning {actor} prayed at the usual hour, and then listened for an answer.',
       changes: [
         {
           id: 'apotheosis_the_withdrawal_felt',
@@ -595,7 +591,7 @@ const WITHHOLD_AFTERMATH = {
         {
           id: 'apotheosis.withdrawal.listen',
           label: 'Let them listen',
-          intent: 'Do not answer. An honest doubt is worth more than one talked away.',
+          intent: 'Do not answer. Leave {actor} with the doubt.',
           effects: [
             {
               kind: 'bond_change' as const,
@@ -610,9 +606,8 @@ const WITHHOLD_AFTERMATH = {
     },
     critical_failure: {
       overview:
-        'The closing went badly. {actor} woke sure they had been weighed and set aside, with no memory of ' +
-        'the weighing. At the usual hour {actor} went to the shrine, and stood outside it a long while ' +
-        'before going in.',
+        'The closing went badly. {actor} woke sure of having been weighed and set aside, with no memory ' +
+        'of the weighing. The faith that never wavered now has a crack in it.',
       changes: [
         {
           id: 'apotheosis_the_pause_on_the_step',
@@ -630,7 +625,7 @@ const WITHHOLD_AFTERMATH = {
         {
           id: 'apotheosis.pause.stand_outside',
           label: 'Let them stand outside a while',
-          intent: 'They will go in. Not yet.',
+          intent: 'Leave {actor} at the shrine door. The god does not call them in.',
           effects: [
             {
               kind: 'bond_change' as const,
@@ -707,7 +702,7 @@ export const APOTHEOSIS_ASCENSION_TEMPLATE: UnifiedActionTemplate = compileOpeni
 
     narrativeTemplates: {
       initiation:
-        'A mortal worn thin by devotion stands at a doorway only the god can see. The god can hold it ' +
+        'A mortal worn thin by devotion stands at a doorway into the god. The god can hold it ' +
         'open and argue for an answer, but the answer is the mortal\'s.',
       success:
         'The mortal answered at the doorway while the god held it steady.',

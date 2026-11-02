@@ -62,8 +62,8 @@ const step0TheFind: ActionStep = {
   // carries no hand (a hand on a choice step would replace the fork).
   successAtCostAfterimage: '{actor} kept hold of the chronicle, but gripped it hard enough to crack the page along its fold.',
   criticalSuccessAfterimage:
-    '{actor} found a note in the margin from a later scribe. That scribe had read the same page and drawn ' +
-    'a small cross beside it.',
+    '{actor} found a note from a later scribe in the margin. That scribe had read the same page and kept ' +
+    'the secret.',
   criticalFailureAfterimage:
     'The lamp went out. {actor} found the stair in the dark and came up with the page crushed in one fist.',
 };
@@ -82,16 +82,16 @@ const step1BuryItDeeper: ActionStep = {
   failBehavior: 'continue_weakened',
   narrativeTemplate:
     'The god shows {actor} the dying farmers the faith comforts, and makes the page seem cruel beside them. ' +
-    '{actor} writes false notes into the library\'s copies, calling the old hand unreliable. Then {actor} ' +
-    'seals the original in a wall deeper in the stacks, and mortars the stone shut.',
+    '{actor} begins writing false notes into the library\'s copies, calling the old hand unreliable. ' +
+    '{actor} means to seal the original in a wall deeper in the stacks.',
   successAfterimage: 'The page went back into the dark, deeper than before. The faith stood untouched.',
   failureAfterimage:
     '{actor} sealed the page but botched the false notes. A sharp reader could follow them back one day.',
   // THR-1667 S3: the missing afterimages and a dealt hand.
   successAtCostAfterimage:
-    'The page was sealed, but the mortaring took three nights. A novice saw {actor} on the lowest stair with a trowel.',
+    'The page was sealed, but the mortaring took several nights. A novice saw {actor} on the lowest stair with a trowel.',
   criticalSuccessAfterimage:
-    '{actor} sealed the page and then burned the only shelf-list that named it. No one will know which wall to open.',
+    '{actor} sealed the page and then burned the only shelf-list that named it. Finding it now would take a long search.',
   criticalFailureAfterimage:
     '{actor} broke down halfway through the false notes. A junior reader found {actor} weeping, with the ' +
     'page open on the desk.',
@@ -118,7 +118,7 @@ const step1LetTheTruthSurface: ActionStep = {
     'the order and lets the others travel.',
   successAfterimage: 'The chronicle came into the open, and the faith split around it.',
   failureAfterimage:
-    'The truth leaked out half-proven and easy to deny. The region got a long rumour instead of a reckoning.',
+    'The truth came out half-proven at first. It took a year of quarrels before the faith split.',
   // THR-1667 S3: the missing afterimages and a dealt hand.
   successAtCostAfterimage:
     'The chronicle came into the open, but the order took {actor}\'s keys the day the copies went out.',
@@ -146,9 +146,8 @@ const step1Branch: ActionStepBranch = {
 
 const TRUTH_BURIED_AFTERMATH = {
   overview:
-    'The region\'s faith goes on as before: the calendar, the courts, the lamps lit for the dying. All of it ' +
-    'rests on a forged founding. {actor} has become the most devout believer in the region, and knows ' +
-    'exactly what is sealed in the lower stacks.',
+    'The region\'s calendar, its courts and its prayers for the dying go on as before. Nothing in the ' +
+    'faith has changed. Only {actor} knows what it is built on.',
   changes: [
     {
       id: 'page_faith_preserved',
@@ -202,7 +201,7 @@ const TRUTH_BURIED_AFTERMATH = {
     {
       id: 'page_buried_react_ease_the_keeper',
       label: 'Stay with the keeper.',
-      intent: 'Stay near {actor}, who carries the secret alone and prays every day to a saint who never lived.',
+      intent: 'Stay near {actor}, who carries the secret and prays every day to a saint who never lived.',
       effects: [
         {
           kind: 'reputation_tally' as const,
@@ -212,7 +211,7 @@ const TRUTH_BURIED_AFTERMATH = {
         {
           kind: 'recent_event' as const,
           eventType: 'ripple_consequence' as const,
-          message: 'The god stays near {actor}, who carries the buried secret alone.',
+          message: 'The god stays near {actor}, who carries the buried secret.',
           significance: 0.72,
         },
         {
@@ -229,9 +228,8 @@ const TRUTH_BURIED_AFTERMATH = {
 
 const TRUTH_SURFACED_AFTERMATH = {
   overview:
-    'The faith has split. The old believers grieve a miracle they now know was staged. The young are building ' +
-    'a colder, more honest faith of their own. The dying no longer have the saint\'s river to hope for. Some ' +
-    'curse {actor} for it, and a few give thanks.',
+    'The old believers grieve a miracle they now know was staged. The young are building a colder, more ' +
+    'honest faith of their own. The dying no longer have the saint\'s river to hope for.',
   changes: [
     {
       id: 'page_faith_shattered',
@@ -338,8 +336,7 @@ const TRUTH_SURFACED_ENDINGS: AftermathVariant = {
   byOutcome: {
     critical_failure: {
       overview:
-        'The order called the chronicle a forgery and named {actor} a heretic from every pulpit. The faith did ' +
-        'not split. It hardened, and more lamps burn for the saint than before. {actor} lives outside the ' +
+        'The faith did not split. It hardened, and more lamps burn for the saint than before. {actor} lives outside the ' +
         'library now, on what a few believers can spare.',
       changes: [],
       reactionPrompt: 'The faith has hardened, and {actor} is out in the cold. What does the god do now?',
@@ -353,7 +350,7 @@ const TRUTH_SURFACED_ENDINGS: AftermathVariant = {
 export const PAGE_BENEATH_THE_SAINT_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'veil.truth.page_beneath_saint',
   stakes: {
-    goal: 'seal the forged saint’s page back in the dark',
+    goal: 'seal the true page about the saint back in the dark',
     risk: 'be found weeping over the open page',
     won: 'sealed the saint’s page deeper in the stacks',
     lost: 'sealed the page but botched the false notes',
