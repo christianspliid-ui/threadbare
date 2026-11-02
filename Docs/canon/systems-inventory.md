@@ -345,7 +345,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `group` (1) | `groupShape.ts` | `THR-1297` |
 | `groups` (16) | `groups/bandOpposition.ts`, `groups/bandSpawner.ts`, `groups/groupCohesion.ts`, `groups/groupCommand.ts`, `groups/groupDissolution.ts`, `groups/groupEligibility.ts`, `groups/groupFormation.ts`, `groups/groupFray.ts`, `groups/groupMovement.ts`, `groups/groupNames.ts`, `groups/groupParting.ts`, `groups/groupQueries.ts`, `groups/groupResolution.ts`, `groups/groupReunion.ts`, `groups/groupSeeking.ts`, `groups/phaseGroups.ts` | `TB-044`, `THR-1174`, `THR-1297`, `THR-1438`, `THR-731`, `THR-732`, `THR-74` |
 | `guild` (2) | `guildJoinFunnel.ts`, `guildSeeding.ts` | `THR-1632`, `THR-1640` |
-| `hex` (7) | `hexActionBridge.ts`, `hexActorIndex.ts`, `hexGrid.ts`, `hexMovementPath.ts`, `hexPressureTarget.ts`, `hexRegion.ts`, `hexZoom.ts` | `TB-046`, `THR-1616`, `THR-1631`, `THR-1857`, `THR-188`, `THR-2087` |
+| `hex` (7) | `hexActionBridge.ts`, `hexActorIndex.ts`, `hexGrid.ts`, `hexMovementPath.ts`, `hexPressureTarget.ts`, `hexRegion.ts`, `hexZoom.ts` | `TB-046`, `THR-1183`, `THR-1616`, `THR-1857`, `THR-188`, `THR-2087` |
 | `hidden` (2) | `hiddenMarkProse.ts`, `hiddenMarks.ts` | `THR-132` |
 | `historical` (1) | `historicalCulture.ts` | — |
 | `hold` (1) | `holdStanding.ts` | `THR-1211`, `THR-1448` |
