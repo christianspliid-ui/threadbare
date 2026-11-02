@@ -1204,8 +1204,10 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
                 style={{ paddingLeft: 'var(--space-2)', paddingRight: 'var(--space-2)' }}
                 data-testid={`threads-section-header-${category}`}
               >
-                <span style={{ display: 'inline-flex', color: 'var(--text-tertiary)', flexShrink: 0 }}>
-                  <Icon name="disclosure" size="floor" decorative style={{ transform: isExpanded ? 'rotate(90deg)' : 'none' }} />
+                {/* The carved triangle points up at rest: turned right while folded, down while open (as the god rail's). */}
+                {/* Aligned to the heading's line, not the ornamental rule's box (which carries its bottom margin). */}
+                <span style={{ display: 'inline-flex', color: 'var(--text-tertiary)', flexShrink: 0, alignSelf: 'flex-start', marginTop: '0.3rem' }}>
+                  <Icon name="disclosure" size="floor" decorative style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(90deg)' }} />
                 </span>
                 <SectionHeading ornamental count={groupSize} icon={listHeadingIcon(SECTION_HEADING_IDS[category])}>{label}</SectionHeading>
               </div>

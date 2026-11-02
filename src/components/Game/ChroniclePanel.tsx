@@ -312,7 +312,7 @@ function YearsList({
         return (
           <div key={group.year} data-testid={`chronicle-year-${group.year}`}>
             <button type="button" onClick={() => toggle(group.year, open)} aria-expanded={open} style={{ ...TOGGLE_STYLE, minHeight: '1.5rem' }}>
-              <Icon name="disclosure" size="floor" decorative style={{ transform: open ? 'rotate(90deg)' : 'none' }} />
+              <Icon name="disclosure" size="floor" decorative style={{ transform: open ? 'rotate(180deg)' : 'rotate(90deg)' }} />
               <span style={LABEL_STYLE}>{group.label}</span>
             </button>
             {open && group.entryIds.map(id => {
