@@ -44,19 +44,21 @@ const step0TheReckoning: ActionStep = {
   onSuccess: [],
   onFailure: [],
   failBehavior: 'continue_weakened',
+  // THR-2110: rewritten from scratch to Prose Doctrine v2 (the opening skeleton).
   narrativeTemplate:
-    'The wall already stood half its height across the pass, and from the top of it the mason-lord could ' +
-    'see both the things their choice would decide. Behind, to the east, the valley they had been born in: ' +
-    'its terraced fields, its children, its long shelved grain — a whole region that would live out the ' +
-    'famine winter in safety if the stone went up. Beyond, to the west, the lands the wall would shut out: ' +
-    'the herders already thin, the towns the raiders would reach first once the pass was sealed, the ' +
-    'thousands for whom this wall was a sentence written in granite. The mason-lord had laid every course ' +
-    'with their own hands and knew exactly what each one cost. They were not a cruel person. They were a ' +
-    'person standing on a wall in the wind, with a trowel in one hand and a region behind them, trying to ' +
-    'decide whether permanence was the same thing as protection. The god stood at their shoulder, in the ' +
-    'same wind, and could feel the weight of the stone and the weight of the far side both.',
-  successAfterimage: 'The mason-lord stood on the half-built wall and weighed the region against the lands beyond.',
-  failureAfterimage: 'The mason-lord swayed on the high stone, and for a moment could not weigh anything at all.',
+    '{actor}, the mason-lord, has come back to the great wall in the pass above {location}.\n\n' +
+    'The wall stands at half its height. Finished, it will keep raiders and hungry strangers out of the ' +
+    'valley through the famine winter. It will also shut out the herders and towns on the far side, and ' +
+    'leave them to the raiders.\n\n' +
+    '{actor} has built the wall this far. Now {actor} must choose whether to finish it.',
+  successAfterimage: 'The mason-lord weighed the valley against the far side, and made up their mind.',
+  failureAfterimage: 'The mason-lord stood on the wall all day and could not make up their mind.',
+  // THR-2110 decision 5: the rest of the ladder, each naming its cost.
+  successAtCostAfterimage:
+    'The mason-lord made up their mind, but the doubt cost a week, and the first snow has come.',
+  criticalSuccessAfterimage: 'The mason-lord saw both costs plainly, and made up their mind without fear.',
+  criticalFailureAfterimage:
+    'The mason-lord argued with the crew for a whole day. Half of them put down their tools and went home.',
 };
 
 /**
@@ -71,31 +73,20 @@ const step1HardenTheirResolve: ActionStep = {
   onFailure: [],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god set its will against the mason-lord\'s doubt the way a keystone is set against the thrust of ' +
-    'an arch — not pushing them, but giving the part of them that wanted to finish something to lean on. ' +
-    'And the mason-lord stopped looking west. They looked at the children behind them and at the grain that ' +
-    'would feed those children, and the doubt went quiet, and the work went on. Stone by stone the pass ' +
-    'closed. When the last course was laid the mason-lord stood back and did not weep — they had decided not ' +
-    'to be the kind of person who weeps over a thing they chose on purpose — and the region behind the wall ' +
-    'was safe, truly and permanently safe, for the first time in living memory. The wall would outlast the ' +
-    'mason-lord. It would outlast the famine. It would outlast the names of everyone it had shut outside to ' +
-    'die, and it would keep being a kindness to one valley and a grave-marker to the rest, in the same ' +
-    'patient granite, for a very long time.',
-  successAfterimage: 'The wall rose to its full height, and one region was sealed permanently safe.',
+    'The god hardens the mason-lord\'s resolve. {actor} stops weighing the far side and orders the crew ' +
+    'back to work. The aim is to close the pass before the worst of the winter.',
+  successAfterimage: 'The wall rose to its full height, and the valley was sealed safe.',
   failureAfterimage:
-    'The resolve held but the work went wrong — a section settled badly in the frozen ground, and the wall ' +
-    'rose finished but flawed, safe enough to doom the far side and weak enough to fail the near one some ' +
-    'harder winter to come.',
+    'The wall rose, but one section settled badly in the frozen ground. It shuts out the far side, and it ' +
+    'may fail the valley in a harder winter.',
+  successAtCostAfterimage:
+    'The wall rose to its full height, but a mason fell from the top course in the frost and died.',
   criticalSuccessAfterimage:
-    'The wall did not merely rise — it rose perfect, courses so true the frost could find no seam to pry. ' +
-    'Masons would come from three regions to study how it was set. The valley behind it would not know an ' +
-    'unguarded night again in the mason-lord\'s lifetime, and the cost of that safety stood plain in granite ' +
-    'for anyone west of it to read.',
+    'The wall rose with every course true. Masons will come from far away to study it, and the valley will ' +
+    'not fear raiders again in the mason-lord\'s lifetime.',
   criticalFailureAfterimage:
-    'The mason-lord\'s certainty never wavered, and that was the ruin of it — they drove the work through a ' +
-    'frost-heaved footing they should have stopped to fix, trusting resolve to do a mason\'s job. The wall ' +
-    'rose finished and proud and wrong, and the winter it was built to survive is the winter it will come ' +
-    'down in, on the very valley it was meant to save.',
+    'The mason-lord pushed the work over a cracked footing and did not stop to fix it. The wall stands ' +
+    'finished but unsound, and it will fall in the first hard winter.',
   successMetadata: { reputationDelta: 0.16 },
   failureMetadata: { reputationDelta: -0.1 },
 };
@@ -113,31 +104,21 @@ const step1LetTheDoubtIn: ActionStep = {
   onFailure: [],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god gave the mason-lord nothing to lean on, and let the doubt do what doubt does to a person who ' +
-    'is, underneath everything, decent. They stood on the wall and made themselves look west one more time ' +
-    '— at the thin herders, at the towns the raiders would reach, at the thousands the granite would ' +
-    'sentence — and they could not lay another course. They came down off the wall and they did not go ' +
-    'back up. The work stopped at half its height, and a half-wall is no wall at all; it is only a long ' +
-    'ridge of stone that a determined enemy walks around. The region stayed open. The famine winter came ' +
-    'in over the unsealed pass and the valley shared its long-shelved grain with strangers because there ' +
-    'was no wall to tell them not to, and some of the valley\'s children went hungry who would not have, ' +
-    'and none of the far side\'s children were left to die behind a barrier with a god\'s blessing on it. ' +
-    'The mason-lord never finished anything that grand again. They said, when asked, that they had run out ' +
-    'of stone. They had not run out of stone.',
-  successAfterimage: 'The wall stood half-built and abandoned, and the pass — and its mercy — stayed open.',
+    'The god holds back and lets the doubt work. {actor} thinks again about the herders and towns beyond ' +
+    'the pass, which the raiders will reach first. {actor} tells the crew to stop work.',
+  successAfterimage: 'The mason-lord walked away, and the half-built wall kept no one out.',
   failureAfterimage:
-    'The mason-lord faltered without quite walking away; the wall stood half-built and undefended, and the ' +
-    'region got neither the safety of the stone nor the clean conscience of refusing it.',
+    'The mason-lord stopped the work but kept guards on the half-wall. The far side does not trust the ' +
+    'open pass, and the valley gets no safety from it.',
+  successAtCostAfterimage:
+    'The mason-lord walked away, but the crew had been paid in grain. The valley lost that grain to a wall ' +
+    'no one will finish.',
   criticalSuccessAfterimage:
-    'The mason-lord came down off the wall for good, and word of why traveled further than any finished ' +
-    'rampart could. Herders on the far side who never learned the name spoke of the valley that would not ' +
-    'wall them out. The half-wall stayed a half-wall, and became, without anyone intending it, the most ' +
-    'honored thing the mason-lord never built.',
+    'The mason-lord walked away for good. Herders on the far side now speak well of the valley that would ' +
+    'not wall them out.',
   criticalFailureAfterimage:
-    'The doubt did not free the mason-lord — it froze them. They could neither lay the last courses nor walk ' +
-    'away clean, and stood on the half-wall through the turning season while the choice rotted. The valley ' +
-    'got the danger of an open pass and the shame of a builder who could not finish, and remembered the ' +
-    'mason-lord for the one thing worse than cruelty or mercy: nothing at all.',
+    'The mason-lord could neither finish the wall nor leave it, and kept guard on it all season. The ' +
+    'valley lost a season of work and gained no safety.',
   successMetadata: { reputationDelta: 0.08 },
   failureMetadata: { reputationDelta: -0.12 },
 };
@@ -155,22 +136,15 @@ const step1Branch: ActionStepBranch = {
 
 const WALL_RAISED_AFTERMATH = {
   overview:
-    'The wall changed the map and then it changed the people on either side of it. Behind the stone, the ' +
-    'valley learned the ease of the protected — and the forgetting that comes with ' +
-    'it, until within a generation the children could not say what was on the far side, only that the wall ' +
-    'had always been there and had always been wise. Beyond the stone, the shut-out lands learned the wall ' +
-    'as the herders learn weather: a fact, immovable, with a god\'s name behind it. Some of them cursed the ' +
-    'valley. Some of them cursed the god. A few of them, the most dangerous, began to study how a permanent ' +
-    'thing is unmade. The region was safe. The price of the safety was paid in full by people who never got ' +
-    'a vote, and the granite would go on collecting that price, quietly, for as long as it stood.',
+    'The wall stands across the pass at its full height. For now, it keeps raiders and hungry strangers ' +
+    'out of the valley. The lands to the west are shut out, and their people blame the valley and the god. ' +
+    'A few of them plan to tear it down.',
   changes: [
     {
       id: 'wall_region_sealed',
       kind: 'future_hook' as const,
-      title: 'A Region Made Permanent',
-      detail:
-        'The wall stands at its full height. The valley behind it is sealed safe — through this famine ' +
-        'and the next, and likely past the lifetime of anyone who chose it. Permanence has been bought.',
+      title: 'The Pass Closed',
+      detail: 'The wall stands at full height. For now, the valley is closed off from raiders.',
       polarity: 'gain' as const,
     },
     {
@@ -178,9 +152,8 @@ const WALL_RAISED_AFTERMATH = {
       kind: 'future_hook' as const,
       title: 'The Lands Shut Outside',
       detail:
-        'The herders, the towns, the thousands beyond the pass were sealed out to face the famine and the ' +
-        'raiders alone — with a god\'s blessing on the stone that did it. They will not forget who walled ' +
-        'them off.',
+        'The herders and towns beyond the pass face the famine and the raiders alone. They blame the god ' +
+        'for the wall.',
       polarity: 'loss' as const,
     },
     {
@@ -188,22 +161,19 @@ const WALL_RAISED_AFTERMATH = {
       kind: 'reputation' as const,
       title: 'The Lord Who Closed the Pass',
       detail:
-        'The mason-lord is the one who raised the wall and did not weep. Their region honors them as a ' +
-        'protector; everything west of the stone knows them as the hand that turned the key.',
+        'The valley honors the mason-lord as its protector. Beyond the wall, people call them the one who ' +
+        'shut the gate.',
       polarity: 'mixed' as const,
     },
   ],
-  reactionPrompt:
-    'The wall stands and the region is safe behind it. The far side is sealed out and beginning to seethe. ' +
-    'What does the god do with the permanence it helped raise?',
+  reactionPrompt: 'The valley is safe, and the far side is angry. What does the god do next?',
   reactions: [
     {
       id: 'wall_react_consecrate_the_keep',
-      label: 'Consecrate the keeping. Make the wall a blessing the valley lives by.',
+      label: 'Bless the wall.',
       intent:
-        'Commit to what was built. Bless the wall and the valley it shelters — make the stone a holy ' +
-        'boundary, the protected region a place of order and continuity, the mason-lord a founder. Keeper ' +
-        'to the bone, and let the far side fall where it falls.',
+        'Bless the wall and the people it guards. The stone becomes a holy boundary, and the mason-lord a ' +
+        'founder.',
       effects: [
         {
           kind: 'reputation_tally' as const,
@@ -214,8 +184,8 @@ const WALL_RAISED_AFTERMATH = {
           kind: 'recent_event' as const,
           eventType: 'narrative' as const,
           message:
-            'The god blesses the great wall and the valley it shelters; the stone becomes a holy boundary, ' +
-            'and the region settles into the deep ease of the permanently protected.',
+            'The god blesses the great wall. The valley treats it as a holy boundary and settles into its ' +
+            'safety.',
           significance: 0.8,
         },
         {
@@ -229,11 +199,9 @@ const WALL_RAISED_AFTERMATH = {
     },
     {
       id: 'wall_react_tend_the_far_side',
-      label: 'Tend the far side. Carry mercy around the stone you raised.',
+      label: 'Help the lands beyond the wall.',
       intent:
-        'Refuse to let the wall be the whole story. The region is sealed, but the god is not bound by its ' +
-        'own granite — move the divine attention to the shut-out lands, to the herders and the towns the ' +
-        'wall condemned, and be present for the price even while the wall goes on collecting it.',
+        'Turn to the lands the wall shut out. Help the herders and towns beyond the pass through the winter.',
       effects: [
         {
           kind: 'reputation_tally' as const,
@@ -243,9 +211,7 @@ const WALL_RAISED_AFTERMATH = {
         {
           kind: 'recent_event' as const,
           eventType: 'ripple_consequence' as const,
-          message:
-            'The god who blessed the wall now walks the lands it shut out — carrying a hard, partial mercy ' +
-            'around the very stone it helped raise.',
+          message: 'The god turns to the lands the wall shut out, and helps them through the winter.',
           significance: 0.75,
         },
         {
@@ -262,56 +228,40 @@ const WALL_RAISED_AFTERMATH = {
 
 const WALL_UNFINISHED_AFTERMATH = {
   overview:
-    'A wall that is never finished is the loudest kind of choice, because everyone can see the height it ' +
-    'stopped at. The valley behind the half-wall went through the famine winter the hard way — open, ' +
-    'frightened, sharing grain it could not spare with people who came over the unsealed pass — and some ' +
-    'of its own went hungry for the mercy. They did not all forgive the mason-lord for it. But the far ' +
-    'side lived. The herders drove their thin flocks east through a pass that was supposed to be closed to ' +
-    'them, and the towns the raiders would have reached first had a valley at their backs instead of a ' +
-    'wall in their faces, and the thousands who had been a sentence in granite became, instead, just ' +
-    'people who made it through a bad year. No monument records it. The only evidence that a god chose ' +
-    'mercy over permanence is a long ridge of dressed stone in a windy pass, going green at the base, ' +
-    'finishing nothing, keeping no one out.',
+    'The wall stands half-built in the pass, and no more stone goes onto it. The valley faced the famine winter with the pass open, ' +
+    'and it shared its grain with strangers from the west. Some of its own children went hungry. Beyond ' +
+    'the pass, the herders and towns came through the bad year alive.',
   changes: [
     {
       id: 'wall_unfinished_pass_open',
       kind: 'future_hook' as const,
       title: 'The Pass Left Open',
-      detail:
-        'The wall stands half-built and abandoned. The region is unsealed and endangered — but the lands ' +
-        'beyond the pass were never shut out, and the famine was met by two sides sharing one road.',
+      detail: 'The wall stands half-built. The valley is exposed, and the road west stays open both ways.',
       polarity: 'mixed' as const,
     },
     {
       id: 'wall_unfinished_valley_cost',
       kind: 'reputation' as const,
       title: 'The Hunger the Valley Chose',
-      detail:
-        'The valley behind the half-wall paid for the open pass — grain shared too thin, a winter faced ' +
-        'undefended, some of its own going hungry. Not all of them honor the mason-lord for the mercy.',
+      detail: 'The valley paid for the open pass in thin rations. Not everyone there forgives the mason-lord.',
       polarity: 'loss' as const,
     },
     {
       id: 'wall_unfinished_mercy',
       kind: 'reputation' as const,
-      title: 'The Mercy No One Records',
-      detail:
-        'Thousands beyond the pass lived who would have been walled out to die. None of them know it. ' +
-        'There is no monument to a wall that was not built, only the god\'s knowledge of what mercy cost.',
+      title: 'Lives Saved Beyond the Pass',
+      detail: 'People beyond the pass lived who would have died outside the wall. Few of them know why.',
       polarity: 'gain' as const,
     },
   ],
-  reactionPrompt:
-    'The wall stands unfinished and the pass stays open — mercy bought with the valley\'s own hunger. What ' +
-    'does the god do with a permanence it chose not to raise?',
+  reactionPrompt: 'The pass stays open, and the valley paid for it. What does the god do now?',
   reactions: [
     {
       id: 'wall_unfinished_react_carry_the_valley',
-      label: 'Carry the valley. Honor the ones who paid for the mercy.',
+      label: 'Help the valley.',
       intent:
-        'The far side lived because the valley went hungry; do not let that go unhonored. Move the god\'s ' +
-        'attention to the people behind the half-wall who shared grain they could not spare — steady them ' +
-        'through the lean year, and make sure the cost of an open pass is not paid by them alone.',
+        'Help the valley through the lean year, so the people who gave up their grain do not carry the cost ' +
+        'alone.',
       effects: [
         {
           kind: 'reputation_tally' as const,
@@ -321,9 +271,7 @@ const WALL_UNFINISHED_AFTERMATH = {
         {
           kind: 'recent_event' as const,
           eventType: 'narrative' as const,
-          message:
-            'The god turns toward the valley that chose an open pass and paid for it in hunger — steadying ' +
-            'the people whose mercy will never be recorded in any stone.',
+          message: 'The god turns to the valley that shared its grain, and helps it through the lean year.',
           significance: 0.75,
         },
         {
@@ -337,12 +285,10 @@ const WALL_UNFINISHED_AFTERMATH = {
     },
     {
       id: 'wall_unfinished_react_unmake_the_stone',
-      label: 'Unmake the stone. Let the half-wall return to the pass.',
+      label: 'Take the half-wall down.',
       intent:
-        'Finish the refusal. A half-wall is still a scar and still a temptation for the next hard-hearted ' +
-        'lord to complete; let it come down. Bless the slow work of dismantling it, give the dressed stone ' +
-        'back to the valley\'s houses and granaries, and leave the pass as open as the god decided it ' +
-        'should be. Destroyer to the bone, in the service of mercy.',
+        'Bless the work of taking the half-wall down. Its stone goes into the valley\'s houses and ' +
+        'granaries, and the pass stays open.',
       effects: [
         {
           kind: 'reputation_tally' as const,
@@ -353,8 +299,8 @@ const WALL_UNFINISHED_AFTERMATH = {
           kind: 'recent_event' as const,
           eventType: 'ripple_consequence' as const,
           message:
-            'The god blesses the unmaking of the half-wall; the dressed stone goes back into houses and ' +
-            'granaries, and the pass is left open on purpose, a refusal made permanent.',
+            'The god blesses the unmaking of the half-wall. Its stone goes into houses and granaries, and the ' +
+            'pass stays open for good.',
           significance: 0.8,
         },
         {
@@ -377,13 +323,13 @@ export const WALL_OF_THE_MASON_LORD_TEMPLATE: UnifiedActionTemplate = withEncoun
     goal: 'finish the great wall across the pass',
     risk: 'raise a flawed wall that fails both sides',
     won: 'finished the wall and sealed the valley safe',
-    lost: 'finished the wall, but flawed',
-    lostBadly: 'drove the wall up on a cracked footing',
+    lost: 'finished the wall over a weak section',
+    lostBadly: 'built the wall on a cracked footing',
     arms: {
       let_the_doubt_in: {
         won: 'walked away and left the pass open',
-        lost: 'stalled with the wall half-built',
-        lostBadly: 'froze on the half-wall all season',
+        lost: 'stopped the work but kept guards on it',
+        lostBadly: 'stood on the half-wall all season',
       },
     },
   },
@@ -411,15 +357,15 @@ export const WALL_OF_THE_MASON_LORD_TEMPLATE: UnifiedActionTemplate = withEncoun
 
   narrativeTemplates: {
     initiation:
-      'A threaded mason-lord stands on a half-built wall across a mountain pass, weighing a permanence ' +
-      'against a mercy. Raise the stone and seal one region safe behind it, or leave it unfinished and ' +
-      'keep the pass — and its danger, and its mercy — open. A god can press the doubt toward holding, or toward breaking.',
+      'A mason-lord has built half a great wall across a mountain pass. Finished, it will keep one valley ' +
+      'safe through the famine and shut the lands beyond it out. A god can harden the mason-lord\'s ' +
+      'resolve, or let the doubt in.',
     success:
-      'The mason-lord makes the choice the god leans them toward — to finish the wall, or to walk away from ' +
-      'it. A whole region, and the lands beyond it, are decided by where the stone stops.',
+      'The mason-lord finishes the wall or walks away from it. If the wall is finished, the lands beyond ' +
+      'it are shut out.',
     failure:
-      'The work goes wrong in the choosing — a flawed wall, or a faltering that walks away from neither ' +
-      'safety nor mercy cleanly. The region gets the worse of both the granite and the open pass.',
+      'The work goes wrong. The valley gets a flawed wall, or a half-wall that guards nothing and still ' +
+      'frightens the far side.',
   },
 
 
@@ -428,12 +374,7 @@ export const WALL_OF_THE_MASON_LORD_TEMPLATE: UnifiedActionTemplate = withEncoun
       {
         id: 'harden_their_resolve',
         label: 'Harden their resolve. Let the wall rise.',
-        intent:
-          'Give the part of them that wants to finish something to lean on, and let them stop looking west. ' +
-          'The wall will go up, fixed and final, and the region behind it will be permanently safe — through ' +
-          'this famine and past their own lifetime. The lands beyond the pass will be sealed out to face the ' +
-          'winter and the raiders alone, with your blessing on the stone that did it. Permanence is protection ' +
-          'for one valley and a sentence for the rest.',
+        intent: 'Harden the mason-lord\'s resolve, so they stop looking west and keep laying stone.',
         targetLabel: 'The mason-lord',
         essenceCost: 2, // THR-1800 — the god's push is paid for
         interventionType: 'coercive',
@@ -441,12 +382,7 @@ export const WALL_OF_THE_MASON_LORD_TEMPLATE: UnifiedActionTemplate = withEncoun
       {
         id: 'let_the_doubt_in',
         label: 'Stay your hand. Let the doubt in.',
-        intent:
-          'Give them nothing to lean on, and let the decent thing underneath them win. They will look west ' +
-          'one more time and not be able to lay another course; the wall will stop at half its height and ' +
-          'keep no one out. The region will stay open and endangered — its own children may go hungry sharing ' +
-          'grain over an unsealed pass — but no one will be walled outside to die with a god\'s name on the ' +
-          'granite. Mercy through impermanence, paid for by the people who chose it.',
+        intent: 'Hold back and let the doubt in. The mason-lord looks west again, at the people the wall will shut out.',
         targetLabel: 'The mason-lord',
         essenceCost: 0, // THR-1800 — staying your hand costs nothing
         interventionType: 'withdrawn',
@@ -464,8 +400,8 @@ export const WALL_OF_THE_MASON_LORD_TEMPLATE: UnifiedActionTemplate = withEncoun
   },
 
   description:
-    'A mason-lord can raise a great wall that saves one region by dooming the lands beyond it. A '
-    + 'god can press the resolve to hold, or let the doubt break it.',
+    'A mason-lord can finish a great wall that keeps one valley safe and shuts the lands beyond it out. A '
+    + 'god can harden the resolve, or let the doubt in.',
 });
 
 export default WALL_OF_THE_MASON_LORD_TEMPLATE;

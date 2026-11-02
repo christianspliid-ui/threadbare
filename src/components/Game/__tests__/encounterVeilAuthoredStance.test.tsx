@@ -140,9 +140,9 @@ describe('THR-1411 — the authored hand reaches the attended veil with its stan
     expect(model.choices).toHaveLength(3);
     // And the card faces are on screen — a veil with no choices would pass
     // every "contains the right words" gate below by containing nothing.
-    expect(screen.getByText(/Steady the forge-master's resolve/)).toBeInTheDocument();
-    expect(screen.getByText(/Whisper into the gaps/)).toBeInTheDocument();
-    expect(screen.getByText(/Hold your essence/)).toBeInTheDocument();
+    expect(screen.getByText(/opens the gate and tells the whole truth/)).toBeInTheDocument();
+    expect(screen.getByText(/toward a smaller story/)).toBeInTheDocument();
+    expect(screen.getByText(/must find her own way to the gate/)).toBeInTheDocument();
   });
 
   it('shows a stance word on every card — the element the pixel sweep found 0 of', () => {
@@ -280,6 +280,6 @@ describe('THR-1411 — the authored hand reaches the attended veil with its stan
 
     expect(screen.queryAllByTestId('choice-stance')).toHaveLength(0);
     // Still a rendered surface — the absence is the stance, not the veil.
-    expect(screen.getByText(/Steady the forge-master's resolve/)).toBeInTheDocument();
+    expect(screen.getByText(/opens the gate and tells the whole truth/)).toBeInTheDocument();
   });
 });
