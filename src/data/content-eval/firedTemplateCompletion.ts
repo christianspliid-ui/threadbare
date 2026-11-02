@@ -57,6 +57,9 @@ export const FIRED_TEMPLATE_COMPLETION: readonly string[] = [
   // THR-2105 slice 1: the one top-ten board template (2026-10-31 attended census)
   // not yet complete.
   'encounter.market_day_festival',
+  // THR-2108 wave 2a: the one board template among ranks 11–20 (2026-11-02 attended
+  // census) not yet complete — its ladder and dealt hand were added in the rewrite.
+  'encounter.investigate_anomaly',
 ];
 
 /** Templates per slice: one executor run's worth of prose (~60–80 lines). */
