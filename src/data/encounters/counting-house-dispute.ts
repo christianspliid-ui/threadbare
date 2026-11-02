@@ -149,7 +149,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         + 'founder who cast them, finished the work last week. The balance is still unpaid, and each '
         + 'house\'s books say the other owes it.\n\n'
         + '{cast:founder} has asked {actor} to read both books and rule, and both houses have agreed. The '
-        + 'house that wins will pay the arbiter and owe a favour besides.',
+        + 'house that wins will pay {actor} and owe a favour besides.',
       criticalSuccessAfterimage: 'They found the one line in both books that settles it, and both houses watched them find it.',
       successAfterimage: 'They read both books through and found where the debt sits.',
       successAtCostAfterimage: 'They found where the debt sits. It took them until dark.',
@@ -232,7 +232,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           narrativeTemplate: '{actor} rules for House Corrow. Corrow\'s carts fetched the scales only because Aldane\'s carter '
             + 'never came, and the balance would break the smaller house. Aldane pays.\n\n'
             + '{cast:aldane} keeps House Aldane\'s books and has not agreed to pay anything. {actor} has to '
-            + 'bring Aldane to sign. A ruling nobody signs goes to the magistrate, with the arbiter\'s name on '
+            + 'bring Aldane to sign. A ruling nobody signs goes to the magistrate, with {actor}\'s name on '
             + 'it.',
           criticalSuccessAfterimage: 'Aldane signed without being asked twice.',
           successAfterimage: 'Aldane signed, and Corrow kept its carts.',
@@ -300,11 +300,11 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             + 'and Corrow\'s carts took the scales. The letter is on Aldane\'s side, and so is the larger '
             + 'purse. Corrow pays.\n\n'
             + '{cast:corrow} keeps House Corrow\'s books and says the balance will break the house. {actor} has '
-            + 'to bring Corrow to sign. A ruling nobody signs goes to the magistrate, with the arbiter\'s name '
+            + 'to bring Corrow to sign. A ruling nobody signs goes to the magistrate, with {actor}\'s name '
             + 'on it.',
           criticalSuccessAfterimage: 'Corrow signed without further argument.',
           successAfterimage: 'Corrow signed, and the founder was paid by evening.',
-          successAtCostAfterimage: 'Corrow signed only after the arbiter gave the house a season to pay.',
+          successAtCostAfterimage: 'Corrow signed only after {actor} gave the house a season to pay.',
           failureAfterimage: 'Corrow would not sign.',
           criticalFailureAfterimage: 'Corrow walked out before the ruling was read to the end.',
           successMetadata: {
@@ -366,7 +366,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         onFailure: [],
         failBehavior: 'fail_action',
         narrativeTemplate: '{actor} has read the books and gives a ruling. The house that loses has to be brought to sign '
-          + 'it. A ruling nobody signs goes to the magistrate, with the arbiter\'s name on it.',
+          + 'it. A ruling nobody signs goes to the magistrate, with {actor}\'s name on it.',
         criticalSuccessAfterimage: 'Both houses signed, and the founder was paid.',
         successAfterimage: 'The losing house signed.',
         successAtCostAfterimage: 'The losing house signed after a long afternoon.',
@@ -416,8 +416,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   narrativeTemplates: {
     initiation: 'Two merchant houses owe a founder the balance on the town\'s new scales, and each says the other '
       + 'owes it. {actor} has been asked to read both books and rule.',
-    success: 'The ruling held. The losing house signed, and the winning house paid the arbiter.',
-    failure: 'The ruling did not hold. It goes to the magistrate with the arbiter\'s name on it, and the '
+    success: 'The ruling held. The losing house signed, and the winning house paid {actor}.',
+    failure: 'The ruling did not hold. It goes to the magistrate with {actor}\'s name on it, and the '
       + 'founder is still unpaid.',
   },
   aftermathConfig: {
@@ -435,7 +435,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         byOutcome: {
           critical_success: {
             overview: 'House Aldane paid the founder in full, and called the ruling fair where the whole counting house '
-              + 'could hear. House Corrow kept its carts. It had no coin to spare, and paid the arbiter in kind.',
+              + 'could hear. House Corrow kept its carts. It had no coin to spare, and paid {actor} in kind.',
             changes: [
               {
                 id: 'counting.pos.crit.letters',
@@ -504,7 +504,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
               {
                 id: 'counting.pos.tell_the_market',
                 label: 'Let the market hear who ruled',
-                intent: 'Let the ruling be told in the market. The town thinks better of the arbiter who made it.',
+                intent: 'Let the ruling be told in the market. The town thinks better of {actor} for it.',
                 effects: [
                   {
                     kind: 'reputation_with',
@@ -532,7 +532,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           },
           success: {
             overview: 'House Aldane paid the founder, and House Corrow kept its carts. Corrow had no coin to spare, and '
-              + 'paid the arbiter in kind.',
+              + 'paid {actor} in kind.',
             changes: [
               {
                 id: 'counting.pos.letters',
@@ -600,7 +600,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           },
           success_at_cost: {
             overview: 'Aldane paid the founder, but only after a long afternoon of argument over every clause. Corrow '
-              + 'kept its carts, and paid the arbiter in kind.',
+              + 'kept its carts, and paid {actor} in kind.',
             changes: [
               {
                 id: 'counting.pos.cost.letters',
@@ -695,7 +695,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           critical_failure: {
-            overview: 'Aldane walked out and told the market the arbiter was Corrow\'s creature. The ruling goes to the '
+            overview: 'Aldane walked out and told the market {actor} was Corrow\'s creature. The ruling goes to the '
               + 'magistrate, and {actor}\'s name goes with it.',
             changes: [
               {
@@ -734,8 +734,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         changes: [],
         byOutcome: {
           critical_success: {
-            overview: 'House Corrow paid the founder, and thanked the arbiter for reading the contract plainly. House '
-              + 'Aldane paid the arbiter\'s fee from its own counting room.',
+            overview: 'House Corrow paid the founder, and thanked {actor} for reading the contract plainly. House '
+              + 'Aldane paid {actor}\'s fee from its own counting room.',
             changes: [
               {
                 id: 'counting.neg.crit.scales',
@@ -804,7 +804,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
               {
                 id: 'counting.neg.tell_the_market',
                 label: 'Let the market hear who ruled',
-                intent: 'Let the ruling be told in the market. The town thinks better of the arbiter who made it.',
+                intent: 'Let the ruling be told in the market. The town thinks better of {actor} for it.',
                 effects: [
                   {
                     kind: 'reputation_with',
@@ -831,7 +831,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           success: {
-            overview: 'The debt is off both houses\' books. House Aldane paid the arbiter\'s fee from its own counting '
+            overview: 'The debt is off both houses\' books. House Aldane paid {actor}\'s fee from its own counting '
               + 'room.',
             changes: [
               {
@@ -900,7 +900,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           },
           success_at_cost: {
             overview: 'Corrow signed only once {actor} had given the house a season to pay, and the founder waits that '
-              + 'long. Aldane paid the arbiter\'s fee all the same.',
+              + 'long. Aldane paid {actor}\'s fee all the same.',
             changes: [
               {
                 id: 'counting.neg.cost.scales',
@@ -995,7 +995,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           critical_failure: {
-            overview: 'Corrow walked out and told the market the arbiter was Aldane\'s creature. The ruling goes to the '
+            overview: 'Corrow walked out and told the market {actor} was Aldane\'s creature. The ruling goes to the '
               + 'magistrate, and {actor}\'s name goes with it.',
             changes: [
               {
@@ -1039,7 +1039,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           changes: [],
         },
         critical_failure: {
-          overview: 'The losing house walked out, and the ruling goes to the magistrate with the arbiter\'s name on '
+          overview: 'The losing house walked out, and the ruling goes to the magistrate with {actor}\'s name on '
             + 'it.',
           changes: [],
         },
@@ -1047,9 +1047,9 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   },
   description:
-    'Two merchant houses dispute a founder\'s unpaid balance in a town counting house. The arbiter '
-    + 'has to read both sets of books, rule for the small house or for the letter of the contract, '
-    + 'and bring the losing house to sign.',
+    'Two merchant houses dispute a founder\'s unpaid balance in a town counting house. Both sets of '
+    + 'books have to be read, a ruling given for the small house or for the letter of the contract, '
+    + 'and the losing house brought to sign.',
   locationSubtypes: expandSettings(['urban']),
   consequenceDraw: ['knowledge', 'secret'],
 };

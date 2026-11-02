@@ -92,9 +92,9 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.returned_heir',
   stakes: {
-    goal: 'judge the man who says he is the lost heir',
+    goal: 'judge the man who claims to be the lost heir',
     risk: 'misread the man in front of the whole household',
-    won: 'judged the man who says he is the lost heir',
+    won: 'judged the man who claims to be the lost heir',
     lost: 'reached no finding and was sent off the manor',
     lostBadly: 'misread the man in front of the whole household',
   },
@@ -126,18 +126,19 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       onFailure: [],
       failBehavior: 'continue_weakened',
       narrativeTemplate: 'Seven years ago the lord\'s son went to war and was counted dead. Now {cast:claimant} has walked '
-        + 'in, saying he is that son. The widow says he is her boy. The uncle, who holds the manor now, '
-        + 'says he is an impostor.\n\n'
-        + 'The manor court sits in three days. The steward asks {actor} to read the man: his scars, his '
-        + 'hands, and what he remembers.',
-      criticalSuccessAfterimage: 'The scar on his chin was the one the son got as a boy, and he told how he got it before anyone '
-        + 'asked.',
-      successAfterimage: 'His hands were a soldier\'s now, but he told the family\'s oldest stories the way the family '
-        + 'tells them.',
-      successAtCostAfterimage: 'He told the old stories well, but {actor} heard them in the widow\'s own chamber, and the uncle '
-        + 'called the master bought.',
-      failureAfterimage: 'War had changed his face and hands too much to read, and he could not name his own horse.',
-      criticalFailureAfterimage: '{actor} called a scar on his arm a war wound, and the widow showed the hall it was her son\'s '
+        + 'in and claims to be that son. The widow says the man is her boy. The uncle, who holds the manor '
+        + 'now, calls the man an impostor.\n\n'
+        + 'The manor court sits in three days. The steward asks {actor} to read the man: the scars, the '
+        + 'hands, and the memories.',
+      criticalSuccessAfterimage: 'The scar on the man\'s chin was the one the son got as a boy, and the man told its story '
+        + 'before anyone asked.',
+      successAfterimage: 'The man\'s hands were a soldier\'s now, but the family\'s oldest stories came out the way the '
+        + 'family tells them.',
+      successAtCostAfterimage: 'The man told the old stories well, but {actor} heard them in the widow\'s own chamber, and the '
+        + 'uncle called {actor} bought.',
+      failureAfterimage: 'War had changed the man\'s face and hands too much to read, and the man could not name the son\'s '
+        + 'own horse.',
+      criticalFailureAfterimage: '{actor} called a scar on the man\'s arm a war wound, and the widow showed the hall it was her son\'s '
         + 'boyhood scar.',
       failureMetadata: {
         effects: [
@@ -166,13 +167,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 2,
           forecastDelta: 0.1,
           imageTag: 'generic.strength',
-          effectLine: 'Tear the man\'s shirt open at the shoulder, so every old wound on his back is in plain sight.',
+          effectLine: 'Tear the man\'s shirt open at the shoulder, so every old wound on the man\'s back is in plain sight.',
           bandProse: {
-            critical_success: 'His shirt tore on a nail, and the hall saw the old burn on his back that the widow had '
-              + 'described.',
-            success: 'His shirt tore, and on his back was the old burn the widow had described.',
-            near_miss: 'His shirt tore, but the uncle had him covered before {actor} could look closely.',
-            failure: 'His shirt tore, and every mark on his back was from the war.',
+            critical_success: 'The man\'s shirt tore on a nail, and the hall saw the old burn on the back that the widow '
+              + 'had described.',
+            success: 'The man\'s shirt tore, and on the back was the old burn the widow had described.',
+            near_miss: 'The man\'s shirt tore, but the uncle had the man covered before {actor} could look closely.',
+            failure: 'The man\'s shirt tore, and every mark on the back was from the war.',
           },
         },
         {
@@ -182,15 +183,15 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 1,
           forecastDelta: 0.08,
           imageTag: 'generic.dark',
-          effectLine: 'Lay a heavy dark over the man\'s bed tonight, so he talks while dreaming with no guard on what '
-            + 'he says.',
+          effectLine: 'Lay a heavy dark over the man\'s bed tonight, so the man talks while dreaming, with no guard on '
+            + 'the words.',
           bandProse: {
-            success: 'He talked in his sleep and called for the son\'s old nurse by a pet name no servant used.',
-            success_at_cost: 'He called for the son\'s old nurse in his sleep, and the uncle\'s man heard {actor} listening at '
-              + 'the door.',
-            near_miss: 'He talked all night in his sleep, but only in the soldiers\' speech of the war.',
-            failure: 'He slept without a word until morning.',
-            critical_failure: 'He cried out in his sleep for a woman nobody in the house had heard of.',
+            success: 'The man called out while asleep for the son\'s old nurse, by a pet name no servant used.',
+            success_at_cost: 'The man called for the son\'s old nurse while asleep, and the uncle\'s servant heard {actor} '
+              + 'listening at the door.',
+            near_miss: 'The man talked all night while asleep, but only in the soldiers\' speech of the war.',
+            failure: 'The man slept without a word until morning.',
+            critical_failure: 'The man cried out while asleep for a woman nobody in the house had heard of.',
           },
         },
       ],
@@ -206,28 +207,28 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       onSuccess: [],
       onFailure: [],
       failBehavior: 'fail_action',
-      narrativeTemplate: 'Anyone in the house could have taught the man what he knows. The steward, {cast:steward}, keeps '
-        + 'the manor\'s old letters, and every servant answers to him. The uncle loses the manor if the man '
+      narrativeTemplate: 'Anyone in the house could have taught the man what the son would know. The steward, '
+        + '{cast:steward}, keeps the manor\'s old letters, and every servant answers to the steward. The uncle loses the manor if the man '
         + 'is the heir.\n\n'
         + '{actor} must find out who taught the man what, and who gains. A finding {actor} can stand behind '
         + 'is sworn before the manor court in {location} on court day, with {cast:steward} there to hear '
         + 'it.',
-      criticalSuccessAfterimage: '{actor} sorted what the man was told from what he remembered, and what he remembered only the '
-        + 'son could know.',
-      successAfterimage: '{actor} found who had told him the recent news, and he knew the old stories himself.',
+      criticalSuccessAfterimage: '{actor} sorted the man\'s own memories from what the household had told, and those memories '
+        + 'were ones only the son could have.',
+      successAfterimage: '{actor} found who had told the man the recent news, and the old stories were the man\'s own.',
       successAtCostAfterimage: 'The finding stands, but the uncle has sworn to break it before the court.',
-      failureAfterimage: '{actor} could not tell what the man remembered from what he had been told, and the uncle had '
-        + '{actor} shown the road.',
-      criticalFailureAfterimage: 'The uncle questioned the man before the whole household, and he could not answer. The hall '
+      failureAfterimage: '{actor} could not sort the man\'s own memories from what the household had told, and the uncle '
+        + 'had {actor} shown the road.',
+      criticalFailureAfterimage: 'The uncle questioned the man before the whole household, and the man could not answer. The hall '
         + 'laughed at {actor}\'s reading, and the uncle had {actor} shown off the manor.',
       carryoverFactorLines: {
         critical_success: {
-          text: 'They know the scar on his chin is the son\'s.',
+          text: 'They know the scar on the man\'s chin is the son\'s.',
           polarity: 'for',
           forecastDelta: 0.05,
         },
         success: {
-          text: 'They know he tells the old stories the family\'s way.',
+          text: 'They know the man tells the old stories the family\'s way.',
           polarity: 'for',
           forecastDelta: 0.03,
         },
@@ -237,7 +238,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           forecastDelta: -0.02,
         },
         near_miss: {
-          text: 'They read his hands but not his memory.',
+          text: 'They read the man\'s hands but not the memory.',
           polarity: 'for',
           forecastDelta: 0.01,
         },
@@ -272,7 +273,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
               counterpartyId: '$cast:steward',
               missed: {
                 templateId: 'town.returned_heir_defaulted',
-                seedLabel: 'The finding was not sworn on court day, and the man comes looking for the master who made it.',
+                seedLabel: 'The finding was not sworn on court day, and the man comes looking for whoever made it.',
               },
             },
           },
@@ -316,9 +317,9 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           imageTag: 'generic.warmth',
           effectLine: 'Trouble whoever coached the man until keeping quiet costs them more than speaking.',
           bandProse: {
-            critical_success: 'The widow\'s maid came to {actor} in tears and listed every piece of news she had given him.',
-            success: 'The widow\'s maid admitted she had told him the household news since he left.',
-            near_miss: 'The widow\'s maid admitted to her mistress what she had told him, and the widow kept it from '
+            critical_success: 'The widow\'s maid came to {actor} in tears and listed every piece of news she had given the man.',
+            success: 'The widow\'s maid admitted she had passed the man the household news from the years the son was gone.',
+            near_miss: 'The widow\'s maid admitted to her mistress what she had told the man, and the widow kept it from '
               + '{actor}.',
             failure: 'The widow\'s maid cried in the kitchen all night and told no one why.',
           },
@@ -346,7 +347,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     {
       traitId: 'trait.core.core_warmth.vice',
       forecastDelta: 0.04,
-      factorLine: 'Being Cold, they read the man and not his mother\'s hope.',
+      factorLine: 'Being Cold, they read the man and not the widow\'s hope.',
     },
     {
       traitId: 'trait.core.core_warmth.virtue',
@@ -378,7 +379,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   ],
   narrativeTemplates: {
     initiation: 'A man has come home to {location} claiming to be the lord\'s lost son, and the steward has sent '
-      + 'for a master to read him.',
+      + 'for {actor} to read the claim.',
     success: 'The finding names the man as the lord\'s son, and is to be sworn before the manor court on court '
       + 'day.',
     failure: 'No finding was made, and the man\'s claim goes to court unread.',
@@ -387,14 +388,14 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
-      overview: 'The manor has a master\'s reading of the man who says he is the lord\'s son.',
+      overview: 'The manor has {actor}\'s reading of the man who claims to be the lord\'s son.',
       changes: [],
       reactions: [
         {
           id: 'heir.stand_with_the_son',
-          label: 'Sit with the son at his mother\'s table',
+          label: 'Sit with the son at the widow\'s table',
           intent: 'The mortal eats with the family on the night before the court sits. The son will remember who '
-            + 'sat with him.',
+            + 'shared that meal.',
           effects: [
             {
               kind: 'bond_change',
@@ -638,7 +639,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         },
         failure: {
           overview: 'The court will sit with no finding before it, and the uncle keeps the manor. The man will face '
-            + 'the court with only his mother\'s word.',
+            + 'the court with only the widow\'s word.',
           changes: [
             {
               id: 'heir.lost.town_regard',
@@ -711,7 +712,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             {
               id: 'heir.lost.write_to_the_man',
               label: 'Write the man what was found',
-              intent: 'The mortal sends the man an honest account of what could and could not be read. He will blame '
+              intent: 'The mortal sends the man an honest account of what could and could not be read. The man will blame '
                 + 'them a little less.',
               effects: [
                 {
@@ -738,8 +739,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         critical_failure: {
-          overview: 'The uncle now has a master\'s own error to hold up in court against the man, and the manor will '
-            + 'send for someone else next time.',
+          overview: 'The uncle now has {actor}\'s misreading to hold up in court against the man, and the steward will '
+            + 'not send for {actor} again.',
           changes: [
             {
               id: 'heir.broke.town_regard',
@@ -793,7 +794,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             {
               id: 'heir.broke.write_to_the_man',
               label: 'Write the man what was found',
-              intent: 'The mortal sends the man an honest account of what could and could not be read. He will blame '
+              intent: 'The mortal sends the man an honest account of what could and could not be read. The man will blame '
                 + 'them a little less.',
               effects: [
                 {
@@ -822,7 +823,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       },
     },
   },
-  description: 'Seven years after the lord\'s son was counted dead in the war, a man has come home saying he is '
+  description: 'Seven years after the lord\'s son was counted dead in the war, a man has come home claiming to be '
     + 'that son. Someone has to read the man and the household before the manor court sits, and swear '
     + 'to what they find.',
   locationSubtypes: expandSettings(['urban', 'rural']),

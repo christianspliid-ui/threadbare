@@ -195,7 +195,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         + 'cathedral\'s tables, which have been copied from book to book for two hundred years, and says a '
         + 'copy that old cannot be wrong. If {actor} proves the reckoning, it is read before the whole '
         + 'synod in the chapter house on synod day, in three days, with the dean there to answer it. If '
-        + 'not, {location} will think less of {actor}.',
+        + 'the dean finds a fault in it, the feast stays a week late and the error is {actor}\'s.',
       criticalSuccessAfterimage: 'The canons checked every row of the tables against the reckoning and asked {actor} to stand '
         + 'beside them at the synod. The town takes it for a good sign for the year.',
       successAfterimage: 'The canons checked the reckoning against the tables row by row and agreed the synod must hear '
@@ -566,7 +566,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         failure: {
-          overview: 'The cathedral will proclaim the feast a week late, which the bishop sent a master to stop, and '
+          overview: 'The cathedral will proclaim the feast a week late, though the bishop sent for {actor} to stop it, and '
             + 'the old priests say a year begun on a false feast goes badly.',
           changes: [
             {
@@ -594,7 +594,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         critical_failure: {
-          overview: 'The dean now has a master\'s own error to set against the old priests.',
+          overview: 'The dean now has {actor}\'s own error to set against the old priests.',
           changes: [
             {
               id: 'reckoning.broke.the_towns_regard',

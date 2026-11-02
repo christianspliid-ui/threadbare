@@ -108,7 +108,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       successAfterimage: 'No mark of the unseen was on {cast:accused}. The healer was frightened and tired, and told the '
         + 'same account of the boy\'s waking each time.',
       successAtCostAfterimage: 'No mark of the unseen was on {cast:accused}, but the crowd watched {actor} sit at the stocks all '
-        + 'morning and began to say the master was bewitched too.',
+        + 'morning and began to say {actor} was bewitched too.',
       failureAfterimage: 'They could not tell. {cast:accused} was too frightened to answer plainly, and {actor} left the '
         + 'stocks without a reading.',
       criticalFailureAfterimage: '{cast:accused} would not speak to them at all. The magistrate called off the reading, and the '
@@ -443,7 +443,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'A healer is in a town\'s stocks for witchcraft, and the magistrate sends for a master to say '
+    initiation: 'A healer is in a town\'s stocks for witchcraft, and the magistrate sends for {actor} to say '
       + 'whether the healer is touched.',
     success: 'The healer was cleared, and the pyre came down.',
     failure: 'The healer was not cleared, and the town still wants a witch.',
@@ -702,7 +702,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         },
         failure: {
           overview: 'The healer is alive and held in chains, and the pyre still stands in the square. The magistrate '
-            + 'sent for a master to settle this, and it is not settled.',
+            + 'will neither burn nor free the healer on {actor}\'s ruling.',
           changes: [
             {
               id: 'witch.fail.magistrate_trust',
@@ -785,8 +785,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         critical_failure: {
-          overview: 'The crowd burned the healer\'s house and every remedy in it, and the healer is held in chains. A '
-            + 'master was sent for to stop this, and it happened anyway.',
+          overview: 'The crowd burned the healer\'s house and every remedy in it, and the healer is held in chains. {actor}\'s '
+            + 'ruling did not stop the crowd.',
           changes: [
             {
               id: 'witch.critfail.magistrate_trust',

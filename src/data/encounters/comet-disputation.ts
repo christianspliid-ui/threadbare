@@ -526,10 +526,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'A town\'s college of star-readers has named a reader false over a comet, and the two will argue '
-      + 'it before the council at dawn.',
-    success: 'The council took the reader\'s side against the college over the comet.',
-    failure: 'The council took the college\'s side over the comet, and the reader\'s name suffered for it.',
+    initiation: 'A town\'s college of star-readers has named {actor} a false reader over a comet, and the two '
+      + 'sides will argue it before the council at dawn.',
+    success: 'The council took {actor}\'s side against the college over the comet.',
+    failure: 'The council took the college\'s side over the comet, and {actor}\'s name suffered for it.',
   },
   aftermathConfig: {
     branchOnStep: 0,
@@ -1302,9 +1302,9 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   },
   description:
-    'A comet is crossing a hazy sky, and the town council wants its meaning argued before them '
-    + 'against the champion of the town\'s college of star-readers. The champion\'s own chart agrees '
-    + 'with the challenger\'s, and whether to say so in public is a choice.',
+    'A comet is crossing a hazy sky, and the town\'s college of star-readers says it means plague. '
+    + 'The council will hear its meaning argued at dawn, and will shut the gates before the fair or '
+    + 'keep them open on the winner\'s word.',
   locationSubtypes: expandSettings(['urban']),
   consequenceDraw: ['secret', 'drive'],
 };

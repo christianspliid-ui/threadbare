@@ -1057,7 +1057,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   },
   description:
-    'A failing banking house\'s master offers to pay a third of what he owes. The rest can be '
+    'A failing banking house\'s master offers each creditor a third of the debt in coin. The rest can be '
     + 'fought for in an arbitration against a noble, or the third collected before the strongroom '
     + 'runs dry.',
   locationSubtypes: expandSettings(['urban']),

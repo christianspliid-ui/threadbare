@@ -111,7 +111,7 @@ export const CHARTER_INQUEST_DEFAULTED: UnifiedActionTemplate = {
   // Seed-only: the forged charter's appointment (missed branch) is its only planter (THR-1526).
   drawable: false,
   name: 'The Inquest Defaulted',
-  description: "The findings were not read on court day, and the count's steward has come looking for the master who made them.",
+  description: "The findings were not read on court day, and the count's steward has come looking for {name}, who made them.",
   rarityTier: 2,
   intrinsicTier: 'background',
   reach: 'heart',
@@ -135,7 +135,7 @@ export const CHARTER_INQUEST_DEFAULTED: UnifiedActionTemplate = {
         "The bench let the count's copy stand. " +
         '{cast:steward} has come looking for {name} with a purse, to buy the written findings and burn them.',
       successAfterimage: '{name} swore to the findings before witnesses, and {cast:steward} left with the purse still full.',
-      failureAfterimage: "{cast:steward} thinks less of the master who stayed away, and says so at the count's table.",
+      failureAfterimage: "{name} would swear to nothing, and {cast:steward} burned the findings in the hall's hearth.",
       successMetadata: {
         effects: [{ kind: 'bond_change', withAgentId: '$cast:steward', sentimentDelta: -0.04, trustDelta: 0.03 }],
       },
@@ -151,7 +151,7 @@ export const CHARTER_INQUEST_DEFAULTED: UnifiedActionTemplate = {
   narrativeTemplates: {
     initiation: "The findings were not read on court day, and the count's steward has come looking.",
     success: '{name} swore to the findings before witnesses.',
-    failure: 'The steward thinks less of the master who stayed away.',
+    failure: 'The count\'s steward burned the findings, and {name} let it happen.',
   },
   aftermathConfig: {
     branchOnStep: 0,

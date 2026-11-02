@@ -827,8 +827,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           failure: {
-            overview: 'The church stays shut until spring, and the cracked vault must be repaired before it opens. A '
-              + 'builder sent for by name is only as good as the last vault they struck.',
+            overview: 'The church stays shut until spring, and the cracked vault must be repaired before it opens. The '
+              + 'abbot holds {actor} answerable for the crack.',
             changes: [
               {
                 id: 'vault.pos.fail.town_doubt',
@@ -1719,8 +1719,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   },
   description:
     'An abbey\'s new vault is swelling in its frame, and the winter rains are coming. Strike the '
-    + 'centering now, or keep the frame sound until spring; either way, the abbot will judge the '
-    + 'master\'s word on stone by what stands.',
+    + 'centering now, or keep the frame sound and the church shut until spring. The abbot has made '
+    + 'the vault one person\'s charge.',
   locationSubtypes: expandSettings(['rural', 'urban']),
   consequenceDraw: ['relationship', 'place'],
 };

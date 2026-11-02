@@ -1541,8 +1541,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   },
   description:
-    'The lord\'s reeve blames a stranger for a tithe-barn theft only an expert could manage. The '
-    + 'grain went to the hungry houses, and the elder who took it is still moving it.',
+    'A cartload of the lord\'s tithe grain has left the barn with no lock broken, and the reeve has '
+    + 'named a newcomer the thief. The road out stays shut until the grain is found.',
   locationSubtypes: expandSettings(['rural']),
   consequenceDraw: ['thread', 'omen'],
 };

@@ -70,7 +70,7 @@ export const RETURNED_HEIR_SWORN: UnifiedActionTemplate = {
         "The uncle's side questions the finding, and {cast:steward} is there to hear it sworn. " +
         'If the finding holds, the court names {cast:claimant} the lord\'s son.',
       successAfterimage:
-        "The uncle's side could not shake the finding. The court named {cast:claimant} the lord's son, and the manor is his.",
+        "The uncle's side could not shake the finding. The court named {cast:claimant} the lord's son, and the manor passes to the son.",
       failureAfterimage:
         "The uncle's side questioned the finding until the court put off its ruling, and the uncle keeps the manor for now.",
       successMetadata: {
@@ -105,14 +105,14 @@ export const RETURNED_HEIR_DEFAULTED: UnifiedActionTemplate = {
   id: RETURNED_HEIR_DEFAULTED_ID,
   stakes: {
     goal: 'answer the man who was turned off the manor',
-    risk: 'be blamed for a son turned out of his own house',
+    risk: 'be blamed for a son turned out of the family house',
     won: 'answered the man who was turned off the manor',
-    lost: 'was blamed for a son turned out of his own house',
+    lost: 'was blamed for a son turned out of the family house',
   },
   // Seed-only: the returned heir's appointment (missed branch) is its only planter (THR-1526).
   drawable: false,
   name: 'The Finding Unsworn',
-  description: 'The finding on the returned heir was never sworn, and the man it named has come looking for the master who made it.',
+  description: 'The finding on the returned heir was never sworn, and the man it would have named has come looking for whoever left it unsworn.',
   rarityTier: 2,
   intrinsicTier: 'background',
   reach: 'heart',
@@ -134,11 +134,11 @@ export const RETURNED_HEIR_DEFAULTED: UnifiedActionTemplate = {
       narrativeTemplate:
         '{name} was not at the manor court on court day, and the finding was never sworn. ' +
         'The court ruled without it, and the uncle had {cast:claimant} turned off the manor. ' +
-        '{cast:claimant} has come looking for {name}, to ask why the master who read him stayed away.',
+        '{cast:claimant} has come looking for {name}, to ask why {name} read the claim and then stayed away from the court.',
       successAfterimage:
         '{name} gave {cast:claimant} the finding in writing, sealed, for the next court to hear.',
       failureAfterimage:
-        '{cast:claimant} blames the master who stayed away, and says so to anyone who will listen.',
+        '{cast:claimant} blames {name} for the empty place at the court, and says so to anyone who will listen.',
       successMetadata: {
         effects: [{ kind: 'bond_change', withAgentId: '$cast:claimant', sentimentDelta: -0.02, trustDelta: 0.04 }],
       },
@@ -154,7 +154,7 @@ export const RETURNED_HEIR_DEFAULTED: UnifiedActionTemplate = {
   narrativeTemplates: {
     initiation: 'The finding was not sworn on court day, and the man it named has come looking.',
     success: '{name} gave the man the finding in writing.',
-    failure: 'The man blames the master who stayed away.',
+    failure: 'The man blames {name} for staying away.',
   },
   aftermathConfig: {
     branchOnStep: 0,

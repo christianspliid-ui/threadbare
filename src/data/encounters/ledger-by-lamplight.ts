@@ -127,7 +127,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       failureAfterimage: 'They got in, but left a shutter unlatched, and the clerk will see it on the next walk.',
       successAtCostAfterimage: 'They got in unseen, but only by forcing a shutter that will not close again.',
       criticalSuccessAfterimage: 'They got in unseen and had the whole time between the walks to work.',
-      criticalFailureAfterimage: 'The clerk saw a shadow at the shutter and doubled his walks. They are inside, with little time '
+      criticalFailureAfterimage: 'The clerk saw a shadow at the shutter and doubled the walks. They are inside, with little time '
         + 'to work.',
       deal: {
         count: 4,

@@ -206,12 +206,12 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       criticalFailureAfterimage: 'Neither side would take the ruling, and the crowd broke into the granary.',
       carryoverFactorLines: {
         critical_success: {
-          text: 'The crowd trusts the judge to be fair.',
+          text: 'The crowd trusts {actor} to rule fairly.',
           polarity: 'for',
           forecastDelta: 0.06,
         },
         success: {
-          text: 'The crowd is willing to hear the judge out.',
+          text: 'The crowd is willing to hear {actor} out.',
           polarity: 'for',
           forecastDelta: 0.04,
         },
@@ -684,8 +684,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         failure: {
-          overview: 'Bread is still dear in {location}. People send for a master because a master\'s word ends '
-            + 'quarrels. This quarrel is still going.',
+          overview: 'Bread is still dear in {location}. Neither the crowd nor the abbey took {actor}\'s ruling, '
+            + 'and the granary gate is barred again.',
           changes: [
             {
               id: 'granary.fail.town_regard',

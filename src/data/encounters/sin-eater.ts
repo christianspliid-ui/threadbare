@@ -141,14 +141,14 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           narrativeTemplate: 'The paper is a confession. Years ago the merchant poisoned his partner and took the business. '
             + 'The partner\'s heir, {cast:wronged}, still keeps a stall in the market and has never known.\n\n'
             + '{actor} will not bury it. They carry the paper to {cast:wronged} and read it before the parish '
-            + 'priest at the lych-gate. The household calls it a forgery, written by a sin-eater who wants '
-            + 'paying twice. {actor} must make the parish believe the dead man\'s own words.',
+            + 'priest at the lych-gate. The household calls it a forgery, written by {actor} to be paid '
+            + 'twice. {actor} must make the parish believe the dead man\'s own words.',
           criticalSuccessAfterimage: 'The priest knew the merchant\'s hand and said so at the lych-gate. {cast:wronged} heard every '
             + 'word.',
           successAfterimage: 'The parish believed the paper, and {cast:wronged} heard how the partner died.',
           successAtCostAfterimage: 'The parish believed the paper, but the household swore at the lych-gate that {actor} had forged '
             + 'it.',
-          failureAfterimage: 'The parish would not take a dead man\'s paper from a sin-eater\'s hand.',
+          failureAfterimage: 'The parish would not take a dead man\'s paper from {actor}\'s hand.',
           criticalFailureAfterimage: 'The household tore the paper from {actor}\'s hand at the lych-gate, and the parish took their '
             + 'side.',
           carryoverFactorLines: {
@@ -274,9 +274,9 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             + 'at the graveside.',
           successAfterimage: '{actor} told {cast:wronged} the sins were eaten and buried, and the merchant went into the '
             + 'ground clean.',
-          successAtCostAfterimage: '{cast:wronged} left the lych-gate sure the sin-eater had been paid for silence.',
+          successAtCostAfterimage: '{cast:wronged} left the lych-gate sure {actor} had been paid for silence.',
           failureAfterimage: '{actor} stumbled on the burial words, and the parish said the merchant went down unclean.',
-          criticalFailureAfterimage: '{actor} lost the burial words at the graveside, and the parish blamed the sin-eater.',
+          criticalFailureAfterimage: '{actor} lost the burial words at the graveside, and the parish blamed {actor}.',
           carryoverFactorLines: {
             critical_success: {
               text: 'They took every sin, and the household saw it.',
@@ -408,9 +408,9 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           + 'at the graveside.',
         successAfterimage: '{actor} told {cast:wronged} the sins were eaten and buried, and the merchant went into the '
           + 'ground clean.',
-        successAtCostAfterimage: '{cast:wronged} left the lych-gate sure the sin-eater had been paid for silence.',
+        successAtCostAfterimage: '{cast:wronged} left the lych-gate sure {actor} had been paid for silence.',
         failureAfterimage: '{actor} stumbled on the burial words, and the parish said the merchant went down unclean.',
-        criticalFailureAfterimage: '{actor} lost the burial words at the graveside, and the parish blamed the sin-eater.',
+        criticalFailureAfterimage: '{actor} lost the burial words at the graveside, and the parish blamed {actor}.',
         carryoverFactorLines: {
           critical_success: {
             text: 'They took every sin, and the household saw it.',
@@ -558,8 +558,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   ],
   narrativeTemplates: {
     initiation: 'A rich merchant\'s household has paid for his sins to be eaten before the burial.',
-    success: 'The sin-eater did what the rite asks, and the parish trusts them more.',
-    failure: 'The sin-eater failed the rite, and the parish trusts them less.',
+    success: '{actor} did what the rite asks, and the parish trusts them more.',
+    failure: '{actor} failed the rite, and the parish trusts them less.',
   },
   aftermathConfig: {
     branchOnStep: 0,
@@ -778,8 +778,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           failure: {
-            overview: 'The parish buried the merchant with his name clean. His household has the watch out, looking for '
-              + 'the forger.',
+            overview: 'The parish buried the merchant with his name clean. His household has the watch out, '
+              + 'looking for {actor}.',
             changes: [
               {
                 id: 'sineater.tell.fa.watch',
@@ -992,7 +992,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           success_at_cost: {
-            overview: 'The merchant went into the ground clean. {cast:wronged} believes the sin-eater was bought.',
+            overview: 'The merchant went into the ground clean. {cast:wronged} believes {actor} was bought.',
             changes: [
               {
                 id: 'sineater.keep.sc.shrine',
@@ -1058,7 +1058,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           failure: {
-            overview: 'The parish says the merchant went down unclean, and that the sin-eater failed him.',
+            overview: 'The parish says the merchant went down unclean, and that {actor} failed him.',
             changes: [
               {
                 id: 'sineater.keep.fa.haunt',
@@ -1129,7 +1129,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           critical_failure: {
-            overview: 'The parish says the merchant went down unclean, and will send for another sin-eater next time.',
+            overview: 'The parish says the merchant went down unclean, and will not pay {actor} to eat sins again.',
             changes: [
               {
                 id: 'sineater.keep.cf.haunt',
@@ -1316,7 +1316,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         success_at_cost: {
-          overview: 'The merchant went into the ground clean. {cast:wronged} believes the sin-eater was bought.',
+          overview: 'The merchant went into the ground clean. {cast:wronged} believes {actor} was bought.',
           changes: [
             {
               id: 'sineater.fallback.sc.shrine',
@@ -1382,7 +1382,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         failure: {
-          overview: 'The parish says the merchant went down unclean, and that the sin-eater failed him.',
+          overview: 'The parish says the merchant went down unclean, and that {actor} failed him.',
           changes: [
             {
               id: 'sineater.fallback.fa.haunt',
@@ -1453,7 +1453,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         critical_failure: {
-          overview: 'The parish says the merchant went down unclean, and will send for another sin-eater next time.',
+          overview: 'The parish says the merchant went down unclean, and will not pay {actor} to eat sins again.',
           changes: [
             {
               id: 'sineater.fallback.cf.haunt',
@@ -1503,8 +1503,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   },
   description: 'A rich merchant lies dead, and his household has paid for his sins to be eaten before the '
-    + 'burial. Under the bread on his chest is his own written confession to a poisoning, and the '
-    + 'sin-eater has to decide whether it goes into the grave with him.',
+    + 'burial at dawn. The sins have to be eaten whole, before the household, or the eater is not paid '
+    + 'to eat again.',
   locationSubtypes: expandSettings(['urban', 'rural']),
   consequenceDraw: ['drive', 'place'],
 };

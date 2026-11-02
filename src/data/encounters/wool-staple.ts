@@ -196,7 +196,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         + 'the other. {cast:mayor}, mayor of the wool market, weighs and seals each sack at the price '
         + 'agreed.\n\n'
         + 'The scales close at sunset. {actor} must sell the whole clip above the ring\'s price by then. If '
-        + 'the wool goes cheap, the town will blame the one the guild sent.',
+        + 'the wool goes at the ring\'s price, it is {actor} the shepherds will come to when the rents '
+        + 'fall due.',
       criticalSuccessAfterimage: 'The buyer who broke the ring bid high, and the others followed to keep their share. {cast:mayor} '
         + 'sealed every sack before sunset.',
       successAfterimage: 'The buyers bid past the ring\'s price, and {cast:mayor} sealed every sack.',
