@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-02 02:56 local (01:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-02 03:57 local (02:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,6 +20,11 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
+- [Encounter story text, wave 2a](https://linear.app/threadbare/issue/THR-2108) ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-02-thr-2108-encounter-story-text-wave-2.md)): the next batch of everyday encounters gets rewritten in plain game-master language in two rounds of ten-odd, not one big round of 23, so each build run finishes cleanly. Veto line: "one round".
+- Same plan: an encounter only gets an "arrival" opening for the kinds of place it already appears in. No encounter starts showing up somewhere new. Veto line: "give every encounter all eight openings".
+- Same plan: the short "what's at stake" lines are rewritten with the result lines, so the stake and the outcome say the same thing. Veto line: "keep the stake lines".
+- Same plan: the older "success at a cost" and "critical" lines are rewritten too, because that is where the first round's leftover flowery wording sat. Veto line: "keep the older result lines".
+- Same plan: "Assess Holdings" (counting your coin before you buy) becomes the model everyday encounter the writer and the checker copy, because the first round's fresh read found nothing wrong in it. Veto line: "a different model encounter".
 - [Modules and composition — the small set of blocks every panel is built from](https://linear.app/threadbare/issue/THR-2120/modules-and-composition-the-small-set-of-blocks-every-panel-is-built) ([decision](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-11-01-ui-modules-and-composition.md)): every panel is built from the same seven pieces: who it is, the one "what matters now" line, what your god can do, headed sections, links out, and a quiet line when a slot is empty. Each piece is drawn one way everywhere, so a player learns it once. Veto line: "a different set of blocks".
 - Same ticket: sections are grouped by space and their heading, never by a box. Only things you press as a whole (a card, a tile, a dialog option) and the one highlight line get a frame, and boxes never nest more than two deep. Veto line: "keep the section boxes".
 - Same ticket: one even rhythm: a wide gap between sections, a small gap under a heading, and one fixed gap between a label and its answer. Veto line: "tighter spacing".
@@ -38,7 +43,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 - Same ticket: the words about a small picture sit to its right; a big picture has its name above it; a label under a grid tile lines up with the tile's left edge. Veto line: "captions under pictures".
 - Same ticket: a small tag about a row comes after the row's name, and a count badge sits right after its word. Tooltips open where they do today. Veto line: "tags before the name".
 
-Say "veto <title>" to reverse any of these. The panel-anatomy decisions ([THR-2117](https://linear.app/threadbare/issue/THR-2117/panel-anatomy-one-reading-order-that-every-core-panel-follows)) have passed their 12-hour veto window and stand. *— from the design lane ([18:25](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01f.md), [21:27](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01g.md), [00:27](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01h.md))*
+Say "veto <title>" to reverse any of these. The panel-anatomy decisions ([THR-2117](https://linear.app/threadbare/issue/THR-2117/panel-anatomy-one-reading-order-that-every-core-panel-follows)) have passed their 12-hour veto window and stand. *— from the design lane ([18:25](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01f.md), [21:27](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01g.md), [00:27](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01h.md), [03:40](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02a.md))*
 
 ## This week's screens
 
@@ -46,12 +51,13 @@ Say "veto <title>" to reverse any of these. The panel-anatomy decisions ([THR-21
 
 ## Queue
 
-**Starved (0 ready).** The orchestrator promoted two small UI bugs an hour ago and the builder has taken both. [THR-2126](https://linear.app/threadbare/issue/THR-2126) (a long Chronicle tab squeezed the Threads list) is merged and live via [PR #2696](https://github.com/christianspliid-ui/threadbare/pull/2696). [THR-2127](https://linear.app/threadbare/issue/THR-2127/hand-sections-disclosure-chevron-points-right-when-open-rotate90deg-on) (the Hand's open-section arrow pointed the wrong way) is built and armed as [PR #2697](https://github.com/christianspliid-ui/threadbare/pull/2697); it merges itself on green. The next real refill is the four legibility plans ([THR-2122](https://linear.app/threadbare/issue/THR-2122)–[THR-2125](https://linear.app/threadbare/issue/THR-2125)), which the design lane writes next.
+**Starved (1 ready, on hold).** [THR-2108](https://linear.app/threadbare/issue/THR-2108) (story text for ten more everyday encounters) is the only ready ticket. It is held until 14:30 UTC today while its five design decisions sit in their veto window, and the builder's last three runs correctly stood down on that hold. Both small UI bugs from last night are done and live ([THR-2126](https://linear.app/threadbare/issue/THR-2126), [THR-2127](https://linear.app/threadbare/issue/THR-2127/hand-sections-disclosure-chevron-points-right-when-open-rotate90deg-on)). The four legibility plans ([THR-2122](https://linear.app/threadbare/issue/THR-2122)–[THR-2125](https://linear.app/threadbare/issue/THR-2125)) wait on the first one's veto window, which opens around 11:25 UTC.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (13 days). It is parked because unattended runs are refused the gate and CI edits it needs. No pushed branch or local worktree carries its id this hour. Agents can un-park it in an attended run.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (13 days). It is parked because unattended runs are refused the gate and CI edits it needs. Agents can un-park it in an attended run.
 
 ## Health
 
-All green. One pull request is open ([#2697](https://github.com/christianspliid-ui/threadbare/pull/2697), THR-2127), armed and waiting on checks. The live site serves the latest main (7c720ffd). Checks on main and the scheduled background jobs pass. All nine enabled scheduled tasks are on time; the weekly screen review runs for the first time at 07:34 this morning. The worktree reaper last ran at 01:40 UTC. Engine speed is normal (174 ms per tick, 10% over the weekly median, inside the 25% line).
+- Engine speed: tick cost 217 ms/tick steady, 37% above the 7-day median (159, 129 rows since 2a8bdab7); top phase agent_decision, 639 agents. Name the merges between 2a8bdab7 and 2526793c: git log --oneline --merges 2a8bdab7..2526793c. *(Last hour read 174 ms, so this may be one noisy reading. It is the builder's to check if it holds.)*
+- Everything else is green. No pull requests are open. The live site serves the latest game build (fea5ff53; later commits were docs only). Checks on main and the scheduled background jobs pass. All nine enabled scheduled tasks are on time; the weekly screen review runs at 07:34 this morning. The worktree reaper last ran at 02:40 UTC.
