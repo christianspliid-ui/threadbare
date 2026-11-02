@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-02 12:58 local (11:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-02 13:56 local (12:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -52,9 +52,9 @@ Say "veto <title>" to reverse any of these. The building-blocks decisions ([THR-
 
 ## Queue
 
-**Healthy (6 ready, 1 being built).** The builder is now on [THR-2140](https://linear.app/threadbare/issue/THR-2140/three-chapter-screen-faults-the-authored-choice-play-button-sits-below) (three chapter-screen faults, one a Play button below the fold). Ready to take next: [THR-2141](https://linear.app/threadbare/issue/THR-2141/the-live-map-moves-under-the-players-hand-an-armed-card-does-not-hold) (the map moves under the player's hand) and [THR-2142](https://linear.app/threadbare/issue/THR-2142/six-small-faults-from-cold-playtest-round-6-setup-screens-that-move-on) (six small faults). Four tickets are held while their decisions sit in the veto window: [THR-2108](https://linear.app/threadbare/issue/THR-2108) until 14:30 UTC, [THR-2109](https://linear.app/threadbare/issue/THR-2109) until 17:30 UTC, [THR-2110](https://linear.app/threadbare/issue/THR-2110/rewrite-the-five-novel-prose-encounters-to-prose-doctrine-v2-flawed) until 20:40 UTC, and the new [Legibility 1](https://linear.app/threadbare/issue/THR-2122/plan-doc-legibility-1-the-shared-blocks-the-type-ladder-and-the) until 23:50 UTC.
+**Healthy (4 ready, 1 being built).** The builder is on [THR-2142](https://linear.app/threadbare/issue/THR-2142/six-small-faults-from-cold-playtest-round-6-setup-screens-that-move-on) (six small faults from round 6); its [branch](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-2142-round6-faults) was last pushed at 13:48. Since the last brief, [THR-2140](https://linear.app/threadbare/issue/THR-2140/three-chapter-screen-faults-the-authored-choice-play-button-sits-below) (chapter-screen faults) and [THR-2141](https://linear.app/threadbare/issue/THR-2141/the-live-map-moves-under-the-players-hand-an-armed-card-does-not-hold) (the map moving under your hand) merged and are live. All four ready tickets are held while their decisions sit in the veto window: [THR-2108](https://linear.app/threadbare/issue/THR-2108) until 14:30 UTC, [THR-2109](https://linear.app/threadbare/issue/THR-2109) until 17:30 UTC, [THR-2110](https://linear.app/threadbare/issue/THR-2110/rewrite-the-five-novel-prose-encounters-to-prose-doctrine-v2-flawed) until 20:40 UTC, and [Legibility 1](https://linear.app/threadbare/issue/THR-2122/plan-doc-legibility-1-the-shared-blocks-the-type-ladder-and-the) until 23:50 UTC.
 
-Round 6 of the cold playtest says nothing needs a decision from you: "The opening holds for the fifth round, and round 5's map faults are gone." Of its fixes, the results-screen/mortal-page mismatch ([THR-2139](https://linear.app/threadbare/issue/THR-2139/the-aftermath-and-the-mortals-sheet-disagree-reputation-rose-but-the)) is now merged via [#2707](https://github.com/christianspliid-ui/threadbare/pull/2707). *— from [the cold playtest](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-6.md)*
+Round 6 of the cold playtest says nothing needs a decision from you: "The opening holds for the fifth round, and round 5's map faults are gone." *— from [the cold playtest](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-6.md)*
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -62,5 +62,5 @@ Two items for agents, not you:
 
 ## Health
 
-- **Engine speed drifted (for the builder, not you):** "tick cost 253 ms/tick steady, 58% above the 7-day median (161, 129 rows since e224e5ef); top phase agent_decision, 639 agents. Name the merges between e224e5ef and c6838732: git log --oneline --merges e224e5ef..c6838732". Last hour read 218 ms on near-identical code, and this morning 146 and 184, so the machine was busy (a build run was going at the same time); the slope is worth a look if it holds.
-- Everything else is green. The live site is current: everything merged since its last build was notes and docs. No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 12:40.
+- **Engine speed drifted (for the builder, not you):** "tick cost 221 ms/tick steady, 37% above the 7-day median (161, 128 rows since cec4dded); top phase agent_decision, 639 agents. Name the merges between cec4dded and 9d14f10d: git log --oneline --merges cec4dded..9d14f10d". The last three hours read 218, 253 and 221 ms, so this is starting to hold rather than look like a busy machine.
+- Everything else is green. The live site serves the latest main (9d14f10d). No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 13:40.
