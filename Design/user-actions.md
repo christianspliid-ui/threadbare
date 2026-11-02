@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-02 09:00 local (08:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-02 10:00 local (09:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,6 +46,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-02: nine unused modules are deleted, and the change is live** ([THR-2131](https://linear.app/threadbare/issue/THR-2131/nine-more-modules-have-tests-but-no-production-caller-delete-each-with)). Merged via [#2703](https://github.com/christianspliid-ui/threadbare/pull/2703).
+- **2026-11-02: the warm start's catch-up screen now shows a live time-left estimate, and it is live** ([THR-2133](https://linear.app/threadbare/issue/THR-2133/the-warm-starts-catch-up-screen-promises-a-minute-or-two-but-300-ticks)). Merged via [#2702](https://github.com/christianspliid-ui/threadbare/pull/2702).
 - **2026-11-02: during a Stage moment the place tag and the toasts no longer cover each other, and it is live** ([THR-2132](https://linear.app/threadbare/issue/THR-2132/while-a-chapter-is-open-on-the-stage-its-place-where-it-is-happening)). Merged via [#2701](https://github.com/christianspliid-ui/threadbare/pull/2701).
 - **2026-11-02: the Hand's open-section arrow now points the right way, and it is live** ([THR-2127](https://linear.app/threadbare/issue/THR-2127/hand-sections-disclosure-chevron-points-right-when-open-rotate90deg-on)). Merged via [#2697](https://github.com/christianspliid-ui/threadbare/pull/2697).
 - **2026-11-02: a long Chronicle "Now" tab no longer squeezes the Threads list, and it is live** ([THR-2126](https://linear.app/threadbare/issue/THR-2126)). Merged via [#2696](https://github.com/christianspliid-ui/threadbare/pull/2696).
@@ -54,8 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-01: type-size question handed to the design lane** ("Let the design lane do the work", Discord 19:04). [THR-2118](https://linear.app/threadbare/issue/THR-2118/type-hierarchy-can-a-player-tell-title-heading-value-and-label-apart) is no longer reserved; the design lane decides it and invites your veto.
 - **2026-11-01: the Stage moments (encounter, premonition, vision, story beat, new power, undertaking) now lead with art, and it is live** ([THR-2100](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision)). Merged via [#2686](https://github.com/christianspliid-ui/threadbare/pull/2686).
 - **2026-11-01: the cheap town cards now push a god's first sphere far enough to reach the Mandate, and it is live** ([THR-2094](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26)). Merged via [#2678](https://github.com/christianspliid-ui/threadbare/pull/2678).
-- **2026-11-01: the god rail and the top bar now lead with art, and it is live** ([THR-2099](https://linear.app/threadbare/issue/THR-2099/art-led-pass-slice-3-the-god-rail-and-the-top-bar)). Merged via [#2683](https://github.com/christianspliid-ui/threadbare/pull/2683).
-- **2026-11-01: the rulebook's monthly review (14 fixes to the rules text) is merged** ([THR-2112](https://linear.app/threadbare/issue/THR-2112/rulebook-review-2026-11-14-findings)). Merged via [#2677](https://github.com/christianspliid-ui/threadbare/pull/2677).
 
 ---
 
