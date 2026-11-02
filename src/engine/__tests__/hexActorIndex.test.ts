@@ -164,6 +164,47 @@ describe('buildHexActorIndex', () => {
   });
 });
 
+describe('buildHexActorIndex — located_at fallback (THR-2137)', () => {
+  function locatedAt(graph: WorldGraph, actorId: string, target: string): void {
+    graph.addEdge({ id: `${actorId}_located_at_${target}`, source: actorId, target, type: 'located_at', properties: {} });
+  }
+
+  it('places an actor with only a located_at edge (the ambient-NPC shape)', () => {
+    const graph = new WorldGraph();
+    graph.addNode(makeLocation('loc_1', 4, 2));
+    graph.addNode(makeActor('npc_1'));
+    locatedAt(graph, 'npc_1', 'loc_1');
+
+    const index = buildHexActorIndex(graph);
+
+    expect(index.unresolvedCount).toBe(0);
+    expect(getActorsOnHex(index, 4, 2)).toEqual(['npc_1']);
+  });
+
+  it('resolves a located_at edge into a Place up to its Location', () => {
+    const graph = new WorldGraph();
+    graph.addNode(makeLocation('loc_1', 1, 1));
+    graph.addNode({ id: 'place_1', type: 'location', name: 'place_1', properties: { parentLocationId: 'loc_1' } });
+    graph.addNode(makeActor('npc_1'));
+    locatedAt(graph, 'npc_1', 'place_1');
+
+    expect(getActorsOnHex(buildHexActorIndex(graph), 1, 1)).toEqual(['npc_1']);
+  });
+
+  it('locationId wins over the edge when both are present', () => {
+    const graph = new WorldGraph();
+    graph.addNode(makeLocation('loc_a', 0, 0));
+    graph.addNode(makeLocation('loc_b', 5, 5));
+    graph.addNode(makeActor('actor_1', 'loc_a'));
+    locatedAt(graph, 'actor_1', 'loc_b');
+
+    const index = buildHexActorIndex(graph);
+
+    expect(getActorsOnHex(index, 0, 0)).toEqual(['actor_1']);
+    expect(getActorsOnHex(index, 5, 5)).toEqual([]);
+  });
+});
+
 describe('hexKey', () => {
   it('produces unique keys for different coordinates', () => {
     expect(hexKey(1, 2)).not.toBe(hexKey(2, 1));

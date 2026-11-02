@@ -23,7 +23,8 @@ export function hexKey(col: number, row: number): HexKey {
 /**
  * Builds a per-tick index mapping each hex to the individual actor ids on it.
  *
- * Resolution order: actor.properties.locationId → location node (hexCol/hexRow).
+ * Resolution order: actor.properties.locationId, else the actor's first `located_at`
+ * edge target → location node (hexCol/hexRow).
  * If locationId points to a sublocation (either mint shape — see `sublocationShape.ts`),
  * resolves up to parentLocationId before reading hex coordinates. Actors that can't be
  * resolved go to unresolvedCount and are excluded from buckets.
@@ -40,7 +41,13 @@ export function buildHexActorIndex(graph: WorldGraph): HexActorIndex {
   let unresolvedCount = 0;
 
   for (const actor of actors) {
-    const locationId = actor.properties?.locationId as string | undefined;
+    // Ambient NPCs (`seedNpcsAtLocations`) carry only the `located_at` edge, so fall
+    // back to it when the denormalized field is absent — the rule `homeLocationOf`
+    // (seedLivingWorld.ts) already uses (THR-2137).
+    let locationId = actor.properties?.locationId as string | undefined;
+    if (typeof locationId !== 'string' || locationId.length === 0) {
+      locationId = graph.getOutgoingEdges(actor.id, 'located_at')[0]?.target;
+    }
     if (!locationId) {
       unresolvedCount++;
       continue;

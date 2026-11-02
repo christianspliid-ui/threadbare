@@ -239,6 +239,11 @@ export const ARMED_WORDS = {
   cleared: '{card} left your hand. Nothing was spent.',
   /** Nothing in sight the card can land on. */
   empty: 'Nothing you can see is something {card} can touch.',
+  /**
+   * The next step after `empty` (THR-2137, PC-7): sight is your own reach and your threaded
+   * mortals' (`src/types/visibility.ts`). `{target}` is an `ARMED_TARGET_WORDS` value.
+   */
+  emptyNext: 'Find {target} within your sight or a threaded mortal’s, then cast.',
   /** A card whose target category has no builder (fail-soft table). */
   nowhere: 'This card has nowhere to land yet.',
   /** The Esc cap's label on the banner. */
