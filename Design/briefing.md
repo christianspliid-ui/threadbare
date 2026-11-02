@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-02 23:58 local (22:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-03 00:59 local (23:59 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,6 +20,16 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
+All from [On a running clock a chapter step still answers nothing on screen](https://linear.app/threadbare/issue/THR-2136/recurs-after-fix-on-a-running-clock-a-chapter-step-still-answers). Plan: [The answer comes here](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-03-thr-2136-the-answer-comes-here.md). Built as [The answer comes here](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage), which nobody may start before 11:35Z on 3 Nov.
+
+- After you press Play on a chapter step, the chapter stays on screen even when time is running. The card reads "Played: Boost." and "The world turns. The answer comes here." Time keeps running underneath it, and nothing pauses. Veto line: "close the chapter after Play as before".
+- When the step plays out, its answer opens in the same place: "Step 1 held. You: Boost." for a middle step, or the chapter's ending after the last one. The map never shows in between. Veto line: "show the answer on the map instead".
+- The chapter's own answer goes before any premonition or other moment that turned up while you waited. Those wait their turn; nothing is lost. In round 6 a premonition came first and the ending arrived about 20 seconds late. Veto line: "let premonitions go first".
+- "Back to the map" stays on the card as the way out. "Let the world turn" does not show there, because the world is already turning. Veto line: "keep both buttons".
+- If testers say the waiting card blocks the map, the map behind it gets undimmed while it waits. If a tester still sees no result, the next step would pause time on Play. That reverses your no-forced-pause rule, so it comes back to you first.
+
+Still open from earlier today:
+
 - [The pool says how full it can get](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar) (your (b) + (c) answer, [plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-02-thr-2143-the-sheet-says-what-grew.md), not built before 08:45 UTC on 3 Nov): the pool's row reads "53 / 55", and its hover says "Holds up to 55: 50, and 5 more for the mortal you have threaded." Before the bond: "Holds up to 50. Each mortal you thread lets every pool hold 5 more." Veto line: "say the limit differently".
 - Same plan: your answer is written into the UI rules as an exception for the limit only; upkeep and refill speeds still show as words, never numbers. Veto line: "keep the Vision pages as they were".
 - Same plan: if a tester reads "53 / 55" as a score to fill up, the number leaves the row and stays only in the hover. Veto line: "keep the row number regardless".
@@ -35,14 +45,8 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 - Same plan: an action card's skill mark moves away from the price and gets its word ("Iron"). Veto line: "keep the skill mark by the price".
 - Same plan: an action card shows one tag ("Change"), not two; the size word moves into its hover. Veto line: "keep the size tag".
 - Same plan: what a played card did shows in the Aftermath as an ordinary result chip naming the mortal; the Long Game's hidden mark stays hidden. Veto line: "show the hidden mark too".
-- [Legibility 1 — the shared blocks](https://linear.app/threadbare/issue/THR-2122/plan-doc-legibility-1-the-shared-blocks-the-type-ladder-and-the) ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-02-thr-2122-legibility-shared-blocks.md)): every Inspector section gets the agreed spacing and type sizes in one place. Veto line: "keep the old spacing".
-- Same plan: a block of facts becomes two columns, each label right-aligned against its answer. Veto line: "keep the answers on the right edge".
-- Same plan: in a personality bar, the first word ("Craven" in Craven ↔ Brave) sits in the label column. Veto line: "give the bars their own row".
-- Same plan: the thin gold lines between fact rows and the gold section headings go. Veto line: "keep the gold headings".
-- Same plan: counts read "Rival gods · 2" and "Your cards · 2". Veto line: "keep the brackets".
-- Same plan: a story-event section only gets a box while clicking it opens something. Veto line: "box every story event".
 
-Say "veto <title>" to reverse any of these. *— from the design lane ([12:50](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02d.md), [15:38](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02e.md), [18:45](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02f.md), [21:41](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02g.md), local time)*
+Say "veto <title>" to reverse any of these. *— from the design lane ([15:38](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02e.md), [18:45](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02f.md), [21:41](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02g.md), [00:41](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03a.md), local time)*. Legibility 1's veto window has closed and it is now being built.
 
 ## This week's screens
 
@@ -50,12 +54,12 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([12:50](h
 
 ## Queue
 
-**Healthy (3 ready, none being built).** The next novel-prose slice, [the Comet, the Page Beneath the Saint and Apotheosis](https://linear.app/threadbare/issue/THR-2134/novel-prose-story-beats-slice-b-the-comet-at-the-turning-the-page), stopped by its own rule: after one rewrite round, a fresh reader still found story-voice faults. The rewritten text is kept on [its branch](https://github.com/christianspliid-ui/threadbare/compare/main...claude/vibrant-tu-76f798), and the ticket went back to Todo so the design lane can tighten the writing rules before a second pass. All three ready tickets are waiting out veto windows: [Legibility 1](https://linear.app/threadbare/issue/THR-2122/plan-doc-legibility-1-the-shared-blocks-the-type-ladder-and-the) until 23:50 UTC, [Every card says what it buys](https://linear.app/threadbare/issue/THR-2147/every-card-says-what-it-buys-a-result-line-for-cards-that-dont-move) until 05:00 UTC, and [The pool says how full it can get](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar) until 08:45 UTC tomorrow.
+**Healthy (3 ready, 1 being built).** The builder took [Legibility 1 — the shared blocks](https://linear.app/threadbare/issue/THR-2122/plan-doc-legibility-1-the-shared-blocks-the-type-ladder-and-the) when its veto window closed and is working on it now. The design lane added [The answer comes here](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage) (open from 11:35 UTC). The other two ready tickets wait out their veto windows: [Every card says what it buys](https://linear.app/threadbare/issue/THR-2147/every-card-says-what-it-buys-a-result-line-for-cards-that-dont-move) until 05:00 UTC and [The pool says how full it can get](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar) until 08:45 UTC.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (13 days). It has no branch and no uncommitted work in any local worktree. It needs gate and CI edits that unattended runs are refused; agents can un-park it in an attended run.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (14 days). It needs gate and CI edits that unattended runs are refused; agents can un-park it in an attended run.
 
 ## Health
 
-All green. Engine speed is 129 ms/tick, 20% below the 7-day median of 161. The live site serves the latest commit on main. No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 22:50 UTC. The builder's last three runs found nothing it could take yet, because every ready ticket is still inside its veto window. That is expected, not a stall.
+All green. Engine speed is 129 ms/tick, 20% below the 7-day median of 161. The live site is up to date (commits since the last publish touched only docs). No pull requests are waiting to merge. Checks on main, heavy tests and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 23:40 UTC. The builder is mid-run, so no stall.
