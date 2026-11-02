@@ -14,7 +14,12 @@
  */
 
 import { resolveTooltip } from '../../engine/tooltipResolver';
-import { formatWarmSeason, type WarmStartProgress } from './hooks/useWarmStart';
+import {
+  formatWarmRemaining,
+  formatWarmSeason,
+  WARM_START_ALMOST_DONE_MS,
+  type WarmStartProgress,
+} from './hooks/useWarmStart';
 import { Overlay } from '../shared/Overlay';
 import { dialogSizeStyle } from '../shared/dialogSize';
 import { Icon } from '../shared/Icon';
@@ -22,6 +27,21 @@ import { ICON_FOR_SEASON, SEASON_IDS } from '../../data/icons/conceptIcons';
 import { deriveSeasonAndYear, TICKS_PER_SEASON } from '../../types/temporal';
 
 const noop = () => {};
+
+/**
+ * THR-2133 — the wait in words, from the pace measured so far: "Working out how long…"
+ * until enough ticks have run, then "About 6 minutes left.", then "Almost there."
+ */
+export function formatRemainingLine(remainingMs: number | null): string {
+  if (remainingMs === null) {
+    return resolveTooltip('ui.warm_start.estimating')?.desc ?? 'Working out how long this will take…';
+  }
+  if (remainingMs < WARM_START_ALMOST_DONE_MS) {
+    return resolveTooltip('ui.warm_start.almost_done')?.desc ?? 'Almost there.';
+  }
+  const template = resolveTooltip('ui.warm_start.remaining')?.desc ?? 'About {time} left.';
+  return template.replace('{time}', formatWarmRemaining(remainingMs));
+}
 
 export interface WarmStartOverlayProps {
   progress: WarmStartProgress;
@@ -33,7 +53,8 @@ export interface WarmStartOverlayProps {
 export function WarmStartOverlay({ progress, ticksPerSeason, firstName }: WarmStartOverlayProps) {
   const title = resolveTooltip('ui.warm_start.title')?.label ?? 'The world moves on';
   const wait = resolveTooltip('ui.warm_start.wait')?.desc
-    ?? 'Catching up on the seasons you were away. This takes a minute or two.';
+    ?? 'Catching up on the seasons you were away. This can take several minutes.';
+  const remainingLine = formatRemainingLine(progress.remainingMs);
   const progressTemplate = resolveTooltip('ui.warm_start.progress')?.desc ?? '{now} — catching up to {target}';
   const progressLine = progressTemplate
     .replace('{now}', formatWarmSeason(progress.currentTick, ticksPerSeason))
@@ -78,6 +99,9 @@ export function WarmStartOverlay({ progress, ticksPerSeason, firstName }: WarmSt
           </span>
         )}
         {progressLine}
+      </p>
+      <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }} data-testid="warm-start-remaining">
+        {remainingLine}
       </p>
       {firstLine && (
         <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>{firstLine}</p>

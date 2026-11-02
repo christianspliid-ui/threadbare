@@ -37,8 +37,27 @@ import type { DebugTickStopReason } from '../../../engine/debugTickBatch';
 
 /** URL param name. */
 export const WARM_START_PARAM = 'warm';
-/** Clamp. 300 ticks measured at 93 s headless on seed 42; tick cost grows with population. */
+/**
+ * Clamp. 300 ticks measured at 93 s headless on seed 42 (2026-10), then 331 s on the
+ * deployed medium seeded world (2026-11-02, THR-2133); tick cost grows with population,
+ * which is why the overlay states a live estimate rather than a fixed duration.
+ */
 export const WARM_START_MAX_TICKS = 600;
+/**
+ * Ticks the warm-up runs before the overlay states how long is left (THR-2133). Also
+ * the window the recent pace is read over, so the estimate has both of its inputs.
+ */
+export const WARM_START_ESTIMATE_MIN_TICKS = 20;
+/** Ticks the recent pace (`recentMsPerTick`) is averaged over; wider damps single slow ticks. */
+export const WARM_START_RECENT_WINDOW_TICKS = 40;
+/** Below this many milliseconds left, the overlay says "almost there" instead of minutes. */
+export const WARM_START_ALMOST_DONE_MS = 20_000;
+/**
+ * Multiplier on the modelled time left. The ramp still undershot by ~7% on a local
+ * 300-tick run (said < 60 s with 64 s to go); overstating is the side that keeps the
+ * promise, so the stated wait leans long.
+ */
+export const WARM_START_ESTIMATE_MARGIN = 1.15;
 /**
  * Ticks per `runTicksSync` call between yields. 1 so every tick's `tickEvents` reaches
  * the notification layer (a batch commits only its final state) and the page stays
@@ -102,6 +121,62 @@ const SEASON_WORDS = ['Spring', 'Summer', 'Autumn', 'Winter'] as const;
 export function formatWarmSeason(tick: number, ticksPerSeason: number = TICKS_PER_SEASON): string {
   const { season, year } = deriveSeasonAndYear(tick, ticksPerSeason);
   return `${SEASON_WORDS[season] ?? 'Spring'}, year ${year + 1}`;
+}
+
+// ── Time left (THR-2133) ────────────────────────────────────────────────────
+
+/**
+ * Milliseconds left, or null until `WARM_START_ESTIMATE_MIN_TICKS` ticks have run.
+ *
+ * Tick cost grows as the world fills (measured 2026-11-02: ~0.2 s a tick in the first
+ * season, ~0.43 s in the third), so a flat average undershoots — it read "Almost there"
+ * for the last 88 s of a 105 s run. The model is a cost that ramps linearly with ticks
+ * done, `c(d) = a + b·d`. Two readings fix it: the mean so far `m = a + b·d/2` and the
+ * recent pace `r ≈ a + b·d`. So `b = 2(r − m)/d`, `a = r − b·d`, and the time left is
+ * the integral over the ticks still to run: `a·left + b·(T² − d²)/2`. A recent pace
+ * below the mean (heavy first ticks) is noise, not a speed-up, so it falls back to the
+ * mean, `m · left` — the side that keeps the stated wait from being overrun (it read
+ * "Almost there" ten seconds into a 105 s run when it trusted the fast window).
+ */
+export function estimateWarmRemainingMs(
+  progress: Pick<WarmStartProgress, 'startTick' | 'targetTick' | 'currentTick'>,
+  elapsedMs: number,
+  recentMsPerTick: number | null,
+  minTicks: number = WARM_START_ESTIMATE_MIN_TICKS,
+  margin: number = WARM_START_ESTIMATE_MARGIN,
+): number | null {
+  const done = progress.currentTick - progress.startTick;
+  const total = progress.targetTick - progress.startTick;
+  const left = total - done;
+  if (left <= 0) return 0;
+  if (done < Math.max(1, minTicks) || !Number.isFinite(elapsedMs) || elapsedMs < 0) return null;
+  if (recentMsPerTick === null || !Number.isFinite(recentMsPerTick) || recentMsPerTick < 0) return null;
+  const mean = elapsedMs / done;
+  if (recentMsPerTick <= mean) return Math.round(margin * mean * left);
+  const slope = (2 * (recentMsPerTick - mean)) / done;
+  const base = recentMsPerTick - slope * done;
+  return Math.round(margin * (base * left + (slope * (total * total - done * done)) / 2));
+}
+
+/**
+ * The time left as shown: it may rise at once, but never falls faster than real time
+ * passes, so one quick window cannot flash "Almost there" mid-run. Null in → null out
+ * until the first estimate; a null estimate after one keeps counting the old one down.
+ */
+export function smoothWarmRemainingMs(
+  shownMs: number | null,
+  sinceShownMs: number,
+  estimateMs: number | null,
+): number | null {
+  if (shownMs === null) return estimateMs;
+  const floor = Math.max(0, shownMs - Math.max(0, sinceShownMs));
+  return estimateMs === null ? floor : Math.max(estimateMs, floor);
+}
+
+/** "a minute" / "6 minutes" — whole minutes, rounded up so the wait never overruns its words. */
+export function formatWarmRemaining(ms: number): string {
+  const minutes = Math.max(1, Math.ceil(ms / 60_000));
+  return minutes === 1 ? 'a minute' : `${minutes} minutes`;
 }
 
 // ── Orchestration ───────────────────────────────────────────────────────────
@@ -253,6 +328,8 @@ export interface WarmStartProgress {
   startTick: number;
   targetTick: number;
   currentTick: number;
+  /** Estimated milliseconds left (`estimateWarmRemainingMs`); null while still measuring. */
+  remainingMs: number | null;
 }
 
 export interface UseWarmStartArgs {
@@ -290,9 +367,14 @@ export function useWarmStart(args: UseWarmStartArgs): UseWarmStartResult {
     const a = argsRef.current;
     const startTick = a.startTick;
     setRunningState(true);
-    setProgress({ startTick, targetTick: startTick + a.requested, currentTick: startTick });
+    setProgress({ startTick, targetTick: startTick + a.requested, currentTick: startTick, remainingMs: null });
     // Let the overlay paint before the first chunk.
     await defaultYield();
+    const t0 = Date.now();
+    // Elapsed ms at each tick reached, for the recent pace (THR-2133).
+    const stamps: number[] = [];
+    let shown: number | null = null;
+    let shownAt = 0;
     const result = await runWarmStart({
       requested: a.requested,
       startTick,
@@ -302,7 +384,21 @@ export function useWarmStart(args: UseWarmStartArgs): UseWarmStartResult {
       setSuppressedUntil: t => argsRef.current.setSuppressedUntil(t),
       settleMoments: since => argsRef.current.settleMoments(since),
       settleOpening: ids => argsRef.current.settleOpening(ids),
-      onProgress: tick => setProgress(p => (p ? { ...p, currentTick: tick } : p)),
+      onProgress: tick => {
+        const elapsedMs = Date.now() - t0;
+        stamps.push(elapsedMs);
+        const w = Math.min(WARM_START_RECENT_WINDOW_TICKS, stamps.length - 1);
+        const recentMsPerTick = w > 0 ? (elapsedMs - stamps[stamps.length - 1 - w]) / w : null;
+        const estimate = estimateWarmRemainingMs(
+          { startTick, targetTick: startTick + a.requested, currentTick: tick },
+          elapsedMs,
+          recentMsPerTick,
+        );
+        shown = smoothWarmRemainingMs(shown, elapsedMs - shownAt, estimate);
+        shownAt = elapsedMs;
+        const remainingMs = shown;
+        setProgress(p => (p ? { ...p, currentTick: tick, remainingMs } : p));
+      },
     });
     setArrival(result);
     setRunningState(false);
