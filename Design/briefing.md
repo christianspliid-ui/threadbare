@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-02 00:58 local (23:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-02 01:58 local (00:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -51,7 +51,7 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([15:24](h
 
 ## Queue
 
-**Starved (1 ready).** The one ready ticket, [THR-2103](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) (pictures in the lists and notices, [plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-01-thr-2103-art-led-lists.md)), comes off hold at 00:00 UTC, minutes from now; the builder's last eight runs stood down for that reason, which is correct, and its 00:10 UTC run should take it. The UI legibility map is closed and split into four plans (above), which refills the shelf once they reach Ready for Dev.
+**Starved (0 ready).** The builder took [THR-2103](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) (pictures in the lists and notices, [plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-01-thr-2103-art-led-lists.md)) as soon as its hold lifted, built it, and armed it as [PR #2695](https://github.com/christianspliid-ui/threadbare/pull/2695); it merges itself on green. Nothing else is ready. The UI legibility map is closed and split into four plans (above), which refills the shelf once they reach Ready for Dev.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -59,4 +59,4 @@ Two items for agents, not you:
 
 ## Health
 
-All green. No pull requests are open. The live site is current: the only commit since the ceremonies slice (8d8e7538) is the modules decision doc, which needs no rebuild. Checks on main and the scheduled background jobs pass. All nine enabled scheduled tasks are on time, and the worktree reaper last ran at 23:40 UTC. Engine speed is normal (176 ms per tick, 11% over the weekly median, inside the 25% line).
+All green. One pull request is open ([#2695](https://github.com/christianspliid-ui/threadbare/pull/2695), THR-2103), armed and waiting on checks. The live site is current: the only commit since the ceremonies slice (8d8e7538) is the modules decision doc, which needs no rebuild. Checks on main and the scheduled background jobs pass. All nine enabled scheduled tasks are on time, and the worktree reaper last ran at 00:40 UTC. Engine speed is normal (182 ms per tick, 15% over the weekly median, inside the 25% line).
