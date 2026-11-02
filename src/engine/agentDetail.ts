@@ -1774,6 +1774,12 @@ export function getAgentInfoCard(
     if (domainRows.length > 0) card.domains = domainRows;
   }
 
+  // THR-2139 — the reputation word is set at every level; the sheet's reputation row
+  // (`personRows.ts` `reputation`) is its one gate. It was set only at intimate+, so at
+  // `known` the row counted as revealed but had no word and read "no one has spoken of
+  // it" beside an Aftermath that had just moved it.
+  card.reputationWord = getReputationWord(detail.reputationScore);
+
   // THR-2072 — the factions with an open price on this mortal. Not gated on knowledge: a
   // bounty is a posted price anyone can hear of, unlike a private grudge. Set only while
   // one is open (Law 56), so the Blood row line goes when the bounty does.
@@ -1856,7 +1862,6 @@ export function getAgentInfoCard(
     card.quotes = quotes;
 
     card.cooperationStrategy = detail.cooperationStrategy ?? undefined;
-    card.reputationWord = getReputationWord(detail.reputationScore);
 
     // Emergent personality traits render in their own distinguished Personality
     // section (THR-562); pull them out of the generic trait chips so they aren't

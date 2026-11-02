@@ -1056,6 +1056,11 @@ export const CAUSE_GOD_HELD = 'your cards held it';
 export const CAUSE_GOD_COULD_NOT_SAVE = 'your cards could not save it';
 /** The mortal-alone clause. `{name}` is the actor. */
 export const CAUSE_ALONE = (actorName: string): string => `${actorName} faced it alone`;
+/**
+ * THR-2139 — the clause when the god's hand was on another step of the chapter but
+ * not the deciding one. "Faced it alone" there contradicted the essence the god paid.
+ */
+export const CAUSE_GOD_ELSEWHERE = 'your cards were on another step, not this one';
 /** The step's noun when it has no title of its own. `{reach}` is the Reach's player name. */
 export const CAUSE_UNTITLED_STEP = (reachName: string): string => `The work on ${reachName}`;
 
@@ -1114,6 +1119,12 @@ export function decidingStepIndex(
   return chosen;
 }
 
+/** A step's player-facing noun: its own title (on its Reach), else "The work on {Reach}". */
+export function causeStepNoun(step: Pick<CauseLineStep, 'title' | 'reach'>): string | undefined {
+  if (step.title) return step.reach ? `${step.title} on ${reachDisplayName(step.reach)}` : step.title;
+  return step.reach ? CAUSE_UNTITLED_STEP(reachDisplayName(step.reach)) : undefined;
+}
+
 /**
  * THR-1964 — the aftermath's first line: what decided the ending.
  *
@@ -1139,17 +1150,42 @@ export function buildAftermathCauseLine(args: {
   // step that went well — the price came from elsewhere, a fight broken off)
   // cannot be what decided it, so the line says only what is known.
   if (!causeBandAgrees(args.outcome, step.band)) return lead;
-  const noun = step.title
-    ? (step.reach ? `${step.title} on ${reachDisplayName(step.reach)}` : step.title)
-    : (step.reach ? CAUSE_UNTITLED_STEP(reachDisplayName(step.reach)) : undefined);
+  const noun = causeStepNoun(step);
   if (!noun) return lead;
   // A step that failed outright was not held by anyone's cards, even on an
   // ending that was won at a price; a near miss was (the ticket's example).
   const stepFailed = STEP_OUTCOMES.indexOf(step.band) >= STEP_OUTCOMES.indexOf('failure');
   const clause = step.godTouched
     ? (CAUSE_LOST_OUTCOMES.has(args.outcome) || stepFailed ? CAUSE_GOD_COULD_NOT_SAVE : CAUSE_GOD_HELD)
-    : CAUSE_ALONE(args.actorName);
+    : args.steps.some(s => s.godTouched)
+      ? CAUSE_GOD_ELSEWHERE
+      : CAUSE_ALONE(args.actorName);
   return `${lead} ${noun} ${CAUSE_STEP_VERBS[step.band]}, and ${clause}.`;
+}
+
+/**
+ * THR-2139 — what a failed or near-missed step cost an ending that was still won,
+ * from its consequence band (`outcomeConsequences.ts`): a near miss teaches a
+ * quarter of the growth, a failure loses the step's own gain, a critical failure
+ * also costs quintessence. In words, never the amount (Law IV). Null when no step
+ * missed, so the caller names nothing rather than invent a price.
+ */
+function costStepDetail(actorName: string, steps: readonly CauseLineStep[]): string | null {
+  let worst: CauseLineStep | undefined;
+  for (const step of steps) {
+    if (step.band !== 'near_miss' && step.band !== 'failure' && step.band !== 'critical_failure') continue;
+    // `>=` so a tie goes to the later step, as `decidingStepIndex` does.
+    if (!worst || STEP_OUTCOMES.indexOf(step.band) >= STEP_OUTCOMES.indexOf(worst.band)) worst = step;
+  }
+  if (!worst) return null;
+  const noun = causeStepNoun(worst) ?? 'One part of it';
+  if (worst.band === 'near_miss') {
+    return `${noun} nearly broke, and ${actorName} learned less from it than a clean win teaches.`;
+  }
+  if (worst.band === 'failure') {
+    return `${noun} failed, and ${actorName} won without what it would have brought.`;
+  }
+  return `${noun} broke badly. It took something out of ${actorName}, and ${actorName} won without what it would have brought.`;
 }
 
 /** The price row's id — stable, so a re-render never duplicates it. */
@@ -1180,6 +1216,14 @@ export function priceRowFor(args: {
    * failure) paid nothing, so it names nothing.
    */
   readonly paidAtCostStep: boolean;
+  /**
+   * THR-2139 — the resolved steps. `computeFinalActionOutcome` reads a chapter
+   * with a failed or near-missed step as `success_at_cost` even when no step
+   * landed at cost, so "won, at a price" showed with no price under it. When
+   * `paidAtCostStep` is false, the worst such step names what it cost instead.
+   * Optional (NFP #6): absent, the row behaves as before.
+   */
+  readonly steps?: readonly CauseLineStep[];
 }): {
   readonly id: string;
   readonly kind: 'growth';
@@ -1189,10 +1233,13 @@ export function priceRowFor(args: {
   readonly actorName: string;
 } & DerivedChange | null {
   if (args.outcome !== 'success_at_cost') return null;
-  if (!args.paidAtCostStep) return null;
   if (args.drewComplication) return null;
   // `mixed` draws as a cost chip too (`isCost`, buildAftermathConsequences.ts).
   if (args.changes.some(change => change.polarity === 'loss' || change.polarity === 'mixed')) return null;
+  const detail = args.paidAtCostStep
+    ? `It took something out of ${args.actorName}, and ${args.actorName} learned less from it than a clean win teaches.`
+    : costStepDetail(args.actorName, args.steps ?? []);
+  if (!detail) return null;
   const noun: EncounterAftermathConceptRef = {
     text: args.actorName,
     entityId: args.actorId,
@@ -1206,7 +1253,7 @@ export function priceRowFor(args: {
     polarity: 'loss',
     actorId: args.actorId,
     actorName: args.actorName,
-    detail: `It took something out of ${args.actorName}, and ${args.actorName} learned less from it than a clean win teaches.`,
+    detail,
     concepts: [noun],
     stateNoun: noun,
     direction: 'loss',

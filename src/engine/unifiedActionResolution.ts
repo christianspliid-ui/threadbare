@@ -3632,11 +3632,12 @@ function withResolvedAftermathSummary(
     const reactions = aftermathVariant?.reactions
       ?? buildEncounterAftermathReactions(template);
     // THR-1964 — the first line says what decided the ending, authored or derived.
+    const resolvedSteps = causeLineSteps(finalAction, template);
     const causeLine = buildAftermathCauseLine({
       actorName: currentActorName,
       templateName: title,
       outcome: finalAction.outcome,
-      steps: causeLineSteps(finalAction, template),
+      steps: resolvedSteps,
     });
     const summaryChanges = aftermathVariant
       ? [...changes, ...aftermathVariant.changes]
@@ -3649,6 +3650,7 @@ function withResolvedAftermathSummary(
       changes: summaryChanges,
       drewComplication: (finalAction.stepComplications ?? []).some(slot => slot != null),
       paidAtCostStep: finalAction.stepOutcomes.includes('success_at_cost'),
+      steps: resolvedSteps,
     });
     const finalSummary: EncounterAftermathSummary = {
       encounterId: action.templateId,
@@ -3731,6 +3733,7 @@ function recordStepEventNode(
     graph: state.graph,
     actorId: action.actorId,
     targetAgentId: targetNodeType === 'actor' ? action.targetId : undefined,
+    actionId: action.actionId,
     templateId: template.id,
     templateName: template.name,
     stepIndex: action.currentStep,

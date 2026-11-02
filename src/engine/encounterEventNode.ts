@@ -193,6 +193,12 @@ export interface CreateUnifiedActionEventParams {
   graph: WorldGraph;
   actorId: string;
   targetAgentId?: string;
+  /**
+   * THR-2139 — the action instance this step belongs to. One node is minted per
+   * step, so a two-step chapter has two; the sheet's Story group folds them into
+   * one row by this id. Optional (NFP #6): nodes minted before it carry none.
+   */
+  actionId?: string;
   templateId: string;
   templateName: string;
   stepIndex: number;
@@ -214,7 +220,7 @@ export function createUnifiedActionEventNode(
 ): string | undefined {
   if (!ENCOUNTER_EVENT_ENABLED) return undefined;
 
-  const { graph, actorId, targetAgentId, templateId, templateName, stepIndex, stepReach, outcome, tick, tierPromotionOccurred } = params;
+  const { graph, actorId, targetAgentId, actionId, templateId, templateName, stepIndex, stepReach, outcome, tick, tierPromotionOccurred } = params;
 
   const eventNodeId = `${EVENT_NODE_ID_PREFIX}${actorId}_${tick}_${stepIndex}`;
 
@@ -226,6 +232,7 @@ export function createUnifiedActionEventNode(
       name: `${templateName} (step ${stepIndex})`,
       properties: {
         eventType: 'encounter_outcome',
+        ...(actionId && { actionId }),
         templateId,
         templateName,
         stepIndex,
