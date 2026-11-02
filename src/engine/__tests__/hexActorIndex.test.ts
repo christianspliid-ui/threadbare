@@ -191,7 +191,7 @@ describe('buildHexActorIndex — located_at fallback (THR-2137)', () => {
     expect(getActorsOnHex(buildHexActorIndex(graph), 1, 1)).toEqual(['npc_1']);
   });
 
-  it('locationId wins over the edge when both are present', () => {
+  it('the edge wins over a stale locationId (a mortal that walked away from birth)', () => {
     const graph = new WorldGraph();
     graph.addNode(makeLocation('loc_a', 0, 0));
     graph.addNode(makeLocation('loc_b', 5, 5));
@@ -200,8 +200,19 @@ describe('buildHexActorIndex — located_at fallback (THR-2137)', () => {
 
     const index = buildHexActorIndex(graph);
 
-    expect(getActorsOnHex(index, 0, 0)).toEqual(['actor_1']);
-    expect(getActorsOnHex(index, 5, 5)).toEqual([]);
+    expect(getActorsOnHex(index, 5, 5)).toEqual(['actor_1']);
+    expect(getActorsOnHex(index, 0, 0)).toEqual([]);
+  });
+
+  it('falls back to locationId when the edge does not resolve to a hex', () => {
+    const graph = new WorldGraph();
+    graph.addNode(makeLocation('loc_a', 2, 3));
+    graph.addNode(makeActor('actor_1', 'loc_a'));
+    // An edge into a group (a band) has no hex of its own.
+    graph.addNode({ id: 'group_1', type: 'actor', name: 'group_1', properties: { actorType: 'group' } });
+    locatedAt(graph, 'actor_1', 'group_1');
+
+    expect(getActorsOnHex(buildHexActorIndex(graph), 2, 3)).toEqual(['actor_1']);
   });
 });
 

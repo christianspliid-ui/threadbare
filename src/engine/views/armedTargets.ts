@@ -202,7 +202,7 @@ function emptyMap(): MapHighlightVM {
 /** The empty line plus its next step (THR-2137); the step drops out when the card names no target. */
 function emptyLineFor(cardName: string, targetWords: string): string {
   const line = ARMED_WORDS.empty.replace('{card}', cardName);
-  return targetWords ? `${line} ${ARMED_WORDS.emptyNext.replace('{target}', targetWords)}` : line;
+  return targetWords ? `${line} ${ARMED_WORDS.emptyNext}` : line;
 }
 
 export function emptyArmedTargets(actionId: string, cardName = actionId, targetWords = ''): ArmedTargetsVM {

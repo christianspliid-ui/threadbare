@@ -21,13 +21,31 @@ export function hexKey(col: number, row: number): HexKey {
 }
 
 /**
+ * The hex a location id stands on: a Place resolves up to its Location (THR-1183, via
+ * the shared discriminator so both mint shapes resolve the same way), then the
+ * Location's hexCol/hexRow. Null when any rung is missing.
+ */
+function hexOfLocationId(graph: WorldGraph, locationId: string | undefined): HexKey | null {
+  if (typeof locationId !== 'string' || locationId.length === 0) return null;
+  const raw = graph.getNode(locationId);
+  if (!raw) return null;
+  const locNode = resolveToParentLocation(graph, raw);
+  if (!locNode || locNode.type !== 'location') return null;
+  const col = locNode.properties?.hexCol as number | undefined;
+  const row = locNode.properties?.hexRow as number | undefined;
+  if (col === undefined || row === undefined) return null;
+  return hexKey(col, row);
+}
+
+/**
  * Builds a per-tick index mapping each hex to the individual actor ids on it.
  *
- * Resolution order: actor.properties.locationId, else the actor's first `located_at`
- * edge target → location node (hexCol/hexRow).
- * If locationId points to a sublocation (either mint shape — see `sublocationShape.ts`),
- * resolves up to parentLocationId before reading hex coordinates. Actors that can't be
- * resolved go to unresolvedCount and are excluded from buckets.
+ * Resolution order (THR-2137): the actor's `located_at` edge — the model of record,
+ * the one movement rewrites — then the denormalized `properties.locationId` mirror,
+ * which is only stamped at birth and goes stale once a mortal walks. The same order as
+ * `binder.candidateHex`. Ambient NPCs (`seedNpcsAtLocations`) carry only the edge.
+ * Sublocations resolve up to their parent location before hex coordinates are read.
+ * Actors that can't be resolved go to unresolvedCount and are excluded from buckets.
  *
  * Iteration order matches graph.getNodesByType('actor') (stable insertion order),
  * preserving determinism.
@@ -41,45 +59,13 @@ export function buildHexActorIndex(graph: WorldGraph): HexActorIndex {
   let unresolvedCount = 0;
 
   for (const actor of actors) {
-    // Ambient NPCs (`seedNpcsAtLocations`) carry only the `located_at` edge, so fall
-    // back to it when the denormalized field is absent — the rule `homeLocationOf`
-    // (seedLivingWorld.ts) already uses (THR-2137).
-    let locationId = actor.properties?.locationId as string | undefined;
-    if (typeof locationId !== 'string' || locationId.length === 0) {
-      locationId = graph.getOutgoingEdges(actor.id, 'located_at')[0]?.target;
-    }
-    if (!locationId) {
+    const key = hexOfLocationId(graph, graph.getOutgoingEdges(actor.id, 'located_at')[0]?.target)
+      ?? hexOfLocationId(graph, actor.properties?.locationId as string | undefined);
+    if (key === null) {
       unresolvedCount++;
       continue;
     }
 
-    let locNode = graph.getNode(locationId);
-    if (!locNode) {
-      unresolvedCount++;
-      continue;
-    }
-
-    // Resolve sublocation up to parent location (THR-1183: via the shared
-    // discriminator, so both mint shapes resolve the same way).
-    locNode = resolveToParentLocation(graph, locNode);
-    if (!locNode) {
-      unresolvedCount++;
-      continue;
-    }
-
-    if (locNode.type !== 'location') {
-      unresolvedCount++;
-      continue;
-    }
-
-    const col = locNode.properties?.hexCol as number | undefined;
-    const row = locNode.properties?.hexRow as number | undefined;
-    if (col === undefined || row === undefined) {
-      unresolvedCount++;
-      continue;
-    }
-
-    const key = hexKey(col, row);
     const bucket = byHex.get(key);
     if (bucket) {
       bucket.push(actor.id);
