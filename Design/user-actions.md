@@ -1,17 +1,8 @@
 # User Action Required
 
-**Last updated:** 2026-11-02 17:58 local (16:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-02 18:59 local (17:59 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
-
-### Should a sphere's essence pool show how full it can get as a number? (new 2 Nov)
-
-From [the "can't read what they spend" ticket](https://linear.app/threadbare/issue/THR-2143/recurs-after-fix-five-times-the-player-still-cant-read-what-they-spend): all three testers want a number they can check, and your Vision files forbid new on-screen numbers without an exception.
-- **(a)** the bar's end plus words: "Full when the bar is full. Each mortal you thread lets every pool hold a little more." (the draft's default)
-- **(b)** the hover says "Holds up to 55: 50, and 5 more for each mortal you have threaded."
-- **(c)** the row reads "53 / 55".
-
-Answer "a", "b" or "c". [The draft plan, § Needs Christian](https://github.com/christianspliid-ui/threadbare/blob/docs/plan-2026-11-02-the-sheet-says-what-grew/Docs/plans/2026-11-02-thr-2143-the-sheet-says-what-grew.md#needs-christian-reserved-not-decided). *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02e.md)*
 
 ### Set the Claude app to open when Windows starts
 
@@ -55,6 +46,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-02: you answered the essence-pool question: both (b) and (c).** Your words: *"feel free to update the sphere essence pool UI to be easier to read and understand. i would suggest a tooltip to describe details (b) + C"*. The hover explains the limit and the row reads "53 / 55"; the design lane merges [the THR-2143 plan](https://github.com/christianspliid-ui/threadbare/blob/docs/plan-2026-11-02-the-sheet-says-what-grew/Docs/plans/2026-11-02-thr-2143-the-sheet-says-what-grew.md) and files its build tickets.
 - **2026-11-02: thirteen more board encounters now read in the new story voice, and it is live** ([THR-2128](https://linear.app/threadbare/issue/THR-2128)). Merged via [#2713](https://github.com/christianspliid-ui/threadbare/pull/2713).
 - **2026-11-02: ten more board encounters now read in the new story voice, and it is live** ([THR-2108](https://linear.app/threadbare/issue/THR-2108)). Merged via [#2712](https://github.com/christianspliid-ui/threadbare/pull/2712).
 - **2026-11-02: six small faults from playtest round 6 are fixed, and it is live** ([THR-2142](https://linear.app/threadbare/issue/THR-2142/six-small-faults-from-cold-playtest-round-6-setup-screens-that-move-on)). Merged via [#2711](https://github.com/christianspliid-ui/threadbare/pull/2711).
@@ -64,7 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-02: the "gather followers" card now finds the townsfolk to target, and it is live** ([THR-2137](https://linear.app/threadbare/issue/THR-2137)). Merged via [#2706](https://github.com/christianspliid-ui/threadbare/pull/2706).
 - **2026-11-02: nine unused modules are deleted, and the change is live** ([THR-2131](https://linear.app/threadbare/issue/THR-2131/nine-more-modules-have-tests-but-no-production-caller-delete-each-with)). Merged via [#2703](https://github.com/christianspliid-ui/threadbare/pull/2703).
 - **2026-11-02: the warm start's catch-up screen now shows a live time-left estimate, and it is live** ([THR-2133](https://linear.app/threadbare/issue/THR-2133/the-warm-starts-catch-up-screen-promises-a-minute-or-two-but-300-ticks)). Merged via [#2702](https://github.com/christianspliid-ui/threadbare/pull/2702).
-- **2026-11-02: during a Stage moment the place tag and the toasts no longer cover each other, and it is live** ([THR-2132](https://linear.app/threadbare/issue/THR-2132/while-a-chapter-is-open-on-the-stage-its-place-where-it-is-happening)). Merged via [#2701](https://github.com/christianspliid-ui/threadbare/pull/2701).
 ---
 
 Older resolved items and every earlier revision of this file: `git log -p origin/ops -- Design/user-actions.md`.

@@ -923,3 +923,4 @@ measuredAt	commit	seed	map	ticks	agentsAtEnd	msPerTickWarmup	msPerTickSteady	tot
 2026-11-02T14:57:07.949Z	12e6c116	42	small	200	639	265.1	292.9	57212	agent_decision	v24.14.0
 2026-11-02T15:56:12.301Z	bf0dc3bf	42	small	200	639	98.5	130.6	24533	agent_decision	v24.14.0
 2026-11-02T16:56:36.358Z	d322ddd1	42	small	200	639	104.7	133.7	25302	agent_decision	v24.14.0
+2026-11-02T17:57:04.819Z	216f3aea	42	small	200	639	133.4	191.3	35378	agent_decision	v24.14.0
