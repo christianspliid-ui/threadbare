@@ -36,6 +36,8 @@ updated: 2026-08-28
 
 **How to apply:** if a design surfaces a raw number to the player, the design is wrong. The information still exists under the hood — it must, for tunability (NFP #1) — but the prose layer is what the player meets. Debug panel numbers for us, prose for them.
 
+**Recorded exceptions (Christian's, both in chat):** a resource pool's balance in persistent chrome (2026-08-06) and that pool's limit, as "53 / 55" and in the row's hover (2026-11-02, THR-2143). Their exact scope, and what they do not cover (rates, percentages), lives under Law 13 in `Docs/design-system/laws.md`.
+
 ## 4. Everything is a graph node/edge
 
 **The decision:** no separate relational tables. No property-bag relationships. If two entities have a meaningful relationship (commands, owns, trusts, grieves-for), it is an edge type. Properties are for data internal to a node.

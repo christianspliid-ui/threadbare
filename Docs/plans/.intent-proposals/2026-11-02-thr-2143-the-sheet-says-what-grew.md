@@ -17,11 +17,18 @@ The period focus, from Christian in chat on 2026-11-01, as recorded in the desig
 
 > "get the design lane to focus on UI and UX improvements for the next period. specifically legibility and usability of the different UI modules"
 
+Christian answered the one reserved fork in chat on 2026-11-02 (recorded in `Design/user-actions.md` on the `ops` branch), after the design lane asked whether a pool's limit should show as a number — (a) words only, (b) the hover names it, (c) the row shows "53 / 55":
+
+> "feel free to update the sphere essence pool UI to be easier to read and understand. i would suggest a tooltip to describe details (b) + C"
+
+**User sign-off line:** Christian chose (b) + (c), chat 2026-11-02. The plan records it as a dated Law 13 amendment in the same PR.
+
 ## scope (what this plan does)
 
 The plan changes how existing state reads on the god rail's essence rows, the person sheet (reach tiles and Nature) and the meeting fate line. It touches no rule.
 - The essence bar ends at the live cap.
-- The hover says in words how the limit grows (no number), and when and why upkeep is taken, with the payers counted in words. Whether the limit shows as a number is reserved for Christian (the plan's § Needs Christian), after the Vision audit found no Vision exception for it.
+- The row reads "53 / 55" and the hover opens "Holds up to 55: 50, and 5 more for the mortal you have threaded." (Christian's (b) + (c)); the hover also says when and why upkeep is taken, with the payers counted in words.
+- `Docs/design-system/laws.md` Law 13 gains a dated amendment recording Christian's limit exception (balance exception widened to the limit; rates unchanged).
 - A reach tile shows the Aftermath's ▲ cluster for three days after a chapter grew it, with a hover that explains an unchanged word.
 - Nature shows a meeting lean as a chip, and switches to the axis registry's pole words.
 - The fate line says "leans … now".
@@ -29,12 +36,11 @@ The plan changes how existing state reads on the god rail's essence rows, the pe
 
 ## scope (what this plan does NOT do — explicit non-goals)
 
-- No number for the limit. This departs from the ticket's item 1 ("holds up to 55") and is reserved for Christian, as non-negotiable #3 and the taste profile forbid numbers without a recorded exception.
 - No upkeep amount or rate on screen. This departs from the ticket's item 1, because of the Law 13 per-tick-rates ruling (THR-1426).
 - No "until seen" state. This departs from item 2: a deterministic three-day window instead.
 - No change to the Fated colour (reserved to Christian).
 - No economy change (starting pools, cap formula, upkeep order).
-- Card tags and pip colours (2/3 testers, no direction in the ticket) are filed as their own design request, not designed here.
+- Card tags and pip colours (2/3 testers, no direction in the ticket) were filed and designed separately (THR-2146, built as THR-2147).
 - The personality row's `intimate` gate is unchanged.
 
 ## impact_class
@@ -61,6 +67,6 @@ None with ≥100 importers. Measured with `git grep` on import paths: `ui-conten
 
 ## kill criteria
 
-- A round-7 tester again lists upkeep, refill or the limit under "never understood". Next step: Christian's limit-number option, and ask him whether an upkeep amount may show despite the rates ruling.
+- A round-7 tester again lists upkeep, refill or the limit under "never understood". Next step: if upkeep is the item, ask him whether an upkeep amount may show despite the rates ruling.
 - A tester says the sheet and the Aftermath disagree about a gain. Next step: lengthen the window or add per-viewer "seen" state.
 - The Nature vocabulary switch draws a "new words I don't know" complaint. Next step: revert to `VALUE_LABELS` behind its fallback.
