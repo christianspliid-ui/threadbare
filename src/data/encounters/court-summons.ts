@@ -137,8 +137,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 2,
           forecastDelta: 0.1,
           imageTag: 'generic.memory',
-          effectLine: 'Sharpen their sense of who here already has the crown\'s ear, and who only stands near it. A '
-            + 'real help.',
+          effectLine: 'Sharpen their sense of who here already has the crown\'s ear, and who only stands near it.',
           bandProse: {
             success: 'They worked out who mattered in the hall before they opened their mouth.',
             failure: 'They read the hall right and still could not get near the one who counted.',
@@ -152,7 +151,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           forecastDelta: 0.12,
           imageTag: 'generic.oath',
           effectLine: 'Incline the crown\'s caller kindly toward them, so the petition goes in through a friendly '
-            + 'voice. A real help.',
+            + 'voice.',
           bandProse: {
             critical_success: 'The crier put their name in first and said it like it belonged there.',
             success_at_cost: 'The crier spoke for them, and made plain afterwards that it was a favour.',
@@ -243,7 +242,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 2,
           forecastDelta: 0.12,
           imageTag: 'generic.dark',
-          effectLine: 'Fog what the court heard from the three before them, so this answer arrives new. A real help.',
+          effectLine: 'Fog what the court heard from the three before them, so this answer arrives new.',
           bandProse: {
             success: 'The court listened as though nobody had stood there before them.',
             failure: 'The court forgot the other three and was no gladder to hear a fourth.',

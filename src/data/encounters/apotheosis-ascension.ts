@@ -141,9 +141,9 @@ const APOTHEOSIS_HAND: readonly StepNudge[] = [
     essenceCost: 1,
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
-    effectLine: 'You hold your own hands still at the threshold, so the doorway stops shivering while they answer. A small help, and it argues for neither side.',
+    effectLine: 'Still your own grip at the threshold, so the doorway stops shivering while they answer. It argues for neither side.',
     bandProse: {
-      near_miss: 'The hands held. The doorway did not, quite, and the edges of it kept moving.',
+      near_miss: 'The doorway still shook at its edges while they answered.',
       failure: 'Steady hands on a thin place still leave it a thin place, and it tore at one corner.',
     },
   },
@@ -157,7 +157,7 @@ const APOTHEOSIS_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     poleLean: { axis: 'sacrifice_survival', toward: 'positive' },
     imageTag: 'generic.memory',
-    effectLine: 'You lay out every year they already spent on you, in order, where they can see it. A real help, and it argues for pouring through.',
+    effectLine: 'Show them every season already spent in your service, laid out in order. It argues for pouring through.',
     bandProse: {
       near_miss: 'The years stood up and were counted, and the count was so long it frightened them.',
       failure: 'The years came back all at once, and under the weight of them the mortal could not hear the doorway at all.',
@@ -173,7 +173,7 @@ const APOTHEOSIS_HAND: readonly StepNudge[] = [
     forecastDelta: 0.07,
     poleLean: { axis: 'sacrifice_survival', toward: 'negative' },
     imageTag: 'generic.light',
-    effectLine: 'You bring one ordinary morning up around them — bread, cold floor, a neighbour shouting. A small help, and it argues for staying mortal.',
+    effectLine: 'Raise one ordinary day around them: bread, a cold floor, a neighbour shouting. It argues for staying mortal.',
     bandProse: {
       near_miss: 'The morning arrived and the bread smelled right, and they nearly turned toward it.',
       failure: 'The morning came in thin and grey and made no case for itself at all.',
@@ -187,7 +187,7 @@ const APOTHEOSIS_HAND: readonly StepNudge[] = [
     essenceCost: 2,
     forecastDelta: 0.09,
     imageTag: 'generic.time-slow',
-    effectLine: 'You stretch the hour around the doorway so the answer is not rushed. The largest help in the hand, and it argues for neither side.',
+    effectLine: 'Stretch the moment at the doorway, so the answer is not rushed. It argues for neither side.',
     bandProse: {
       near_miss: 'The hour ran long and they used all of it, and still arrived at the edge unready.',
       failure: 'The hour ran long, and a long hour at a thin place is a long hour to be frightened in.',
@@ -203,7 +203,7 @@ const APOTHEOSIS_HAND: readonly StepNudge[] = [
     forecastDelta: 0.07,
     poleLean: { axis: 'sacrifice_survival', toward: 'negative' },
     imageTag: 'generic.oath',
-    effectLine: 'You show them the price honestly — the strain, the stretching, the body that has to carry it. A small help, and it argues for staying mortal.',
+    effectLine: 'Show them the price honestly: the strain, the stretching, the body that must carry all of it. It argues for staying mortal.',
     bandProse: {
       near_miss: 'They read the price through twice and could not make the last line come out even.',
       failure: 'The price read as a wall of figures, and they stopped reading partway down.',
@@ -219,7 +219,7 @@ const APOTHEOSIS_HAND: readonly StepNudge[] = [
     forecastDelta: 0.04,
     rider: 'no_crit_fail',
     imageTag: 'generic.ward',
-    effectLine: 'You set an order under the scene so it cannot come apart at the worst seam. Little help with the odds, and the disaster is off the table.',
+    effectLine: 'Set an order under the scene, so the worst ending cannot happen.',
     bandProse: {
       near_miss: 'The rule under the room held the seams together while everything above them shook.',
       failure: 'It went badly, and the rule under the room kept it from going worse.',
@@ -235,7 +235,7 @@ const APOTHEOSIS_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     poleLean: { axis: 'sacrifice_survival', toward: 'positive' },
     imageTag: 'generic.strength',
-    effectLine: 'You widen the body a fraction — lungs, heart, the room behind the ribs. A real help, and it argues for pouring through.',
+    effectLine: 'Widen the body a fraction: lungs, heart, the room behind the ribs. It argues for pouring through.',
     bandProse: {
       near_miss: 'The body took the extra breath and found it was one breath short of enough.',
       failure: 'The extra breath went in and came straight back out, and the ribs stayed the size they were.',

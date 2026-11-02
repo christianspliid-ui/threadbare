@@ -246,7 +246,7 @@ systems quota exists to stop.
   token naming an *undeclared* key strips silently, which is why the gate checks
   declaration.
 - **Never gender a bound cast member in prose.** Reuse binds whoever is standing
-  there. Write around pronouns: the role noun, or restructure the sentence.
+  there. Write around pronouns: the role noun (bound cast only; the actor is always named), or restructure the sentence.
 - **Family defaults (THR-1044).** A shipped `encounter.*` template whose envelope
   resolves to a *single* setting class inherits that class's default bundle
   (`DEFAULT_SETTING_SUPPORT_BUNDLES`) and satisfies the Cast block with no authored

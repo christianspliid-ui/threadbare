@@ -140,7 +140,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           forecastDelta: 0.12,
           imageTag: 'generic.memory',
           effectLine: 'Bring what once stood on this site back to the inspector\'s mind, so it is said aloud while they '
-            + 'dig. A real help.',
+            + 'dig.',
           bandProse: {
             success: 'The inspector remembered an old chapel on this ground and said so while the pits were open.',
             failure: 'The inspector remembered an old chapel on this ground, but only after the pits were filled in.',
@@ -153,7 +153,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 1,
           forecastDelta: 0.1,
           imageTag: 'generic.matter',
-          effectLine: 'Soften the topsoil in their pit, so the spade reaches the layer beneath it early. A small help.',
+          effectLine: 'Soften the topsoil in their pit, so the spade reaches the layer beneath it early.',
           bandProse: {
             critical_success: 'The spade went through the topsoil in a few cuts and struck rubble while the rival was still '
               + 'digging.',
@@ -248,7 +248,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 2,
           forecastDelta: 0.13,
           imageTag: 'generic.strength',
-          effectLine: 'Pack the rubble under their footing tight, so the load bears on solid ground. A real help.',
+          effectLine: 'Pack the rubble under their footing tight, so the load bears on solid ground.',
           bandProse: {
             success: 'The rubble under their footing sat tight and did not shift when the stone went on.',
             failure: 'The rubble under their footing held, and the stones they had set on it did not.',
@@ -261,8 +261,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 2,
           forecastDelta: 0.11,
           imageTag: 'generic.luck',
-          effectLine: 'Rush the other mason\'s hands, so their footing goes down before the mortar has set. A real '
-            + 'help.',
+          effectLine: 'Rush the other mason\'s hands, so their footing goes down before the mortar has set.',
           bandProse: {
             success: 'The rival finished first, and their mortar was still wet at noon.',
             success_at_cost: 'The rival\'s mortar was wet at noon, and the inspector had both footings loaded twice.',
