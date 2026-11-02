@@ -118,14 +118,14 @@ describe('E5 / U8 — Needs-you counts only what waits', () => {
     expect(vm.total).toBe(4);
   });
 
-  it('with only news, the pill shows its label and no number', () => {
+  it('with only news, the pill reads News and shows no number (THR-2142)', () => {
     const vm = buildNeedsYou(sources({ alerts: [alert('a1')] }));
     render(<NeedsYou vm={vm} open={false} onOpenChange={() => {}} guarded={false} raised={false} onPressRow={() => {}} />);
     const pill = screen.getByTestId('needs-you-pill');
     expect(pill.style.display).not.toBe('none');
     expect(pill.getAttribute('data-needs-you-count')).toBe('0');
     expect(pill.getAttribute('data-needs-you-total')).toBe('1');
-    expect(pill.textContent).toBe('Needs you');
+    expect(pill.textContent).toBe('News');
     expect(pill.textContent).not.toMatch(/\d/);
     expect(pill.querySelector('button')?.getAttribute('aria-label')).toBe(NEEDS_YOU_PILL_NEWS_ONLY_LABEL);
   });

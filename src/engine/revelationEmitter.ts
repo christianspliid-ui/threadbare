@@ -31,6 +31,7 @@ import {
 } from './revelationHooks';
 import { getAnyEncounterById } from '../data/encounter-content';
 import { emitTrace } from './traceBuffer';
+import { reachDisplayName } from './aftermathWords';
 
 // ─── ID Generator ──────────────────────────────────────────────────
 
@@ -52,6 +53,32 @@ export function resetRevEventCounter(): void {
 }
 
 // ─── Constants ─────────────────────────────────────────────────────
+
+/** The order the observe revelation (Piercing Gaze) reveals a mortal's Reaches in, one per cast. */
+export const OBSERVE_DOMAIN_ORDER: readonly ReachDomain[] = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star'];
+
+/**
+ * THR-2142 — true when the god already knows every Reach the observe revelation can
+ * show on this mortal, so a cast would reveal nothing. Player surfaces lock the card on it.
+ */
+export function observeHasNothingLeft(
+  agentKnowledge: GameState['agentKnowledge'] | undefined,
+  agentId: string,
+): boolean {
+  const known = agentKnowledge?.get(agentId)?.revealedDomains;
+  if (!known) return false;
+  return OBSERVE_DOMAIN_ORDER.every(d => known.has(d));
+}
+
+/** THR-2142 — the Chronicle line an observe cast leaves: the spell's name and the Reach, in words. */
+export function observeRevealMessage(agentName: string, reach: string): string {
+  return `Piercing Gaze reads ${agentName}: their ${reachDisplayName(reach)} reach now shows on their sheet`;
+}
+
+/** THR-2142 — the line when an observe cast lands on a mortal with nothing left to show. */
+export function observeNothingLeftMessage(agentName: string): string {
+  return `Piercing Gaze finds nothing in ${agentName} you do not already know`;
+}
 
 /**
  * Maps reach domain to its primary axiological pair (for encounter value reveals).
@@ -371,8 +398,20 @@ export function resolveRevelationAction(
     switch (actionType) {
       case 'observe': {
         // Reveal the first domain in canonical order that isn't yet revealed
-        const DOMAIN_ORDER = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star'];
-        const unrevealed = DOMAIN_ORDER.find(d => !knowledge.revealedDomains.has(d));
+        const unrevealed = OBSERVE_DOMAIN_ORDER.find(d => !knowledge.revealedDomains.has(d));
+
+        if (!unrevealed) {
+          // THR-2142: a cast with nothing left still answers (the card locks before
+          // this on player surfaces; this covers a cast already in flight).
+          state.tickEvents.push({
+            id: nextRevEventId(state.tick),
+            tick: state.tick,
+            type: 'domain_revealed' as TickEvent['type'],
+            message: observeNothingLeftMessage(agentName),
+            significance: REVELATION_EVENT_SIGNIFICANCE,
+            actorId: targetAgentId,
+          });
+        }
 
         if (unrevealed) {
           revealDomain(knowledge, unrevealed);
@@ -381,7 +420,7 @@ export function resolveRevelationAction(
             id: nextRevEventId(state.tick),
             tick: state.tick,
             type: 'domain_revealed' as TickEvent['type'],
-            message: `${agentName}'s skill in ${unrevealed} becomes apparent through divine sight`,
+            message: observeRevealMessage(agentName, unrevealed),
             significance: REVELATION_EVENT_SIGNIFICANCE,
             actorId: targetAgentId,
           });

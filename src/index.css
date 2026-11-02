@@ -1024,6 +1024,11 @@
 }
 
 /* Keyframes */
+/* THR-2142 — the remembrance hold cue fills left to right while a chosen picture holds. */
+@keyframes remembranceHoldFill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
 @keyframes fadeInOnly {
   from { opacity: 0; }
   to { opacity: 1; }

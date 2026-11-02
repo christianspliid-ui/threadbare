@@ -156,6 +156,11 @@ export const NEEDS_YOU_LABEL = 'Needs you';
 export const NEEDS_YOU_PILL_LABEL: CountPair = { one: '{n} thing needs you', other: '{n} things need you' };
 /** THR-2061 — the pill's aria and tooltip label when only News is in the list: nothing waits, so no number. */
 export const NEEDS_YOU_PILL_NEWS_ONLY_LABEL = 'Nothing waits on you; news to read';
+/**
+ * THR-2142 — the pill's word when only News is in the list. "Needs you" over rows that
+ * needed nothing sent players hunting for a task (round-6 cold playtest).
+ */
+export const NEEDS_YOU_NEWS_ONLY_WORD = 'News';
 /** The list's group headers, followed by " · {n}". */
 export const NEEDS_YOU_GROUP_TITLES = {
   waiting: 'Waiting for you',

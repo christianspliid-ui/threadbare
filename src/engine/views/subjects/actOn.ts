@@ -30,6 +30,7 @@ import {
 import { getAscendantDomainAffinities } from '../../ascendant';
 import { castCapabilityByReach } from '../../playerCastReadout';
 import { teachSpellPreview } from '../../ascendantExpression';
+import { observeHasNothingLeft } from '../../revelationEmitter';
 import { getAvatarHexPosition } from '../../visibility';
 import { AGENT_INTERVENTION_TEMPLATES, UNIFIED_ACTION_TEMPLATES } from '../../../data/unified-action-templates';
 import { actionBlockedReason } from '../../../data/action-card-display';
@@ -158,6 +159,7 @@ export function actOnSlots(
     controlOwnerId: state.ascendantId,
     pendingActions: state.unifiedActions,
     spellTeachingPreview: teachSpellPreview(graph, state.ascendantId, ctx.nodeId, Number(state.seed ?? 0)),
+    observeNothingLeft: observeHasNothingLeft(state.agentKnowledge, ctx.nodeId),
   });
   return { ctx, slots };
 }
@@ -205,7 +207,9 @@ function cardsOf(slots: readonly WheelSlot[]): ActOnCardVM[] {
     .filter(s => s.type === 'target_action' || s.type === 'intervention')
     .map(s => ({
       actionId: s.id,
-      name: s.label,
+      // THR-2142 (Law 14): the spell name the hand, the receipt and the Codex print —
+      // "Observe" here beside "Piercing Gaze" in the hand read as two actions.
+      name: s.spellName ?? s.label,
       sphere: (s.sphere ?? null) as SphereName | null,
       available: s.available,
       reason: s.available ? null : (actionBlockedReason(s.lockedReason, s.rangeStatus) ?? null),

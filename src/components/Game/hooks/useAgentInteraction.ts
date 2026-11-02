@@ -20,6 +20,7 @@ import { buildCastReceipt, buildRitePendingReceipt } from './castReceipt';
 import { castOpensRite } from '../../../engine/threadingRite';
 import { getUnifiedTemplateById, AGENT_INTERVENTION_TEMPLATES } from '../../../data/unified-action-templates';
 import { teachSpellPreview } from '../../../engine/ascendantExpression';
+import { observeHasNothingLeft } from '../../../engine/revelationEmitter';
 import { templateIdFromSlotId, getTargetActionSlots } from '../../../engine/targetActions';
 import { getAscendantDomainAffinities } from '../../../engine/ascendant';
 import { castCapabilityByReach } from '../../../engine/playerCastReadout';
@@ -236,6 +237,8 @@ export function useAgentInteraction({
           pendingActions: gameState.unifiedActions,
           // THR-1672 — see useTargetActions: a teaching card names its spell.
           spellTeachingPreview: teachSpellPreview(gameState.graph, gameState.ascendantId, selectedAgentId, Number(gameState.seed ?? 0)),
+          // THR-2142 — an observe card locks once every Reach is already known.
+          observeNothingLeft: observeHasNothingLeft(gameState.agentKnowledge, selectedAgentId),
         })
       : [];
 

@@ -56,6 +56,11 @@ interface ReadTheThreadsPanelProps {
   digestBuffer: DigestEntry[];
   currentTick: number;
   essenceAvailable: number;
+  /**
+   * THR-2142 — the pools the read charges, by name ("Energy 120 · Iron 80"), shown on
+   * the Available line so the figure matches the bar. Absent → the bare total.
+   */
+  payingPoolsLine?: string;
   onSpendEssence: (cost: number) => void;
   /**
    * Tick on which the player last used Read the Threads.
@@ -275,12 +280,14 @@ function NamedDigestLine({ entry, children }: { entry: DigestEntry; children: Re
 
 function PreReadState({
   essenceAvailable,
+  payingPoolsLine,
   selectedIndex,
   onSelect,
   onRead,
   cooldownTicksRemaining,
 }: {
   essenceAvailable: number;
+  payingPoolsLine?: string;
   selectedIndex: number;
   onSelect: (i: number) => void;
   onRead: () => void;
@@ -350,7 +357,7 @@ function PreReadState({
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 'var(--space-1)' }}>
         <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
-          Available: <span style={{ color: canAfford ? 'var(--accent-gold)' : 'var(--negative)' }}>{formatEssencePool(essenceAvailable)} essence</span>
+          Available: <span data-testid="read-threads-available" style={{ color: canAfford ? 'var(--accent-gold)' : 'var(--negative)' }}>{payingPoolsLine ?? `${formatEssencePool(essenceAvailable)} essence`}</span>
         </span>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 'var(--space-1)' }}>
           <Button
@@ -512,6 +519,7 @@ export function ReadTheThreadsPanel({
   digestBuffer,
   currentTick,
   essenceAvailable,
+  payingPoolsLine,
   onSpendEssence,
   lastReadTick = 0,
   attentionPool,
@@ -570,6 +578,7 @@ export function ReadTheThreadsPanel({
         {!hasRead ? (
           <PreReadState
             essenceAvailable={essenceAvailable}
+            payingPoolsLine={payingPoolsLine}
             selectedIndex={selectedIndex}
             onSelect={setSelectedIndex}
             onRead={handleRead}

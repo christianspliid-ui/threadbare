@@ -92,6 +92,16 @@ describe('the person page dressing (THR-2097)', () => {
     expect(bond?.prose).toBe('Kael is bound to you by thread.');
   });
 
+  it('THR-2142: the bond row is headed by the mortal\'s name and speaks to the player, on both paths', () => {
+    const withEdge = sections(world()).find(s => s.typeId === 'what_she_is_to_him');
+    expect(withEdge?.label).toBe('What Kael is to you');
+    const state = world();
+    state.graph.removeEdge('rel1');
+    const threadOnly = sections(state).find(s => s.typeId === 'what_she_is_to_him');
+    expect(threadOnly?.label).toBe('What Kael is to you');
+    expect(`${withEdge?.label} ${threadOnly?.label}`).not.toMatch(/\b(she|him|he|her)\b/);
+  });
+
   it('an unthreaded person gets the sentence but no strip', () => {
     const bond = sections(world({ threaded: false })).find(s => s.typeId === 'what_she_is_to_him') as ProseSection | undefined;
     expect(bond?.kind).toBe('prose');

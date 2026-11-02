@@ -23,7 +23,6 @@
 import { lazy, Suspense } from 'react';
 import type { ComponentProps, Dispatch, ReactNode, SetStateAction } from 'react';
 import type { DialogHomedKind, HomedSurfaceKind } from '../../../data/homed-surfaces';
-import { SPHERE_NAMES } from '../../../types';
 import type { AscendantArchetype } from '../../../types/influence';
 import type { ScryState } from '../../../types/scry';
 import type { GameState } from '../../../types/gameState';
@@ -42,6 +41,7 @@ import { executeEffect } from '../../../engine/effectExecutors';
 import { emitTrace } from '../../../engine/traceBuffer';
 import { touchWorld } from '../../../engine/simulationRuntime';
 import { withEssenceSpend } from '../../../engine/essenceMovement';
+import { chargeReadThreads, readThreadsAvailable, readThreadsPayingPools, readThreadsPoolsLine } from '../readThreadsPools';
 import { previewReachSignatureGrant } from '../../../engine/ascendantBeat';
 import { previewHomeSeat } from '../../../engine/ascendantBeatSeeding';
 import { describeOffering, isRungOpeningOffer } from '../../../engine/godProgression';
@@ -185,6 +185,8 @@ export function DialogHost({
   // equal-z stacking is unchanged. The effect choice set mounts inside the map box
   // (`MapAnchoredDialogs`), so its case here places nothing.
   const renders = new Set<HomedSurfaceKind>(interruptResolution.rendering);
+  // THR-2142 — the pools Read the Threads is paid from (primary, then secondary).
+  const readThreadsPools = readThreadsPayingPools(gameState.essencePool, archetype.sphereAlignment.primary, archetype.sphereAlignment.secondary);
   const renderDialog = (kind: DialogHomedKind): ReactNode => {
     switch (kind) {
       /* Scry overlay */
@@ -343,7 +345,9 @@ export function DialogHost({
         onClose={() => setReadThreadsOpen(false)}
         digestBuffer={gameState.digestBuffer ?? []}
         currentTick={gameState.tick}
-        essenceAvailable={SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0)}
+        // THR-2142: the read charges the god's two own pools, and says so — not all twelve.
+        essenceAvailable={readThreadsAvailable(readThreadsPools)}
+        payingPoolsLine={readThreadsPoolsLine(readThreadsPools)}
         lastReadTick={lastReadThreadsTick}
         attentionPool={attentionPool}
         attentionCapacity={attentionCapacity}
@@ -354,19 +358,7 @@ export function DialogHost({
         onSpendEssence={(cost) => {
           setLastReadThreadsTick(gameState.tick);
           setGameState(prev => {
-            const newPool = { ...prev.essencePool };
-            let remaining = cost;
-            const sphereOrder = [
-              archetype.sphereAlignment.primary,
-              archetype.sphereAlignment.secondary,
-              ...SPHERE_NAMES.filter(s => s !== archetype.sphereAlignment.primary && s !== archetype.sphereAlignment.secondary),
-            ];
-            for (const s of sphereOrder) {
-              if (remaining <= 0) break;
-              const deduct = Math.min(remaining, newPool[s] ?? 0);
-              newPool[s] = (newPool[s] ?? 0) - deduct;
-              remaining -= deduct;
-            }
+            const newPool = chargeReadThreads(prev.essencePool, archetype.sphereAlignment.primary, archetype.sphereAlignment.secondary, cost);
             // THR-2061 — a spend the player chose: files where the ▼ can see it.
             return { ...prev, ...withEssenceSpend(prev, newPool, 'spend_other') };
           });
