@@ -326,6 +326,9 @@ surfaces flattens the imagination the work does elsewhere.
 
 Percentages, bars with labels, stat blocks. All forbidden in player-visible
 surfaces. Developers see numbers in the debug panel; players see prose.
+Two exceptions are Christian's own: an essence pool's balance (2026-08-06) and
+its limit ("53 / 55", 2026-11-02). Their scope is recorded under Law 13 in
+`Docs/design-system/laws.md`.
 
 - **Rejected because:** numbers collapse the voice and short-circuit the
   prose-first learning loop.
