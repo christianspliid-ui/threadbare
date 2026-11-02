@@ -12,6 +12,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { render, screen } from '@testing-library/react';
 import { ToastStack } from '../ToastStack';
+import { Z_BAND } from '../../shared/zBands';
 
 describe('ToastStack — anchored inside the map area (THR-1711)', () => {
   it('positions absolutely, never fixed to the viewport', () => {
@@ -28,6 +29,9 @@ describe('ToastStack — anchored inside the map area (THR-1711)', () => {
     // bottom-anchored toast covered its Cast bar (seen in the browser-verify pass).
     expect(stack.className.split(/\s+/)).toContain('top-4');
     expect(stack.className.split(/\s+/)).not.toContain('bottom-4');
+    // THR-2132 — its height comes from the stacking table, never a raw `z-50`.
+    expect(stack.className.split(/\s+/)).not.toContain('z-50');
+    expect(stack.style.zIndex).toBe(String(Z_BAND.stage));
   });
 
   it('GameView mounts it inside the relative map area, before the map', () => {

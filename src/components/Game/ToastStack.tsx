@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { AnimateMount } from '../shared/AnimateMount';
+import { Z_BAND } from '../shared/zBands';
 import type { ToastItem } from '../../types/notification';
 import type { NavigationTarget } from '../../types/notification';
 import { getSphereColor } from '../../data/sphereIcons';
@@ -115,8 +116,10 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate, recei
     // bottom-anchored toast covered its Cast bar.
     <div
       data-testid="toast-stack"
-      className="absolute right-4 top-4 z-50 flex flex-col gap-2 pointer-events-none"
-      style={{ maxWidth: 'var(--toast-w)' }}
+      className="absolute right-4 top-4 flex flex-col gap-2 pointer-events-none"
+      // THR-2132 — the Stage's band (Law 35), the height the raw `z-50` held: toasts stay
+      // readable over a Stage moment, whose place tag now keeps to the window's bottom edge.
+      style={{ maxWidth: 'var(--toast-w)', zIndex: Z_BAND.stage }}
       aria-live="polite"
       aria-label="Notifications"
     >
