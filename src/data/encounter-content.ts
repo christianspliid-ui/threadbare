@@ -8552,7 +8552,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             effectLine: 'Turn the blade so the flames show every nick along it.',
             bandProse: {
               success: 'The firelight shows every nick along the blade, and {actor} marks each one.',
-              near_miss: 'The firelight shows the nicks but not the rolled stretch near the guard, and {actor} misses it.',
+              near_miss: 'The firelight shows the nicks at once. {actor} finds the rolled stretch near the guard only on the last turn of the blade.',
             },
           },
           {
@@ -8565,7 +8565,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             effectLine: 'Bring the steel\'s damage up to its surface, where their eye can find it.',
             bandProse: {
               success_at_cost: 'The damage rises to the surface and shows that a long stretch of the edge is past saving.',
-              failure: 'The flaws rise to the surface near the guard, but {actor} checks only the tip and misses them.',
+              failure: 'The damage rises to the surface of the steel, but the firelight is too dim for {actor} to see it there.',
             },
           },
           {
@@ -8616,7 +8616,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             imageTag: 'generic.oath',
             effectLine: 'Draw on their humility, so they look straight at the damage they hoped to ignore.',
             bandProse: {
-              near_miss: '{actor} admits the blade is damaged, but stops looking before {they} find{s} the rolled stretch near the guard.',
+              near_miss: '{actor} admits the blade is damaged. The rolled stretch near the guard is the last flaw {they} look{s} at.',
             },
           },
         ],
@@ -8656,7 +8656,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             effectLine: 'Set a steady count in their hands, so every stroke matches the last.',
             bandProse: {
               success: 'The steady count keeps every stroke the same, and the edge comes up evenly.',
-              near_miss: 'The steady count holds for most of the work, then slips near the end, and the tip comes out uneven.',
+              near_miss: 'The steady count keeps the strokes even. {actor} loses it once near the tip and grinds that stretch again.',
             },
           },
           {
@@ -8694,7 +8694,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             effectLine: 'Lock their wrist at one slope, so the whetstone cuts a single bevel.',
             bandProse: {
               critical_success: 'The wrist stays at one angle for the whole job, and the bevel runs in one clean line from guard to point.',
-              failure: 'The wrist stays locked at one angle, but it is the wrong angle, so the edge comes out blunt.',
+              failure: 'The worn stone has a hollow in it, and the blade tips into it. {actor}\'s locked wrist cannot keep the angle there.',
             },
           },
           {
@@ -8706,7 +8706,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             imageTag: 'generic.warmth',
             effectLine: 'Heat the grit, so it cuts fast instead of dragging.',
             bandProse: {
-              near_miss: 'The warm stone cuts fast but wears out before the tip is done, so the tip stays dull.',
+              near_miss: 'The warm stone cuts fast. Its grit is almost worn away by the time {actor} reaches the tip.',
               critical_failure: 'The stone gets too hot and cracks in two. The break tears a chip out of the edge.',
             },
           },
@@ -9304,7 +9304,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             effectLine: 'Calm their fingers, so the traced line comes back to where it started.',
             bandProse: {
               success: 'The calmed fingers keep the line steady all the way round, and it closes where it started.',
-              near_miss: 'The soft ground on the north side smears the line, so the circle closes thin there despite the calm fingers.',
+              near_miss: 'The soft ground on the north side smears the line. {actor}\'s calm fingers trace that stretch again, and the circle closes.',
             },
           },
           {
@@ -9354,7 +9354,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             imageTag: 'generic.warmth',
             effectLine: 'Warm the traced boundary, so it stays alive after they pass.',
             bandProse: {
-              near_miss: 'The warmth runs most of the way round, but it goes cold near the gate before {actor} gets back to it.',
+              near_miss: 'The warmth fades near the gate before {actor} gets back to it. {actor} traces that stretch a second time before the circle closes.',
               critical_failure: 'The heat dries the traced earth to dust, and the wind blows the line away before moonrise.',
             },
           },
@@ -9370,7 +9370,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             imageTag: 'generic.oath',
             effectLine: 'Draw on their integrity, so they trace the whole boundary a second time.',
             bandProse: {
-              near_miss: 'The second walk closes the gap by the picket rope, but leaves a smaller gap by the fire.',
+              near_miss: 'On the second walk {actor} finds a gap by the picket rope and closes it with the last of the light.',
             },
           },
         ],
@@ -9434,7 +9434,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             imageTag: 'generic.light',
             effectLine: 'Tie the ward to one point in the sky, so it hangs from that mark all night.',
             bandProse: {
-              failure: 'The star stays over the camp all night, but the ward under it comes apart anyway.',
+              failure: '{actor} ties the ward to the star too loosely. It slips free before midnight.',
             },
           },
           {
@@ -9459,7 +9459,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             imageTag: 'generic.dark',
             effectLine: 'Blur the join where the circle closes, so nothing hunting for it can find it.',
             bandProse: {
-              near_miss: 'The seam blurs and holds, but by morning no one in camp can say where the ward runs.',
+              near_miss: 'The join blurs, and the ward takes hold for the night. {actor} marks the join with a stone so the camp can find it.',
               critical_failure: 'The blurring spreads past the seam. The ward loses its own line and comes apart from the middle.',
             },
           },
@@ -11044,7 +11044,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             effectLine: 'Ease their breathing until sleep comes.',
             bandProse: {
               success: '{actor}\'s breathing slows, and {they} fall{s} asleep without trouble.',
-              near_miss: '{actor}\'s breathing slows, but {they} still wake{s} through the night with {their} jaw clenched.',
+              near_miss: '{actor}\'s breathing slows, but sleep comes late, after the fire has burned low.',
             },
           },
           {
@@ -11082,7 +11082,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             imageTag: 'generic.ward',
             effectLine: 'Keep the day\'s troubles out of their dreams.',
             bandProse: {
-              near_miss: 'The day\'s troubles stay out of {actor}\'s dreams, but one bad memory wakes {them} before dawn.',
+              near_miss: 'The day\'s troubles stay out of {actor}\'s dreams, though {they} lie{s} awake over them for a while first.',
               critical_failure: '{actor} never falls asleep, so the guard on {their} dreams does no good. Regret over {their} own mistakes keeps {them} up instead.',
             },
           },
@@ -11095,7 +11095,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             imageTag: 'generic.dark',
             effectLine: 'Deepen the shadows round the fire, so there is less out there to watch.',
             bandProse: {
-              failure: 'The shadows deepen around the fire, but {actor} still watches the dark all night.',
+              failure: 'The shadows deepen round the fire, but every sound from the dark still wakes {actor}.',
             },
           },
           {
@@ -11110,7 +11110,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             imageTag: 'generic.oath',
             effectLine: 'Draw on their hope, so they sleep sure that tomorrow will be kind.',
             bandProse: {
-              near_miss: '{actor} sleeps badly, but {they} wake{s} glad of the morning and sure the day will be kind.',
+              near_miss: '{actor} worries late into the evening, then falls asleep sure that tomorrow will be kind.',
             },
           },
         ],
@@ -11149,7 +11149,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             effectLine: 'Bring a single past stop back to them, whole and clear.',
             bandProse: {
               success: 'One afternoon on the road comes back to {actor} clearly, and the rest of that week comes back with it.',
-              near_miss: 'One afternoon comes back to {actor} clearly, but what happened after it stays forgotten.',
+              near_miss: 'One afternoon comes back to {actor} clearly. From it, {actor} works out the rest of the month by dawn.',
             },
           },
           {
@@ -11162,7 +11162,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             effectLine: 'Keep the month\'s stops in sequence in their mind.',
             bandProse: {
               success_at_cost: 'The month stays in order, so {actor} cannot skip the part {they} want{s} to forget.',
-              failure: 'The month stays in order, but {actor} finds no new lesson in it.',
+              failure: 'The first weeks stay in order, but {actor} loses the order of the last ones.',
             },
           },
           {
@@ -11187,8 +11187,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             imageTag: 'generic.decay',
             effectLine: 'Sink the small grievances out of their way, so the large ones stand clear.',
             bandProse: {
-              near_miss: 'The small grievances fade, but the biggest one stays on {actor}\'s mind.',
-              critical_failure: 'The small grievances fade, and {actor} sees that the biggest trouble of the month was {their} own fault.',
+              near_miss: 'The small grievances fade. {actor} finds the large one only near dawn.',
+              critical_failure: 'With the small grievances gone, {actor} loses track of which day was which.',
             },
           },
           {
@@ -11576,7 +11576,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             effectLine: 'Brighten the lamp above him, so every wound shows plainly.',
             bandProse: {
               critical_success: 'Under the bright lamp {actor} sees the wound under the man\'s belt as well as the broken arm.',
-              failure: 'The bright lamp shows every wound, but the man has been bleeding inside since noon and is already weak.',
+              failure: 'The bright lamp shows the arm plainly. The wound under the man\'s belt stays covered, and {actor} does not look there.',
             },
           },
           {
@@ -11601,7 +11601,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             imageTag: 'generic.ward',
             effectLine: 'Hush the people around him, so nobody shouts over his answers.',
             bandProse: {
-              near_miss: 'The room goes quiet, and {actor} can hear that the man is breathing badly.',
+              near_miss: 'The room goes quiet. The man\'s answers are weak, but {actor} hears enough to find the break.',
               critical_failure: 'The room stays silent, and everyone in it watches {actor} miss the worst wound.',
             },
           },
@@ -11627,7 +11627,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             imageTag: 'generic.oath',
             effectLine: 'Draw on their warmth, so he lies calm under their touch.',
             bandProse: {
-              near_miss: 'The man lies calm under {actor}\'s hands, but {actor} still has to guess at the shoulder.',
+              near_miss: 'The man lies calm under {actor}\'s hands until the swelling is pressed. He flinches, and that is where {actor} finds the break.',
             },
           },
         ],
@@ -11683,7 +11683,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             effectLine: 'Numb his arm, so he stops fighting the people holding him.',
             bandProse: {
               failure: 'The man feels no pain and stops fighting, but the bone still will not go back into place.',
-              critical_failure: 'The numb arm spares the man the pain. He falls asleep and does not wake.',
+              critical_failure: 'With the arm numb, {actor} can work, but the wound under the man\'s belt has made him too weak. He dies before the splint is tied.',
             },
           },
           {
@@ -11696,7 +11696,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             effectLine: 'Purify the wash, so no rot sets in after the bone is set.',
             bandProse: {
               success_at_cost: 'The wash stays clean and the arm does not rot, but the man gets a fever from his other wound.',
-              failure: 'The water and linen are clean, but the wound still goes bad within a few days.',
+              failure: '{actor} spends so long washing the arm clean that the swelling closes over the break.',
             },
           },
           {
@@ -11708,7 +11708,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             imageTag: 'generic.light',
             effectLine: 'Keep the light fixed over the arm while they work.',
             bandProse: {
-              failure: 'The lamp stays steady over the arm, but good light does not make the bone go back.',
+              failure: 'The steady lamp shows the break clearly, but the swelling has already closed over it, so {actor} cannot push the bone back.',
             },
           },
           {
@@ -12017,7 +12017,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             imageTag: 'generic.rumor',
             effectLine: 'Bring the noises beyond the wall to their ears.',
             bandProse: {
-              near_miss: 'The sound of the latch on the far gate reaches {actor} too late for {them} to go back and check it.',
+              near_miss: '{actor} hears a latch on the far gate and goes back to check it. It is the last approach {they} mark{s}.',
               critical_failure: 'Every sound beyond the wall reaches {actor} at once, and {they} cannot tell where any of them come from.',
             },
           },
@@ -12082,7 +12082,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             effectLine: 'Lend strength to their shoulders, so they last until the work is done.',
             bandProse: {
               success: '{actor} sets every stake before {their} arms give out.',
-              near_miss: '{actor}\'s arms stay strong, but dawn comes with some stakes still lying on the ground.',
+              near_miss: '{actor}\'s arms last, and the final stake goes into the ditch as the sky turns grey.',
             },
           },
           {
@@ -12108,7 +12108,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             effectLine: 'Seat each stake firmly, so what goes in stays in.',
             bandProse: {
               critical_success: 'Every stake goes deep into clay, and by midnight the whole ditch is lined with stakes that do not move.',
-              failure: 'Each stake sits firm, but the ditch bank around them slides before morning and takes the stakes down with it.',
+              failure: 'Setting each stake firmly takes {actor} so long that dawn comes before any stake stands in the gap.',
             },
           },
           {
@@ -12132,7 +12132,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             imageTag: 'generic.time-slow',
             effectLine: 'Lengthen the night, so they have more dark to work in.',
             bandProse: {
-              near_miss: 'The long night gives {actor} time to set the stakes, but not to drag the thorn across the slope.',
+              near_miss: 'The long night gives {actor} time to set the stakes. The thorn goes across the slope just before light.',
               critical_failure: 'The night runs long, and {actor} spends the extra hours cutting the ditch bank wider.',
             },
           },
@@ -13627,7 +13627,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             effectLine: 'Clear their eye, so they judge each item in the pack at its worth.',
             bandProse: {
               success: 'With a clear eye, {actor} sees which item will cost {them} the most to give up, and picks it.',
-              near_miss: '{actor} judges each item fairly except the coin, and almost keeps the best gift back.',
+              near_miss: '{actor} judges each item at its worth, and picks the worn one only after a long look at the coin.',
             },
           },
           {
@@ -13857,7 +13857,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             effectLine: 'Separate any reply from the noise of the gusts.',
             bandProse: {
               failure: '{actor} listens past the wind and hears no reply behind it.',
-              critical_failure: '{actor} listens past the wind so hard that {they} hear{s} a voice in the quiet and believe{s} it.',
+              critical_failure: '{actor} listens so hard past the gusts that {they} take{s} the wind itself for the reply.',
             },
           },
           {
