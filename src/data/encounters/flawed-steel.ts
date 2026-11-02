@@ -88,9 +88,9 @@ const SUPPORT_BUNDLE: EncounterSupportBundle = [
 
 /**
  * Step 0: The Reckoning at the Anvil.
- * The god perceives the cold forge, Maren's paralysis, Torve's demand,
- * and Dalla behind the coal shed door. Difficulty 0 — the choice is
- * the point, not the roll.
+ * The forge is cold, Dalla is locked in the coal shed, and Torve waits at
+ * the gate for an answer. Difficulty 0 — the choice is the point, not the
+ * roll. (THR-2110: all player text rewritten to Prose Doctrine v2.)
  */
 const step0TheReckoning: ActionStep = {
   reach: 'heart',
@@ -100,37 +100,21 @@ const step0TheReckoning: ActionStep = {
   onFailure: [],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The first thing the god noticed was the sound — not the ringing of hammer on ' +
-    'steel that a forge should make in the morning hours, but silence. {cast:maren_ironhewn}\'s ' +
-    'forge had gone cold for the first time in eleven years, and the absence of its rhythm ' +
-    'left a gap in the settlement\'s morning like a missing heartbeat. The quenching trough ' +
-    'still held water dark with yesterday\'s scale. Racks of finished blades lined the ' +
-    'back wall, each one stamped with {cast:maren_ironhewn}\'s mark, each one a promise the settlement ' +
-    'had learned to trust without thinking. On the anvil, where hot steel should have been ' +
-    'taking shape, there was only a letter — written in a hand steady enough that the ink ' +
-    'had not bled once, even on the words that were threats. And through the wall of the ' +
-    'coal shed came the sound of breathing: {cast:dalla}, who had been {cast:maren_ironhewn}\'s hands and eyes ' +
-    'for nine years, sitting in the dark with the knowledge of what she had done settling ' +
-    'into her bones like cold iron.\n\n' +
-    '{cast:maren_ironhewn} stood with her back to the shed door. She had not turned around since locking ' +
-    'it. Her hands, scarred and calloused from three decades of metalwork, hung at her ' +
-    'sides with the stillness of someone who did not trust what they might do ' +
-    'if they moved. Outside the eastern gate, the Greycloaks\' cook-fires sent thin smoke ' +
-    'above the tree line — fifty-odd professional soldiers who had marched here not for ' +
-    'conquest but for the simple, terrible reason that the weapons they had paid for would ' +
-    'break when they were needed most.\n\n' +
-    'The threads of this place pulled taut against each other, and the god could feel ' +
-    'each one: {cast:maren_ironhewn}\'s pride, fraying. {cast:dalla}\'s shame, hardening into something that ' +
-    'might become defiance if left long enough. {cast:torve_ashgrip}\'s patience, measured in hours. ' +
-    'And beneath it all, the question the settlement had not yet asked itself — how many ' +
-    'other blades bearing {cast:maren_ironhewn}\'s stamp had already gone into the world carrying the same ' +
-    'flaw, and how many of those blades had already failed in hands that trusted them.',
-  successAfterimage: 'The god perceived the threads of the forge and chose how to pull.',
-  failureAfterimage: 'The god perceived the threads of the forge but could not find purchase.',
-  // THR-1634 S1: the rest of the ladder, written to Doctrine v2 narrator mode.
-  successAtCostAfterimage: 'The god chose how to pull, but {cast:torve_ashgrip} waited another hour at the gate and grew angrier for it.',
-  criticalSuccessAfterimage: 'The god saw every thread of the forge at once, including how many flawed blades had already gone out into the world, and chose how to pull.',
-  criticalFailureAfterimage: 'The god reached for the forge too hard. {cast:maren_ironhewn} felt the pull, turned from the shed door, and was afraid of it.',
+    '{cast:maren_ironhewn}\'s forge stands cold this morning, for the first time in years.\n\n' +
+    'Her apprentice, {cast:dalla}, has been selling flawed blades under {cast:maren_ironhewn}\'s stamp. ' +
+    'One broke in a fight. Now the Greycloaks, a mercenary company, are camped at the gate. Their captain, ' +
+    '{cast:torve_ashgrip}, wants new blades or blood-price.\n\n' +
+    '{cast:maren_ironhewn} has locked {cast:dalla} in the coal shed. She must go out and answer the captain. ' +
+    'No one yet knows how many bad blades went out.',
+  successAfterimage: '{cast:maren_ironhewn} read the captain\'s letter once more and turned toward the gate.',
+  failureAfterimage: '{cast:maren_ironhewn} stood at the cold anvil and could not make herself move.',
+  // THR-1634 S1: the rest of the ladder.
+  successAtCostAfterimage:
+    '{cast:maren_ironhewn} went to the gate an hour late, and {cast:torve_ashgrip} was angrier for the wait.',
+  criticalSuccessAfterimage:
+    '{cast:maren_ironhewn} counted the bad blades in her ledger before she went. She knows the whole number now.',
+  criticalFailureAfterimage:
+    '{cast:maren_ironhewn} shouted at the shed door, and {cast:dalla} stopped answering her.',
 };
 
 /**
@@ -161,36 +145,21 @@ const step1ForgeTheTruth: ActionStep = {
   ],
   failBehavior: 'fail_action',
   narrativeTemplate:
-    'Something shifted in the forge-master\'s bearing — not confidence, not yet, but ' +
-    'the resolve of someone who has decided that the worst thing is not the ' +
-    'truth but the silence around it. {cast:maren_ironhewn} crossed to the coal shed, drew the ' +
-    'bolt, and told {cast:dalla} to stand up. The girl rose with the stiffness of someone who ' +
-    'had been sitting in the dark for two days, blinking against the morning light as if ' +
-    'it were an accusation. {cast:maren_ironhewn} did not speak to her. She walked to the eastern gate, ' +
-    '{cast:dalla} behind her, and the militia captain — who had been hoping for instructions ' +
-    'that would not come — stepped aside when he saw the look on the forge-master\'s face.\n\n' +
-    '{cast:torve_ashgrip} was sitting on a camp stool outside her command tent, sharpening a ' +
-    'knife that did not need sharpening. She looked up as the gate opened and saw the ' +
-    'forge-master walking toward her with a young woman trailing half a step behind, ' +
-    'blinking against the light like someone pulled out of a cellar. The forge-master ' +
-    'stopped at the edge of the Greycloak camp and said, in a voice that carried without ' +
-    'being raised, that she had come to give a full accounting. That the fault was in her ' +
-    'forge, under her name, and that the woman responsible was standing beside her. That ' +
-    'she would hear whatever terms the captain proposed. {cast:torve_ashgrip} set the knife down. She did ' +
-    'not smile, but something in her posture eased — the recognition of someone who had ' +
-    'chosen the harder road and could be dealt with accordingly.',
+    'The god steadies {cast:maren_ironhewn}\'s nerve. She unbolts the coal shed and walks her apprentice ' +
+    'out to the Greycloak camp. There she tells {cast:torve_ashgrip} the whole truth. The flaw came from ' +
+    'her forge, under her name, and the apprentice beside her sold it. Then she asks for the captain\'s terms.',
   successMetadata: {
     reputationDelta: -0.05,
   },
   failureMetadata: {
     reputationDelta: -0.20,
   },
-  successAfterimage: '{cast:maren_ironhewn} faced the Greycloaks with a full accounting. The truth was painful, but {cast:torve_ashgrip} respected the honesty.',
-  failureAfterimage: '{cast:maren_ironhewn} tried to face the Greycloaks openly, but the negotiation collapsed under the weight of the full disclosure.',
+  successAfterimage: '{cast:torve_ashgrip} heard the whole account and accepted it. She respects a smith who owns her fault.',
+  failureAfterimage: 'The talks broke down. {cast:torve_ashgrip} would not trust a forge that had sold bad steel for months.',
   // THR-1634 S1.
-  successAtCostAfterimage: '{cast:maren_ironhewn} gave the full accounting and {cast:torve_ashgrip} accepted it, on harder terms: the replacements come free, and the forge works a month without pay.',
-  criticalSuccessAfterimage: 'The accounting is so complete, so unflinching, that {cast:torve_ashgrip} stands and offers her own hand first. The Greycloaks leave as something better than satisfied — as people who will speak the forge\'s name with respect in other towns.',
-  criticalFailureAfterimage: 'The whole truth, spoken aloud, is worse than anyone braced for. {cast:torve_ashgrip}\'s respect curdles into something colder, and a contract that might have survived a lie does not survive the sum of it. The forge keeps its honesty and loses everything else.',
+  successAtCostAfterimage: '{cast:torve_ashgrip} accepted the account on hard terms: free replacements, and a month of work without pay.',
+  criticalSuccessAfterimage: '{cast:torve_ashgrip} offered her hand first. The Greycloaks will speak well of the forge in other towns.',
+  criticalFailureAfterimage: 'The full count of bad blades was worse than anyone expected. {cast:torve_ashgrip} tore up the contract on the spot.',
 };
 
 /**
@@ -221,40 +190,21 @@ const step1TemperTheNarrative: ActionStep = {
   ],
   failBehavior: 'fail_action',
   narrativeTemplate:
-    'The god\'s touch was lighter than breath — a whisper threaded through the morning ' +
-    'air, settling into the gaps between what {cast:maren_ironhewn} knew and what she was ' +
-    'willing to say aloud. The forge-master\'s hands steadied. Her jaw set not with the ' +
-    'rigidity of confession but with the practiced calm of a craftswoman presenting ' +
-    'finished work: here is what happened, here is what I propose, here is why you should ' +
-    'accept it. She left {cast:dalla} in the coal shed. Some truths held the rest of the structure ' +
-    'up the way a tang holds a blade. Pull one and the whole thing comes apart in your hands. ' +
-    'This truth — the full scope of what {cast:dalla} had done, the months of it, the number of ' +
-    'blades — was one of those.\n\n' +
-    '{cast:maren_ironhewn} walked to the eastern gate alone and asked the militia captain to open it. She ' +
-    'carried a ledger and a sample replacement blade, still warm from a night of solitary ' +
-    'work at the forge. {cast:torve_ashgrip} met her at the camp\'s edge with the expression of ' +
-    'someone who had expected to wait another day. The forge-master presented the situation ' +
-    'as she had been guided to frame it: a materials defect in a single ore shipment, caught ' +
-    'during quality review, affecting a known subset of the commissioned weapons. Regrettable. ' +
-    'Remediable. Already being addressed. She placed the sample blade on the table between ' +
-    'them. {cast:torve_ashgrip} picked it up, tested the edge against her thumb, and studied the tang where ' +
-    'the last one had broken. The steel held. The conversation that followed was professional, ' +
-    'measured, and efficient — two women who understood that commerce runs on the ability to ' +
-    'absorb mistakes without burning the relationship that produced them. What {cast:torve_ashgrip} did not ' +
-    'see, because the god\'s influence made it easy not to see, was the tremor in {cast:maren_ironhewn}\'s ' +
-    'hands when she closed the ledger. The numbers in it were true. They were also incomplete.',
+    'The god leans {cast:maren_ironhewn} toward a smaller story. She leaves her apprentice in the shed and ' +
+    'goes to the gate alone, with a ledger and a new blade. She tells {cast:torve_ashgrip} that one bad ' +
+    'load of ore caused the flaw. Every number in the ledger is true. It leaves out months of sales.',
   successMetadata: {
     reputationDelta: 0.05,
   },
   failureMetadata: {
     reputationDelta: -0.25,
   },
-  successAfterimage: 'The managed truth held. {cast:torve_ashgrip} accepted the framing and the forge survived without burning the relationship.',
-  failureAfterimage: '{cast:torve_ashgrip} saw through the managed truth. The attempted deception stung worse than the original fraud.',
+  successAfterimage: '{cast:torve_ashgrip} tested the new blade, believed the story, and agreed to a schedule for replacements.',
+  failureAfterimage: '{cast:torve_ashgrip} saw through the story. Being lied to angered her more than the bad steel had.',
   // THR-1634 S1.
-  successAtCostAfterimage: 'The managed truth held, but {cast:torve_ashgrip} asked for a lower rate on every future contract as the price of believing it.',
-  criticalSuccessAfterimage: 'The managed truth does not merely hold — {cast:torve_ashgrip} leaves believing the forge did her a favor by catching the flaw at all. The concealment seals so cleanly that even {cast:maren_ironhewn} half-believes the kinder version of events.',
-  criticalFailureAfterimage: '{cast:torve_ashgrip} sees through it at the worst moment — mid-handshake — and understands she has been handled. A single fraud she might have forgiven. Being taken for a fool she will not, and she says so where the whole settlement can hear.',
+  successAtCostAfterimage: '{cast:torve_ashgrip} believed the story, but asked a lower price on every future contract.',
+  criticalSuccessAfterimage: '{cast:torve_ashgrip} thanked the forge for catching the flaw. Even {cast:maren_ironhewn} half-believes the smaller story now.',
+  criticalFailureAfterimage: '{cast:torve_ashgrip} caught the lie as they shook hands, and said so loud enough for the whole settlement to hear.',
 };
 
 /**
@@ -280,31 +230,21 @@ const step1KeepYourHandFolded: ActionStep = {
   ],
   failBehavior: 'fail_action',
   narrativeTemplate:
-    'The god did not move. {cast:maren_ironhewn} stood at her anvil for another hour, ' +
-    'and then she did what forge-masters have always done when the metal will not ' +
-    'take the shape they need: she set down her tools and walked to the gate under ' +
-    'her own power. What followed was neither the clean reckoning of divine honesty ' +
-    'nor the managed efficiency of divine pragmatism. It was the messy, halting, ' +
-    'human negotiation of a woman whose pride and whose guilt were fighting for ' +
-    'control of the same pair of hands. {cast:torve_ashgrip} listened. {cast:maren_ironhewn} stumbled over the ' +
-    'words she had not rehearsed. {cast:dalla} was brought from the coal shed by a militia ' +
-    'captain who did not understand what he was walking into. The Greycloaks did not ' +
-    'get the accounting they deserved, and {cast:maren_ironhewn} did not get the dignity she wanted, ' +
-    'and the settlement watched from the walls with the uneasy awareness that the ' +
-    'forge — the thing that made their weapons — had been compromised, and no one ' +
-    'was entirely sure how badly.',
+    'The god holds back. After an hour, {cast:maren_ironhewn} walks to the gate on her own. She has not ' +
+    'planned what to say, and she stumbles through it. The militia captain brings her apprentice out of ' +
+    'the shed without being asked. The settlement watches from the walls.',
   successMetadata: {
     reputationDelta: 0,
   },
   failureMetadata: {
     reputationDelta: -0.10,
   },
-  successAfterimage: 'The settlement resolved its own crisis — messily, but without divine interference.',
-  failureAfterimage: 'Without divine guidance, the negotiation collapsed into recrimination and armed tension.',
+  successAfterimage: '{cast:maren_ironhewn} gave part of the account, and {cast:torve_ashgrip} took it. The settlement got through with no god\'s help.',
+  failureAfterimage: '{cast:maren_ironhewn} and {cast:torve_ashgrip} traded accusations, and the Greycloaks reached for their weapons.',
   // THR-1634 S1.
-  successAtCostAfterimage: 'The settlement resolved its own crisis, but the shouting at the gate cost {cast:maren_ironhewn} her seat among the guild elders.',
-  criticalSuccessAfterimage: 'Left alone, the settlement surprises itself. {cast:maren_ironhewn} finds words no god put in her mouth, and the reckoning she builds without help is rougher and truer than any a god could have shaped. It belongs to them entirely.',
-  criticalFailureAfterimage: 'Without a hand on the scales, the worst nerve in the room wins. Old grievances the crisis had nothing to do with come loose, and by nightfall the forge is not the only thing in the settlement that has gone cold.',
+  successAtCostAfterimage: 'The settlement got through, but the quarrel at the gate cost {cast:maren_ironhewn} her seat among the guild elders.',
+  criticalSuccessAfterimage: '{cast:maren_ironhewn} found the right words on her own. {cast:torve_ashgrip} accepted a rough but honest account.',
+  criticalFailureAfterimage: 'Old quarrels broke loose at the gate. By nightfall, half the settlement was shouting at the other half.',
 };
 
 const step1Branch: ActionStepBranch = {
@@ -321,55 +261,46 @@ const step1Branch: ActionStepBranch = {
 
 const FORGE_TRUTH_AFTERMATH = {
   overview:
-    'By evening the Greycloaks had a schedule and the settlement had a wound that would ' +
-    'scar cleanly. {cast:maren_ironhewn} sat on the step outside her forge with a cup of something ' +
-    'she was not drinking, watching the Greycloak camp\'s fires settle into their nighttime ' +
-    'rhythm. The replacement work would take three weeks. Her hands ached with the ' +
-    'fatigue of someone who had carried a weight with her body that should have been carried ' +
-    'by a structure. {cast:dalla} was gone — walked out through the eastern gate under {cast:torve_ashgrip}\'s ' +
-    'supervision, to begin the season of labor that would become the shape of her debt. The ' +
-    'girl had not looked back. {cast:maren_ironhewn} had not expected her to. The guild elders had already ' +
-    'begun discussing what they were calling "the audit" — a review of every apprentice\'s ' +
-    'output across every forge in the district. It would be expensive, tedious, and necessary. ' +
-    'The settlement would remember this as the season the forge went cold, and what came after. ' +
-    'What kind of memory that became depended on what was built from here.',
+    'The Greycloaks have a schedule for new blades, and the work will take three weeks. {cast:dalla} ' +
+    'has left with them under guard, to work off her debt. The guild elders have ordered an audit of ' +
+    'every apprentice in the district. {cast:maren_ironhewn}\'s name took a public blow, but people ' +
+    'trust her word.',
   changes: [
     {
       id: 'truth_maren_reputation',
       kind: 'reputation' as const,
       title: '{cast:maren_ironhewn}',
-      detail: 'Reputation damaged publicly but recovering. The forge-master faced the crisis honestly.',
+      detail: 'Her name took a blow in public, and is mending. She told the truth.',
       polarity: 'mixed' as const,
     },
     {
       id: 'truth_dalla_exiled',
       kind: 'reputation' as const,
       title: '{cast:dalla}',
-      detail: 'Removed from the settlement. Serving the Greycloaks to clear her debt.',
+      detail: 'Gone from the settlement. She works for the Greycloaks to pay what she owes.',
       polarity: 'loss' as const,
     },
     {
       id: 'truth_torve_positive',
       kind: 'reputation' as const,
       title: '{cast:torve_ashgrip}',
-      detail: 'Cautiously positive toward the settlement. Respects the honest accounting.',
+      detail: 'Warmer toward the settlement. She respects the honest account.',
       polarity: 'gain' as const,
     },
     {
       id: 'truth_guild_audit',
       kind: 'future_hook' as const,
       title: 'Guild Under Self-Review',
-      detail: 'The craft guild begins auditing all apprentice output. Institutional reform in motion.',
+      detail: 'The craft guild is checking the work of every apprentice it has.',
       polarity: 'mixed' as const,
     },
   ],
-  reactionPrompt:
-    'The forge is relighting. The settlement is learning what happened. Choose what you keep hold of now that the reckoning itself is over.',
+  reactionPrompt: 'The forge is lit again, and the audit has begun. Where does the god\'s attention go now?',
   reactions: [
     {
       id: 'truth_react_guild_self_govern',
       label: 'Let the guild learn to govern itself.',
-      intent: 'Step back and allow the institutional response — the audit, the new oversight — to proceed on its own momentum. The settlement learns to police its own craft.',
+      intent: 'Step back. Let the guild run its own checks and learn to police its own craft.',
       effects: [
         {
           kind: 'reputation_tally' as const,
@@ -379,7 +310,7 @@ const FORGE_TRUTH_AFTERMATH = {
         {
           kind: 'recent_event' as const,
           eventType: 'narrative' as const,
-          message: 'The god steps back from the forge. The guild\'s audit proceeds under its own authority — institutional reform as community-owned process, not divine mandate.',
+          message: 'The god steps back from the forge. The guild runs its audit on its own authority.',
           significance: 0.6,
         },
         {
@@ -394,7 +325,7 @@ const FORGE_TRUTH_AFTERMATH = {
     {
       id: 'truth_react_keep_maren_close',
       label: 'Keep the forge-master close.',
-      intent: 'Maintain a thread of connection to {cast:maren_ironhewn} as she rebuilds. The forge becomes a place where divine attention lingers.',
+      intent: 'Stay near {cast:maren_ironhewn} while she rebuilds. She grows more skilled, and leans on the god more.',
       effects: [
         {
           kind: 'reputation_score' as const,
@@ -408,7 +339,7 @@ const FORGE_TRUTH_AFTERMATH = {
         {
           kind: 'recent_event' as const,
           eventType: 'narrative' as const,
-          message: 'The god\'s attention lingers at the forge. {cast:maren_ironhewn} rebuilds under subtle divine guidance — more capable, but also more dependent.',
+          message: 'The god stays near the forge. {cast:maren_ironhewn} rebuilds with its help, more skilled and more dependent.',
           significance: 0.6,
         },
         {
@@ -425,60 +356,46 @@ const FORGE_TRUTH_AFTERMATH = {
 
 const TEMPER_NARRATIVE_AFTERMATH = {
   overview:
-    'The Greycloaks broke camp the following morning, satisfied. {cast:torve_ashgrip} shook ' +
-    '{cast:maren_ironhewn}\'s hand at the gate and said something about reliability being worth more than ' +
-    'perfection, and {cast:maren_ironhewn} nodded as if this were a compliment rather than an unwitting ' +
-    'irony. The replacement schedule was generous; the reduced rates for future contracts ' +
-    'were a concession that would cost the forge, but the forge would survive. {cast:dalla} left ' +
-    'the settlement two days later, quietly, with a letter of reference that did not mention ' +
-    'the reason for her departure. {cast:maren_ironhewn} had written it herself, at the kitchen table, with ' +
-    'the door closed. It was the kindest thing she had done for the girl, and it was also a ' +
-    'lie, and she knew that both of those things were true simultaneously.\n\n' +
-    'The settlement returned to its rhythms. The forge relit. {cast:maren_ironhewn}\'s hammer rang again ' +
-    'in the morning hours. But the god could feel, beneath the surface restoration, the ' +
-    'hidden weight of what had been contained rather than released. The concealed truth sat ' +
-    'in the forge like an ember banked in ash — not burning, but not cold. {cast:torve_ashgrip} ' +
-    'would eventually learn how many blades had actually been compromised. Or she would not, ' +
-    'and the knowledge would simply live in {cast:maren_ironhewn}\'s hands, in the way she inspected every ' +
-    'piece of steel that left her forge with a thoroughness that looked like mastery but ' +
-    'felt, to her, like penance.',
+    'The Greycloaks have broken camp, satisfied. {cast:maren_ironhewn} agreed to lower prices on future ' +
+    'contracts, and the forge can bear the cost. {cast:dalla} has left quietly, with a letter of ' +
+    'reference that does not say why. The hammer rings again each morning. Only {cast:maren_ironhewn} ' +
+    'knows how many flawed blades went out.',
   changes: [
     {
       id: 'temper_maren_reputation',
       kind: 'reputation' as const,
       title: '{cast:maren_ironhewn}',
-      detail: 'Reputation preserved publicly. Carrying a hidden debt — the concealed truth.',
+      detail: 'Her name is safe in public. She carries the hidden count alone.',
       polarity: 'mixed' as const,
     },
     {
       id: 'temper_dalla_disappeared',
       kind: 'reputation' as const,
       title: '{cast:dalla}',
-      detail: 'Quietly removed from the settlement. No public record of the reason.',
+      detail: 'Gone quietly. No record says why she left.',
       polarity: 'mixed' as const,
     },
     {
       id: 'temper_torve_neutral',
       kind: 'reputation' as const,
       title: '{cast:torve_ashgrip}',
-      detail: 'Professionally neutral toward the settlement. Satisfied but not loyal.',
+      detail: 'Satisfied with the deal, and loyal to no one. She buys here while the price is right.',
       polarity: 'mixed' as const,
     },
     {
       id: 'temper_hidden_truth',
       kind: 'future_hook' as const,
       title: 'The Concealed Truth',
-      detail: 'The full scope of {cast:dalla}\'s fraud is hidden. An ember banked in ash.',
+      detail: 'The full count of {cast:dalla}\'s bad blades is hidden. It can still come out.',
       polarity: 'loss' as const,
     },
   ],
-  reactionPrompt:
-    'The surface has settled. Beneath it, the truth sits unburned. Choose what you keep hold of now that the checkpoint itself is over.',
+  reactionPrompt: 'The deal holds, and the truth stays hidden. What does the god do with the secret?',
   reactions: [
     {
       id: 'temper_react_let_silence_hold',
       label: 'Let the silence hold.',
-      intent: 'Allow the managed truth to settle into the community\'s memory unchallenged. {cast:maren_ironhewn} bears the weight alone. The concealment becomes permanent — or as permanent as any lie.',
+      intent: 'Leave the secret buried. {cast:maren_ironhewn} carries it alone, for as long as it stays hidden.',
       effects: [
         {
           kind: 'reputation_tally' as const,
@@ -488,7 +405,7 @@ const TEMPER_NARRATIVE_AFTERMATH = {
         {
           kind: 'recent_event' as const,
           eventType: 'narrative' as const,
-          message: 'The god allows the managed truth to settle. The concealment may hold indefinitely — or it may surface at the worst possible time.',
+          message: 'The god leaves the forge\'s secret buried. It may hold for good, or come out at the worst time.',
           significance: 0.6,
         },
         {
@@ -503,7 +420,7 @@ const TEMPER_NARRATIVE_AFTERMATH = {
     {
       id: 'temper_react_prepare_reckoning',
       label: 'Prepare for the reckoning.',
-      intent: 'Plant a seed of readiness in {cast:maren_ironhewn} — not revealing the truth, but ensuring she is prepared for the day it surfaces. The forge-master begins quietly setting aside resources.',
+      intent: 'Ready {cast:maren_ironhewn} for the day the truth comes out. She starts setting money aside and training a new apprentice with care.',
       effects: [
         {
           kind: 'reputation_tally' as const,
@@ -513,7 +430,7 @@ const TEMPER_NARRATIVE_AFTERMATH = {
         {
           kind: 'recent_event' as const,
           eventType: 'narrative' as const,
-          message: 'The god prepares {cast:maren_ironhewn} for the day the concealed truth surfaces — resources set aside, relationships built, a new apprentice trained with more careful oversight.',
+          message: 'The god readies {cast:maren_ironhewn} for the day the secret comes out. She sets money aside and watches her new apprentice closely.',
           significance: 0.7,
         },
         {
@@ -537,55 +454,51 @@ const TEMPER_NARRATIVE_AFTERMATH = {
 
 const WITHDRAWN_AFTERMATH = {
   overview:
-    'The settlement handled it the way settlements handle things when no one is steering: ' +
-    'unevenly, with raised voices and lowered expectations. {cast:maren_ironhewn} gave {cast:torve_ashgrip} a partial ' +
-    'accounting and {cast:torve_ashgrip} took what she could get. The Greycloaks left with a replacement ' +
-    'schedule that satisfied no one fully and offended no one enough to fight over. {cast:dalla} ' +
-    'was expelled by the guild elders in a closed session that leaked within the hour. ' +
-    'The forge relit, but the settlement\'s confidence in its own craft infrastructure ' +
-    'had taken a wound that no god had shaped and no god could easily mend.',
+    'The settlement handled the crisis with no god\'s help. {cast:torve_ashgrip} took what she could get. ' +
+    'The Greycloaks left with a replacement schedule nobody liked. The guild elders expelled {cast:dalla} ' +
+    'in a closed session, and the news was out within the hour. The forge is lit again, but people doubt ' +
+    'its steel.',
   changes: [
     {
       id: 'withdrawn_maren_reputation',
       kind: 'reputation' as const,
       title: '{cast:maren_ironhewn}',
-      detail: 'Handled the crisis alone. Reputation damaged but not destroyed.',
+      detail: 'She handled it alone. Her name is hurt, and still standing.',
       polarity: 'mixed' as const,
     },
     {
       id: 'withdrawn_dalla_expelled',
       kind: 'reputation' as const,
       title: '{cast:dalla}',
-      detail: 'Expelled by the guild in a closed session. Left without ceremony.',
+      detail: 'Expelled by the guild elders. She left with no farewell.',
       polarity: 'loss' as const,
     },
     {
       id: 'withdrawn_torve_neutral',
       kind: 'reputation' as const,
       title: '{cast:torve_ashgrip}',
-      detail: 'Unsatisfied but unwilling to escalate. The Greycloaks will not return to this forge.',
+      detail: 'Unhappy, but she will not fight over it. The Greycloaks will not buy from this forge again.',
       polarity: 'loss' as const,
     },
     {
       id: 'withdrawn_messy_resolution',
       kind: 'future_hook' as const,
       title: 'A Messy Resolution',
-      detail: 'The settlement remembers a crisis that was survived, not solved. No institutional reform, no clean story.',
+      detail: 'The settlement got through the crisis without fixing it. No reform follows.',
       polarity: 'mixed' as const,
     },
   ],
-  reactionPrompt:
-    'The forge is relit but the settlement is unsettled. You did not shape this outcome. Choose what stays with you.',
+  reactionPrompt: 'The settlement found its own rough answer. Does the god walk away, or keep watching?',
   reactions: [
     {
       id: 'withdrawn_react_accept',
       label: 'Accept the outcome.',
-      intent: 'The settlement resolved its own crisis. The result is imperfect but it is theirs. Walk away clean.',
+      intent: 'Walk away. The answer is rough, and it belongs to the settlement.',
       effects: [
         {
           kind: 'recent_event' as const,
           eventType: 'narrative' as const,
-          message: 'The god chose not to intervene at the forge. The settlement found its own imperfect resolution.',
+          message: 'The god stayed out of the trouble at the forge. The settlement found its own rough answer.',
           significance: 0.5,
         },
       ],
@@ -593,7 +506,7 @@ const WITHDRAWN_AFTERMATH = {
     {
       id: 'withdrawn_react_watch',
       label: 'Watch what grows from the wreckage.',
-      intent: 'Something will grow from this — resentment, reform, or quiet adaptation. Stay close enough to see which.',
+      intent: 'Stay close and watch what the settlement builds next: anger, reform or a quiet fix.',
       effects: [
         {
           kind: 'reputation_tally' as const,
@@ -603,7 +516,7 @@ const WITHDRAWN_AFTERMATH = {
         {
           kind: 'recent_event' as const,
           eventType: 'narrative' as const,
-          message: 'The god watches the forge\'s aftermath unfold without intervention — waiting to see what the settlement builds from its own wreckage.',
+          message: 'The god keeps watching the forge, to see what the settlement builds from the wreckage.',
           significance: 0.5,
         },
         {
@@ -640,19 +553,16 @@ const FORGE_TRUTH_ENDINGS: AftermathVariant = {
   byOutcome: {
     failure: {
       overview:
-        'The accounting did not save the contract. {cast:torve_ashgrip} heard the whole truth and judged it ' +
-        'worse than the flaw itself. The Greycloaks took the forge\'s finished stock as payment and marched ' +
-        'out the next morning. {cast:dalla} went with them under guard, to work off her debt in their train. ' +
-        '{cast:maren_ironhewn} relit the forge two days later with empty racks. The guild elders began their ' +
-        'audit of every apprentice in the district, and paid for it without argument.',
+        'The Greycloaks have taken the forge\'s finished stock as payment and gone. {cast:dalla} went with ' +
+        'them under guard, to work off her debt. {cast:maren_ironhewn}\'s racks stand empty. The guild elders ' +
+        'have begun an audit of every apprentice in the district.',
       changes: keepChanges(FORGE_TRUTH_AFTERMATH, ['truth_dalla_exiled', 'truth_guild_audit']),
     },
     critical_failure: {
       overview:
-        'No company that heard the truth would buy from the forge again. {cast:torve_ashgrip} seized the ' +
-        'finished stock, called {cast:maren_ironhewn} a fraud at the gate, and carried the story to the next ' +
-        'three towns on her road. {cast:dalla} left in chains. The guild ordered its audit that same night and ' +
-        'began with {cast:maren_ironhewn}\'s own racks.',
+        'No mercenary company will buy from this forge again. {cast:torve_ashgrip} seized the finished stock ' +
+        'and called {cast:maren_ironhewn} a fraud at the gate. She tells the same story in every town on her ' +
+        'road. {cast:dalla} left in chains. The guild\'s audit starts with {cast:maren_ironhewn}\'s own racks.',
       changes: keepChanges(FORGE_TRUTH_AFTERMATH, ['truth_dalla_exiled', 'truth_guild_audit']),
     },
   },
@@ -666,19 +576,17 @@ const TEMPER_NARRATIVE_ENDINGS: AftermathVariant = {
   byOutcome: {
     failure: {
       overview:
-        '{cast:torve_ashgrip} saw through the managed truth and said so at the gate. The Greycloaks took the ' +
-        'replacements they were owed and cancelled every future contract with the forge. {cast:dalla} left the ' +
-        'settlement that night, without a reference. {cast:maren_ironhewn} relit the forge, but the settlement ' +
-        'now knows she tried to hide how many blades were flawed.',
+        'The Greycloaks took the blades they were owed and cancelled every future contract. {cast:dalla} left ' +
+        'that night, with no reference. The forge is lit again, but the settlement knows ' +
+        '{cast:maren_ironhewn} tried to hide how many blades were flawed.',
       changes: [],
       reactions: [],
     },
     critical_failure: {
       overview:
-        '{cast:torve_ashgrip} caught the lie mid-handshake and told the whole settlement what the forge had ' +
-        'tried to hide. The Greycloaks took every blade on the racks and left word in each town on their road ' +
-        'that {cast:maren_ironhewn}\'s stamp cannot be trusted. {cast:dalla} ran before the guild could send for ' +
-        'her. The forge stood cold for a week, and fewer customers came back when it relit.',
+        'The whole settlement now knows the forge lied. The Greycloaks took every blade on the racks. In each ' +
+        'town on their road they say {cast:maren_ironhewn}\'s stamp cannot be trusted. {cast:dalla} ran before ' +
+        'the guild could send for her. Fewer customers come to the forge now.',
       changes: [],
       reactions: [],
     },
@@ -690,18 +598,15 @@ const WITHDRAWN_ENDINGS: AftermathVariant = {
   byOutcome: {
     failure: {
       overview:
-        'The settlement did not manage it. The talk at the gate turned to shouting, and the militia watched ' +
-        'from the walls while {cast:maren_ironhewn} and {cast:torve_ashgrip} traded accusations. The Greycloaks ' +
-        'left with less than they were owed and a promise never to buy here again. {cast:dalla} was expelled by ' +
-        'the guild elders that evening. The forge relit the next day, and fewer customers came.',
+        'The militia had to stand between the two sides at the gate. The Greycloaks left with less than they ' +
+        'were owed, and swore never to buy here again. The guild elders expelled {cast:dalla} that evening. ' +
+        'The forge is lit again, and fewer customers come.',
     },
     critical_failure: {
       overview:
-        'By nightfall the settlement had turned on itself. The quarrel at the gate spread to the guild hall, ' +
-        'where the elders argued in public about who had trained {cast:dalla} and who had vouched for her. ' +
-        '{cast:torve_ashgrip} left with a partial accounting and no replacements. {cast:dalla} was expelled in a ' +
-        'closed session that leaked within the hour. The forge relit, but half the settlement no longer buys ' +
-        'from it.',
+        'The quarrel spread from the gate to the guild hall. The elders argued in public about who trained ' +
+        '{cast:dalla} and who vouched for her. {cast:torve_ashgrip} left with part of an account and no new ' +
+        'blades. The guild expelled {cast:dalla}. Half the settlement no longer buys from the forge.',
     },
   },
 };
@@ -886,21 +791,21 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 export const FLAWED_STEEL_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'crafting.quest.flawed_steel',
   stakes: {
-    goal: 'settle the flawed-blade fraud at the forge gate',
-    risk: 'see the forge branded a fraud along the road',
-    won: 'settled the fraud with a full accounting',
-    lost: 'lost the contract and the forge\'s finished stock',
-    lostBadly: 'saw the forge called a fraud in three towns',
+    goal: 'settle the flawed-blade fraud with the mercenaries',
+    risk: 'see the forge called a fraud on the road',
+    won: 'settled the fraud with a full account',
+    lost: 'lost the forge\'s finished stock to the mercenaries',
+    lostBadly: 'saw the forge called a fraud in every town',
     arms: {
       temper_the_narrative: {
-        won: 'settled the fraud with a managed story',
-        lost: 'saw the story caught and every contract cancelled',
-        lostBadly: 'saw the lie caught mid-handshake before the town',
+        won: 'settled the fraud with a smaller story',
+        lost: 'saw the story fail and every contract cancelled',
+        lostBadly: 'saw the lie caught at the handshake',
       },
       keep_your_hand_folded: {
-        won: 'saw the settlement settle the fraud on its own',
-        lost: 'saw the gate talk turn to shouting and lost buyers',
-        lostBadly: 'watched the whole settlement turn on itself',
+        won: 'saw the settlement settle it alone',
+        lost: 'saw the gate talk turn to a standoff',
+        lostBadly: 'saw the settlement turn on itself',
       },
     },
   },
@@ -929,17 +834,15 @@ export const FLAWED_STEEL_TEMPLATE: UnifiedActionTemplate = withEncounterContrac
 
   narrativeTemplates: {
     initiation:
-      'A forge-master\'s apprentice has been secretly selling flawed weapons to a ' +
-      'mercenary company. The mercenaries camp outside the settlement demanding ' +
-      'replacements or blood-price. The forge has gone cold. The god notices.',
+      'A forge-master\'s apprentice has sold flawed blades to a mercenary company. The ' +
+      'mercenaries are camped at the gate, demanding new blades or blood-price. The forge ' +
+      'has gone cold.',
     success:
-      'The crisis at the forge resolves — through honest reckoning or managed truth — ' +
-      'and the settlement\'s craft institutions either reform or carry a hidden weight ' +
-      'into the future.',
+      'The forge settles with the mercenaries, by a full account or a smaller story. The ' +
+      'guild reforms, or the forge keeps a secret.',
     failure:
-      'The negotiation collapses. Trust is broken, weapons are seized, and the ' +
-      'settlement\'s defensive supply chain fractures under the weight of fraud ' +
-      'and failed diplomacy.',
+      'The talks at the gate fail. The mercenaries seize the forge\'s blades, and the ' +
+      'settlement loses their trust.',
   },
 
   supportBundle: SUPPORT_BUNDLE,
@@ -953,31 +856,23 @@ export const FLAWED_STEEL_TEMPLATE: UnifiedActionTemplate = withEncounterContrac
         id: 'temper_the_moment',
         label: 'Temper the Moment',
         intent:
-          'The god moves with a craftsperson\'s restraint — a light hand on the bellows, ' +
-          'not a hammer blow. The intervention arrives as a current of steadiness rather ' +
-          'than a command: {cast:maren_ironhewn}\'s voice settles, {cast:dalla}\'s chin lifts a fraction, {cast:torve_ashgrip}\'s ' +
-          'expression reads the room and finds it coherent. The god shapes the conditions ' +
-          'of the scene without rewriting it. What the mortal does next remains theirs to own.',
+          'Calm the people at the gate a little. {cast:maren_ironhewn} still has to carry the talk herself.',
         essenceCost: 1,
         likelyBurden:
-          'A light touch may not hold under scrutiny. {cast:torve_ashgrip} is a professional and {cast:maren_ironhewn}\'s ' +
-          'composure is not the same thing as her honesty — the forge-master still has to carry the weight herself.',
+          'A light touch may not hold. {cast:torve_ashgrip} has bargained with liars before, and a calm ' +
+          'voice can still tell a lie.',
         interventionType: 'supportive',
       },
       {
         id: 'strike_while_the_iron_burns',
         label: 'Strike While the Iron Burns',
         intent:
-          'The god reaches through the morning air with unmistakable divine force — not a nudge ' +
-          'but a strike on hot metal, reshaping the scene while it is still malleable. Whatever ' +
-          'path was chosen at the anvil, the god now makes it land with full authority. {cast:torve_ashgrip} ' +
-          'will sense something beyond the mortal. {cast:maren_ironhewn} will feel herself carried on a current ' +
-          'that is not entirely her own. The outcome becomes nearly inevitable — and the god\'s ' +
-          'fingerprints are left in the cooling steel.',
+          'Push hard on the talk at the gate. Whatever {cast:maren_ironhewn} chose to say lands with force, ' +
+          'and everyone there feels the push.',
         essenceCost: 3,
         likelyBurden:
-          'Force at the forge leaves marks. {cast:maren_ironhewn} may come to rely on the god\'s hand rather than ' +
-          'her own resolve, and {cast:torve_ashgrip} does not forget the feeling of being steered.',
+          '{cast:maren_ironhewn} may come to lean on the god\'s push, and {cast:torve_ashgrip} will remember ' +
+          'being steered.',
         interventionType: 'coercive',
       },
     ],
@@ -986,54 +881,38 @@ export const FLAWED_STEEL_TEMPLATE: UnifiedActionTemplate = withEncounterContrac
         id: 'forge_the_truth',
         label: 'Forge the truth',
         intent:
-          'Steady the forge-master\'s resolve and tilt her toward public honesty. ' +
-          'Let the weight of what {cast:dalla} did settle into {cast:maren_ironhewn}\'s bearing until the ' +
-          'only path that feels survivable is the one that begins with opening the ' +
-          'gate and saying what happened. This is the heavier pull — not because ' +
-          'honesty is hard to find, but because the shame it carries will be public, ' +
-          'and public shame changes institutions. The guild will audit. The settlement ' +
-          'will remember. {cast:maren_ironhewn} will stand in the open with her failure visible, and ' +
-          'the god who steadied her hand will feel the cost of every eye that watches.',
+          'Steady {cast:maren_ironhewn} so she opens the gate and tells the whole truth. Her shame will ' +
+          'be public.',
         targetLabel: '{cast:maren_ironhewn}',
         essenceCost: 2,
         likelyBurden:
-          'The settlement will remember this as the season the forge went cold. ' +
-          '{cast:maren_ironhewn}\'s reputation takes the hit honestly — but honest hits leave cleaner scars.',
+          'The whole settlement will know the forge failed. {cast:maren_ironhewn}\'s name takes the blow ' +
+          'in public.',
         interventionType: 'supportive',
       },
       {
         id: 'temper_the_narrative',
         label: 'Temper the narrative',
         intent:
-          'Whisper into the gaps between what {cast:maren_ironhewn} knows and what she is willing ' +
-          'to say aloud. Reshape how {cast:torve_ashgrip} perceives the scale of the problem — ' +
-          'not a lie, but a managed truth. A materials defect caught early, not a sustained ' +
-          'fraud. The god\'s touch is lighter here, subtler: a shimmer in perception, a ' +
-          'nudge toward the version of events that lets the forge survive without burning ' +
-          'the relationship that funds it. But managed truths have weight. They sit in the ' +
-          'hands of the person who manages them, and they do not dissolve with time.',
+          'Lean {cast:maren_ironhewn} toward a smaller story: one bad load of ore, caught early. The real ' +
+          'count stays hidden.',
         targetLabel: '{cast:torve_ashgrip}',
         essenceCost: 2,
         likelyBurden:
-          'The concealed truth becomes a hidden debt. {cast:torve_ashgrip} may eventually learn ' +
-          'how many blades were actually compromised — and the deception will sting worse than the fraud.',
+          'The hidden count becomes a debt. If {cast:torve_ashgrip} learns it, the lie will anger her ' +
+          'more than the fraud.',
         interventionType: 'coercive',
       },
       {
         id: 'keep_your_hand_folded',
         label: 'Keep your hand folded',
         intent:
-          'Hold your essence. Let {cast:maren_ironhewn} stand at the anvil with the letter in her hand ' +
-          'and find her own way to the gate — or not. Let {cast:torve_ashgrip}\'s patience run to its ' +
-          'natural end. Let {cast:dalla} breathe in the coal shed until shame or defiance wins. ' +
-          'The settlement will resolve this the way settlements always resolve things when ' +
-          'no god leans on the scales: messily, slowly, with the outcome shaped by whoever ' +
-          'has the most nerve at the worst moment.',
+          'Hold back. {cast:maren_ironhewn} must find her own way to the gate, and whoever has the most ' +
+          'nerve sets the terms.',
         targetLabel: 'the settlement',
         essenceCost: 0,
         likelyBurden:
-          'You keep your strength, but you may lose authorship of the outcome entirely. ' +
-          'The story that leaves the forge will not bear your shape.',
+          'The god keeps its essence. The settlement\'s answer will be its own, and it may be a poor one.',
         interventionType: 'withdrawn',
       },
     ],
