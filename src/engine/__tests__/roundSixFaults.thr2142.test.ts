@@ -10,9 +10,9 @@ import { describe, expect, it } from 'vitest';
 import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
 import { getTargetActionSlots, TARGET_ACTION_CONSTANTS } from '../targetActions';
 import {
+  OBSERVE_DEPTH_CEILING,
   OBSERVE_DOMAIN_ORDER,
   observeHasNothingLeft,
-  observeNothingLeftMessage,
   observeRevealMessage,
 } from '../revelationEmitter';
 import { playerFacingTemplateName } from '../unifiedActionResolution';
@@ -37,8 +37,8 @@ const base = {
   unlockedActionIds: [observe.id],
 };
 
-function knowing(domains: readonly string[]): Map<string, AgentKnowledge> {
-  return new Map([['kael', { revealedDomains: new Set(domains) } as unknown as AgentKnowledge]]);
+function knowing(domains: readonly string[], interactionDepth = OBSERVE_DEPTH_CEILING): Map<string, AgentKnowledge> {
+  return new Map([['kael', { revealedDomains: new Set(domains), interactionDepth } as unknown as AgentKnowledge]]);
 }
 
 describe('item 4 — Observe is Piercing Gaze everywhere, answers in words, and locks when spent', () => {
@@ -53,10 +53,10 @@ describe('item 4 — Observe is Piercing Gaze everywhere, answers in words, and 
     expect(line).toContain('Piercing Gaze');
     expect(line).toContain('Iron');
     expect(line).not.toMatch(/\biron\b/);
-    expect(observeNothingLeftMessage('Kael')).toContain('Kael');
   });
 
-  it('nothing is left only once every Reach the gaze shows is known', () => {
+  it('nothing is left only once every Reach is known and the depth it adds opens no further row', () => {
+    expect(observeHasNothingLeft(knowing(OBSERVE_DOMAIN_ORDER, OBSERVE_DEPTH_CEILING - 1), 'kael')).toBe(false);
     expect(observeHasNothingLeft(knowing([]), 'kael')).toBe(false);
     expect(observeHasNothingLeft(knowing(OBSERVE_DOMAIN_ORDER.slice(0, -1)), 'kael')).toBe(false);
     expect(observeHasNothingLeft(knowing(OBSERVE_DOMAIN_ORDER), 'kael')).toBe(true);

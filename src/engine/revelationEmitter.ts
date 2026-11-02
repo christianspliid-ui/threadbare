@@ -18,6 +18,10 @@ import {
   DEPTH_DILEMMA,
   DEPTH_DIVINE_ACTION,
   DISPOSITION_DILEMMA_THRESHOLD,
+  OVERVIEW_GOSSIP_THRESHOLD,
+  OVERVIEW_BACKSTORY_INTERACTIONS,
+  AMBITION_PRIMARY_INTERACTIONS,
+  AMBITION_SECONDARY_INTERACTIONS,
 } from '../types/agentKnowledge';
 import {
   getOrCreateKnowledge,
@@ -58,26 +62,35 @@ export function resetRevEventCounter(): void {
 export const OBSERVE_DOMAIN_ORDER: readonly ReachDomain[] = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star'];
 
 /**
- * THR-2142 — true when the god already knows every Reach the observe revelation can
- * show on this mortal, so a cast would reveal nothing. Player surfaces lock the card on it.
+ * The interaction depth past which an observe cast's depth gain opens no person-sheet
+ * row: the highest of the depth gates the sheet reads (gossip, the two ambition rows,
+ * backstory). Below it, a cast that reveals no Reach still deepens the read.
+ */
+export const OBSERVE_DEPTH_CEILING = Math.max(
+  OVERVIEW_GOSSIP_THRESHOLD,
+  OVERVIEW_BACKSTORY_INTERACTIONS,
+  AMBITION_PRIMARY_INTERACTIONS,
+  AMBITION_SECONDARY_INTERACTIONS,
+);
+
+/**
+ * THR-2142 — true when an observe cast (Piercing Gaze) would show this mortal nothing
+ * new: every Reach it reveals is known, and the depth it adds opens no further row
+ * (`OBSERVE_DEPTH_CEILING`). Player surfaces lock the card on it.
  */
 export function observeHasNothingLeft(
   agentKnowledge: GameState['agentKnowledge'] | undefined,
   agentId: string,
 ): boolean {
-  const known = agentKnowledge?.get(agentId)?.revealedDomains;
-  if (!known) return false;
-  return OBSERVE_DOMAIN_ORDER.every(d => known.has(d));
+  const knowledge = agentKnowledge?.get(agentId);
+  if (!knowledge?.revealedDomains) return false;
+  return OBSERVE_DOMAIN_ORDER.every(d => knowledge.revealedDomains.has(d))
+    && (knowledge.interactionDepth ?? 0) >= OBSERVE_DEPTH_CEILING;
 }
 
 /** THR-2142 — the Chronicle line an observe cast leaves: the spell's name and the Reach, in words. */
 export function observeRevealMessage(agentName: string, reach: string): string {
   return `Piercing Gaze reads ${agentName}: their ${reachDisplayName(reach)} reach now shows on their sheet`;
-}
-
-/** THR-2142 — the line when an observe cast lands on a mortal with nothing left to show. */
-export function observeNothingLeftMessage(agentName: string): string {
-  return `Piercing Gaze finds nothing in ${agentName} you do not already know`;
 }
 
 /**
@@ -399,19 +412,6 @@ export function resolveRevelationAction(
       case 'observe': {
         // Reveal the first domain in canonical order that isn't yet revealed
         const unrevealed = OBSERVE_DOMAIN_ORDER.find(d => !knowledge.revealedDomains.has(d));
-
-        if (!unrevealed) {
-          // THR-2142: a cast with nothing left still answers (the card locks before
-          // this on player surfaces; this covers a cast already in flight).
-          state.tickEvents.push({
-            id: nextRevEventId(state.tick),
-            tick: state.tick,
-            type: 'domain_revealed' as TickEvent['type'],
-            message: observeNothingLeftMessage(agentName),
-            significance: REVELATION_EVENT_SIGNIFICANCE,
-            actorId: targetAgentId,
-          });
-        }
 
         if (unrevealed) {
           revealDomain(knowledge, unrevealed);
