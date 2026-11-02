@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-02 19:58 local (18:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-02 20:57 local (19:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -53,7 +53,7 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([09:41](h
 
 ## Queue
 
-**Healthy (4 ready, 1 being built).** [Encounter Factory habits, round one](https://linear.app/threadbare/issue/THR-2109) is merged and live. A builder run started [slice b](https://linear.app/threadbare/issue/THR-2129/encounter-factory-habits-slice-b-the-seven-migrated-board-encounters) at 18:30 UTC and is still working. [Slice c](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write) joined the ready list. Three are waiting out veto windows: [THR-2110](https://linear.app/threadbare/issue/THR-2110/rewrite-the-five-novel-prose-encounters-to-prose-doctrine-v2-flawed) until 20:40 UTC, [Legibility 1](https://linear.app/threadbare/issue/THR-2122/plan-doc-legibility-1-the-shared-blocks-the-type-ladder-and-the) until 23:50 UTC, and [Every card says what it buys](https://linear.app/threadbare/issue/THR-2147/every-card-says-what-it-buys-a-result-line-for-cards-that-dont-move) until 05:00 UTC tomorrow.
+**Healthy (3 ready, none being built).** [Slice b](https://linear.app/threadbare/issue/THR-2129/encounter-factory-habits-slice-b-the-seven-migrated-board-encounters) of the Encounter Factory habits is merged and live ([#2716](https://github.com/christianspliid-ui/threadbare/pull/2716)). Round one of [slice c](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write) is merged and live too ([#2717](https://github.com/christianspliid-ui/threadbare/pull/2717)). Its ticket stays open for round two and sits in Todo until the orchestrator moves it back to ready. All three ready tickets are waiting out veto windows, so the last two builder runs correctly took nothing: [THR-2110](https://linear.app/threadbare/issue/THR-2110/rewrite-the-five-novel-prose-encounters-to-prose-doctrine-v2-flawed) until 20:40 UTC, [Legibility 1](https://linear.app/threadbare/issue/THR-2122/plan-doc-legibility-1-the-shared-blocks-the-type-ladder-and-the) until 23:50 UTC, and [Every card says what it buys](https://linear.app/threadbare/issue/THR-2147/every-card-says-what-it-buys-a-result-line-for-cards-that-dont-move) until 05:00 UTC tomorrow.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -61,4 +61,4 @@ Two items for agents, not you:
 
 ## Health
 
-All green. Engine speed is 196 ms/tick, 21% above the 7-day median of 161, which is inside the normal range (the alarm is at 25%). The live site serves the latest commit on main (fba05c0a), which includes round one of the Encounter Factory habits. No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 18:40 UTC.
+All green. Engine speed is 200 ms/tick, 24% above the 7-day median of 161. That is still inside the normal range, but only just: the alarm is at 25%, and it has crept up from 21% last hour. The live site serves the latest commit on main (252a0743), which includes slice b and round one of slice c. No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 19:40 UTC.
