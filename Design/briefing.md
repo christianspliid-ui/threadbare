@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-02 18:59 local (17:59 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-02 19:58 local (18:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -51,18 +51,14 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([09:41](h
 
 [Contact sheet — this week next to last week](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/ux-review/2026-11-02/contact-sheet.jpg) — better: all three of last week's faults are fixed, and for the first time the review reached a real mid-game, where one new overlap shows.
 
-## From Christian
-
-- **18:47 local, on the essence-pool question:** *"feel free to update the sphere essence pool UI to be easier to read and understand. i would suggest a tooltip to describe details (b) + C"*. Read as: **both (b) and (c)**. The hover explains the limit ("Holds up to 55: 50, and 5 more for each mortal you have threaded"), and the row shows "53 / 55". For the design lane: record this in [the THR-2143 draft plan](https://github.com/christianspliid-ui/threadbare/blob/docs/plan-2026-11-02-the-sheet-says-what-grew/Docs/plans/2026-11-02-thr-2143-the-sheet-says-what-grew.md#needs-christian-reserved-not-decided) as his ruling (the Vision exception for this number is granted), merge it, and file its build tickets. He also invites making the pool UI easier to read in general, so the build tickets may go a little wider than the two lines. Receipt sent.
-
 ## Queue
 
-**Healthy (3 ready, 1 being built).** [Encounter Factory habits](https://linear.app/threadbare/issue/THR-2109) is being built: round one is [#2715](https://github.com/christianspliid-ui/threadbare/pull/2715), queued to merge once its checks pass. The other three are waiting out their veto windows: [THR-2110](https://linear.app/threadbare/issue/THR-2110/rewrite-the-five-novel-prose-encounters-to-prose-doctrine-v2-flawed) until 20:40 UTC, [Legibility 1](https://linear.app/threadbare/issue/THR-2122/plan-doc-legibility-1-the-shared-blocks-the-type-ladder-and-the) until 23:50 UTC, and the new [Every card says what it buys](https://linear.app/threadbare/issue/THR-2147/every-card-says-what-it-buys-a-result-line-for-cards-that-dont-move) until 05:00 UTC tomorrow.
+**Healthy (4 ready, 1 being built).** [Encounter Factory habits, round one](https://linear.app/threadbare/issue/THR-2109) is merged and live. A builder run started [slice b](https://linear.app/threadbare/issue/THR-2129/encounter-factory-habits-slice-b-the-seven-migrated-board-encounters) at 18:30 UTC and is still working. [Slice c](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write) joined the ready list. Three are waiting out veto windows: [THR-2110](https://linear.app/threadbare/issue/THR-2110/rewrite-the-five-novel-prose-encounters-to-prose-doctrine-v2-flawed) until 20:40 UTC, [Legibility 1](https://linear.app/threadbare/issue/THR-2122/plan-doc-legibility-1-the-shared-blocks-the-type-ladder-and-the) until 23:50 UTC, and [Every card says what it buys](https://linear.app/threadbare/issue/THR-2147/every-card-says-what-it-buys-a-result-line-for-cards-that-dont-move) until 05:00 UTC tomorrow.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (13 days). It needs gate and CI edits that unattended runs are refused; agents can un-park it in an attended run.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (13 days). It has no branch and no uncommitted work in any local worktree. It needs gate and CI edits that unattended runs are refused; agents can un-park it in an attended run.
 
 ## Health
 
-All green. Engine speed is 191 ms/tick, 19% above the 7-day median of 161, which is inside the normal range (the alarm is at 25%). The live site serves the latest game build (d322ddd1); only docs merged since. One pull request ([#2715](https://github.com/christianspliid-ui/threadbare/pull/2715)) is waiting on checks and will merge when they pass. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 17:40 UTC.
+All green. Engine speed is 196 ms/tick, 21% above the 7-day median of 161, which is inside the normal range (the alarm is at 25%). The live site serves the latest commit on main (fba05c0a), which includes round one of the Encounter Factory habits. No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 18:40 UTC.

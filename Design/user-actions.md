@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-02 18:59 local (17:59 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-02 19:58 local (18:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,6 +46,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-02: round one of the Encounter Factory habits is live: card lines say what the god does, and held lines state the failure** ([THR-2109](https://linear.app/threadbare/issue/THR-2109)). Merged via [#2715](https://github.com/christianspliid-ui/threadbare/pull/2715).
 - **2026-11-02: you answered the essence-pool question: both (b) and (c).** Your words: *"feel free to update the sphere essence pool UI to be easier to read and understand. i would suggest a tooltip to describe details (b) + C"*. The hover explains the limit and the row reads "53 / 55"; the design lane merges [the THR-2143 plan](https://github.com/christianspliid-ui/threadbare/blob/docs/plan-2026-11-02-the-sheet-says-what-grew/Docs/plans/2026-11-02-thr-2143-the-sheet-says-what-grew.md) and files its build tickets.
 - **2026-11-02: thirteen more board encounters now read in the new story voice, and it is live** ([THR-2128](https://linear.app/threadbare/issue/THR-2128)). Merged via [#2713](https://github.com/christianspliid-ui/threadbare/pull/2713).
 - **2026-11-02: ten more board encounters now read in the new story voice, and it is live** ([THR-2108](https://linear.app/threadbare/issue/THR-2108)). Merged via [#2712](https://github.com/christianspliid-ui/threadbare/pull/2712).
@@ -55,7 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-02: the results screen and the mortal's page now agree, and the fix is merged** ([THR-2139](https://linear.app/threadbare/issue/THR-2139/the-aftermath-and-the-mortals-sheet-disagree-reputation-rose-but-the)). Merged via [#2707](https://github.com/christianspliid-ui/threadbare/pull/2707).
 - **2026-11-02: the "gather followers" card now finds the townsfolk to target, and it is live** ([THR-2137](https://linear.app/threadbare/issue/THR-2137)). Merged via [#2706](https://github.com/christianspliid-ui/threadbare/pull/2706).
 - **2026-11-02: nine unused modules are deleted, and the change is live** ([THR-2131](https://linear.app/threadbare/issue/THR-2131/nine-more-modules-have-tests-but-no-production-caller-delete-each-with)). Merged via [#2703](https://github.com/christianspliid-ui/threadbare/pull/2703).
-- **2026-11-02: the warm start's catch-up screen now shows a live time-left estimate, and it is live** ([THR-2133](https://linear.app/threadbare/issue/THR-2133/the-warm-starts-catch-up-screen-promises-a-minute-or-two-but-300-ticks)). Merged via [#2702](https://github.com/christianspliid-ui/threadbare/pull/2702).
 ---
 
 Older resolved items and every earlier revision of this file: `git log -p origin/ops -- Design/user-actions.md`.
