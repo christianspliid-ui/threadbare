@@ -199,8 +199,14 @@ function emptyMap(): MapHighlightVM {
   return { lit: [], litLocked: [], hover: {} };
 }
 
+/** The empty line plus its next step (THR-2137); the step drops out when the card names no target. */
+function emptyLineFor(cardName: string, targetWords: string): string {
+  const line = ARMED_WORDS.empty.replace('{card}', cardName);
+  return targetWords ? `${line} ${ARMED_WORDS.emptyNext}` : line;
+}
+
 export function emptyArmedTargets(actionId: string, cardName = actionId, targetWords = ''): ArmedTargetsVM {
-  return { actionId, cardName, targetWords, lit: {}, map: emptyMap(), emptyLine: ARMED_WORDS.empty.replace('{card}', cardName) };
+  return { actionId, cardName, targetWords, lit: {}, map: emptyMap(), emptyLine: emptyLineFor(cardName, targetWords) };
 }
 
 /**
@@ -278,7 +284,7 @@ export function buildArmedTargetsFrom(
     targetWords,
     lit,
     map: { lit: litHexes, litLocked, hover: hoverLines },
-    emptyLine: any ? null : ARMED_WORDS.empty.replace('{card}', cardName),
+    emptyLine: any ? null : emptyLineFor(cardName, targetWords),
   };
 }
 

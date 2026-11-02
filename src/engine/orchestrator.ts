@@ -1717,7 +1717,8 @@ export function phaseFamiliarityGain(state: GameState): Partial<GameState> {
 
   const nearbyActorIds = getActorsOnHex(index, avatarHex.col, avatarHex.row);
 
-  let map = state.familiarityMap;
+  // Fail-soft: a state built without the map (partial fixtures) starts from empty.
+  let map = state.familiarityMap ?? new Map<string, number>();
   let processedFamiliarityActors = 0;
 
   for (const actorId of nearbyActorIds) {

@@ -125,7 +125,7 @@ describe('buildArmedTargets', () => {
     state.visibilityMap.set('3,4', { state: 'unexplored' } as never);
     const vm = buildArmedTargets(state, WHISPER);
     expect(vm.lit).toEqual({});
-    expect(vm.emptyLine).toBe(`Nothing you can see is something ${vm.cardName} can touch.`);
+    expect(vm.emptyLine).toBe(`Nothing you can see is something ${vm.cardName} can touch. Move closer: only what stands in your sight or a threaded mortal’s can be touched.`);
   });
 });
 

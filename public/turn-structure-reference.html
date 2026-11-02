@@ -356,6 +356,8 @@
         </tbody>
       </table>
 
+      <p>Proximity familiarity (phase 2.75) reads the per-tick hex actor index, which places mortals by their <code>located_at</code> edge first (THR-2137), so the avatar now comes to know the townsfolk on its hex. A state built without <code>familiarityMap</code> starts that phase from an empty map rather than crashing the tick.</p>
+
       <h3>The tick keeps a record of itself <span class="flag impl">IMPL</span></h3>
       <p>THR-1134. Every tick ends by writing to two rings the player can hand over: the events it produced, and a one-row census of the world's size (<code>nodeCount</code>, <code>edgeCount</code>, and the four collections the health validator already watches for unbounded growth). This runs in the deployed build, not only in dev — its whole purpose is that a run which <em>looks wrong</em> can be described in more than a screenshot and a sentence.</p>
       <p>It is deliberately not part of the turn a player takes. Nothing here changes an outcome, costs attention, or is visible until Settings &rarr; Trouble &rarr; <em>Save a snapshot</em> is pressed. The one place it touches the turn is a toast after a caught crash, debounced by <code>INCIDENT_PROMPT_COOLDOWN_TICKS</code> — a toast rather than an interrupt precisely so it can never stand between the player and the veil, a beat, or a receipt.</p>
