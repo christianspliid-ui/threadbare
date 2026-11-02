@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-02 13:56 local (12:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-02 14:57 local (13:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,6 +46,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-02: six small faults from playtest round 6 are fixed, and it is live** ([THR-2142](https://linear.app/threadbare/issue/THR-2142/six-small-faults-from-cold-playtest-round-6-setup-screens-that-move-on)). Merged via [#2711](https://github.com/christianspliid-ui/threadbare/pull/2711).
 - **2026-11-02: the map no longer moves under your hand while a card is armed, and it is live** ([THR-2141](https://linear.app/threadbare/issue/THR-2141/the-live-map-moves-under-the-players-hand-an-armed-card-does-not-hold)). Merged via [#2710](https://github.com/christianspliid-ui/threadbare/pull/2710).
 - **2026-11-02: three chapter-screen faults are fixed, the Play button among them, and it is live** ([THR-2140](https://linear.app/threadbare/issue/THR-2140/three-chapter-screen-faults-the-authored-choice-play-button-sits-below)). Merged via [#2709](https://github.com/christianspliid-ui/threadbare/pull/2709).
 - **2026-11-02: the results screen and the mortal's page now agree, and the fix is merged** ([THR-2139](https://linear.app/threadbare/issue/THR-2139/the-aftermath-and-the-mortals-sheet-disagree-reputation-rose-but-the)). Merged via [#2707](https://github.com/christianspliid-ui/threadbare/pull/2707).
@@ -55,7 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-02: during a Stage moment the place tag and the toasts no longer cover each other, and it is live** ([THR-2132](https://linear.app/threadbare/issue/THR-2132/while-a-chapter-is-open-on-the-stage-its-place-where-it-is-happening)). Merged via [#2701](https://github.com/christianspliid-ui/threadbare/pull/2701).
 - **2026-11-02: the Hand's open-section arrow now points the right way, and it is live** ([THR-2127](https://linear.app/threadbare/issue/THR-2127/hand-sections-disclosure-chevron-points-right-when-open-rotate90deg-on)). Merged via [#2697](https://github.com/christianspliid-ui/threadbare/pull/2697).
 - **2026-11-02: a long Chronicle "Now" tab no longer squeezes the Threads list, and it is live** ([THR-2126](https://linear.app/threadbare/issue/THR-2126)). Merged via [#2696](https://github.com/christianspliid-ui/threadbare/pull/2696).
-- **2026-11-01: the ceremonies (the harvest, the end of the age, the threading rite) now lead with art, and it is live** ([THR-2102](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the)). Merged via [#2693](https://github.com/christianspliid-ui/threadbare/pull/2693).
 
 ---
 
