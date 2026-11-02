@@ -1,5 +1,5 @@
 {
-  "journeyVersion": 1,
+  "journeyVersion": 2,
   "base": "https://threadbearer.co/",
   "viewport": { "width": 1920, "height": 1080 },
   "playwrightCore": "1.58.2",
@@ -53,7 +53,7 @@
         { "goto": "?view=game&seeded&size=medium" },
         { "waitFor": { "role": "button", "name": "Play simulation" }, "timeout": 45000 },
         { "wait": 2000 },
-        { "click": { "role": "button", "nameRegex": " — open page$" } },
+        { "click": { "selector": "[aria-label='Ascendant status'] button[data-chip-role='identity']" } },
         { "wait": 2000 }
       ]
     },
@@ -113,7 +113,7 @@
       "what": "The main screen a few seasons in (warm start, 300 ticks).",
       "steps": [
         { "goto": "?view=game&seeded&size=medium&warm=300" },
-        { "waitFor": { "console": "[warm-start] done" }, "timeout": 240000 },
+        { "waitFor": { "console": "[warm-start] done" }, "timeout": 600000 },
         { "wait": 3000 }
       ]
     },
