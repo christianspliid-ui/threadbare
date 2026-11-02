@@ -27,6 +27,8 @@
  * - Pressing answers at once (Law 47): the underline moves within `--anim-fast`.
  * - An unknown `value` selects the first tab (or none, for a toggle row with `allowNone`) and
  *   warns once. No `Tabs.Tab` children → renders nothing.
+ * - A count keeps a fixed slot (`TAB_COUNT_SLOT_REM`) and a `reserved` tab keeps its width
+ *   unseen, so nothing in the bar shifts while time runs (THR-2141).
  */
 
 import {
@@ -49,6 +51,8 @@ import { Tooltip } from './Tooltip';
 export const TAB_UNDERLINE_PX = 2;
 /** Tab hit area — 40 px at 1080p, 45 px at 1440p (Law 46). */
 export const TAB_MIN_HEIGHT_REM = 2.5;
+/** Width kept for a tab's count, so a count arriving or growing to two digits never moves the tabs after it (THR-2141). */
+export const TAB_COUNT_SLOT_REM = 1.5;
 
 export interface TabProps {
   value: string;
@@ -60,6 +64,12 @@ export interface TabProps {
   /** An unread count after the label; `label` is its spoken sentence. Zero draws nothing. */
   count?: { value: number; label: string };
   disabled?: boolean;
+  /**
+   * Holds the tab's place in the bar without drawing it (THR-2141): a tab that appears
+   * mid-run (the Chronicle's Years) keeps its width from the start, so its arrival never
+   * slides the tabs after it under the cursor. Not focusable, not announced.
+   */
+  reserved?: boolean;
   /** A `ui.*` tooltip on the button (Laws 1, 17), e.g. a map lens's own tooltip. */
   tooltipId?: string;
   /** Replaces the tooltip's description (a lens held off says why). Needs `tooltipId`. */
@@ -179,6 +189,12 @@ function tabStyle(on: boolean, disabled: boolean): CSSProperties {
   };
 }
 
+const COUNT_SLOT_STYLE: CSSProperties = {
+  display: 'inline-flex',
+  justifyContent: 'flex-start',
+  minWidth: `${TAB_COUNT_SLOT_REM}rem`,
+};
+
 const KEY_CAP_STYLE: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
@@ -237,10 +253,10 @@ function TabsRoot(props: TabsProps) {
     }
   };
 
-  const enabledIndexes = tabs.map((t, i) => (t.disabled ? -1 : i)).filter((i) => i >= 0);
+  const enabledIndexes = tabs.map((t, i) => (t.disabled || t.reserved ? -1 : i)).filter((i) => i >= 0);
   const currentIndex = tabs.findIndex((t) => t.value === current);
   // Roving tabindex: the selected/pressed tab, else the first enabled one.
-  const focusIndex = currentIndex >= 0 && !tabs[currentIndex].disabled ? currentIndex : enabledIndexes[0] ?? 0;
+  const focusIndex = currentIndex >= 0 && !tabs[currentIndex].disabled && !tabs[currentIndex].reserved ? currentIndex : enabledIndexes[0] ?? 0;
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const from = buttonRefs.current.findIndex((el) => el === document.activeElement);
@@ -270,7 +286,27 @@ function TabsRoot(props: TabsProps) {
         onKeyDown={onKeyDown}
       >
         {tabs.map((tab, i) => {
-          const on = tab.value === current;
+          const on = tab.value === current && !tab.reserved;
+          if (tab.reserved) {
+            return (
+              <button
+                key={tab.value}
+                ref={(el) => {
+                  buttonRefs.current[i] = el;
+                }}
+                type="button"
+                data-tab-value={tab.value}
+                data-tab-reserved="true"
+                disabled
+                tabIndex={-1}
+                aria-hidden="true"
+                style={{ ...tabStyle(false, false), visibility: 'hidden', cursor: 'default' }}
+              >
+                <span>{tab.label}</span>
+                {tab.count && <span style={COUNT_SLOT_STYLE} />}
+              </button>
+            );
+          }
           const count = tab.count;
           const spoken = count && count.value > 0 ? `${tab.label}, ${count.label}` : undefined;
           const button = (
@@ -299,7 +335,11 @@ function TabsRoot(props: TabsProps) {
             >
               {tab.icon && <Icon name={tab.icon} size="chip" decorative />}
               <span>{tab.label}</span>
-              {count && <Chip role="count" form="inline" count={count.value} of={tab.value} />}
+              {count && (
+                <span style={COUNT_SLOT_STYLE}>
+                  <Chip role="count" form="inline" count={count.value} of={tab.value} />
+                </span>
+              )}
               {tab.keyCap && (
                 <kbd aria-hidden="true" style={KEY_CAP_STYLE}>
                   {tab.keyCap}

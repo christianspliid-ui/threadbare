@@ -151,3 +151,41 @@ describe('Tabs kind="toggle"', () => {
     expect(screen.getByText('1').tagName).toBe('KBD');
   });
 });
+
+// THR-2141: nothing in the bar moves while time runs.
+describe('Tabs held places', () => {
+  function Reserved() {
+    const [tab, setTab] = useState('now');
+    return (
+      <Tabs kind="tabs" value={tab} onChange={setTab} label="Chronicle">
+        <Tabs.Tab value="now" label="Now" />
+        <Tabs.Tab value="years" label="Years" reserved />
+        <Tabs.Tab value="ledger" label="Ledger" count={{ value: 0, label: 'no new chapters' }} />
+        <Tabs.Panel value="now">now panel</Tabs.Panel>
+        <Tabs.Panel value="ledger">ledger panel</Tabs.Panel>
+      </Tabs>
+    );
+  }
+
+  it('a reserved tab keeps its place unseen, unannounced and out of the arrow keys', () => {
+    const { container } = render(<Reserved />);
+    const held = container.querySelector('[data-tab-reserved="true"]') as HTMLButtonElement;
+    expect(held).not.toBeNull();
+    expect(held.style.visibility).toBe('hidden');
+    expect(held).toHaveAttribute('aria-hidden', 'true');
+    expect(held).toBeDisabled();
+    expect(screen.queryByRole('tab', { name: 'Years' })).toBeNull();
+    const now = screen.getByRole('tab', { name: 'Now' });
+    now.focus();
+    fireEvent.keyDown(now, { key: 'ArrowRight' });
+    expect(screen.getByRole('tab', { name: 'Ledger' })).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('a zero count still keeps its slot, so the first unread does not widen the tab', () => {
+    render(<Reserved />);
+    const ledger = screen.getByRole('tab', { name: 'Ledger' });
+    const slot = ledger.querySelector('span + span') as HTMLElement;
+    expect(slot).not.toBeNull();
+    expect(slot.style.minWidth).toBe('1.5rem');
+  });
+});

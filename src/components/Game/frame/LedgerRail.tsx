@@ -16,6 +16,7 @@
  *
  * ─── Constants ───────────────────────────────────────────────────
  * | LEDGER_CHRONICLE_MIN_REM | 12 | Height Threads leaves for the Chronicle; Threads scrolls inside the rest |
+ * | LEDGER_THREADS_GROW | 1 | Threads' share of the rail against the Chronicle's 1 (THR-2141: a fixed share, so the tab row holds still) |
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ComponentProps, CSSProperties, ReactElement } from 'react';
@@ -42,16 +43,20 @@ import { isStageOpen } from '../stage/stageState';
 
 /** Height Threads leaves for the Chronicle before Threads scrolls inside its own region. */
 export const LEDGER_CHRONICLE_MIN_REM = 12;
+/** Threads' flex-grow against the Chronicle's 1: its share of the rail, whatever its rows say. */
+export const LEDGER_THREADS_GROW = 1;
 
 /**
- * The rail's section sizing. Threads keeps its content height and scrolls once the
- * Chronicle is down to its floor. The Chronicle grows from a zero basis, so a long
- * Now tab fills only the free height and scrolls inside its panel (Law 57). With an
- * `auto` basis its content height won the shrink and squeezed Threads to ~12px (THR-2126).
+ * The rail's section sizing. Both sections grow from a zero basis, so neither one's
+ * content height sets where the other starts: each takes a fixed share of the rail and
+ * scrolls inside it (Law 57). With an `auto` basis the Chronicle's content won the
+ * shrink and squeezed Threads to ~12px (THR-2126); with Threads at its content height,
+ * the per-tick doing lines and badges moved the Chronicle's tab row under the cursor
+ * (THR-2141).
  */
 export function ledgerSectionStyle(id: LedgerSectionId): CSSProperties {
   return id === 'threads'
-    ? { flex: '0 1 auto', minHeight: 0, overflowY: 'auto' }
+    ? { flex: `${LEDGER_THREADS_GROW} 1 0`, minHeight: 0, overflowY: 'auto' }
     : { flex: '1 1 0', minHeight: `${LEDGER_CHRONICLE_MIN_REM}rem`, display: 'flex', flexDirection: 'column' };
 }
 

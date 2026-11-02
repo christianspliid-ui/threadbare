@@ -366,6 +366,8 @@ export interface DebugInterruptState {
   held: Array<{ kind: string; surfaceId: string; behind: string | null }>;
   /** THR-1877 — the home list as data: each kind, its surface, its home, whether it stops time. */
   homedSurfaces: Array<{ kind: string; surfaceId: string; home: 'stage' | 'dialog' | 'ceremony'; stopsTime: boolean }>;
+  /** THR-2141 — a card is armed, which holds the clock until it is cast or put down. */
+  cardArmed: boolean;
 }
 
 /** One mounted count chip (THR-1885) — `getCountChips()`. */
