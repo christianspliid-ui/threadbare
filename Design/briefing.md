@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-02 20:57 local (19:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-02 21:58 local (20:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,32 +20,29 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-- [Card tags and the coloured circles beside card prices](https://linear.app/threadbare/issue/THR-2146/card-tags-and-the-coloured-circles-beside-card-prices-are-still-unread) ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-02-thr-2146-every-card-says-what-it-buys.md), built as [THR-2147](https://linear.app/threadbare/issue/THR-2147/every-card-says-what-it-buys-a-result-line-for-cards-that-dont-move), not before 05:00 UTC on 3 Nov): a card that does not move the odds (Balm, Cache, Kindled ambition, Compulsion) gets a line where the odds dots would be, saying exactly what it does: "Ends Elara's Wounded." Veto line: "no result line".
+- [The pool says how full it can get](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar) (your (b) + (c) answer, [plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-02-thr-2143-the-sheet-says-what-grew.md), not built before 08:45 UTC on 3 Nov): the pool's row reads "53 / 55", and its hover says "Holds up to 55: 50, and 5 more for the mortal you have threaded." Before the bond: "Holds up to 50. Each mortal you thread lets every pool hold 5 more." Veto line: "say the limit differently".
+- Same plan: your answer is written into the UI rules as an exception for the limit only; upkeep and refill speeds still show as words, never numbers. Veto line: "keep the Vision pages as they were".
+- Same plan: if a tester reads "53 / 55" as a score to fill up, the number leaves the row and stays only in the hover. Veto line: "keep the row number regardless".
+- Same plan: the essence bar ends at the pool's real limit, not at the starting 50. Veto line: "keep the bar ending at the starting amount".
+- Same plan: upkeep is explained as a sentence, with no amount shown. Veto line: "show the upkeep amount".
+- Same plan ([The sheet says what grew](https://linear.app/threadbare/issue/THR-2149/the-sheet-says-what-grew-a-reach-tile-shows-the-aftermaths-for-three), after Legibility 1): a grown skill's tile shows the Aftermath's ▲ for three days. Veto line: "keep the mark until I have looked".
+- Same plan: a lean from the first meeting shows on Nature as "leaning Scheming", with the same pole words as everywhere else (Fair / Scheming). Veto line: "keep the Nature words".
+- Same plan: the meeting's fate line says "Elara leans Scheming now" instead of "came out Scheming". Veto line: "keep 'came out'".
+- Same plan: Fated stays grey. Its hover starts with your own words: "The best word on the ladder: a sure thing needs no god."
+- [Card tags and the coloured circles beside card prices](https://linear.app/threadbare/issue/THR-2146/card-tags-and-the-coloured-circles-beside-card-prices-are-still-unread) ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-02-thr-2146-every-card-says-what-it-buys.md), built as [THR-2147](https://linear.app/threadbare/issue/THR-2147/every-card-says-what-it-buys-a-result-line-for-cards-that-dont-move), not before 05:00 UTC on 3 Nov): a card that does not move the odds gets a line saying exactly what it does: "Ends Elara's Wounded." Veto line: "no result line".
 - Same plan: Balm is not offered when the mortal has nothing for it to heal. Veto line: "show Balm greyed out instead".
-- Same plan: the coloured circle beside a price goes; the word after the price and the card's colour already name the pool that pays. Veto line: "keep the circle".
+- Same plan: the coloured circle beside a price goes. Veto line: "keep the circle".
 - Same plan: an action card's skill mark moves away from the price and gets its word ("Iron"). Veto line: "keep the skill mark by the price".
-- Same plan: an action card shows one tag ("Change"), not two; the size word ("Local", "Cosmic") moves into that tag's hover. Veto line: "keep the size tag".
-- Same plan: what a played card did now shows in the Aftermath as an ordinary result chip naming the mortal; the Long Game's hidden mark stays hidden. Veto line: "show the hidden mark too".
-- [Can't read what they spend](https://linear.app/threadbare/issue/THR-2143/recurs-after-fix-five-times-the-player-still-cant-read-what-they-spend) ([draft plan](https://github.com/christianspliid-ui/threadbare/blob/docs/plan-2026-11-02-the-sheet-says-what-grew/Docs/plans/2026-11-02-thr-2143-the-sheet-says-what-grew.md)), now unblocked by your answer: the essence bar ends at the pool's real limit, not at the starting 50, so a full bar means a full pool. Veto line: "keep the bar ending at the starting amount".
-- Same draft: upkeep is explained as a sentence ("Your two threads draw their upkeep from this pool, a little all day. So when it is full, it sits just under its limit."). No amount is shown. Veto line: "show the upkeep amount".
-- Same draft: after a chapter grows a skill, its tile shows the Aftermath's ▲ for three days, with "The word changes only at the next step." Veto line: "keep the mark until I have looked".
-- Same draft: a lean from the first meeting shows on Nature as "leaning Scheming", and Nature uses the same pole words as everywhere else (Fair / Scheming, not Honest / Cunning). Veto line: "keep the Nature words".
-- Same draft: the meeting's fate line says "Elara leans Scheming now" instead of "came out Scheming". Veto line: "keep 'came out'".
-- Same draft: Fated stays grey. Its hover starts with your own words: "The best word on the ladder: a sure thing needs no god."
+- Same plan: an action card shows one tag ("Change"), not two; the size word moves into its hover. Veto line: "keep the size tag".
+- Same plan: what a played card did shows in the Aftermath as an ordinary result chip naming the mortal; the Long Game's hidden mark stays hidden. Veto line: "show the hidden mark too".
 - [Legibility 1 — the shared blocks](https://linear.app/threadbare/issue/THR-2122/plan-doc-legibility-1-the-shared-blocks-the-type-ladder-and-the) ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-02-thr-2122-legibility-shared-blocks.md)): every Inspector section gets the agreed spacing and type sizes in one place. Veto line: "keep the old spacing".
-- Same plan: a block of facts becomes two columns, with each label right-aligned and pressed against its answer. Veto line: "keep the answers on the right edge".
+- Same plan: a block of facts becomes two columns, each label right-aligned against its answer. Veto line: "keep the answers on the right edge".
 - Same plan: in a personality bar, the first word ("Craven" in Craven ↔ Brave) sits in the label column. Veto line: "give the bars their own row".
-- Same plan: the thin gold lines between fact rows go, and so do the gold section headings. Veto line: "keep the gold headings".
+- Same plan: the thin gold lines between fact rows and the gold section headings go. Veto line: "keep the gold headings".
 - Same plan: counts read "Rival gods · 2" and "Your cards · 2". Veto line: "keep the brackets".
 - Same plan: a story-event section only gets a box while clicking it opens something. Veto line: "box every story event".
-- [Rewrite the five novel-prose encounters](https://linear.app/threadbare/issue/THR-2110/rewrite-the-five-novel-prose-encounters-to-prose-doctrine-v2-flawed) ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-02-thr-2110-novel-prose-story-beats.md)): five story moments get their words rewritten; what happens and what each choice does stays the same. Veto line: "change the stories too".
-- Same plan: word limits per part (opening ≤80 words, outcomes and endings ≤60, choice descriptions ≤25). Veto line: "no word limits".
-- Same plan: the god never notices, feels or sees anything in the text; the god acts through the player's cards. Veto line: "let the god be a character in these".
-- Same plan: three Apotheosis cards get verb names. Veto line: "keep the card names".
-- Same plan: the Mason-Lord's Wall gets the five result lines it is missing. Veto line: "leave its lines as they are".
-- Same plan: the work comes in two rounds. Veto line: "one round".
 
-Say "veto <title>" to reverse any of these. *— from the design lane ([09:41](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02c.md), [12:50](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02d.md), [15:38](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02e.md), [18:45](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02f.md), local time)*
+Say "veto <title>" to reverse any of these. *— from the design lane ([12:50](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02d.md), [15:38](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02e.md), [18:45](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02f.md), [21:41](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02g.md), local time)*
 
 ## This week's screens
 
@@ -53,7 +50,7 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([09:41](h
 
 ## Queue
 
-**Healthy (3 ready, none being built).** [Slice b](https://linear.app/threadbare/issue/THR-2129/encounter-factory-habits-slice-b-the-seven-migrated-board-encounters) of the Encounter Factory habits is merged and live ([#2716](https://github.com/christianspliid-ui/threadbare/pull/2716)). Round one of [slice c](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write) is merged and live too ([#2717](https://github.com/christianspliid-ui/threadbare/pull/2717)). Its ticket stays open for round two and sits in Todo until the orchestrator moves it back to ready. All three ready tickets are waiting out veto windows, so the last two builder runs correctly took nothing: [THR-2110](https://linear.app/threadbare/issue/THR-2110/rewrite-the-five-novel-prose-encounters-to-prose-doctrine-v2-flawed) until 20:40 UTC, [Legibility 1](https://linear.app/threadbare/issue/THR-2122/plan-doc-legibility-1-the-shared-blocks-the-type-ladder-and-the) until 23:50 UTC, and [Every card says what it buys](https://linear.app/threadbare/issue/THR-2147/every-card-says-what-it-buys-a-result-line-for-cards-that-dont-move) until 05:00 UTC tomorrow.
+**Healthy (3 ready, 1 being built).** The builder took [Rewrite the five novel-prose encounters](https://linear.app/threadbare/issue/THR-2110/rewrite-the-five-novel-prose-encounters-to-prose-doctrine-v2-flawed) at 20:52 UTC, as soon as its veto window closed. All three ready tickets are waiting out veto windows: [Legibility 1](https://linear.app/threadbare/issue/THR-2122/plan-doc-legibility-1-the-shared-blocks-the-type-ladder-and-the) until 23:50 UTC, [Every card says what it buys](https://linear.app/threadbare/issue/THR-2147/every-card-says-what-it-buys-a-result-line-for-cards-that-dont-move) until 05:00 UTC, and the new [The pool says how full it can get](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar) until 08:45 UTC tomorrow. The design lane closed [Can't read what they spend](https://linear.app/threadbare/issue/THR-2143/recurs-after-fix-five-times-the-player-still-cant-read-what-they-spend) after filing its two build tickets.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -61,4 +58,4 @@ Two items for agents, not you:
 
 ## Health
 
-All green. Engine speed is 200 ms/tick, 24% above the 7-day median of 161. That is still inside the normal range, but only just: the alarm is at 25%, and it has crept up from 21% last hour. The live site serves the latest commit on main (252a0743), which includes slice b and round one of slice c. No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 19:40 UTC.
+All green. Engine speed is 195 ms/tick, 21% above the 7-day median of 161, back down from 24% last hour and inside the 25% alarm. The live site is current (the commits since its last publish touched only notes and docs). No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 20:48 UTC.
