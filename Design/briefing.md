@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-02 06:56 local (05:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-02 07:57 local (06:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -48,11 +48,11 @@ Say "veto <title>" to reverse any of these. The text-positions decisions ([THR-2
 
 ## This week's screens
 
-[Contact sheet — the twelve screens of the fixed journey](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/ux-review/2026-10-27/contact-sheet.jpg) — first week, so there is nothing to compare yet. The opening holds up. Opening a page brings two visible faults, and the mid-game cannot be reached because the seeded world ends after 41 ticks.
+[Contact sheet — this week next to last week](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/ux-review/2026-11-02/contact-sheet.jpg) — better: all three of last week's faults are fixed, and for the first time the review reached a real mid-game, where one new overlap shows.
 
 ## Queue
 
-**Starved (2 ready, both on hold).** [THR-2108](https://linear.app/threadbare/issue/THR-2108) (story text for ten more everyday encounters) is held until 14:30 UTC, and the new [THR-2109](https://linear.app/threadbare/issue/THR-2109) (Encounter Factory habits, first round) until 17:30 UTC, while their decisions sit in the veto window. The builder's runs since 02:31 UTC have correctly stood down on those holds. Its two follow-on rounds ([THR-2129](https://linear.app/threadbare/issue/THR-2129/encounter-factory-habits-slice-b-the-seven-migrated-board-encounters), [THR-2130](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write)) wait on it. The four legibility plans ([THR-2122](https://linear.app/threadbare/issue/THR-2122)–[THR-2125](https://linear.app/threadbare/issue/THR-2125)) wait on the first one's veto window, which closes around 11:25 UTC.
+**Healthy (3 ready).** New: [THR-2132](https://linear.app/threadbare/issue/THR-2132/while-a-chapter-is-open-on-the-stage-its-place-where-it-is-happening) (the chapter's "where it is happening" tag draws on top of the rival-scheme toasts), filed by this morning's screen review and free for the next builder run. [THR-2108](https://linear.app/threadbare/issue/THR-2108) (story text for ten more everyday encounters) is held until 14:30 UTC, and the new [THR-2109](https://linear.app/threadbare/issue/THR-2109) (Encounter Factory habits, first round) until 17:30 UTC, while their decisions sit in the veto window. The builder's runs since 02:31 UTC have correctly stood down on those holds. Its two follow-on rounds ([THR-2129](https://linear.app/threadbare/issue/THR-2129/encounter-factory-habits-slice-b-the-seven-migrated-board-encounters), [THR-2130](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write)) wait on it. The four legibility plans ([THR-2122](https://linear.app/threadbare/issue/THR-2122)–[THR-2125](https://linear.app/threadbare/issue/THR-2125)) wait on the first one's veto window, which closes around 11:25 UTC.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -60,4 +60,4 @@ Two items for agents, not you:
 
 ## Health
 
-All green. Engine speed is back to normal (168 ms/tick, 6% above the 7-day median). No pull requests are open. The live site serves the latest game build (fea5ff53; later commits were docs only). Checks on main and the scheduled background jobs pass. All nine enabled scheduled tasks are on time; the weekly screen review runs at 06:34 UTC. The worktree reaper last ran at 05:40 UTC.
+All green. Engine speed is normal (176 ms/tick, 11% above the 7-day median). One pull request is open and queued to merge: [#2700](https://github.com/christianspliid-ui/threadbare/pull/2700) (the screen review's journey tweaks). The live site serves the latest game build (fea5ff53; later commits were docs only). Checks on main and the scheduled background jobs pass. All ten enabled scheduled tasks are on time. The worktree reaper last ran at 06:40 UTC.
