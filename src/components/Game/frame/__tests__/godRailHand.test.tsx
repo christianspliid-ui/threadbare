@@ -145,5 +145,15 @@ describe('HandSection', () => {
       expect(screen.getByTestId('god-rail-hand').dataset.handOpenGroup).toBe('life');
       expect(localStorage.getItem(GOD_RAIL_HAND_GROUP_KEY)).toBe('life');
     });
+
+    it('the chevron turns like the god rail: 90deg folded, 180deg open (THR-2127)', () => {
+      render(<HandSection hand={HAND} showInvestiture rest={null} />);
+      const chevronOf = (sphere: string) => {
+        const group = screen.getAllByTestId('hand-group').find((g) => g.dataset.sphere === sphere)!;
+        return group.querySelector<HTMLElement>('button [style*="rotate"]')!;
+      };
+      expect(chevronOf('spirit').style.transform).toBe('rotate(180deg)');
+      expect(chevronOf('life').style.transform).toBe('rotate(90deg)');
+    });
   });
 });

@@ -302,7 +302,7 @@ export function HandSection({ hand, showInvestiture, investitureNewlyRevealed = 
                       borderLeft: `3px solid ${getSphereColor(g.sphere)}`, paddingLeft: 8,
                     }}
                   >
-                    <Icon name="disclosure" size="floor" decorative style={{ transform: isOpen ? 'rotate(90deg)' : undefined }} />
+                    <Icon name="disclosure" size="floor" decorative style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(90deg)' }} />
                     <span style={{ ...labelStyle, color: 'var(--text-secondary)' }}>
                       {countWords(g.cards.length, { one: HAND_GROUP_HEADER, other: HAND_GROUP_HEADER }, { sphere: sphereWord(g.sphere) })}
                     </span>
