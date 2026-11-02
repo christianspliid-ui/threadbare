@@ -8614,7 +8614,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 0,
             forecastDelta: 0.08,
             imageTag: 'generic.oath',
-            effectLine: 'Draw on their humility, so they look straight at the damage they would rather not see.',
+            effectLine: 'Draw on their humility, so they look straight at the damage they hoped to ignore.',
             bandProse: {
               near_miss: 'They admitted the blade was half gone, and still put off admitting which half.',
             },

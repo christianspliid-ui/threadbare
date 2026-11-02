@@ -187,7 +187,7 @@ const APOTHEOSIS_HAND: readonly StepNudge[] = [
     essenceCost: 2,
     forecastDelta: 0.09,
     imageTag: 'generic.time-slow',
-    effectLine: 'Stretch the moment at the doorway, so the answer is not rushed. It argues for neither side.',
+    effectLine: 'Slow time at the doorway, so the answer is not rushed. It argues for neither side.',
     bandProse: {
       near_miss: 'The hour ran long and they used all of it, and still arrived at the edge unready.',
       failure: 'The hour ran long, and a long hour at a thin place is a long hour to be frightened in.',
