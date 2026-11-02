@@ -39,9 +39,10 @@ describe('THR-1634 E1 — a raw entry\'s deal reaches the shipped template', () 
   });
 
   it('leaves an entry that declares no deal without one', () => {
-    // master_craftsman_challenge is a sibling entry in the same file with no `deal`
-    // (mend_equipment was, until S3 completed it).
-    for (const site of runnableStepSites(shipped('encounter.master_craftsman_challenge').steps)) {
+    // political_intrigue is a sibling entry in the same file with no `deal`
+    // (mend_equipment was, until S3 completed it; master_craftsman_challenge, until
+    // THR-2128 did).
+    for (const site of runnableStepSites(shipped('encounter.political_intrigue').steps)) {
       expect(site.step.deal).toBeUndefined();
     }
   });
