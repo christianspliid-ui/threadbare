@@ -43,7 +43,7 @@ function world(familiar: boolean): RowVisualContext {
   return { graph, familiarityMap };
 }
 
-const tiles: HexTile[] = [{ coord: { col: 2, row: 3 }, terrain: 'plains' } as HexTile];
+const tiles = [{ coord: { col: 2, row: 3 }, terrain: 'plains' }] as unknown as HexTile[];
 
 describe('THR-2103 rowVisual (S7.1)', () => {
   it('a mortal the god knows shows their face; a stranger shows the silhouette tier (Law 8)', () => {

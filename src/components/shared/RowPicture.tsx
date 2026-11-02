@@ -2,7 +2,7 @@
  * RowPicture (THR-2103, art-led pass slice 7, S7.2) — the picture a list row leads with.
  *
  * Draws a host-resolved `EntityVisualDescriptor` at chip size (40px, Law 5): a circle for a
- * person, the rounded tile for a place, faction, army or relic. No descriptor draws nothing,
+ * person, the control-radius tile for a place, faction, army or relic. No descriptor draws nothing,
  * so a row without a subject keeps its look. The row itself carries `rowDressingAttrs`, which
  * `__DEBUG.getListDressing()` reads.
  */
@@ -37,8 +37,8 @@ export function RowPicture({
     <EntityVisual
       size="chip"
       descriptor={visual}
-      shape={isPersonRowVisual(visual) ? 'circle' : 'rounded'}
-      style={style}
+      // A person is a circle (the chip default); a place, faction, army or relic takes the control radius token.
+      style={isPersonRowVisual(visual) ? style : { borderRadius: 'var(--radius-control)', ...style }}
       data-testid={testId ?? 'row-picture'}
     />
   );
