@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-02 16:05 local (15:05 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-02 16:57 local (15:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -50,13 +50,8 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 - Same plan: the "It argues for…" endings stay word for word; the Smugglers' Ford "honest way" card waits for your wording. Veto line: "drop the 'argues for' endings".
 - Same plan: the five rules go into the factory's writing instructions; the critic's checklist waits for [your writing-checks conversation](https://linear.app/threadbare/issue/THR-2106). Veto line: "add them to the critic too".
 - Same plan: the mortal in an encounter is always named. Veto line: "titles for the mortal are fine".
-- [Encounter story text, wave 2a](https://linear.app/threadbare/issue/THR-2108) ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-02-thr-2108-encounter-story-text-wave-2.md)): rewritten in two rounds of ten-odd, not one of 23. Veto line: "one round".
-- Same plan: an encounter only gets an "arrival" opening for places it already appears in. Veto line: "give every encounter all eight openings".
-- Same plan: the "what's at stake" lines are rewritten with the result lines. Veto line: "keep the stake lines".
-- Same plan: the older "success at a cost" and "critical" lines are rewritten too. Veto line: "keep the older result lines".
-- Same plan: "Assess Holdings" becomes the model everyday encounter. Veto line: "a different model encounter".
 
-Say "veto <title>" to reverse any of these. *— from the design lane ([03:40](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02a.md), [06:37](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02b.md), [09:41](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02c.md), [12:50](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02d.md), [14:40](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02e.md))*
+Say "veto <title>" to reverse any of these. *— from the design lane ([06:37](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02b.md), [09:41](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02c.md), [12:50](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02d.md), [15:38](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02e.md), local time)*
 
 ## This week's screens
 
@@ -64,7 +59,7 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([03:40](h
 
 ## Queue
 
-**Healthy (3 ready, 1 being built).** The builder took [THR-2108](https://linear.app/threadbare/issue/THR-2108) (encounter story text, wave 2a) when its veto window closed at 14:30 UTC and is building it now. Still held in their veto windows: [THR-2109](https://linear.app/threadbare/issue/THR-2109) until 17:30 UTC, [THR-2110](https://linear.app/threadbare/issue/THR-2110/rewrite-the-five-novel-prose-encounters-to-prose-doctrine-v2-flawed) until 20:40 UTC, and [Legibility 1](https://linear.app/threadbare/issue/THR-2122/plan-doc-legibility-1-the-shared-blocks-the-type-ladder-and-the) until 23:50 UTC.
+**Healthy (3 ready, 1 being built).** [Encounter story text, wave 2a](https://linear.app/threadbare/issue/THR-2108) shipped and is live. The builder is now on [wave 2b](https://linear.app/threadbare/issue/THR-2128/encounter-story-text-wave-2b-board-encounters-ranked-21-30-plus-three) (run started 15:31 UTC, active a minute ago). Still held in their veto windows: [THR-2109](https://linear.app/threadbare/issue/THR-2109) until 17:30 UTC, [THR-2110](https://linear.app/threadbare/issue/THR-2110/rewrite-the-five-novel-prose-encounters-to-prose-doctrine-v2-flawed) until 20:40 UTC, and [Legibility 1](https://linear.app/threadbare/issue/THR-2122/plan-doc-legibility-1-the-shared-blocks-the-type-ladder-and-the) until 23:50 UTC.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -72,5 +67,4 @@ Two items for agents, not you:
 
 ## Health
 
-- **Engine speed drifted (for the builder, not you):** "tick cost 293 ms/tick steady, 82% above the 7-day median (161, 128 rows since 5beb9e9f); top phase agent_decision, 639 agents. Name the merges between 5beb9e9f and 12e6c116: git log --oneline --merges 5beb9e9f..12e6c116". The same commit read 231 ms an hour ago, so part of this jump is the build running alongside the measurement; the slowdown above the median has now held for five hours.
-- Everything else is green. The live site serves the latest main (12e6c116). No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 15:40.
+All green. The engine-speed drift from the last five hours has cleared: 131 ms/tick, 19% under the 7-day median, so the earlier jump was the build running beside the measurement. The live site serves the latest main (bf0dc3bf). No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 15:40 UTC.

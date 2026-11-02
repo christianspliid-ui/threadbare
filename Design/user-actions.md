@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-02 16:05 local (15:05 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-02 16:57 local (15:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -55,6 +55,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-02: ten more board encounters now read in the new story voice, and it is live** ([THR-2108](https://linear.app/threadbare/issue/THR-2108)). Merged via [#2712](https://github.com/christianspliid-ui/threadbare/pull/2712).
 - **2026-11-02: six small faults from playtest round 6 are fixed, and it is live** ([THR-2142](https://linear.app/threadbare/issue/THR-2142/six-small-faults-from-cold-playtest-round-6-setup-screens-that-move-on)). Merged via [#2711](https://github.com/christianspliid-ui/threadbare/pull/2711).
 - **2026-11-02: the map no longer moves under your hand while a card is armed, and it is live** ([THR-2141](https://linear.app/threadbare/issue/THR-2141/the-live-map-moves-under-the-players-hand-an-armed-card-does-not-hold)). Merged via [#2710](https://github.com/christianspliid-ui/threadbare/pull/2710).
 - **2026-11-02: three chapter-screen faults are fixed, the Play button among them, and it is live** ([THR-2140](https://linear.app/threadbare/issue/THR-2140/three-chapter-screen-faults-the-authored-choice-play-button-sits-below)). Merged via [#2709](https://github.com/christianspliid-ui/threadbare/pull/2709).
@@ -64,7 +65,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-02: the warm start's catch-up screen now shows a live time-left estimate, and it is live** ([THR-2133](https://linear.app/threadbare/issue/THR-2133/the-warm-starts-catch-up-screen-promises-a-minute-or-two-but-300-ticks)). Merged via [#2702](https://github.com/christianspliid-ui/threadbare/pull/2702).
 - **2026-11-02: during a Stage moment the place tag and the toasts no longer cover each other, and it is live** ([THR-2132](https://linear.app/threadbare/issue/THR-2132/while-a-chapter-is-open-on-the-stage-its-place-where-it-is-happening)). Merged via [#2701](https://github.com/christianspliid-ui/threadbare/pull/2701).
 - **2026-11-02: the Hand's open-section arrow now points the right way, and it is live** ([THR-2127](https://linear.app/threadbare/issue/THR-2127/hand-sections-disclosure-chevron-points-right-when-open-rotate90deg-on)). Merged via [#2697](https://github.com/christianspliid-ui/threadbare/pull/2697).
-- **2026-11-02: a long Chronicle "Now" tab no longer squeezes the Threads list, and it is live** ([THR-2126](https://linear.app/threadbare/issue/THR-2126)). Merged via [#2696](https://github.com/christianspliid-ui/threadbare/pull/2696).
 
 ---
 
