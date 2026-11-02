@@ -106,7 +106,7 @@ const step0TheReckoning: ActionStep = {
     '{cast:torve_ashgrip}, wants new blades or blood-price.\n\n' +
     '{cast:maren_ironhewn} has locked {cast:dalla} in the coal shed. She must go out and answer the captain. ' +
     'No one yet knows how many bad blades went out.',
-  successAfterimage: '{cast:maren_ironhewn} read the captain\'s letter once more and turned toward the gate.',
+  successAfterimage: '{cast:maren_ironhewn} put down her tools and turned toward the gate.',
   failureAfterimage: '{cast:maren_ironhewn} stood at the cold anvil and could not make herself move.',
   // THR-1634 S1: the rest of the ladder.
   successAtCostAfterimage:
@@ -203,7 +203,7 @@ const step1TemperTheNarrative: ActionStep = {
   failureAfterimage: '{cast:torve_ashgrip} saw through the story. Being lied to angered her more than the bad steel had.',
   // THR-1634 S1.
   successAtCostAfterimage: '{cast:torve_ashgrip} believed the story, but asked a lower price on every future contract.',
-  criticalSuccessAfterimage: '{cast:torve_ashgrip} thanked the forge for catching the flaw. Even {cast:maren_ironhewn} half-believes the smaller story now.',
+  criticalSuccessAfterimage: '{cast:torve_ashgrip} thanked the forge for catching the flaw, and promised it more orders.',
   criticalFailureAfterimage: '{cast:torve_ashgrip} caught the lie as they shook hands, and said so loud enough for the whole settlement to hear.',
 };
 
@@ -231,8 +231,8 @@ const step1KeepYourHandFolded: ActionStep = {
   failBehavior: 'fail_action',
   narrativeTemplate:
     'The god holds back. After an hour, {cast:maren_ironhewn} walks to the gate on her own. She has not ' +
-    'planned what to say, and she stumbles through it. The militia captain brings her apprentice out of ' +
-    'the shed without being asked. The settlement watches from the walls.',
+    'planned what to say, and she stumbles through it. A town guard brings {cast:dalla} out of the shed ' +
+    'without being asked. The settlement watches from the walls.',
   successMetadata: {
     reputationDelta: 0,
   },
@@ -244,7 +244,7 @@ const step1KeepYourHandFolded: ActionStep = {
   // THR-1634 S1.
   successAtCostAfterimage: 'The settlement got through, but the quarrel at the gate cost {cast:maren_ironhewn} her seat among the guild elders.',
   criticalSuccessAfterimage: '{cast:maren_ironhewn} found the right words on her own. {cast:torve_ashgrip} accepted a rough but honest account.',
-  criticalFailureAfterimage: 'Old quarrels broke loose at the gate. By nightfall, half the settlement was shouting at the other half.',
+  criticalFailureAfterimage: 'The quarrel at the gate spread to the guild and the townsfolk. By nightfall, the settlement had split into two sides.',
 };
 
 const step1Branch: ActionStepBranch = {
@@ -358,14 +358,14 @@ const TEMPER_NARRATIVE_AFTERMATH = {
   overview:
     'The Greycloaks have broken camp, satisfied. {cast:maren_ironhewn} agreed to lower prices on future ' +
     'contracts, and the forge can bear the cost. {cast:dalla} has left quietly, with a letter of ' +
-    'reference that does not say why. The hammer rings again each morning. Only {cast:maren_ironhewn} ' +
-    'knows how many flawed blades went out.',
+    'reference that does not say why. The forge is working again. The Greycloaks never learned how ' +
+    'many flawed blades went out.',
   changes: [
     {
       id: 'temper_maren_reputation',
       kind: 'reputation' as const,
       title: '{cast:maren_ironhewn}',
-      detail: 'Her name is safe in public. She carries the hidden count alone.',
+      detail: 'Her name is safe in public. She keeps the full story to herself.',
       polarity: 'mixed' as const,
     },
     {
@@ -477,14 +477,14 @@ const WITHDRAWN_AFTERMATH = {
       id: 'withdrawn_torve_neutral',
       kind: 'reputation' as const,
       title: '{cast:torve_ashgrip}',
-      detail: 'Unhappy, but she will not fight over it. The Greycloaks will not buy from this forge again.',
+      detail: 'The Greycloaks will not buy from this forge again.',
       polarity: 'loss' as const,
     },
     {
       id: 'withdrawn_messy_resolution',
       kind: 'future_hook' as const,
       title: 'A Messy Resolution',
-      detail: 'The settlement got through the crisis without fixing it. No reform follows.',
+      detail: 'No reform follows, and the settlement trusts its forge less than before.',
       polarity: 'mixed' as const,
     },
   ],
@@ -498,14 +498,14 @@ const WITHDRAWN_AFTERMATH = {
         {
           kind: 'recent_event' as const,
           eventType: 'narrative' as const,
-          message: 'The god stayed out of the trouble at the forge. The settlement found its own rough answer.',
+          message: 'The god stayed out of the trouble at the forge, and left the settlement to its own answer.',
           significance: 0.5,
         },
       ],
     },
     {
       id: 'withdrawn_react_watch',
-      label: 'Watch what grows from the wreckage.',
+      label: 'Keep watching the settlement.',
       intent: 'Stay close and watch what the settlement builds next: anger, reform or a quiet fix.',
       effects: [
         {
@@ -516,7 +516,7 @@ const WITHDRAWN_AFTERMATH = {
         {
           kind: 'recent_event' as const,
           eventType: 'narrative' as const,
-          message: 'The god keeps watching the forge, to see what the settlement builds from the wreckage.',
+          message: 'The god keeps watching the forge, to see what the settlement does next.',
           significance: 0.5,
         },
         {
@@ -561,8 +561,8 @@ const FORGE_TRUTH_ENDINGS: AftermathVariant = {
     critical_failure: {
       overview:
         'No mercenary company will buy from this forge again. {cast:torve_ashgrip} seized the finished stock ' +
-        'and called {cast:maren_ironhewn} a fraud at the gate. She tells the same story in every town on her ' +
-        'road. {cast:dalla} left in chains. The guild\'s audit starts with {cast:maren_ironhewn}\'s own racks.',
+        'and called {cast:maren_ironhewn} a fraud at the gate. {cast:torve_ashgrip} tells the same story in ' +
+        'every town on the Greycloaks\' road. {cast:dalla} left in chains. The guild\'s audit starts with {cast:maren_ironhewn}\'s own racks.',
       changes: keepChanges(FORGE_TRUTH_AFTERMATH, ['truth_dalla_exiled', 'truth_guild_audit']),
     },
   },
@@ -838,8 +838,8 @@ export const FLAWED_STEEL_TEMPLATE: UnifiedActionTemplate = withEncounterContrac
       'mercenaries are camped at the gate, demanding new blades or blood-price. The forge ' +
       'has gone cold.',
     success:
-      'The forge settles with the mercenaries, by a full account or a smaller story. The ' +
-      'guild reforms, or the forge keeps a secret.',
+      'The forge settles with the mercenaries, by a full account, a smaller story, or ' +
+      'whatever the settlement manages on its own.',
     failure:
       'The talks at the gate fail. The mercenaries seize the forge\'s blades, and the ' +
       'settlement loses their trust.',
@@ -859,8 +859,8 @@ export const FLAWED_STEEL_TEMPLATE: UnifiedActionTemplate = withEncounterContrac
           'Calm the people at the gate a little. {cast:maren_ironhewn} still has to carry the talk herself.',
         essenceCost: 1,
         likelyBurden:
-          'A light touch may not hold. {cast:torve_ashgrip} has bargained with liars before, and a calm ' +
-          'voice can still tell a lie.',
+          'A light touch may not be enough. {cast:torve_ashgrip} may still doubt what ' +
+          '{cast:maren_ironhewn} tells her.',
         interventionType: 'supportive',
       },
       {

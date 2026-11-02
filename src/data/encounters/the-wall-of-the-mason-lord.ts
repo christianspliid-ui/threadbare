@@ -46,16 +46,16 @@ const step0TheReckoning: ActionStep = {
   failBehavior: 'continue_weakened',
   // THR-2110: rewritten from scratch to Prose Doctrine v2 (the opening skeleton).
   narrativeTemplate:
-    '{actor} has come back to the great wall in the pass above {location}.\n\n' +
+    '{actor}, the mason-lord, has come back to the great wall in the pass above {location}.\n\n' +
     'The wall stands at half its height. Finished, it will keep raiders and hungry strangers out of the ' +
     'valley through the famine winter. It will also shut out the herders and towns on the far side, and ' +
     'leave them to the raiders.\n\n' +
-    '{actor} laid every course of it by hand. Now the mason-lord must choose whether to lay the rest.',
+    '{actor} has built the wall this far. Now {actor} must choose whether to finish it.',
   successAfterimage: 'The mason-lord weighed the valley against the far side, and made up their mind.',
   failureAfterimage: 'The mason-lord stood on the wall all day and could not make up their mind.',
   // THR-2110 decision 5: the rest of the ladder, each naming its cost.
   successAtCostAfterimage:
-    'The mason-lord made up their mind, but the doubt cost a week. The first snow came before the work began again.',
+    'The mason-lord made up their mind, but the doubt cost a week, and the first snow has come.',
   criticalSuccessAfterimage: 'The mason-lord saw both costs plainly, and made up their mind without fear.',
   criticalFailureAfterimage:
     'The mason-lord argued with the crew for a whole day. Half of them put down their tools and went home.',
@@ -73,9 +73,8 @@ const step1HardenTheirResolve: ActionStep = {
   onFailure: [],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god hardens the mason-lord\'s resolve. The mason-lord stops looking west and lays course after ' +
-    'course until the pass is closed. The valley behind the wall is safe through the famine. The herders ' +
-    'and towns to the west are shut out, alone with the raiders and the winter.',
+    'The god hardens the mason-lord\'s resolve. {actor} stops weighing the far side and orders the crew ' +
+    'back to work. The aim is to close the pass before the worst of the winter.',
   successAfterimage: 'The wall rose to its full height, and the valley was sealed safe.',
   failureAfterimage:
     'The wall rose, but one section settled badly in the frozen ground. It shuts out the far side, and it ' +
@@ -87,7 +86,7 @@ const step1HardenTheirResolve: ActionStep = {
     'not fear raiders again in the mason-lord\'s lifetime.',
   criticalFailureAfterimage:
     'The mason-lord pushed the work over a cracked footing and did not stop to fix it. The wall stands ' +
-    'finished and wrong. It will fall in the first hard winter, onto the valley it was built to save.',
+    'finished but unsound, and it will fall in the first hard winter.',
   successMetadata: { reputationDelta: 0.16 },
   failureMetadata: { reputationDelta: -0.1 },
 };
@@ -105,9 +104,8 @@ const step1LetTheDoubtIn: ActionStep = {
   onFailure: [],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god holds back and lets the doubt work. The mason-lord looks west once more, at the herders and ' +
-    'the towns the raiders will reach first. They cannot lay another course. The work stops at half its ' +
-    'height, and the pass stays open.',
+    'The god holds back and lets the doubt work. {actor} thinks again about the herders and towns beyond ' +
+    'the pass, which the raiders will reach first. {actor} tells the crew to stop work.',
   successAfterimage: 'The mason-lord walked away, and the half-built wall kept no one out.',
   failureAfterimage:
     'The mason-lord stopped the work but kept guards on the half-wall. The far side does not trust the ' +
@@ -119,8 +117,8 @@ const step1LetTheDoubtIn: ActionStep = {
     'The mason-lord walked away for good. Herders on the far side now speak well of the valley that would ' +
     'not wall them out.',
   criticalFailureAfterimage:
-    'The mason-lord could neither finish the wall nor leave it. They stood on it all season, and the valley ' +
-    'remembers a builder who could not choose.',
+    'The mason-lord could neither finish the wall nor leave it, and kept guard on it all season. The ' +
+    'valley lost a season of work and gained no safety.',
   successMetadata: { reputationDelta: 0.08 },
   failureMetadata: { reputationDelta: -0.12 },
 };
@@ -138,15 +136,15 @@ const step1Branch: ActionStepBranch = {
 
 const WALL_RAISED_AFTERMATH = {
   overview:
-    'The wall stands across the pass at its full height. The valley behind it is safe from raiders and ' +
-    'hungry strangers. The lands to the west are shut out, and their people blame the valley and the god. ' +
-    'A few of them have begun to study how a wall is brought down.',
+    'The wall stands across the pass at its full height. For now, it keeps raiders and hungry strangers ' +
+    'out of the valley. The lands to the west are shut out, and their people blame the valley and the god. ' +
+    'A few of them plan to tear it down.',
   changes: [
     {
       id: 'wall_region_sealed',
       kind: 'future_hook' as const,
-      title: 'The Valley Sealed Safe',
-      detail: 'The wall stands at full height. The valley is safe through this famine, and likely the next.',
+      title: 'The Pass Closed',
+      detail: 'The wall stands at full height. For now, the valley is closed off from raiders.',
       polarity: 'gain' as const,
     },
     {
@@ -154,8 +152,8 @@ const WALL_RAISED_AFTERMATH = {
       kind: 'future_hook' as const,
       title: 'The Lands Shut Outside',
       detail:
-        'The herders and towns beyond the pass face the famine and the raiders alone. They know whose ' +
-        'blessing is on the stone.',
+        'The herders and towns beyond the pass face the famine and the raiders alone. They blame the god ' +
+        'for the wall.',
       polarity: 'loss' as const,
     },
     {
@@ -172,7 +170,7 @@ const WALL_RAISED_AFTERMATH = {
   reactions: [
     {
       id: 'wall_react_consecrate_the_keep',
-      label: 'Consecrate the keeping. Make the wall a blessing the valley lives by.',
+      label: 'Bless the wall.',
       intent:
         'Bless the wall and the people it guards. The stone becomes a holy boundary, and the mason-lord a ' +
         'founder.',
@@ -201,7 +199,7 @@ const WALL_RAISED_AFTERMATH = {
     },
     {
       id: 'wall_react_tend_the_far_side',
-      label: 'Tend the far side. Carry mercy around the stone you raised.',
+      label: 'Help the lands beyond the wall.',
       intent:
         'Turn to the lands the wall shut out. Help the herders and towns beyond the pass through the winter.',
       effects: [
@@ -213,7 +211,7 @@ const WALL_RAISED_AFTERMATH = {
         {
           kind: 'recent_event' as const,
           eventType: 'ripple_consequence' as const,
-          message: 'The god who blessed the wall now helps the lands it shut out.',
+          message: 'The god turns to the lands the wall shut out, and helps them through the winter.',
           significance: 0.75,
         },
         {
@@ -230,9 +228,9 @@ const WALL_RAISED_AFTERMATH = {
 
 const WALL_UNFINISHED_AFTERMATH = {
   overview:
-    'The wall stands half-built and abandoned in the pass. The valley faced the famine winter unguarded, ' +
+    'The wall stands half-built in the pass, and no more stone goes onto it. The valley faced the famine winter with the pass open, ' +
     'and it shared its grain with strangers from the west. Some of its own children went hungry. Beyond ' +
-    'the pass, the herders and towns came through the bad year alive. No monument records the mercy.',
+    'the pass, the herders and towns came through the bad year alive.',
   changes: [
     {
       id: 'wall_unfinished_pass_open',
@@ -251,7 +249,7 @@ const WALL_UNFINISHED_AFTERMATH = {
     {
       id: 'wall_unfinished_mercy',
       kind: 'reputation' as const,
-      title: 'The Mercy No One Records',
+      title: 'Lives Saved Beyond the Pass',
       detail: 'People beyond the pass lived who would have died outside the wall. Few of them know why.',
       polarity: 'gain' as const,
     },
@@ -260,7 +258,7 @@ const WALL_UNFINISHED_AFTERMATH = {
   reactions: [
     {
       id: 'wall_unfinished_react_carry_the_valley',
-      label: 'Carry the valley. Honor the ones who paid for the mercy.',
+      label: 'Help the valley.',
       intent:
         'Help the valley through the lean year, so the people who gave up their grain do not carry the cost ' +
         'alone.',
@@ -287,7 +285,7 @@ const WALL_UNFINISHED_AFTERMATH = {
     },
     {
       id: 'wall_unfinished_react_unmake_the_stone',
-      label: 'Unmake the stone. Let the half-wall return to the pass.',
+      label: 'Take the half-wall down.',
       intent:
         'Bless the work of taking the half-wall down. Its stone goes into the valley\'s houses and ' +
         'granaries, and the pass stays open.',
@@ -363,7 +361,8 @@ export const WALL_OF_THE_MASON_LORD_TEMPLATE: UnifiedActionTemplate = withEncoun
       'safe through the famine and shut the lands beyond it out. A god can harden the mason-lord\'s ' +
       'resolve, or let the doubt in.',
     success:
-      'The mason-lord finishes the wall or walks away from it. Where the stone stops sets who is shut out.',
+      'The mason-lord finishes the wall or walks away from it. If the wall is finished, the lands beyond ' +
+      'it are shut out.',
     failure:
       'The work goes wrong. The valley gets a flawed wall, or a half-wall that guards nothing and still ' +
       'frightens the far side.',
