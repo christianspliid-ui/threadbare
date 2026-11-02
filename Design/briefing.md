@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-02 04:58 local (03:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-02 05:57 local (04:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -51,7 +51,7 @@ Say "veto <title>" to reverse any of these. The panel-anatomy decisions ([THR-21
 
 ## Queue
 
-**Starved (1 ready, on hold).** [THR-2108](https://linear.app/threadbare/issue/THR-2108) (story text for ten more everyday encounters) is the only ready ticket. It is held until 14:30 UTC today while its five design decisions sit in their veto window, and the builder's last six runs correctly stood down on that hold. Both small UI bugs from last night are done and live ([THR-2126](https://linear.app/threadbare/issue/THR-2126), [THR-2127](https://linear.app/threadbare/issue/THR-2127/hand-sections-disclosure-chevron-points-right-when-open-rotate90deg-on)). The four legibility plans ([THR-2122](https://linear.app/threadbare/issue/THR-2122)–[THR-2125](https://linear.app/threadbare/issue/THR-2125)) wait on the first one's veto window, which opens around 11:25 UTC.
+**Starved (1 ready, on hold).** [THR-2108](https://linear.app/threadbare/issue/THR-2108) (story text for ten more everyday encounters) is the only ready ticket. It is held until 14:30 UTC today while its five design decisions sit in their veto window, and the builder's runs since 02:31 UTC have correctly stood down on that hold. Both small UI bugs from last night are done and live ([THR-2126](https://linear.app/threadbare/issue/THR-2126), [THR-2127](https://linear.app/threadbare/issue/THR-2127/hand-sections-disclosure-chevron-points-right-when-open-rotate90deg-on)). The four legibility plans ([THR-2122](https://linear.app/threadbare/issue/THR-2122)–[THR-2125](https://linear.app/threadbare/issue/THR-2125)) wait on the first one's veto window, which opens around 11:25 UTC.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -59,4 +59,5 @@ Two items for agents, not you:
 
 ## Health
 
-- All green. Last hour's engine-speed reading was noise: it is back inside the normal band. No pull requests are open. The live site serves the latest game build (fea5ff53; later commits were docs only). Checks on main and the scheduled background jobs pass. All nine enabled scheduled tasks are on time; the weekly screen review runs at 07:34 this morning. The worktree reaper last ran at 03:40 UTC.
+- **Engine speed, for the builder:** tick cost 224 ms/tick steady, 41% above the 7-day median (159, 128 rows since 6a1ff261); top phase agent_decision, 639 agents. Name the merges between 6a1ff261 and 2526793c: git log --oneline --merges 6a1ff261..2526793c
+- Everything else is green. No pull requests are open. The live site serves the latest game build (fea5ff53; later commits were docs only). Checks on main and the scheduled background jobs pass. All nine enabled scheduled tasks are on time; the weekly screen review runs at 07:34 this morning. The worktree reaper last ran at 04:48 UTC.
