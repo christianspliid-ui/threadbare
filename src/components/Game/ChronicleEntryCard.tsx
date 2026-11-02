@@ -1,6 +1,9 @@
 import type { ChronicleEntry } from '../../types/narrative';
 import { elapsedLabel } from '../../engine/aftermathWords';
 import { EntityLink } from '../shared/EntityLink';
+import { RowPicture, rowDressingAttrs } from '../shared/RowPicture';
+import type { EntityVisualDescriptor } from '../../engine/views/entityVisualResolver';
+import { ROW_VISUAL_KIND } from '../../engine/views/rowVisual';
 
 export type ChronicleVoiceMode = 'interleaved' | 'poet' | 'witness';
 
@@ -9,9 +12,14 @@ interface ChronicleEntryCardProps {
   voiceMode: ChronicleVoiceMode;
   /** Current simulation tick, so the heading can read how long ago the entry happened (THR-1426). */
   currentTick?: number;
+  /**
+   * THR-2103 (decision 2) — the entry's one picture: its first linked name's, resolved by the
+   * Ledger rail's view model. Absent ⇒ the card draws as before.
+   */
+  visual?: EntityVisualDescriptor | null;
 }
 
-export function ChronicleEntryCard({ entry, voiceMode, currentTick }: ChronicleEntryCardProps) {
+export function ChronicleEntryCard({ entry, voiceMode, currentTick, visual }: ChronicleEntryCardProps) {
   const hasPoet = Boolean(entry.poetProse);
   const poetText = entry.poetProse ?? '';
   // Migration shim: legacy prose treated as witness voice when dual-voice fields absent
@@ -22,14 +30,24 @@ export function ChronicleEntryCard({ entry, voiceMode, currentTick }: ChronicleE
 
   if (!showPoet && !showWitness) return null;
 
+  // An entry names a subject when one of its linked names is a person, place, faction, army or relic.
+  const namesSubject = !!visual || !!entry.segments?.some(seg => seg.ref && ROW_VISUAL_KIND[seg.ref.kind]);
+
   return (
     <div
+      data-testid="chronicle-entry"
+      {...rowDressingAttrs(visual, namesSubject)}
       style={{
         borderLeft: '2px solid var(--border-gold)',
         paddingLeft: '12px',
         marginBottom: '16px',
+        display: 'flex',
+        gap: '10px',
+        alignItems: 'flex-start',
       }}
     >
+      <RowPicture visual={visual} />
+      <div style={{ minWidth: 0, flex: '1 1 auto' }}>
       <div
         style={{
           fontFamily: 'var(--font-body)',
@@ -87,6 +105,7 @@ export function ChronicleEntryCard({ entry, voiceMode, currentTick }: ChronicleE
           ))}
         </ul>
       )}
+      </div>
     </div>
   );
 }

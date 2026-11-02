@@ -22,6 +22,8 @@ import type { DetailPage } from '../../types/detailPage';
 import { HOVER_CARD_MAX_SECTIONS } from '../../types/detailPage';
 import { Section } from './Section';
 import { TEXT_TOKENS_REM, remToPx } from './layoutContract';
+import { RowPicture } from './RowPicture';
+import type { EntityVisualDescriptor } from '../../engine/views/entityVisualResolver';
 
 /** Gap between the anchor and the card, px. */
 const HOVER_CARD_GAP_PX = 8;
@@ -55,7 +57,15 @@ export function hoverCardPosition(
   return { top, left };
 }
 
-export function HoverCard({ page, anchorEl }: { page: DetailPage; anchorEl: HTMLElement }) {
+export function HoverCard({ page, anchorEl, visual }: {
+  page: DetailPage;
+  anchorEl: HTMLElement;
+  /**
+   * THR-2103 (decision 5) — the subject's picture at chip size beside the name, resolved by
+   * the host (knowledge-gated, Law 8). Absent or null ⇒ the header draws as before.
+   */
+  visual?: EntityVisualDescriptor | null;
+}) {
   const rect = anchorEl.getBoundingClientRect();
   const { top, left } = hoverCardPosition(rect, {
     width: window.innerWidth,
@@ -83,7 +93,12 @@ export function HoverCard({ page, anchorEl }: { page: DetailPage; anchorEl: HTML
 
   return createPortal(
     <div style={style} data-testid="hover-card" role="tooltip" aria-hidden="true">
-      <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid var(--border-gold)' }}>
+      <div
+        style={{ padding: '10px 14px 8px', borderBottom: '1px solid var(--border-gold)', display: 'flex', gap: '10px', alignItems: 'center' }}
+        {...(visual ? { 'data-row-subject': visual.kind, 'data-row-art': visual.tier } : {})}
+      >
+        <RowPicture visual={visual} testId="hover-card-visual" />
+        <div style={{ minWidth: 0, flex: '1 1 auto' }}>
         <div
           style={{
             fontFamily: 'var(--font-body)',
@@ -114,6 +129,7 @@ export function HoverCard({ page, anchorEl }: { page: DetailPage; anchorEl: HTML
           }}
         >
           {page.subtitle}
+        </div>
         </div>
       </div>
       <div style={{ padding: '10px 14px', overflow: 'hidden' }}>

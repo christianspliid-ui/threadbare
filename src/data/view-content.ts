@@ -507,5 +507,67 @@ export function ceremonyHeadingIcon(id: CeremonyHeadingId): IconName | null {
   return (CEREMONY_HEADING_ICONS as Readonly<Record<CeremonyHeadingId, IconName | null>>)[id];
 }
 
+/**
+ * THR-2103 (art-led pass, slice 7, S7.3, R2) — the carved shape each list heading draws, before
+ * the heading, at `chip` size, decorative, in the heading's colour. Components read the row,
+ * never a literal (Law 58). `null` = no idea in the registry names the heading (decision 7):
+ * it draws nothing and waits on Christian's pick (THR-2104), never an invented shape. A
+ * sub-heading under a title that already carries an idea does not repeat it.
+ *
+ * Kill criterion ("the lists are busy"): set every row to `null`; the row pictures stay.
+ */
+export const LIST_HEADING_ICONS = {
+  chronicle: 'chronicle',
+  beforeYouWoke: null,
+  notablesTitle: 'notables',
+  notablesRulers: null,
+  notablesLocal: null,
+  rivalGods: 'rivals',
+  worldOmens: 'omen',
+  recentOmens: null,
+  readTheThreads: 'read-the-threads',
+  digestWatchedLocations: 'place',
+  digestOther: null,
+  mandateSubheadings: null,
+  doomSubheadings: null,
+  threadsTitle: 'threads',
+  threadsAgents: 'person',
+  threadsLocations: 'place',
+  threadsFactions: 'faction',
+  threadsArmies: 'army',
+  threadsArtifacts: 'artifact',
+  threadsHexes: 'hex',
+  threadsSources: null,
+  findPlaces: 'place',
+  findPeople: 'person',
+  findYours: 'person',
+  findThings: 'artifact',
+  findCards: 'cards',
+  findCodex: 'codex',
+  findPowers: null,
+  findRecent: null,
+} as const satisfies Readonly<Record<string, IconName | null>>;
+
+export type ListHeadingId = keyof typeof LIST_HEADING_ICONS;
+
+/** The list headings with no fitting idea (decision 7; posted on THR-2104 after merge). */
+export const LIST_NO_IDEA_HEADINGS: readonly ListHeadingId[] = [
+  'beforeYouWoke',
+  'notablesRulers',
+  'notablesLocal',
+  'recentOmens',
+  'digestOther',
+  'mandateSubheadings',
+  'doomSubheadings',
+  'threadsSources',
+  'findPowers',
+  'findRecent',
+];
+
+/** The shape a list heading draws, or null. */
+export function listHeadingIcon(id: ListHeadingId): IconName | null {
+  return (LIST_HEADING_ICONS as Readonly<Record<ListHeadingId, IconName | null>>)[id];
+}
+
 /** THR-2102 — one echo card at the harvest; four sit in a row at `--ceremony-panel-max-w`. */
 export const HARVEST_ECHO_TILE_W = '11rem';

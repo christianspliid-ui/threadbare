@@ -21,6 +21,7 @@
  */
 import type { ViewSelector } from './readView';
 import type { GameState } from '../../types/gameState';
+import type { ChronicleEntry } from '../../types/narrative';
 import type { SphereName } from '../../types';
 import type { SphereAggregate } from '../../types/worldSoul';
 import { WORLD_SOUL_PROSE, type WorldSoulIntensity } from '../../data/worldSoulProse';
@@ -34,6 +35,8 @@ import {
 } from '../../data/frame-content';
 import { SEASONS_PER_YEAR, deriveSeasonAndYear } from '../../types/temporal';
 import { selectThreadedChapters } from '../threadedChapters';
+import { rowVisual, type RowVisualContext } from './rowVisual';
+import type { EntityVisualDescriptor } from './entityVisualResolver';
 
 export const INTENSITY_WHISPER_MAX = 2;
 export const INTENSITY_MURMUR_MAX = 4;
@@ -81,6 +84,8 @@ export interface LedgerRailChapterRow {
   mortalName: string;
   state: string;
   isNew: boolean;
+  /** THR-2103 (S7.1) — the mortal's face, knowledge-gated (Law 8); null when none resolves. */
+  visual?: EntityVisualDescriptor | null;
 }
 
 export interface LedgerRailVM {
@@ -89,6 +94,11 @@ export interface LedgerRailVM {
   /** Newest year first; the Years tab renders only when there are two or more. */
   years: LedgerRailYear[];
   ledger: { rows: LedgerRailChapterRow[]; unread: number };
+  /**
+   * THR-2103 (decision 2) — each entry's one picture: the first linked name in its lines that
+   * has one, keyed by entry id. An entry with no such name has no key and draws as before.
+   */
+  entryVisuals?: Readonly<Record<string, EntityVisualDescriptor>>;
   strip: { threads: number; chronicle: number; ledger: number };
 }
 
@@ -125,6 +135,29 @@ function seasonIndex(tick: number, ticksPerSeason: number): number {
   return year * SEASONS_PER_YEAR + season;
 }
 
+/**
+ * THR-2103 (decision 2) — the first linked name in each entry's lines that has a picture.
+ * One resolve per entry at most; names in the witness lines stay links (their hover card
+ * shows the face), so the prose is never buried under a picture per name.
+ */
+export function chronicleEntryVisuals(
+  entries: readonly ChronicleEntry[],
+  ctx: RowVisualContext,
+): Readonly<Record<string, EntityVisualDescriptor>> {
+  const out: Record<string, EntityVisualDescriptor> = {};
+  for (const e of entries) {
+    for (const seg of e.segments ?? []) {
+      if (!seg.ref) continue;
+      const visual = rowVisual(ctx, { kind: seg.ref.kind, id: seg.ref.id, name: seg.text });
+      if (visual) {
+        out[e.id] = visual;
+        break;
+      }
+    }
+  }
+  return out;
+}
+
 export function buildLedgerRail(state: GameState, args: LedgerRailArgs): LedgerRailVM {
   const perSeason = state.clock.ticksPerSeason;
   const entries = [...(state.chronicleEntries ?? [])].reverse(); // newest first
@@ -152,6 +185,7 @@ export function buildLedgerRail(state: GameState, args: LedgerRailArgs): LedgerR
   const byArrival = chapters.map((r, i) => ({ key: r.key, startTick: r.startTick, i }))
     .sort((a, b) => b.startTick - a.startTick || a.i - b.i);
   const newKeys = new Set(byArrival.slice(0, unread).map(x => x.key));
+  const visualCtx: RowVisualContext = { graph: state.graph, familiarityMap: state.familiarityMap, tiles: state.tiles };
   const rows: LedgerRailChapterRow[] = chapters.map((r) => ({
     recordId: r.key,
     name: r.templateName,
@@ -159,6 +193,7 @@ export function buildLedgerRail(state: GameState, args: LedgerRailArgs): LedgerR
     mortalName: r.actorName,
     state: r.statusLabel,
     isNew: newKeys.has(r.key),
+    visual: rowVisual(visualCtx, { kind: 'agent', id: r.actorId, name: r.actorName }),
   }));
 
   return {
@@ -166,6 +201,7 @@ export function buildLedgerRail(state: GameState, args: LedgerRailArgs): LedgerR
     now: { entryIds: nowIds, emptyLine: nowIds.length === 0 ? CHRONICLE_EMPTY_LINE : null },
     years,
     ledger: { rows, unread },
+    entryVisuals: chronicleEntryVisuals(entries, visualCtx),
     strip: {
       threads: Math.max(0, args.threadsWaiting),
       chronicle: Math.max(0, entries.length - Math.max(0, args.seenChronicle)),
@@ -180,6 +216,7 @@ export function emptyLedgerRail(): LedgerRailVM {
     now: { entryIds: [], emptyLine: CHRONICLE_EMPTY_LINE },
     years: [],
     ledger: { rows: [], unread: 0 },
+    entryVisuals: {},
     strip: { threads: 0, chronicle: 0, ledger: 0 },
   };
 }

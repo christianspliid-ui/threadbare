@@ -24,6 +24,11 @@ import { getNotableAgendaFamily } from '../../data/notable-agendas';
 import { agendaFlags } from '../../engine/notableAgendas';
 import { worldRefKindOf } from '../../engine/undertakingDeed';
 import { NOTABLES_FINISHED_FADE_LINE } from '../../data/ui-content';
+import { listHeadingIcon } from '../../data/view-content';
+import { rowVisual } from '../../engine/views/rowVisual';
+import type { EntityVisualDescriptor } from '../../engine/views/entityVisualResolver';
+import { RowPicture, rowDressingAttrs } from '../shared/RowPicture';
+import { ListHeadingIcon } from '../shared/ListHeadingIcon';
 
 /** THR-1655: the panel scrolls inside the dropdown past this height, so it never leaves the viewport. */
 const NOTABLES_PANEL_MAX_HEIGHT = '70vh';
@@ -60,6 +65,11 @@ export interface NotableEntry {
   /** True when every agenda is a settlement notable's (the Local group). */
   local: boolean;
   agendas: NotableAgendaRow[];
+  /**
+   * THR-2103 (S7.1) — the notable's face, knowledge-gated (Law 8), or their faction's arms;
+   * null when the sponsor has no node.
+   */
+  visual: EntityVisualDescriptor | null;
 }
 
 /** Derive one row per agenda from live state (exported for tests). */
@@ -124,6 +134,9 @@ export function buildNotableEntries(gameState: GameState): NotableEntry[] {
         notableRef: node && kind ? { kind, id: node.id, name: node.name } : null,
         local: true,
         agendas: [],
+        visual: node && kind
+          ? rowVisual({ graph, familiarityMap: gameState.familiarityMap, tiles: gameState.tiles }, { kind, id: node.id, name: row.notableName })
+          : null,
       };
       byId.set(row.notableId, entry);
     }
@@ -167,11 +180,18 @@ export const NotablesPanel = React.memo(function NotablesPanel({ gameState }: No
   // The dropdown has no scroll of its own; a busy world's rows ran past the fold (Law 33).
   // The fade line sits below the scrolling rows, so it stays on screen however long the list.
   return (
-    <div className="flex flex-col gap-2" style={{ maxHeight: NOTABLES_PANEL_MAX_HEIGHT }}>
+    <div className="flex flex-col gap-2" data-testid="notables-panel" style={{ maxHeight: NOTABLES_PANEL_MAX_HEIGHT }}>
+      {/* THR-2103 (R2): the popover's title carries the Notables shape, as its launcher does. */}
+      {listHeadingIcon('notablesTitle') && (
+        <div className="shrink-0 flex items-center gap-2 topbar-section-label" data-testid="notables-title">
+          <ListHeadingIcon id="notablesTitle" />
+          <span>Notables</span>
+        </div>
+      )}
       <div className="space-y-3 overflow-y-auto overflow-x-hidden pr-1 min-h-0 flex-1">
         {groups.map((group) => (
           <section key={group.key} className="space-y-2" data-testid={`notables-group-${group.key}`}>
-            <SectionHeading as="h2" count={group.entries.length}>{group.title}</SectionHeading>
+            <SectionHeading as="h2" count={group.entries.length} icon={listHeadingIcon(group.key === 'rulers' ? 'notablesRulers' : 'notablesLocal')}>{group.title}</SectionHeading>
             <NotableList entries={group.entries} label={group.title} />
           </section>
         ))}
@@ -209,8 +229,15 @@ function NotableList({ entries, label }: { entries: NotableEntry[]; label: strin
             role="listitem"
             data-notable-id={entry.notableId}
             aria-label={`${entry.notableName}, ${agendaWords}`}
+            {...rowDressingAttrs(entry.visual, !!entry.notableRef)}
           >
             <ListRow accentColor={color}>
+              {entry.visual && (
+                <ListRow.Leading>
+                  {/* Aligned to the name's line, so the face overlaps the agenda line rather than adding height. */}
+                  <RowPicture visual={entry.visual} style={{ alignSelf: 'flex-start' }} />
+                </ListRow.Leading>
+              )}
               <div style={{ minWidth: 0, flex: 1 }}>
                 {/* THR-1655: each on its own truncating line — the primitives are inline
                     spans, so side by side they ran together and under the family label. */}

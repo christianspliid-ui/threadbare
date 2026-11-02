@@ -38,6 +38,7 @@ import { useAgentInteraction, unthreadedAgentTierName } from './hooks/useAgentIn
 import { useViewNavigation } from './hooks/useViewNavigation';
 import { resolvePlaceHex } from '../../engine/views/map/focusTargets';
 import { readView } from '../../engine/views/readView';
+import { hoverRowVisual, toastRowVisuals } from '../../engine/views/rowVisual';
 import { stageViewSelector, type StageVM } from '../../engine/views/stage/stageView';
 import { isStageOpen } from './stage/stageState';
 import { useStageDebugBridge } from './stage/useStageDebugBridge';
@@ -3146,6 +3147,24 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // asks for the sheet, and the sheet is the same handler it always called.
   const handleNotificationNavigate = useNotificationNavigation(refRouter);
 
+  // THR-2103 (S7.1, decisions 4 and 5) — the toasts' and the hover card's subject pictures,
+  // resolved here so neither component reads the graph; knowledge-gated (Law 8).
+  const shownToasts = useMemo(
+    () => [...notificationState.toasts, ...actionToasts],
+    [notificationState.toasts, actionToasts],
+  );
+  const toastVisuals = useMemo(
+    () => toastRowVisuals({ graph: gameState.graph, familiarityMap: gameState.familiarityMap, tiles: gameState.tiles }, shownToasts),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the graph mutates in place; the toast list is the rebuild signal
+    [shownToasts, gameState.familiarityMap, gameState.tiles],
+  );
+  const hoverRef = refRouter.hoverCard?.ref;
+  const hoverVisual = useMemo(
+    () => (hoverRef ? hoverRowVisual({ graph: gameState.graph, familiarityMap: gameState.familiarityMap, tiles: gameState.tiles }, hoverRef) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the graph mutates in place; the hovered ref is the rebuild signal
+    [hoverRef, gameState.familiarityMap, gameState.tiles],
+  );
+
   // THR-1851 — the links inside a detail card (faction allegiances, threads, prose
   // terms). Until this was mounted every one of them rendered as plain text in the game.
   const getLiveGraph = useCallback(() => _gameStateRef.current.graph, []);
@@ -3949,6 +3968,18 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     window.__DEBUG?._registerTopBarBridge?.({
       pushNeedsYouFixture: (opts) => pushNeedsYouFixtureRef.current(opts),
       setFrameFixture: (fixture) => { setFrameFixture(fixture); return true; },
+      // THR-2103 — one toast with a chosen target, so a toast's subject picture can be read.
+      pushToastFixture: (target, message) => {
+        const g = _gameStateRef.current;
+        handlePushToast({
+          id: `fixture_toast_${Date.now()}`,
+          message: message ?? 'A thread trembles.',
+          count: 1,
+          createdTick: g.tick,
+          expiresAt: Date.now() + 60_000,
+          navigationTarget: target,
+        });
+      },
     });
   }, []);
   /** `__DEBUG.pushNeedsYouFixture` (dev): news on distinct ticks, a same-tick burst, a held popup. */
@@ -4471,7 +4502,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             {!inspectorIsOpen && <ArmedBanner floating />}
             {/* Toast notifications */}
             <ToastStack
-              toasts={[...notificationState.toasts, ...actionToasts]}
+              toasts={shownToasts}
+              toastVisuals={toastVisuals}
               onDismiss={handleDismissToast}
               onSelectAgent={handleAgentSelect}
               onNavigate={handleNotificationNavigate}
@@ -4760,7 +4792,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       />
 
       {refRouter.hoverCard && (
-        <HoverCard page={refRouter.hoverCard.page} anchorEl={refRouter.hoverCard.anchorEl} />
+        <HoverCard page={refRouter.hoverCard.page} anchorEl={refRouter.hoverCard.anchorEl} visual={hoverVisual} />
       )}
     </div>
       </GameScreenStateProvider>

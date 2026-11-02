@@ -37,6 +37,9 @@ import { dialogContextClass, type DialogContext } from '../shared/dialogContext'
 import { FRAME_TOKENS_PX, TYPE_SCALE_REM, layoutTierFor, remToPx, rootFontPx } from '../shared/layoutContract';
 import { Medallion } from '../shared/Medallion';
 import { BondStrip } from '../shared/BondStrip';
+import { RowPicture } from '../shared/RowPicture';
+import { ListHeadingIcon } from '../shared/ListHeadingIcon';
+import { resolveEntityVisual as resolveSampleVisual } from '../../engine/views/entityVisualResolver';
 import { QuietSlot } from '../shared/QuietSlot';
 import { dialogHeadingIcon } from '../../data/view-content';
 import { FlavorQuote } from '../shared/FlavorQuote';
@@ -147,6 +150,8 @@ const SECTIONS = [
   { id: 'dialog-contexts', label: 'Dialogue contexts (THR-1586)' },
   { id: 'medallion', label: 'Medallion (THR-799)' },
   { id: 'bondstrip', label: 'BondStrip (THR-2097)' },
+  { id: 'rowpicture', label: 'RowPicture (THR-2103)' },
+  { id: 'listheadingicon', label: 'ListHeadingIcon (THR-2103)' },
   { id: 'quietslot', label: 'QuietSlot (THR-2097)' },
   { id: 'modal-header-icon', label: 'Modal.Header icon (THR-2101)' },
   { id: 'flavorquote', label: 'FlavorQuote (THR-799)' },
@@ -1463,6 +1468,39 @@ export default function StyleGuide() {
             </div>
           </section>
 
+          {/* ── RowPicture (THR-2103) ──────────────────────────── */}
+          <section id="section-rowpicture" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>RowPicture (THR-2103)</SectionHeading>
+            <div style={{ marginTop: '1.25rem', maxWidth: '520px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <GameErrorBoundary>
+                <Label>
+                  The picture a list row leads with (rule R1), at chip size: a circle for a person, the rounded
+                  tile for a place, faction, army or relic. The host resolves it; a stranger draws the silhouette.
+                </Label>
+                {(['agent', 'location', 'faction', 'artifact'] as const).map(kind => (
+                  <div key={kind} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <RowPicture visual={resolveSampleVisual({ id: `sample-${kind}`, kind, name: kind === 'agent' ? 'Ilsa Venn' : 'Harrow' }, null)} />
+                    <span style={{ color: 'var(--text-primary)', fontSize: 'var(--text-sm)' }}>{kind === 'agent' ? 'Ilsa Venn' : kind}</span>
+                  </div>
+                ))}
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── ListHeadingIcon (THR-2103) ─────────────────────── */}
+          <section id="section-listheadingicon" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>ListHeadingIcon (THR-2103)</SectionHeading>
+            <div style={{ marginTop: '1.25rem', maxWidth: '520px' }}>
+              <GameErrorBoundary>
+                <Label>A list heading's carved shape, read from LIST_HEADING_ICONS (rule R2). A null row draws nothing.</Label>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'var(--text-tertiary)', fontWeight: 700, fontSize: 'var(--text-xs)' }}>
+                  <ListHeadingIcon id="chronicle" />
+                  Chronicle
+                </span>
+              </GameErrorBoundary>
+            </div>
+          </section>
+
           {/* ── QuietSlot (THR-2097) ───────────────────────────── */}
           <section id="section-quietslot" style={{ marginBottom: SECTION_GAP }}>
             <SectionHeading ornamental>QuietSlot (THR-2097)</SectionHeading>
@@ -2038,6 +2076,8 @@ export default function StyleGuide() {
                 <SectionHeading count={12}>With Count</SectionHeading>
                 <Label>as="h2"</Label>
                 <SectionHeading as="h2">Heading Level 2</SectionHeading>
+                <Label>with icon (THR-2103, rule R2 — read from a content table, never a literal)</Label>
+                <SectionHeading count={3} icon="rivals">Rival gods</SectionHeading>
               </GameErrorBoundary>
             </div>
           </section>

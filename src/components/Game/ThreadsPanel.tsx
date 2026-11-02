@@ -6,6 +6,10 @@ import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import type { BalanceEvent } from '../../types/balanceEval';
 import type { ActiveEncounterDisplay } from './encounterNotificationRuntime';
 import { SectionHeading } from '../shared/SectionHeading';
+import { RowPicture, rowDressingAttrs } from '../shared/RowPicture';
+import { ListHeadingIcon } from '../shared/ListHeadingIcon';
+import { listHeadingIcon, type ListHeadingId } from '../../data/view-content';
+import type { EntityVisualDescriptor } from '../../engine/views/entityVisualResolver';
 import { Icon } from '../shared/Icon';
 import { ICON_FOR_THREAD_ROW_MARK } from '../../data/icons/conceptIcons';
 import { Tooltip } from '../shared/Tooltip';
@@ -75,6 +79,17 @@ const SECTION_LABELS: Record<ThreadSectionKey, string> = {
   artifact: 'Artifacts',
   hex: 'Hexes',
   source: 'Sources',
+};
+
+/** THR-2103 (S7.3) — each section's row in `LIST_HEADING_ICONS` (Law 58). */
+const SECTION_HEADING_IDS: Record<ThreadSectionKey, ListHeadingId> = {
+  agent: 'threadsAgents',
+  location: 'threadsLocations',
+  faction: 'threadsFactions',
+  army: 'threadsArmies',
+  artifact: 'threadsArtifacts',
+  hex: 'threadsHexes',
+  source: 'threadsSources',
 };
 
 /**
@@ -165,6 +180,13 @@ interface ThreadsPanelProps {
    * Typically opens AgentProfileModal at the appropriate tab.
    */
   onChampionChipClick?: (agentId: string) => void;
+  /**
+   * THR-2103 (S7.1) — each threaded row's picture, keyed by node id, resolved by the host
+   * (`LedgerRail`) so the panel never reads the graph: a mortal's face (knowledge-gated,
+   * Law 8), a place's picture, a faction's arms, an army's or relic's tile. A row with no
+   * entry draws without a picture.
+   */
+  threadVisuals?: Readonly<Record<string, EntityVisualDescriptor | null>>;
 }
 
 // ─── Compact row props ────────────────────────────────────────────
@@ -209,6 +231,8 @@ interface CompactThreadRowProps {
    * any sustained controls targeting them. Optional.
    */
   locationClaimStatus?: string | null;
+  /** THR-2103 — the row's picture (decision 3: it replaces the initials medallion). */
+  visual?: EntityVisualDescriptor | null;
 }
 
 // ─── Utility functions ────────────────────────────────────────────
@@ -229,61 +253,6 @@ interface CompactThreadRowProps {
 // did not, and was pruned with its tests by THR-1089's dead-code sweep.
 
 // ─── Sub-components ───────────────────────────────────────────────
-
-interface ThreadPortraitProps {
-  name: string;
-  id: string;
-  sphere: string | null;
-  selected: boolean;
-  size?: number;
-}
-
-function ThreadPortrait({ name, id, sphere, selected, size = 52 }: ThreadPortraitProps) {
-  const initials = useMemo(() => {
-    const parts = String(name || '?').trim().split(/\s+/);
-    const a = parts[0]?.[0] || '?';
-    const b = parts[1]?.[0] || '';
-    return (a + b).toUpperCase();
-  }, [name]);
-  const seed = useMemo(() => {
-    let h = 0;
-    for (const c of String(id || name)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
-    return h;
-  }, [id, name]);
-  const rot = ((seed % 13) - 6) * 0.6;
-  const sphereVar = sphere ? `var(--sphere-${sphere})` : 'var(--accent-gold-dim)';
-  const sphereBrightVar = sphere ? `var(--sphere-${sphere}-bright)` : 'var(--accent-gold)';
-  const ring = selected ? 'var(--accent-gold)' : 'var(--accent-gold-dim)';
-  const gradId = `pf-${id}`;
-  return (
-    <svg width={size} height={size} viewBox="0 0 48 48" style={{ flexShrink: 0, display: 'block' }}>
-      <defs>
-        <radialGradient id={`${gradId}-g`} cx="50%" cy="38%" r="65%">
-          <stop offset="0%" stopColor={sphereBrightVar} stopOpacity="0.55" />
-          <stop offset="60%" stopColor={sphereVar} stopOpacity="0.30" />
-          <stop offset="100%" stopColor="#0a0a0c" stopOpacity="0.95" />
-        </radialGradient>
-      </defs>
-      <g transform={`rotate(${rot} 24 24)`}>
-        <circle cx="24" cy="24" r="22" fill="none" stroke={ring} strokeWidth="0.6" opacity="0.7" />
-        <circle cx="24" cy="24" r="20.2" fill="none" stroke={ring} strokeWidth="0.4" opacity="0.35" />
-        <circle cx="24" cy="24" r="19" fill={`url(#${gradId}-g)`} />
-        {([0, 90, 180, 270] as const).map(a => (
-          <line key={a} x1="24" y1="3.5" x2="24" y2="5.5"
-            transform={`rotate(${a} 24 24)`}
-            stroke={ring} strokeWidth="0.6" opacity="0.55" />
-        ))}
-        <text x="24" y="24" textAnchor="middle" dominantBaseline="central"
-          fontFamily="var(--font-display)"
-          fontSize={initials.length > 1 ? 17 : 21}
-          fontWeight="600" letterSpacing="1"
-          fill={selected ? 'var(--accent-gold)' : 'var(--text-primary)'}
-          style={{ textTransform: 'uppercase' }}
-        >{initials}</text>
-      </g>
-    </svg>
-  );
-}
 
 /**
  * What a toggle click returned (THR-1715). `ok: false` carries the refusal's
@@ -421,6 +390,7 @@ function CompactThreadRow({
   onOpenMomentBadge,
   onChampionChipClick,
   locationClaimStatus,
+  visual,
 }: CompactThreadRowProps) {
   // THR-418: champion-chip presence only matters for agent rows.
   const championTemplateId = node.category === 'agent' ? node.championTemplateId : null;
@@ -526,6 +496,7 @@ function CompactThreadRow({
       role="listitem"
       aria-selected={isSelected}
       data-testid="thread-entry"
+      {...rowDressingAttrs(visual, visual !== undefined)}
       onClick={() => onNodeSelect(node.id, node.category)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -545,18 +516,11 @@ function CompactThreadRow({
         marginBottom: 2,
       }}
     >
-      {/* Main row: portrait (agents) + content */}
+      {/* Main row: picture + content */}
       <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '10px 12px 10px 9px' }}>
-        {/* Portrait — agents only */}
-        {node.category === 'agent' && (
-          <ThreadPortrait
-            name={node.name}
-            id={node.id}
-            sphere={sphere}
-            selected={isSelected}
-            size={52}
-          />
-        )}
+        {/* THR-2103 (decision 3): every row's picture at chip size — the face (or the
+            designed tile, or the silhouette below `recognised`) replaces the initials. */}
+        <RowPicture visual={visual} testId="thread-visual" />
 
         {/* Content column */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, minWidth: 0 }}>
@@ -1107,6 +1071,7 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
   onOpenMomentBadge,
   sustainedControls,
   onChampionChipClick,
+  threadVisuals,
 }: ThreadsPanelProps) {
   // THR-418: bucket sustained controls by category and by parent location id (for folded-in
   // location-targeted effects). Source/hex buckets get their own sections; location targets
@@ -1191,7 +1156,7 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
 
   return (
     <FirstUseCaptionZone id="threads">
-      <div className="panel" style={{ padding: 'var(--space-3)' }}>
+      <div className="panel" data-testid="threads-panel" style={{ padding: 'var(--space-3)' }}>
         {/* Panel title */}
         <div
           style={{
@@ -1200,8 +1165,12 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
             fontWeight: 700,
             color: 'var(--text-primary)',
             paddingBottom: 'var(--space-2)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
           }}
         >
+          <ListHeadingIcon id="threadsTitle" />
           Threads
         </div>
         {/* THR-1986 — what the panel holds, until the player uses it once. */}
@@ -1225,7 +1194,6 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
 
           const isExpanded = expandedSections[category];
           const label = SECTION_LABELS[category];
-          const chevron = isExpanded ? '\u25BC' : '\u25B6';
 
           return (
             <div key={category} style={{ marginBottom: 'var(--space-2)' }}>
@@ -1236,10 +1204,12 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
                 style={{ paddingLeft: 'var(--space-2)', paddingRight: 'var(--space-2)' }}
                 data-testid={`threads-section-header-${category}`}
               >
-                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', flexShrink: 0 }}>
-                  {chevron}
+                {/* The carved triangle points up at rest: turned right while folded, down while open (as the god rail's). */}
+                {/* Aligned to the heading's line, not the ornamental rule's box (which carries its bottom margin). */}
+                <span style={{ display: 'inline-flex', color: 'var(--text-tertiary)', flexShrink: 0, alignSelf: 'flex-start', marginTop: '0.3rem' }}>
+                  <Icon name="disclosure" size="floor" decorative style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(90deg)' }} />
                 </span>
-                <SectionHeading ornamental count={groupSize}>{label}</SectionHeading>
+                <SectionHeading ornamental count={groupSize} icon={listHeadingIcon(SECTION_HEADING_IDS[category])}>{label}</SectionHeading>
               </div>
 
               {/* Rows */}
@@ -1287,6 +1257,7 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
                             onOpenMomentBadge={onOpenMomentBadge}
                             onChampionChipClick={onChampionChipClick}
                             locationClaimStatus={claimStatus}
+                            visual={threadVisuals ? threadVisuals[node.id] ?? null : undefined}
                           />
                         );
                       })}

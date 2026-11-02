@@ -70,6 +70,8 @@ export { RarityBadge } from './RarityBadge';
 export { RarityBorderBox } from './RarityBorderBox';
 export { RivalIcon } from './RivalIcon';
 export { BondStrip, BOND_STRIP_MEDALLION } from './BondStrip';
+export { RowPicture, rowDressingAttrs } from './RowPicture';
+export { ListHeadingIcon } from './ListHeadingIcon';
 export { QuietSlot } from './QuietSlot';
 export { SectionHeading } from './SectionHeading';
 export { Section } from './Section';
