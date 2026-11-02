@@ -190,24 +190,18 @@ export function stepChapterAnswer(
       const sawRunning = record.sawRunning || inputs.running || inputs.heldRunning === true;
       const current = sawRunning === record.sawRunning ? record : { ...record, sawRunning };
 
-      if (isChapterStepAnswered(inputs.unifiedActions, record)) {
+      // THR-2140 — a moveless step playing out is not yet the answer: the run
+      // carries on exactly as before the step advanced (a player pause still
+      // turns it into a waiting answer; the max-ticks bound still applies).
+      if (
+        isChapterStepAnswered(inputs.unifiedActions, record)
+        && !isPlayingOutMovelessStep(inputs.encounterNotifications, record, inputs.unifiedActions)
+      ) {
         // The answer's veil is up: its hold saved "running" — make it paused.
         if (inputs.veilOpen) return none([{ kind: 'pause_if_held' }]);
         // Some other interrupt holds the clock: stop it there; the beat opens
         // when that surface closes, as today.
         if (inputs.heldRunning !== null) return none([{ kind: 'pause_if_held' }]);
-        // THR-2140 — a moveless step is playing out: keep the clock turning
-        // (the run's own max-ticks bound still applies below).
-        if (isPlayingOutMovelessStep(inputs.encounterNotifications, record, inputs.unifiedActions)) {
-          const ticksRun = record.startedAtTick === null ? 0 : inputs.tick - record.startedAtTick;
-          if (ticksRun >= CHAPTER_ANSWER_RUN_MAX_TICKS) {
-            return none([
-              { kind: 'stop_clock' },
-              { kind: 'toast', message: chapterAnswerText(CHAPTER_ANSWER_TIMEOUT_TOAST, record.chapterName) },
-            ]);
-          }
-          return keep(current);
-        }
         if (hasPendingAnswerBeat(inputs.encounterNotifications, record, inputs.unifiedActions)) {
           const at = answeredAtTick ?? inputs.tick;
           if (inputs.tick - at >= CHAPTER_ANSWER_OPEN_GRACE_TICKS) return none([{ kind: 'stop_clock' }]);

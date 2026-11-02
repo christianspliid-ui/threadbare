@@ -253,6 +253,10 @@ describe('THR-1812 — stepChapterAnswer (pure)', () => {
     const late = stepChapterAnswer(running, { ...answeredInputs, encounterNotifications: moveless, tick: 100 + CHAPTER_ANSWER_RUN_MAX_TICKS }, null);
     expect(late.record).toBeNull();
     expect(late.effects[0]).toEqual({ kind: 'stop_clock' });
+    // A player pause during the moveless step still makes it a waiting answer.
+    const paused = stepChapterAnswer(running, { ...answeredInputs, running: false, encounterNotifications: moveless, tick: 105 }, null);
+    expect(paused.record?.phase).toBe('waiting');
+    expect(paused.record?.startedAtTick).toBeNull();
   });
 
   it('another interrupt holding the clock when the step answers re-points its hold to paused', () => {
