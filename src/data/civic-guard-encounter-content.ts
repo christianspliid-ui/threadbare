@@ -2127,15 +2127,8 @@ const CG_JOIN_DEFERRED_BAND: AftermathOutcomeOverride = {
   overview:
     '{name} did not pass the trial. The recruiter sends {them} away with a time to come back, ' +
     'and the guard\'s door stays open.',
-  changes: [
-    {
-      id: 'join_outcome',
-      kind: 'reputation',
-      title: 'Civic Guard Status',
-      detail: 'Sent away from the trial. {name} can try again later.',
-      polarity: 'loss',
-    },
-  ],
+  // No chip: nothing is written on a deferral, and a chip without a write breaks Law 56.
+  changes: [],
   reactionPrompt: 'The trial said {name} is not ready yet.',
   reactions: [
     {

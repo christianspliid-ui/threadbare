@@ -4,6 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import {
+  CAUSE_GOD_ELSEWHERE,
   CAUSE_STEP_VERBS,
   OUTCOME_PHRASES,
   OUTCOME_SENTENCE_SHAPES,
@@ -95,7 +96,10 @@ describe('THR-1964 — the cause line, every band × god-touched / alone × one-
               continue;
             }
             expect(text).toContain(`The work on Gold ${CAUSE_STEP_VERBS[band]}`);
-            if (!godTouched) expect(text).toContain('Kael faced it alone.');
+            // THR-2139 — in the many-step shape the other step carries the hand, so the
+            // untouched decider reads "elsewhere", never "alone".
+            if (!godTouched && shape === 'many-step') expect(text).toContain(`${CAUSE_GOD_ELSEWHERE}.`);
+            else if (!godTouched) expect(text).toContain('Kael faced it alone.');
             else if (LOST.has(outcome) || band === 'failure' || band === 'critical_failure') {
               expect(text).toContain('your cards could not save it.');
             }
