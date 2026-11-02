@@ -111,7 +111,7 @@ export const EASTER_RECKONING_DEFAULTED: UnifiedActionTemplate = {
   // Seed-only: the feast reckoning's appointment (missed branch) is its only planter (THR-1526).
   drawable: false,
   name: 'The Reckoning Defaulted',
-  description: 'The reckoning was not read on synod day, and the dean has come looking for the master who made it.',
+  description: 'The reckoning was not read on synod day, and the dean has come looking for {name}, who made it.',
   rarityTier: 2,
   intrinsicTier: 'background',
   reach: 'heart',
@@ -135,7 +135,7 @@ export const EASTER_RECKONING_DEFAULTED: UnifiedActionTemplate = {
         "The synod kept the cathedral's tables, and the spring feast will be kept a week late. " +
         '{cast:dean} has come looking for {name} with a paper, to have the reckoning signed away as a mistake.',
       successAfterimage: '{name} would not sign, and {cast:dean} left with the paper still blank.',
-      failureAfterimage: "{cast:dean} thinks less of the master who stayed away, and says so at the bishop's table.",
+      failureAfterimage: "{name} signed the paper, and {cast:dean} read it aloud at the bishop's table.",
       successMetadata: {
         effects: [{ kind: 'bond_change', withAgentId: '$cast:dean', sentimentDelta: -0.04, trustDelta: 0.03 }],
       },
@@ -151,7 +151,7 @@ export const EASTER_RECKONING_DEFAULTED: UnifiedActionTemplate = {
   narrativeTemplates: {
     initiation: 'The reckoning was not read on synod day, and the dean has come looking.',
     success: '{name} would not sign the reckoning away.',
-    failure: 'The dean thinks less of the master who stayed away.',
+    failure: '{name} signed the reckoning away as a mistake.',
   },
   aftermathConfig: {
     branchOnStep: 0,

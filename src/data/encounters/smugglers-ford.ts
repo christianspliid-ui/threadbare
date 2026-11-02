@@ -301,7 +301,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
               effectLine: 'Draw a watchman\'s gaze to some small noise elsewhere, long enough for someone to slip past.',
               bandProse: {
                 critical_success: 'Both watchmen looked upstream at a splash while the whole train passed.',
-                success_at_cost: 'The watchman looked away, and a mule\'s bray brought him back.',
+                success_at_cost: 'The watchman looked away, and a mule\'s bray turned the watchman\'s eyes back.',
                 near_miss: 'The watchman looked away late, and the train crossed at a run.',
                 failure: 'The watchman glanced away once, and back before the train was past.',
               },
@@ -472,7 +472,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         changes: [],
         byOutcome: {
           critical_success: {
-            overview: '{cast:carrier} counted out the guide\'s share twice over on the far bank. {location} says the '
+            overview: '{cast:carrier} counted out {actor}\'s share twice over on the far bank. {location} says the '
               + 'river favours whoever crosses by night.',
             changes: [
               {
@@ -517,7 +517,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           success: {
-            overview: 'The post never knew a train had passed, and {cast:carrier} paid the guide\'s share on the far '
+            overview: 'The post never knew a train had passed, and {cast:carrier} paid {actor}\'s share on the far '
               + 'bank. {location} says the river favours whoever crosses by night.',
             changes: [
               {
@@ -562,7 +562,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           success_at_cost: {
-            overview: 'The crossing came dear, and {cast:carrier} took the loss out of the guide\'s share. {location} '
+            overview: 'The crossing came dear, and {cast:carrier} took the loss out of {actor}\'s share. {location} '
               + 'says the river favours whoever crosses by night.',
             changes: [
               {

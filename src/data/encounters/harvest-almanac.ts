@@ -466,8 +466,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         },
         critical_failure: {
           overview: 'The storm broke days before the cut. Most of the barley lies flat in the mud, and {location} has '
-            + 'too little grain for the winter. The village staked its year on the best reader it could find, '
-            + 'and the best reader got it wrong.',
+            + 'too little grain for the winter. Every household cut on {actor}\'s word, '
+            + 'and the word came too late.',
           changes: [
             {
               id: 'harvest.critfail.town_trust',
@@ -516,8 +516,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   },
   description:
-    'A village elder wants the first day of the harvest named, and a storm is coming. A wrong '
-    + 'call costs the reader the village\'s trust.',
+    'A village elder wants the first day of the harvest named, and a storm is building in the west. '
+    + 'Every household cuts on that one word, and a wrong day loses the barley.',
   locationSubtypes: expandSettings(['rural']),
   consequenceDraw: ['drive', 'movement'],
 };

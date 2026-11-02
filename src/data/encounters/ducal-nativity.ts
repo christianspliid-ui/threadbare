@@ -333,7 +333,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           onSuccess: [],
           onFailure: [],
           failBehavior: 'fail_action',
-          narrativeTemplate: '{actor} keeps the hard star quiet. But word has spread that a second reader watched the same '
+          narrativeTemplate: '{actor} keeps the hard star quiet. But word has spread that {actor} watched the same '
             + 'sky. {cast:astrologer}, the cathedral\'s first astrologer, asks {actor} to read for the court as '
             + 'well. {actor} must give a true reading of the child\'s later years, and keep the first year out '
             + 'of it.',
@@ -416,7 +416,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         onSuccess: [],
         onFailure: [],
         failBehavior: 'fail_action',
-        narrativeTemplate: '{actor} keeps the hard star quiet. But word has spread that a second reader watched the same '
+        narrativeTemplate: '{actor} keeps the hard star quiet. But word has spread that {actor} watched the same '
           + 'sky. {cast:astrologer}, the cathedral\'s first astrologer, asks {actor} to read for the court as '
           + 'well. {actor} must give a true reading of the child\'s later years, and keep the first year out '
           + 'of it.',
@@ -1233,8 +1233,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       },
     },
   },
-  description: 'A master star-reader saw a hard year in the newborn heir\'s stars. They must decide whether to '
-    + 'warn the duke against the court\'s flattering nativity.',
+  description: 'A hard star rose over the town at the hour the duke\'s heir was born, and the court\'s nativity '
+    + 'promises the child a long and lucky life. Someone has to read the star and say what it means.',
   locationSubtypes: expandSettings(['urban']),
   consequenceDraw: ['drive', 'place'],
 };

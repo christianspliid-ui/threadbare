@@ -37,7 +37,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.forged_charter_inquest',
   stakes: {
     goal: 'find which of the steward\'s clerks forged the charter',
-    risk: 'hand the count\'s lawyers a master\'s mistake',
+    risk: 'name the wrong clerk before the count\'s lawyers',
     won: 'named the clerk who forged the count\'s charter',
     lost: 'could not say which clerk forged the charter',
     lostBadly: 'named the wrong clerk, and the steward proved it',
@@ -72,7 +72,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         + 'forgery. His steward, {cast:steward}, has brought a rival copy that gives the tolls back to '
         + 'him.\n\n'
         + 'Both copies carry the old king\'s seal, and nobody in {location} can say which one is false. The '
-        + 'council asks {actor} to find out. The steward does not want an outsider reading the rival copy.',
+        + 'council asks {actor} to find out. The steward does not want {actor} reading the rival copy.',
       successAfterimage: 'The count\'s copy was written in new ink on a scraped page, and its seal was cast from a mould.',
       failureAfterimage: 'They could not tell the two copies apart, and had only the council\'s word that the town\'s is '
         + 'the old one.',
@@ -142,8 +142,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       narrativeTemplate: 'A false charter needs a scribe who can copy an old hand. {cast:steward} keeps three of the '
         + 'count\'s clerks close at hand to write the steward\'s papers, and any of them could have made '
         + 'it. If {actor} names the one who did, the findings are read out at the inquest in the town hall '
-        + 'on court day, in three days, with the steward there to answer them. If not, {location} will '
-        + 'think less of {actor}.',
+        + 'on court day, in three days, with the steward there to answer them. If the clerk goes '
+        + 'unnamed, the count\'s copy stands and the market pays his tolls again.',
       successAfterimage: 'Asked to write out the charter\'s first line, {cast:forger} wrote it in the same hand as the '
         + 'count\'s copy.',
       failureAfterimage: 'Each clerk wrote the line in a plain, careful hand, and {actor} could not say which of them made '
@@ -478,7 +478,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         failure: {
-          overview: 'The council has no answer for the count\'s lawyers, and it sent for a master to give it one.',
+          overview: 'The council has no answer for the count\'s lawyers, though it sent for {actor} to find one.',
           changes: [
             {
               id: 'charter.lost.the_towns_regard',
@@ -505,7 +505,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         critical_failure: {
-          overview: 'The count\'s lawyers now have a master\'s mistake to use against the town\'s charter.',
+          overview: 'The count\'s lawyers now have {actor}\'s mistake to use against the town\'s charter.',
           changes: [
             {
               id: 'charter.broke.the_towns_regard',
@@ -535,9 +535,9 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   },
   description:
-    'A count has produced a rival copy of the town\'s charter of liberties, and one of his '
-    + 'steward\'s clerks forged it. The findings are due before the inquest in the town hall on '
-    + 'court day.',
+    'A count has produced a rival copy of the town\'s charter of liberties, and both copies carry the '
+    + 'old king\'s seal. The council needs to know which one is false before the inquest in the town '
+    + 'hall on court day.',
   locationSubtypes: expandSettings(['urban']),
   consequenceDraw: ['knowledge', 'story_seed'],
 };

@@ -409,10 +409,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'The fair\'s ring champion has picked a stranger out of the crowd for a purse bout. By the '
+    initiation: 'The fair\'s ring champion has picked {actor} out of the crowd for a purse bout. By the '
       + 'fair\'s custom, a challenger who refuses is named a coward at the ring.',
-    success: 'The ring champion\'s challenge at the fair ended well for the stranger.',
-    failure: 'The ring champion\'s challenge at the fair ended badly for the stranger.',
+    success: 'The ring champion\'s challenge at the fair ended well for {actor}.',
+    failure: 'The ring champion\'s challenge at the fair ended badly for {actor}.',
   },
   aftermathConfig: {
     branchOnStep: 0,
@@ -422,7 +422,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         changes: [],
         byOutcome: {
           critical_success: {
-            overview: 'By dusk, every stall at the fair was talking about the stranger who beat {cast:champion}.',
+            overview: 'By dusk, every stall at the fair was talking about how {actor} beat {cast:champion}.',
             changes: [
               {
                 id: 'bout.crit.champion_cools',
@@ -850,8 +850,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   },
   description:
-    'The fair champion\'s corner wants the stranger off the rope. Take the purse bout, or walk out '
-    + 'and be named a coward at the ring.',
+    'The fair champion has held the ring for three days, and the champion\'s corner has picked the next '
+    + 'challenger out of the crowd. Refusing the purse bout means being named a coward at the ring.',
   locationSubtypes: expandSettings(['urban', 'rural']),
   consequenceDraw: ['companion', 'secret'],
 };

@@ -67,7 +67,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         + 'common is smaller than it was.\n\n'
         + 'The charter says a survey sworn from its marks settles the line. {cast:steward}, the lord\'s '
         + 'steward, holds the charter and says nothing has moved. Nobody in {location} will say who moved '
-        + 'the stones. If {actor} cannot find the true line, {location} will think less of them.',
+        + 'the stones. If {actor} cannot find the true line, the common stays smaller for good.',
       successAfterimage: 'They found where the stones used to stand. Each one had been moved out onto the common.',
       failureAfterimage: 'They could not tell where the stones used to stand, and had only the charter to go on.',
       successAtCostAfterimage: 'They found where most of the stones used to stand, but the plough had wiped out the rest.',
@@ -531,8 +531,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   },
   description:
-    'Someone has moved the boundary stones between the lord\'s land and the village common, and '
-    + 'the friendly reeve who did it is walking the bounds beside the surveyor. The true line has '
+    'The boundary stones between the lord\'s land and the village common have moved, and nobody in '
+    + 'the village will say who moved them. The true line has '
     + 'to be found from the charter\'s marks before the bounds are beaten in three days.',
   locationSubtypes: expandSettings(['rural']),
   consequenceDraw: ['possession', 'knowledge'],

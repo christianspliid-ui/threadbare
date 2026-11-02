@@ -186,8 +186,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       narrativeTemplate: 'The fire has reached the lane at the edge of the quarter. The drying sheds beside the lane '
         + 'belong to {cast:tanner}, the master tanner, and a season\'s hides hang in them. {cast:tanner} '
         + 'stands in the doorway with the journeymen and says no one touches the stock. The sheds must come '
-        + 'down for a firebreak. Without one, the next street burns tonight, and the town will blame '
-        + '{actor}.',
+        + 'down for a firebreak. Without one, the fire crosses the '
+        + 'lane tonight and takes the next street, roofs and all.',
       criticalSuccessAfterimage: '{cast:tanner} stood aside, and the journeymen helped the hook crews pull the sheds down.',
       successAfterimage: '{actor} got the hook crews past the journeymen, and the sheds came down across the lane.',
       successAtCostAfterimage: 'The sheds came down, but the journeymen fought the hook crews first, and two men were hurt.',
@@ -751,7 +751,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         },
         critical_failure: {
           overview: 'The fire spread past the tanners\' quarter and did not stop until the wind turned at dawn. '
-            + '{actor} was the one the watch sent for.',
+            + 'The watch had put its bucket lines in {actor}\'s hands.',
           changes: [
             {
               id: 'tannery.cf.regard',

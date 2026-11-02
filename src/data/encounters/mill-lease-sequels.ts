@@ -141,7 +141,7 @@ export const MILL_LEASE_FORFEIT: UnifiedActionTemplate = {
         '{cast:cellarer} has come looking for {name}. ' +
         "The abbey's rule lets the mill to the next bidder when a lease is not sealed, and the cellarer keeps the rule to the letter.",
       successAfterimage: "{cast:cellarer} took {name}'s word for the fellowship, and sealed the lease on it.",
-      failureAfterimage: '{cast:cellarer} let the mill to the merchant, and thinks less of the expert who stayed away.',
+      failureAfterimage: '{cast:cellarer} let the mill to the merchant, and will not take {name}\'s word on a lease again.',
       successMetadata: {
         effects: [{ kind: 'bond_change', withAgentId: '$cast:cellarer', sentimentDelta: -0.02, trustDelta: 0.02 }],
       },

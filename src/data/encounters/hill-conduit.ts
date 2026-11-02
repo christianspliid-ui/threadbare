@@ -145,8 +145,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   motivations: ['preservation_transformation'],
   settings: ['rural', 'urban'],
   openings: {
-    rural: '{actor} comes by farm track to {location}, sent for because the town needs a builder\'s eye on its conduit.',
-    urban: '{actor} arrives at {location}, sent for because the town needs a builder\'s eye on its conduit.',
+    rural: '{actor} comes by farm track to {location}, sent for to bring the town clean water.',
+    urban: '{actor} arrives at {location}, sent for to bring the town clean water.',
   },
   steps: [
     {
@@ -865,8 +865,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           failure: {
-            overview: 'The long conduit runs, but what reaches {location} is no better than its wells. A master sent '
-              + 'for by name is judged by whether the water came.',
+            overview: 'The long conduit runs, but what reaches {location} is no better than its wells. The sick '
+              + 'children are still drinking foul water.',
             changes: [
               {
                 id: 'conduit.pos.fail.doubt',
@@ -968,8 +968,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           critical_failure: {
-            overview: 'No clean water came down to {location}, and {cast:reeve} has sent for another builder in '
-              + '{actor}\'s place.',
+            overview: 'No clean water came down to {location}, and {cast:reeve} has sent for someone '
+              + 'else to finish the work.',
             changes: [
               {
                 id: 'conduit.pos.critfail.doubt',
@@ -1253,8 +1253,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           failure: {
-            overview: '{location} still draws its water from the old wells. A master sent for by name is judged by '
-              + 'whether the water came.',
+            overview: '{location} still draws its water from the old wells, and the sick children drink from '
+              + 'them too.',
             changes: [
               {
                 id: 'conduit.neg.fail.doubt',
@@ -1356,8 +1356,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           critical_failure: {
-            overview: '{location} still has only its foul wells, and {cast:reeve} has sent for another builder in '
-              + '{actor}\'s place.',
+            overview: '{location} still has only its foul wells, and {cast:reeve} has sent for someone '
+              + 'else to finish the work.',
             changes: [
               {
                 id: 'conduit.neg.critfail.doubt',
@@ -1641,8 +1641,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         failure: {
-          overview: 'The long conduit runs, but what reaches {location} is no better than its wells. A master sent '
-            + 'for by name is judged by whether the water came.',
+          overview: 'The long conduit runs, but what reaches {location} is no better than its wells. The sick '
+            + 'children are still drinking foul water.',
           changes: [
             {
               id: 'conduit.fb.fail.doubt',

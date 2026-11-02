@@ -96,7 +96,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   motivations: ['revelation_discretion', 'tradition_novelty'],
   settings: ['urban'],
   openings: {
-    urban: '{actor} arrives at the bishop\'s palace in {location}, sent for by his household.',
+    urban: '{actor} arrives at the bishop\'s palace in {location}, sent for by the household.',
   },
   steps: [
     {
@@ -110,7 +110,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       onSuccess: [],
       onFailure: [],
       failBehavior: 'continue_weakened',
-      narrativeTemplate: 'The bishop, {cast:bishop}, has a fever, and his physicians mean to bleed him. By the art they '
+      narrativeTemplate: 'The bishop, {cast:bishop}, has a fever, and the physicians mean to bleed it. By the art they '
         + 'all follow, a bleeding at the wrong hour of the moon kills. The senior physician, '
         + '{cast:physician}, says the fever cannot wait for the stars.\n\n'
         + 'The household asks {actor} to cast the figure for the bleeding: the moon\'s sign and the safe '
@@ -181,23 +181,23 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       onSuccess: [],
       onFailure: [],
       failBehavior: 'fail_action',
-      narrativeTemplate: '{cast:physician} speaks for the physicians\' college. He stands at the bishop\'s bed, by the '
-        + 'fire, with the basin and the blade.\n\n'
+      narrativeTemplate: '{cast:physician} speaks for the physicians\' college, and stands at the bishop\'s bed by the '
+        + 'fire with the basin and the blade.\n\n'
         + 'The household will let {actor} argue the figure\'s hour at the bedside. The college bleeds a '
-        + 'fever at once, and will bleed the bishop now unless {actor} holds them to it. A master who '
-        + 'cannot hold a bedside loses the trust of {location}.',
-      criticalSuccessAfterimage: 'The physicians waited for dawn, the bishop was bled at the hour, and by noon his fever had '
-        + 'broken. At the bedside {actor} saw a hard swelling under his ribs, and kept quiet about it.',
-      successAfterimage: 'The physicians waited for dawn, and the bishop was bled at the hour the figure gave. His fever '
-        + 'broke by evening. At the bedside {actor} saw a hard swelling under his ribs, and kept quiet '
+        + 'fever at once, and will bleed the bishop now unless {actor} holds them to it. If the bishop '
+        + 'is bled before the hour, the household will lay whatever follows at {actor}\'s door.',
+      criticalSuccessAfterimage: 'The physicians waited for dawn, the bishop was bled at the hour, and by noon the fever had '
+        + 'broken. At the bedside {actor} saw a hard swelling under the bishop\'s ribs, and kept quiet about it.',
+      successAfterimage: 'The physicians waited for dawn, and the bishop was bled at the hour the figure gave. The fever '
+        + 'broke by evening. At the bedside {actor} saw a hard swelling under the bishop\'s ribs, and kept quiet '
         + 'about it.',
       successAtCostAfterimage: 'The physicians waited for dawn, but {cast:physician} told the college that {actor} had overruled '
         + 'a physician at a sickbed. At the bedside {actor} saw a hard swelling under the bishop\'s ribs, '
         + 'and kept quiet about it.',
       failureAfterimage: '{cast:physician} bled the bishop at once, against the figure. The bishop is weaker, and the '
-        + 'college says the astrologer only delayed them.',
-      criticalFailureAfterimage: '{cast:physician} found a wrong sum in {actor}\'s figure and read it out at the bedside. He bled '
-        + 'the bishop at once, and the household believed him.',
+        + 'college says {actor} only delayed them.',
+      criticalFailureAfterimage: '{cast:physician} found a wrong sum in {actor}\'s figure and read it out at the bedside. The '
+        + 'bishop was bled at once, and the household took the physician\'s side.',
       carryoverFactorLines: {
         critical_success: {
           text: 'They can name the bleeding hour to the quarter.',
@@ -295,11 +295,11 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           imageTag: 'generic.warmth',
           effectLine: 'Keep a fire high and steady through the night, so a fever eases while the sick wait.',
           bandProse: {
-            success_at_cost: 'The fire held all night and the bishop slept, but the physicians called the heat an '
-              + 'astrologer\'s meddling.',
+            success_at_cost: 'The fire held all night and the bishop slept, but the physicians called the heat '
+              + '{actor}\'s meddling.',
             failure: 'The fire held all night, but the bishop\'s fever did not ease.',
-            critical_failure: 'The fire burned so high that the bishop woke soaked, and {cast:physician} said he could wait no '
-              + 'longer.',
+            critical_failure: 'The fire burned so high that the bishop woke soaked, and {cast:physician} said the bleeding could '
+              + 'wait no longer.',
           },
         },
       ],
@@ -327,7 +327,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'The bishop of {location} is to be bled, and his household has sent for {actor} to cast the '
+    initiation: 'The bishop of {location} is to be bled, and the bishop\'s household has sent for {actor} to cast the '
       + 'figure.',
     success: 'The bishop was bled at the hour the figure gave.',
     failure: 'The bishop was bled before the hour.',
@@ -411,8 +411,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             {
               id: 'bleeding.cs.make_peace',
               label: 'Make peace with the college',
-              intent: 'Grant the senior physician that his college\'s rule has saved lives before tonight. He thinks '
-                + 'better of the mortal for it.',
+              intent: 'Grant the senior physician that the college\'s rule has saved lives before tonight. The physician '
+                + 'thinks better of {actor} for it.',
               effects: [
                 {
                   kind: 'bond_change',
@@ -514,8 +514,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             {
               id: 'bleeding.s.make_peace',
               label: 'Make peace with the college',
-              intent: 'Grant the senior physician that his college\'s rule has saved lives before tonight. He thinks '
-                + 'better of the mortal for it.',
+              intent: 'Grant the senior physician that the college\'s rule has saved lives before tonight. The physician '
+                + 'thinks better of {actor} for it.',
               effects: [
                 {
                   kind: 'bond_change',
@@ -618,8 +618,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             {
               id: 'bleeding.sac.make_peace',
               label: 'Make peace with the college',
-              intent: 'Grant the senior physician that his college\'s rule has saved lives before tonight. He thinks '
-                + 'better of the mortal for it.',
+              intent: 'Grant the senior physician that the college\'s rule has saved lives before tonight. The physician '
+                + 'thinks better of {actor} for it.',
               effects: [
                 {
                   kind: 'bond_change',
@@ -709,7 +709,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       },
     },
   },
-  description: 'The bishop is ill and his physicians mean to bleed him at once, though a bleeding at the wrong '
+  description: 'The bishop is ill, and the household\'s physicians mean to bleed the bishop at once, though a bleeding at the wrong '
     + 'hour of the moon can kill. Someone has to cast the figure for the bleeding and hold the '
     + 'physicians to the hour it gives.',
   locationSubtypes: expandSettings(['urban']),

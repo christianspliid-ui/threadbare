@@ -144,19 +144,20 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       onFailure: [],
       failBehavior: 'fail_action',
       narrativeTemplate: '{cast:merchant} bids first, and offers a rent the fellowship cannot match. The abbey\'s rule '
-        + 'lets the mill to the highest bidder who can show he has dealt honestly with the abbey, and the '
+        + 'lets the mill to the highest bidder who can show a record of honest dealing with the abbey, and the '
         + 'cellarer keeps the rule to the letter. Nobody will say how a merchant can bid so much for a mill '
         + 'whose books show so little. If the fellowship wins, the lease is sealed at the mill on quarter '
-        + 'day, in three days, with the cellarer there. If it loses, {location} will think less of {actor}.',
-      successAfterimage: 'Under the rule\'s questions, {cast:merchant} could not say where his flour came from, and the '
-        + 'cellarer struck his bid.',
-      failureAfterimage: '{cast:merchant} outbid the fellowship, and the cellarer let him the mill.',
+        + 'day, in three days, with the cellarer there. If it loses, the fellowship grinds at the '
+        + 'merchant\'s price for another year.',
+      successAfterimage: 'Under the rule\'s questions, {cast:merchant} could not say where the cheap flour came from, and the '
+        + 'cellarer struck the bid.',
+      failureAfterimage: '{cast:merchant} outbid the fellowship, and the cellarer let the mill to the merchant.',
       successAtCostAfterimage: 'The cellarer struck {cast:merchant}\'s bid, but only after the fellowship had raised its own '
         + 'twice.',
       criticalSuccessAfterimage: 'The fellowship\'s bid stood from the first, and the cellarer struck {cast:merchant}\'s bid when '
-        + 'he could not say where his flour came from.',
+        + 'nobody could say where the merchant\'s flour came from.',
       criticalFailureAfterimage: '{actor} accused {cast:merchant} of cheating the abbey and could not prove it. The cellarer let '
-        + 'him the mill.',
+        + 'the mill to the merchant.',
       successMetadata: {
         effects: [
           {
@@ -184,7 +185,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
               counterpartyId: '$cast:cellarer',
               missed: {
                 templateId: 'town.mill_lease_forfeit',
-                seedLabel: 'The lease was not sealed on quarter day, and the cellarer comes looking for the expert who won '
+                seedLabel: 'The lease was not sealed on quarter day, and the cellarer comes looking for {name}, who won '
                   + 'it.',
               },
             },
@@ -218,7 +219,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             success: 'The cellarer recited the letting law before the bids, and every bidder heard the clause on '
               + 'honest dealing.',
             success_at_cost: 'The cellarer recited the letting law, and then held the fellowship to every clause of it.',
-            failure: 'The cellarer recited the letting law, but {cast:merchant} swore he had always dealt honestly '
+            failure: 'The cellarer recited the letting law, but {cast:merchant} swore to a lifetime of honest dealing '
               + 'with the abbey.',
           },
         },
@@ -229,12 +230,12 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           essenceCost: 2,
           forecastDelta: 0.11,
           imageTag: 'generic.rumor',
-          effectLine: 'Kindle the merchant\'s vanity as the bids climb, so he boasts aloud of how cheap his flour came.',
+          effectLine: 'Kindle the merchant\'s vanity as the bids climb, until the boast of cheap flour comes out aloud.',
           bandProse: {
-            critical_success: '{cast:merchant} boasted of how cheap his flour came before the bidding had even begun.',
-            near_miss: '{cast:merchant} boasted of cheap flour, but would not say who sold it to him.',
-            failure: '{cast:merchant} boasted only of his money.',
-            critical_failure: '{cast:merchant} boasted of his money until the fellowship\'s men shouted him down, and the '
+            critical_success: '{cast:merchant} boasted of how cheap the flour came before the bidding had even begun.',
+            near_miss: '{cast:merchant} boasted of cheap flour, but would not say who sold it.',
+            failure: '{cast:merchant} boasted only of money.',
+            critical_failure: '{cast:merchant} boasted of money until the fellowship\'s men shouted the merchant down, and the '
               + 'cellarer closed the bidding early.',
           },
         },
@@ -265,7 +266,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   ],
   narrativeTemplates: {
     initiation: 'The abbey\'s water-mill in {location} is up for lease, and the millers\' fellowship has sent for '
-      + 'an expert to bid for it.',
+      + '{actor} to bid for it.',
     success: 'The fellowship won the lease, and it is sealed at the mill on quarter day.',
     failure: 'The fellowship lost the lease.',
   },
@@ -481,7 +482,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         failure: {
-          overview: 'The fellowship has no mill this year, and it sent for an expert so that would not happen.',
+          overview: 'The fellowship has no mill this year, and it must buy its flour from the merchant until the lease comes round again.',
           changes: [
             {
               id: 'mill.lost.the_towns_regard',
@@ -508,8 +509,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         critical_failure: {
-          overview: 'The merchant has the mill, and {location} remembers an expert\'s mistake longer than a '
-            + 'stranger\'s.',
+          overview: 'The merchant has the mill, and {location} heard {actor} accuse the merchant of a cheat '
+            + 'nobody could prove.',
           changes: [
             {
               id: 'mill.broke.the_towns_regard',

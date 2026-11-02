@@ -195,7 +195,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         + 'will take. The clerk will seal the licence to the best bid at or above it, and to nobody '
         + 'else.\n\n'
         + '{actor} has to close above both the reserve and the rival\'s bid. If the salt goes to the rival '
-        + 'town, the council will blame the one it sent.',
+        + 'town, the council will not trust {actor} with its purse again.',
       criticalSuccessAfterimage: 'The town\'s bid cleared the reserve and the rival\'s by a wide margin. The clerk sealed the '
         + 'licence at once, and gave {actor} the seal case that stamps the town\'s salt at the gates.',
       successAfterimage: 'The town\'s bid beat the rival\'s, and the clerk sealed the licence to the town. {actor} took '
@@ -701,7 +701,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         },
         critical_failure: {
           overview: 'The salt has gone to the rival town for ten years, and the whole council saw the town\'s purse '
-            + 'fall short. {actor} was the one it sent.',
+            + 'fall short. The council had put that purse in {actor}\'s hands.',
           changes: [
             {
               id: 'salt.cf.town',

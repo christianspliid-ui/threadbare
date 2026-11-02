@@ -125,7 +125,7 @@ export const BOUNDS_STONE_UPROOTED: UnifiedActionTemplate = {
   // Seed-only: the boundary survey's appointment (missed branch) is its only planter (THR-1526).
   drawable: false,
   name: 'The Stone Uprooted',
-  description: 'The beating of the bounds went ahead with no surveyor there, and the new stone was pulled up.',
+  description: 'The beating of the bounds went ahead without {name}, and the new stone was pulled up.',
   rarityTier: 2,
   intrinsicTier: 'background',
   reach: 'heart',
@@ -146,10 +146,10 @@ export const BOUNDS_STONE_UPROOTED: UnifiedActionTemplate = {
       // Names no place: the missed branch fires wherever the mortal stands.
       narrativeTemplate:
         '{name} was not at the beating of the bounds. ' +
-        'The new stone went in with no surveyor there to swear to it, and it was pulled up in the night. ' +
-        "{cast:steward} has come looking for {name}, and says the lord will not seal the survey without the surveyor's word.",
+        'The new stone went in with nobody there to swear to it, and it was pulled up in the night. ' +
+        "{cast:steward} has come looking for {name}, and says the lord will not seal the survey without {name}'s word.",
       successAfterimage: "{cast:steward} took {name}'s word for the line, and sealed the survey without the stone.",
-      failureAfterimage: '{cast:steward} left without agreeing to set the stone again, and thinks less of the surveyor who stayed away.',
+      failureAfterimage: '{cast:steward} left without agreeing to set the stone again, and the common stays where the moved stones put it.',
       successMetadata: {
         effects: [{ kind: 'bond_change', withAgentId: '$cast:steward', sentimentDelta: -0.02, trustDelta: 0.02 }],
       },
@@ -164,7 +164,7 @@ export const BOUNDS_STONE_UPROOTED: UnifiedActionTemplate = {
   ],
   narrativeTemplates: {
     initiation: 'The new stone was pulled up after nobody from the survey came to the beating of the bounds, and the steward has come looking.',
-    success: "The steward sealed the survey on the surveyor's word.",
+    success: 'The steward took the sworn line and sealed the survey.',
     failure: 'The steward left without agreeing to set the stone again.',
   },
   aftermathConfig: {

@@ -118,7 +118,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       failureAfterimage: '{actor} chose to dig through the fall. The rock shifted when the diggers opened it, and a stone '
         + 'came down on {cast:miner} on the far side.',
       criticalFailureAfterimage: '{actor} sent the diggers into the fall, and it came down again on the far side, on {cast:miner}. '
-        + '{cast:reeve} called the diggers out and would not send them back on the master\'s word.',
+        + '{cast:reeve} called the diggers out and would not send them back on {actor}\'s word.',
       failureMetadata: {
         effects: [
           {
@@ -200,7 +200,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       failureAfterimage: 'A prop gave way at the far end, and the last yard of roof came down. The rock fell on '
         + '{cast:miner}\'s side too, and the knocking stopped for an hour.',
       criticalFailureAfterimage: 'The roof came down along half the drift, and the fall slid again on {cast:miner}\'s side. The '
-        + 'diggers got out, and {cast:reeve} would not send them back under the master\'s props.',
+        + 'diggers got out, and {cast:reeve} would not send them back under {actor}\'s props.',
       carryoverFactorLines: {
         critical_success: {
           text: 'They found a sound path to the trapped men.',
@@ -459,10 +459,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'A silver mine has fallen in above a village, and its reeve sends for a master to bring out the '
+    initiation: 'A silver mine has fallen in above a village, and its reeve sends for {actor} to bring out the '
       + 'four miners behind the fall.',
     success: 'The four miners came out of the fallen drift alive.',
-    failure: 'Another crew was sent for to bring the miners out, and the reeve no longer trusts the master\'s '
+    failure: 'Another crew was sent for to bring the miners out, and the reeve no longer trusts {actor}\'s '
       + 'reading of rock.',
   },
   aftermathConfig: {
@@ -734,7 +734,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         },
         failure: {
           overview: '{cast:reeve} has sent down the valley for another crew to dig the miners out. They are alive '
-            + 'behind the fall. The reeve sent for a master, and now has to send again.',
+            + 'behind the fall. The dig is no longer {actor}\'s to run.',
           changes: [
             {
               id: 'drift.fail.miner_wounded',
@@ -825,7 +825,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             {
               id: 'drift.fail.leave_before_the_crew',
               label: 'Leave before the other crew comes',
-              intent: 'The mortal goes down the valley before the other master arrives, and does not watch another crew '
+              intent: 'The mortal goes down the valley before the other crew arrives, and does not watch another crew '
                 + 'finish the work. The village marks who did not stay.',
               effects: [
                 {
@@ -839,7 +839,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         },
         critical_failure: {
           overview: 'The miners are alive, and another crew is coming up the valley for them. {cast:reeve} tells '
-            + '{location} that the master read the rock wrong.',
+            + '{location} that {actor} read the rock wrong.',
           changes: [
             {
               id: 'drift.critfail.miner_wounded',
@@ -930,7 +930,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             {
               id: 'drift.critfail.leave_before_the_crew',
               label: 'Leave before the other crew comes',
-              intent: 'The mortal goes down the valley before the other master arrives, and does not watch another crew '
+              intent: 'The mortal goes down the valley before the other crew arrives, and does not watch another crew '
                 + 'finish the work. The village marks who did not stay.',
               effects: [
                 {

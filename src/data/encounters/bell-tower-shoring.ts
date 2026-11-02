@@ -140,7 +140,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         + 'the crack with iron, and the crack spread.\n\n'
         + '{cast:councillor} of the council asks {actor} to save the tower. Half the fee is paid now. The '
         + 'rest will be paid at the tower when the bell rings on market day. If {actor} fails as well, '
-        + '{location} will think less of them.',
+        + 'the tower comes down.',
       successAfterimage: 'They found the lodge\'s secret: a hidden arch inside the wall carries the bell, and the crack '
         + 'runs beside it.',
       failureAfterimage: 'They could not find what carried the weight, and set the props by guesswork.',

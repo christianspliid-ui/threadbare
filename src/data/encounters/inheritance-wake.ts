@@ -146,7 +146,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           onSuccess: [],
           onFailure: [],
           failBehavior: 'fail_action',
-          narrativeTemplate: '{actor} backs the widow\'s wish: keep the farm whole under her, and have all three children work '
+          narrativeTemplate: '{actor} backs the widow\'s wish: keep the farm whole under the widow, and have all three children work '
             + 'it. By custom the whole farm passes to the eldest, {cast:eldest}, who promised the farmer to '
             + 'look after the others and now refuses the widow\'s wish in front of the wake.',
           criticalSuccessAfterimage: '{cast:eldest} gave up the claim in front of the wake and shook hands with the youngest.',
@@ -342,7 +342,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         onSuccess: [],
         onFailure: [],
         failBehavior: 'fail_action',
-        narrativeTemplate: '{actor} backs the widow\'s wish: keep the farm whole under her, and have all three children work '
+        narrativeTemplate: '{actor} backs the widow\'s wish: keep the farm whole under the widow, and have all three children work '
           + 'it. By custom the whole farm passes to the eldest, {cast:eldest}, who promised the farmer to '
           + 'look after the others and now refuses the widow\'s wish in front of the wake.',
         criticalSuccessAfterimage: '{cast:eldest} gave up the claim in front of the wake and shook hands with the youngest.',
@@ -860,7 +860,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           critical_success: {
             overview: 'The farmer is buried, and the farm is settled in writing. The deed gives the eldest the whole '
               + 'farm and gives the other two a written share of its harvests. The parish priest witnessed the '
-              + 'deed and put {actor}\'s name on the parish roll. The widow did not get her wish. Every neighbour '
+              + 'deed and put {actor}\'s name on the parish roll. The widow\'s wish was set aside. Every neighbour '
               + 'at the wake calls the split fair.',
             changes: [
               {
@@ -960,7 +960,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           success: {
             overview: 'The farmer is buried, and the farm is settled in writing. The deed gives the eldest the whole '
               + 'farm and gives the other two a written share of its harvests. The parish priest witnessed the '
-              + 'deed and put {actor}\'s name on the parish roll. {cast:widow} did not get her wish.',
+              + 'deed and put {actor}\'s name on the parish roll. {cast:widow}\'s wish was set aside.',
             changes: [
               {
                 id: 'wake.renegade.success.youngest',
@@ -1058,8 +1058,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           },
           success_at_cost: {
             overview: 'The farm is settled in writing, but {cast:youngest}\'s share is smaller than it should be. The '
-              + 'parish priest witnessed the deed and put {actor}\'s name on the parish roll. The widow did not '
-              + 'get her wish.',
+              + 'parish priest witnessed the deed and put {actor}\'s name on the parish roll. The widow\'s '
+              + 'wish was set aside.',
             changes: [
               {
                 id: 'wake.renegade.cost.youngest',
