@@ -735,10 +735,10 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     // THR-2108: stakes and every line rewritten from scratch to Prose Doctrine v2.
     stakes: {
       goal: 'settle the grain quarrel and turn down the bad salt',
-      risk: 'take the bad salt and spend a night in the gate cell',
+      risk: 'lose their coin on bad salt and a night in the gate cell',
       won: 'settled the market\'s quarrels and turned down the bad salt',
-      lost: 'took the bad salt and lost the coin',
-      lostBadly: 'took the bad salt and spent a night in the gate cell',
+      lost: 'took the bad salt and came away poorer',
+      lostBadly: 'lost their coin on bad salt and a night in the gate cell',
     },
     outcomeEffects: {
       critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
@@ -788,13 +788,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'A cloth seller offers {actor} a pile of wool bolts at a good price. The bolts are cut short underneath, where buyers do not look.\n\n{actor} must call out the short cloth without starting a fight in the market.',
-        successAtCostAfterimage: 'The seller sells at the true length, but only if {actor} also buys a water-stained bolt at full price.',
-        criticalSuccessAfterimage: 'The seller sells at the true length and adds an extra bolt to keep {actor} quiet.',
+        narrative: 'A cloth seller offers {actor} a pile of wool bolts at a good price. {actor} suspects the bolts are cut short underneath, where buyers do not look.\n\n{actor} must check the cloth and speak up without starting a fight in the market.',
+        successAtCostAfterimage: 'The seller charges only for the cloth that is there, but only if {actor} also buys a water-stained bolt at full price.',
+        criticalSuccessAfterimage: 'The seller charges only for the cloth that is there, and adds an extra bolt to keep {actor} quiet.',
         criticalFailureAfterimage: '{actor} calls the bolts short in front of the whole row, and they are full length. The seller\'s friends make {actor} buy a bolt to settle the insult.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'social'] },
         onSuccess: {
-          narrative: '{actor} points out the short cloth quietly and offers a fair price. The seller agrees and sells at the true length.',
+          narrative: '{actor} measures the cloth quietly and finds it short. {actor} offers a fair price for it, and the seller agrees.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
@@ -811,11 +811,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         narrative: 'A merchant {actor} does not know offers a cargo of salt at a low price, paid after it sells. The salt has not been taxed, and no one else in the market will touch it.\n\n{actor} must turn the offer down without making an enemy.',
         successAtCostAfterimage: '{actor} turns down the salt. The merchant is offended and tells the market that {actor} called him a smuggler. {actor} spends the afternoon answering for it.',
-        criticalSuccessAfterimage: 'While turning down the salt, {actor} reads the merchant\'s ledger upside down. It names the tax man he bribes. {actor} says the name aloud, and the merchant leaves the market.',
-        criticalFailureAfterimage: '{actor} takes the salt, and the merchant is an informer for the tax men. {actor} spends the night in the gate cell while the salt is counted.',
+        criticalSuccessAfterimage: 'While turning down the salt, {actor} sees the merchant\'s open ledger. It names the tax man he bribes. {actor} says the name aloud, and the merchant leaves the market.',
+        criticalFailureAfterimage: '{actor} takes the salt, and the merchant is an informer for the tax men. {actor} loses the coin and spends the night in the gate cell.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'peril'] },
         onSuccess: {
-          narrative: '{actor} turns down the salt politely. The other merchants saw it, and they now trust {actor}\'s word on a later payment.',
+          narrative: '{actor} turns down the salt politely. The other merchants saw it, and they now agree to sell to {actor} on credit.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -823,7 +823,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor} takes the salt. The tax men seize it at the gate, with the ledger that names {actor} as the buyer. {actor} loses the coin.',
+          narrative: '{actor} takes the salt. The tax men seize it at the gate, with the ledger that names {actor} as the buyer. {actor} loses the coin {they} paid for it.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 0.9, condition: 0.1 },
@@ -8933,7 +8933,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         narrative: 'Everyone here is talking about the road ahead. A merchant was robbed on it last week and lost his whole cart. {actor} must travel that road soon.\n\n{actor} needs to hear what is said about the robbery, without anyone noticing {them} listen.',
         successAtCostAfterimage: '{actor} hears the stories, but only by buying drinks for whoever is talking. By evening {actor} has spent a day\'s wages.',
         criticalSuccessAfterimage: 'A carter who has drunk too much takes {actor} for a friend. He names the men who robbed the merchant and the place where they wait.',
-        criticalFailureAfterimage: 'A woman asks {actor} outright why {they} keep{s} listening to other people\'s talk. {actor} has no answer ready, and soon the whole room is watching {them}.',
+        criticalFailureAfterimage: 'A woman asks {actor} outright why {they} keep{s} listening to other people\'s talk. {actor} has no answer ready, and soon everyone nearby is watching {them}.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['shadow', 'social'] },
         onSuccess: {
           narrative: '{actor} sits through the evening, and no one takes notice. {actor} hears every story told about the robbery.',
@@ -8952,7 +8952,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         narrative: 'The stories do not agree. One blames bandits, one blames the merchant\'s own guards, and one blames a lord\'s men.\n\n{actor} must work out which story is true.',
         successAtCostAfterimage: 'One story holds up, but {actor} checks it by asking the wrong man. He answers, and then starts asking around about {actor}.',
-        criticalSuccessAfterimage: 'Two of the stories are the same quarrel, told by the two sides. {actor} learns who robbed the merchant, and why.',
+        criticalSuccessAfterimage: 'One of the talkers saw the robbery and tells {actor} all of it. {actor} learns who robbed the merchant, and why.',
         criticalFailureAfterimage: '{actor} believes the story the locals tell to fool strangers. {actor} leaves sure of a lie.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'lore'] },
         onSuccess: {
@@ -9457,7 +9457,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         narrative: '{actor} can feel the line, but cannot yet say where it goes.\n\n{actor} must follow it across the land and mark its path before the light fails.',
         successAtCostAfterimage: '{actor} follows the line to its end, but the end is far out in open country. Night falls first, and {actor} sleeps out there without a fire.',
-        criticalSuccessAfterimage: 'The line ends at a standing stone that no one here has spoken of. There are fresh offerings at its foot.',
+        criticalSuccessAfterimage: 'The line ends at an old standing stone. The locals pray there in secret, and they ask {actor} to keep the place quiet.',
         criticalFailureAfterimage: '{actor} follows the line into a bog and sinks to the waist. {actor} crawls out without the map and without a boot.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['journey', 'lore'] },
         onSuccess: {
@@ -9523,7 +9523,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         narrative: 'The old people here remember a story about this land that is not written down anywhere. Each year fewer of them are left to tell it, and the young have stopped listening.\n\n{actor} has one evening to hear it before moving on.',
         // THR-1634 S1: the missing afterimages and a dealt hand.
-        successAtCostAfterimage: 'The locals talk, but only after {actor} buys drinks for the whole room. {actor} spends a day\'s wages on it.',
+        successAtCostAfterimage: 'The locals talk, but only after {actor} buys drinks for everyone there. {actor} spends a day\'s wages on it.',
         criticalSuccessAfterimage: 'An old woman takes a liking to {actor} and tells the story the others will not: a name, and where that person is buried.',
         criticalFailureAfterimage: '{actor} asks one question too many. The locals decide {actor} is a spy, and the keeper asks {them} to leave.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'presence'] },
@@ -9656,7 +9656,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       goal: 'read the land from the high ground',
       risk: 'scare the birds off and take the herders\' blame',
       won: 'read the land and found where the ley runs',
-      lost: 'could not map the land and went on without it',
+      lost: 'could not find where the ley runs',
       lostBadly: 'scared the birds off and took the herders\' blame',
     },
     name: 'Study the Surroundings',
@@ -9669,7 +9669,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       rural: '{name} arrives at {location} in the morning and asks the way to the high ground.',
       urban: '{name} arrives at {location} and climbs to the top of the town wall.',
       stronghold: '{name} reaches {location} and is allowed up onto the tower roof.',
-      sacred: '{name} arrives at {location}, which stands on a hill above the country.',
+      sacred: '{name} arrives at {location} and climbs to the highest point of its grounds.',
       arcane: '{name} climbs to the top of {location} in the clear morning.',
       ruin: '{name} reaches {location} and climbs the highest of the broken walls.',
       wayside: 'Travelling through the wilds, {name} stops at {location} and climbs the nearest hill.',
@@ -9728,7 +9728,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor} cannot find the ley line. The land shows {actor} nothing more than the road did.',
+          narrative: '{actor} cannot find the ley line. {actor} goes on without knowing where it runs.',
           reputationDelta: -0.01,
           rewardPool: {
             categoryWeights: { condition: 0.3, bestowed_power: 0.5, possession: 0.2 },
@@ -9780,7 +9780,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         narrative: 'There {they} find{s} old marks cut into the stone. The people here say the marks are a curse, and a family has already left its home because of them.\n\n{actor} wants to find out what the marks say.',
         successAtCostAfterimage: '{actor} finds the marks, but has to scrape off moss to see them. Part of the cutting comes away with the moss.',
         criticalSuccessAfterimage: '{actor} finds a second set of marks under the first. The stone was cut twice, by two different hands.',
-        criticalFailureAfterimage: '{actor} pries at a loose stone to look behind it, and part of the wall falls. The marks on that stone break in the fall.',
+        criticalFailureAfterimage: '{actor} scrapes too hard while cleaning the stone, and a corner breaks off. The marks on that corner are lost.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'lore'] },
         onSuccess: {
           narrative: '{actor} cleans the stone and finds every mark on it. There are more marks than anyone here knew about.',
@@ -10560,10 +10560,10 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.forage_provisions',
     stakes: {
       goal: 'bring back enough roots and water to eat',
-      risk: 'drop the load to a boar and spend the night up a tree',
+      risk: 'drop the load to a boar and spend the evening up a tree',
       won: 'brought back enough roots and water to eat',
       lost: 'came back with half the load and a sore shoulder',
-      lostBadly: 'dropped the load to a boar and spent the night up a tree',
+      lostBadly: 'dropped the load to a boar and spent the evening up a tree',
     },
     name: 'Forage for Provisions',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
@@ -11195,7 +11195,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         narrative: 'The talkers tell {actor} many versions of the story. Most are made up, or changed each time they are told. Only one is true, and the talkers keep that one for people they trust.',
         // THR-1667 S3: the missing afterimages and a dealt hand.
-        successAtCostAfterimage: '{actor} finds the true account, but tells it back to a man who repeats it. By evening the talkers know {actor} has been asking, and they stop talking to {them}.',
+        successAtCostAfterimage: '{actor} finds the true account, but asks too many questions to get it. The talkers grow wary and stop talking to {them}.',
         criticalSuccessAfterimage: 'One talker tells {actor} the true account and more besides: two families here have an old quarrel that neither will speak of.',
         criticalFailureAfterimage: '{actor} believes the wrong account. One of the talkers made it up to fool {actor}, and {actor} repeats it as true.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'shadow'] },
@@ -12275,13 +12275,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP,
         duration: 2,
-        narrative: '{actor} knows where the cold comes from, but not why. The eye can find no more.\n\n{actor} must look into the Veil to learn the cause.',
+        narrative: '{actor} knows where the cold comes from, but not why. Searching the room will tell {them} no more.\n\n{actor} must look into the Veil to learn the cause.',
         successAtCostAfterimage: '{actor} learns the cause, but the cold gets into {their} bones. {actor} shivers through the night and is weak the next day.',
-        criticalSuccessAfterimage: '{actor} learns the cause and the cure. A spirit is bound to the sign under the floor, and breaking the sign sets it free. The room is warm by morning.',
+        criticalSuccessAfterimage: '{actor} learns the cause and the cure. A spirit is bound to this room, and {actor} learns the words that set it free. The room is warm by morning.',
         criticalFailureAfterimage: '{actor} looks too deep into the Veil and faints in the cold corner. {actor} wakes at dawn with no memory of what {they} saw.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'peril'] },
         onSuccess: {
-          narrative: '{actor} learns the cause. A spirit passed through this room long ago, and its cold has stayed in the corner. The people here can now have the room blessed.',
+          narrative: '{actor} learns the cause. A spirit passed through this room last winter, and its cold has stayed in the corner. The people here can now have the room blessed.',
           reputationDelta: 0.12,
           tierPromotionEligible: true,
           rewardPool: {
@@ -12448,12 +12448,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: MODERATE_DIFFICULTY_BASE + 5,
         duration: 1,
         narrative: 'A man here keeps a stolen ledger locked in his room. Its owner has paid {actor} to take it back. The last thief who tried was caught and beaten.\n\n{actor} must reach the room without being seen.',
-        successAtCostAfterimage: '{actor} gets in unseen, but tears {their} sleeve on a nail and leaves a strip of cloth behind.',
+        successAtCostAfterimage: '{actor} gets in unseen, but cuts a hand on a nail at the fence. {actor} must work the lock with a bleeding hand.',
         criticalSuccessAfterimage: '{actor} walks right past the sleeping guard dog, and it never wakes.',
         criticalFailureAfterimage: 'A dog finds {actor} at the fence and barks until a lamp is lit. {actor} hides under the woodpile while the yard is searched.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['shadow', 'finesse'] },
         onSuccess: {
-          narrative: '{actor} keeps to the dark and reaches the room unseen. No one in the house wakes.',
+          narrative: '{actor} keeps to the dark and reaches the room unseen. No one wakes.',
           reputationDelta: 0.04,
         },
         onFailure: {
