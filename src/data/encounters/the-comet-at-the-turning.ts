@@ -43,29 +43,22 @@ const step0TheSkyOpens: ActionStep = {
   onSuccess: [],
   onFailure: [],
   failBehavior: 'continue_weakened',
+  // THR-2134: all player text rewritten to Prose Doctrine v2 (opening skeleton).
   narrativeTemplate:
-    'For three nights the comet had hung in the western sky like a wound that would not close, and on the ' +
-    'third night the prophet climbed above the rooftops to read it. Below, the whole settlement had gone ' +
-    'quiet in the way of people who have stopped pretending the sky is ordinary. Couriers waited ' +
-    'at the foot of the hill with horses already saddled; whatever the prophet said by morning would be ' +
-    'carried to the capitals before the comet rose again, and the capitals would carry it to the nations, ' +
-    'and the nations would decide — on the strength of one mortal\'s upturned face — whether this was the ' +
-    'hinge of the age or merely a light in the dark. The prophet did not yet know which. They knew only ' +
-    'that they were the one looking, and that the world had agreed to believe them. The god stood with ' +
-    'them at the top of the hill, in the cold, where the comet\'s light fell on both alike.',
-  successAfterimage: 'The prophet stood beneath the comet, and a waiting world held its breath.',
-  failureAfterimage: 'The prophet faltered at the threshold of the reading, and the cold crept in.',
+    '{actor}, a prophet, climbs the hill above {location} on the third night of the comet.\n\n' +
+    'The whole town has stopped work to watch the sky. Couriers wait at the foot of the hill with ' +
+    'saddled horses. At dawn they will carry {actor}\'s reading to the capitals, and the nations will act on it.\n\n' +
+    '{actor} must say what the comet means: the end of the old age, or a sign that the age holds.',
+  successAfterimage: '{actor} kept watch on the hilltop all night, under the comet.',
+  failureAfterimage: '{actor} lost their nerve at the top of the hill and nearly came back down.',
   // THR-1667 S3: the missing afterimages. Step 0 is the authored choice, so it
   // carries no hand (a hand on a choice step would replace the fork).
   successAtCostAfterimage:
-    'The prophet held the reading through the night, but the cold took two fingers\' feeling and did not give ' +
-    'it back.',
+    '{actor} kept watch through the night, but the cold took the feeling from two fingers for good.',
   criticalSuccessAfterimage:
-    'Before the comet set, the prophet saw it split in two. No one else on the hill saw it, and no one else ' +
-    'would have known what it meant.',
+    'Before dawn, {actor} saw the comet split in two. No one else on the hill saw it.',
   criticalFailureAfterimage:
-    'The prophet slipped on the frosted tiles and came down the hill with a gashed head, the reading still ' +
-    'unmade. The couriers waited at the foot of the hill until dawn.',
+    '{actor} slipped on the icy path and came down with a cut head and no reading. The couriers waited until dawn.',
 };
 
 /**
@@ -81,32 +74,22 @@ const step1ProclaimTheTurning: ActionStep = {
   onFailure: [],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god opened the prophet the way one opens a window onto a height — and the prophet felt the age ' +
-    'beneath them go suddenly small, one breath among uncountable breaths, a candle the cosmos had lit and ' +
-    'would, in its own time, set down. There was no fear in it, only a terrible spaciousness: the certainty ' +
-    'that everything held to be permanent was a guest in a house that had stood before it and would stand ' +
-    'after. When the prophet came down at dawn they did not soften it. They told the couriers the truth they ' +
-    'had been given — that the old order had reached the end of its turning, that thrones and borders and ' +
-    'the long sleep of custom were ending, and that the only sin left was to cling. The couriers rode. The ' +
-    'words went out to reshape the fate of nations, and a god had set them loose.',
-  successAfterimage: 'The prophet proclaimed the turning, and the comet\'s reading rode out to the nations.',
+    'The god shows {actor} how small the age is beside the sky. At dawn {actor} comes down the hill and ' +
+    'tells the couriers that the old order is ending. Thrones, borders and old customs will pass, and no ' +
+    'one should cling to them. The couriers ride for the capitals.',
+  successAfterimage: '{actor} proclaimed the turning, and the couriers carried it to the nations.',
   failureAfterimage:
-    'The vastness came too fast; the prophet spoke the turning in a voice that shook, and half the couriers ' +
-    'rode out carrying a prophecy and half carrying a rumor that the seer had lost their nerve.',
+    '{actor} spoke the turning in a shaking voice. Half the couriers carried a prophecy, and half carried ' +
+    'a rumour that the prophet had lost their nerve.',
   criticalSuccessAfterimage:
-    'The prophet did not merely speak the turning — they became it. The words landed in the couriers like a ' +
-    'struck bell, and the couriers carried that certainty into every hall they entered. Thrones that had ' +
-    'stood for generations began, quietly, to plan for their own endings. An age did not just get announced. ' +
-    'It turned.',
+    '{actor} spoke with such certainty that the couriers believed every word. Old royal houses began to ' +
+    'plan for their own end.',
   criticalFailureAfterimage:
-    'The height took more of the prophet than it gave back. They came down speaking of an ending in a voice ' +
-    'stripped of all comfort, and named ruins that were never in the reading — a war here, a drowned city ' +
-    'there. The couriers rode with it anyway. Somewhere a peace that would have held is unravelling now on ' +
-    'the strength of a word the god let slip too far.',
+    '{actor} named wars and ruins that were never in the comet. The couriers carried those too, and a ' +
+    'peace that would have held is breaking now.',
   // THR-1667 S3: the missing at-cost line and a dealt hand.
   successAtCostAfterimage:
-    'The prophet proclaimed the turning, and the couriers rode, but the reading cost the prophet their voice. ' +
-    'They spoke the last of it in a whisper.',
+    '{actor} proclaimed the turning, but lost their voice doing it. They whispered the last words to the couriers.',
   deal: { count: DEAL_DEFAULT_COUNT, tags: ['presence', 'lore'] },
   successMetadata: { reputationDelta: 0.18 },
   failureMetadata: { reputationDelta: -0.12 },
@@ -125,33 +108,20 @@ const step1LetThemReadIt: ActionStep = {
   onFailure: [],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god did not pour. It only steadied the prophet\'s footing on the cold hill, the way you might ' +
-    'put a hand to the back of someone leaning too far over an edge, and let them read the sky as the ' +
-    'mortal they were. And a mortal, alone under a comet, with a settlement of frightened people praying ' +
-    'at the foot of the hill, reaches for the meaning that lets everyone sleep. By dawn the prophet had ' +
-    'found it: the comet was a sign, yes, but a sign of constancy — that the heavens still kept their ' +
-    'old appointments, that the age was being watched over, not ended, that the people should hold to ' +
-    'what they knew and not be moved. The couriers carried reassurance to the capitals. The nations ' +
-    'exhaled. Something that had wanted to be born under that light went quietly back to sleep, unmade ' +
-    'and unmourned, and only the god knew it had ever stirred.',
-  successAfterimage: 'The prophet read continuity in the comet, and a frightened world was told to hold fast.',
+    'The god holds back and only keeps {actor} steady on the hill. {actor} reads the sky alone, with a ' +
+    'frightened town praying below. At dawn {actor} tells the couriers that the comet is a sign of ' +
+    'constancy. The heavens keep their old order, and the people should hold to what they know.',
+  successAfterimage: '{actor} read the comet as constancy, and the nations were told to hold fast.',
   failureAfterimage:
-    'The prophet reached for reassurance and could not quite close their hand on it; the reading came out ' +
-    'hedged, and the nations were left to argue over what the hedging meant.',
+    '{actor} could not settle on one meaning. The reading came out hedged, and the nations argued over it.',
   criticalSuccessAfterimage:
-    'The prophet found the meaning that lets everyone sleep, and found it so true that it outlived the comet. ' +
-    'Priests would recite the reading for a generation as proof the heavens keep their old appointments. The ' +
-    'world did not merely hold fast. It settled, deep and sure, into the version of itself the prophet had ' +
-    'blessed.',
+    'The reading outlasted the comet. Priests repeated it for a generation as proof that the heavens keep their order.',
   criticalFailureAfterimage:
-    'Reaching for comfort, the prophet closed their hand on exactly the wrong meaning and spoke it with a ' +
-    'mortal\'s full conviction. Hold fast, they told a world that should have been running. The nations ' +
-    'obeyed. What is coming will find them where they stood, reassured, and the prophet\'s name will be ' +
-    'fixed to the stillness that cost them.',
+    '{actor} told the nations to hold fast, though hard years were coming. The nations obeyed and stored no grain.',
   // THR-1667 S3: the missing at-cost line and a dealt hand.
   successAtCostAfterimage:
-    'The prophet read continuity in the comet and the world was told to hold fast, but the prophet had to ' +
-    'leave out what they had half-seen. They wrote it down that night and burned the page before dawn.',
+    '{actor} read constancy in the comet, but left out a second meaning. They wrote it down that night ' +
+    'and burned the page.',
   deal: { count: DEAL_DEFAULT_COUNT, tags: ['presence', 'insight'] },
   successMetadata: { reputationDelta: 0.1 },
   failureMetadata: { reputationDelta: -0.08 },
@@ -170,55 +140,39 @@ const step1Branch: ActionStepBranch = {
 
 const TURNING_AFTERMATH = {
   overview:
-    'A prophecy of endings does not arrive like weather; it arrives like a crack running through ice. In ' +
-    'the first season nothing visibly broke. Then a border lord, reading the comet as license, let fall a ' +
-    'claim his grandfather had only ever whispered. A guild that had governed a craft for two centuries ' +
-    'found its apprentices suddenly unwilling to wait their turn. Pilgrims left their fields and walked ' +
-    'toward the horizon for no reason they could name except that a prophet had told them the world was ' +
-    'allowed to move. Not all of it was ruin and not all of it was freedom; it was simply the turning, ' +
-    'and the god had been the one to whisper *now*. The old order would not end in a year. But it had ' +
-    'been told, on the authority of heaven, that it was permitted to.',
+    'The nations have been told the age may end. In the first season a border lord pressed an old claim ' +
+    'on his neighbour\'s land. Apprentices left their guilds without waiting their turn. Pilgrims left ' +
+    'their fields and walked away from home. Some of this is freedom, and some of it is ruin.',
   changes: [
     {
       id: 'turning_age_proclaimed',
       kind: 'future_hook' as const,
-      title: 'The Age Was Told to Turn',
-      detail:
-        'The comet was proclaimed an ending. Across the nations, what was settled has begun to come ' +
-        'unsettled — claims reopened, customs questioned, the long sleep of permanence disturbed. The ' +
-        'turning is slow and irreversible.',
+      title: 'The Age Told to Turn',
+      detail: 'Old claims and customs are being questioned across the nations.',
       polarity: 'mixed' as const,
     },
     {
       id: 'turning_prophet_renown',
       kind: 'reputation' as const,
-      title: 'The Seer Who Named the Hinge',
-      detail:
-        'The prophet is now the one who read the turning of the age. Their word carries the weight of ' +
-        'a fulfilled omen — and the resentment of everyone the turning unseats.',
+      title: 'The Seer of the Turning',
+      detail: '{actor} is famous now, and resented by everyone the turning unseats.',
       polarity: 'mixed' as const,
     },
     {
       id: 'turning_displaced',
       kind: 'future_hook' as const,
       title: 'Those the Turning Unseats',
-      detail:
-        'Every ending makes refugees of those who built their lives on the thing that ended. The ' +
-        'dispossessed of the old order will look for a god — to curse, or to follow.',
+      detail: 'People who lost their place are looking for a god to curse or follow.',
       polarity: 'loss' as const,
     },
   ],
-  reactionPrompt:
-    'The age has been told to turn. The nations are coming unsettled, and the displaced are looking for ' +
-    'somewhere to put their faith or their grief. What does the god do with a world it has set loose?',
+  reactionPrompt: 'Many people have lost their place. Where does the god turn now?',
   reactions: [
     {
       id: 'turning_react_fan_the_wandering',
-      label: 'Fan the wandering. Send the freed toward the horizon.',
+      label: 'Bless the roads away.',
       intent:
-        'Lean into the turning. Steady the pilgrims who have left their fields, bless the roads that lead ' +
-        'away from the old certainties, and let the age dissolve toward whatever comes next — Wanderer to ' +
-        'the bone.',
+        'Help the pilgrims and wanderers who have left home. The old order loosens faster.',
       effects: [
         {
           kind: 'reputation_tally' as const,
@@ -228,9 +182,7 @@ const TURNING_AFTERMATH = {
         {
           kind: 'recent_event' as const,
           eventType: 'narrative' as const,
-          message:
-            'The god who named the turning now blesses the roads that lead away from it — pilgrims and ' +
-            'the dispossessed alike walk toward a horizon no map yet covers.',
+          message: 'The god blesses the roads that the pilgrims and the dispossessed walk away on.',
           significance: 0.85,
         },
         {
@@ -244,11 +196,10 @@ const TURNING_AFTERMATH = {
     },
     {
       id: 'turning_react_walk_among_displaced',
-      label: 'Walk among the displaced. Catch what the turning throws down.',
+      label: 'Help those who lost their place.',
       intent:
-        'Take responsibility for the cost. Move the god\'s attention to those the ending has unhoused — ' +
-        'the unseated lord, the apprentice with no guild, the farmer who walked away from a field that ' +
-        'was feeding them. An age that turns leaves casualties; a god can choose to be present for them.',
+        'Turn to the people the turning unseated: the lord without land, the apprentice without a guild, ' +
+        'the farmer without a field.',
       effects: [
         {
           kind: 'reputation_tally' as const,
@@ -258,9 +209,7 @@ const TURNING_AFTERMATH = {
         {
           kind: 'recent_event' as const,
           eventType: 'ripple_consequence' as const,
-          message:
-            'The god turns toward the wreckage of the old order — not to mourn it, but to be there for ' +
-            'the ones it falls on. The turning has a shepherd as well as a herald.',
+          message: 'The god turns to the people the turning unseated, and stays with them.',
           significance: 0.75,
         },
         {
@@ -277,54 +226,39 @@ const TURNING_AFTERMATH = {
 
 const ANCHORED_AFTERMATH = {
   overview:
-    'Reassurance, given from a height, is a kind of architecture: it holds things up. The prophet\'s reading ' +
-    'of continuity travelled the same roads a prophecy of endings would have, and where the one would have ' +
-    'cracked the ice, this one thickened it. Border lords let their grandfathers\' claims keep sleeping. ' +
-    'Apprentices went back to waiting their turn. The pilgrims who had begun to drift toward the horizon ' +
-    'turned around at the news that heaven, after all, kept its old appointments, and went home to fields ' +
-    'that were glad to have them. It was not nothing. A great deal of grief was prevented. And somewhere ' +
-    'beneath the steadied surface, the thing that had wanted to be born under that comet lay still, and ' +
-    'the god — who had felt it stir, and chosen restraint — was the only one who would ever grieve it.',
+    'The nations have been told to hold fast. Border lords left their old claims alone. Apprentices stayed ' +
+    'in their guilds, and the pilgrims went home to their fields. Much grief was spared. A new age could ' +
+    'have begun that night, and it did not.',
   changes: [
     {
       id: 'anchored_age_held',
       kind: 'future_hook' as const,
-      title: 'The Age Was Told to Hold',
-      detail:
-        'The comet was read as constancy. The old order is reassured, intact, and a little more certain ' +
-        'of its own permanence than it was before — for good and for ill. What was settled stays settled.',
+      title: 'The Age Told to Hold',
+      detail: 'The old order is reassured, and surer of itself than before.',
       polarity: 'mixed' as const,
     },
     {
       id: 'anchored_grief_prevented',
       kind: 'reputation' as const,
       title: 'The Grief That Did Not Come',
-      detail:
-        'The displacements, the unseatings, the long sad roads of an ending age — none of them happened. ' +
-        'No one will ever know they were spared, least of all the people who were spared them.',
+      detail: 'No one was driven from home or office. No one knows they were spared.',
       polarity: 'gain' as const,
     },
     {
       id: 'anchored_unborn',
       kind: 'future_hook' as const,
-      title: 'The Thing Left Unborn',
-      detail:
-        'Something wanted to come into the world under that light and was, by the god\'s restraint, ' +
-        'denied. It will not stir again soon. Only the god knows what was not allowed to begin.',
+      title: 'The Change Left Unbegun',
+      detail: 'The old order will not be questioned again for a long time.',
       polarity: 'loss' as const,
     },
   ],
-  reactionPrompt:
-    'The age has been told to hold. The people are reassured and the grief was prevented, but a god knows ' +
-    'the cost of constancy. What does the god do with a world it has steadied?',
+  reactionPrompt: 'The age holds, and the people are calm. What does the god do next?',
   reactions: [
     {
       id: 'anchored_react_deepen_the_anchor',
-      label: 'Deepen the anchor. Make the constancy a covenant.',
+      label: 'Make the old ways a covenant.',
       intent:
-        'Commit to the holding. Where the prophet gave reassurance, give permanence — bless the customs ' +
-        'that endured, steady the thrones that kept their seats, and make of this comet a founding sign ' +
-        'that the age was meant to last. Anchor to the bone.',
+        'Bless the customs and the rulers that held. The comet is remembered as the sign that the age will last.',
       effects: [
         {
           kind: 'reputation_tally' as const,
@@ -334,9 +268,7 @@ const ANCHORED_AFTERMATH = {
         {
           kind: 'recent_event' as const,
           eventType: 'narrative' as const,
-          message:
-            'The god who steadied the prophet now blesses the things that held — the old customs become ' +
-            'covenants, and the comet is remembered as the sign that the age was meant to endure.',
+          message: 'The god blesses the customs that held. The comet is remembered as the sign that the age will last.',
           significance: 0.8,
         },
         {
@@ -350,11 +282,8 @@ const ANCHORED_AFTERMATH = {
     },
     {
       id: 'anchored_react_grieve_the_unborn',
-      label: 'Grieve the unborn. Keep watch for when it stirs again.',
-      intent:
-        'Honor what was not allowed to begin. The god alone felt the thing that wanted to be born under ' +
-        'the comet; the god alone can keep faith with it — watching the threads for the next thin place ' +
-        'where the turning might come around again, and choosing, next time, with open eyes.',
+      label: 'Watch for the next sign.',
+      intent: 'Keep watch for the next sign that could turn the age, and choose again when it comes.',
       effects: [
         {
           kind: 'reputation_tally' as const,
@@ -364,9 +293,7 @@ const ANCHORED_AFTERMATH = {
         {
           kind: 'recent_event' as const,
           eventType: 'ripple_consequence' as const,
-          message:
-            'The god keeps a private grief for the age that was not allowed to turn, and watches the ' +
-            'threads for the next time the sky thins and the choice comes around again.',
+          message: 'The god keeps watch for the next sign that could turn the age.',
           significance: 0.7,
         },
         {
@@ -403,10 +330,9 @@ const TURNING_ENDINGS: AftermathVariant = {
   byOutcome: {
     critical_failure: {
       overview:
-        'The prophecy went out wrong. The prophet named ruins that were never in the reading, and the couriers ' +
-        'carried every one of them. A border lord mustered for a war the comet never promised, and his ' +
-        'neighbour mustered to meet him. Pilgrims left their fields for a drowned city that does not exist. The ' +
-        'old order is coming apart, as the god whispered it could, but along lines the god never drew.',
+        'The prophecy went out wrong. A border lord mustered his men for a war the comet never promised, and ' +
+        'his neighbour mustered to meet him. Pilgrims set out for a drowned city that does not exist. The old ' +
+        'order is coming apart, but along lines no one chose.',
       changes: keepChanges(TURNING_AFTERMATH, ['turning_age_proclaimed', 'turning_displaced']),
     },
   },
@@ -419,14 +345,11 @@ const ANCHORED_ENDINGS: AftermathVariant = {
   byOutcome: {
     critical_failure: {
       overview:
-        'The prophet told the nations to hold fast, and the nations held. Border lords stayed behind walls that ' +
-        'were already failing. The pilgrims turned home to fields that could not feed them through the hard ' +
-        'years ahead. The grief the god meant to spare them has only been put off, and when it comes ' +
-        'it will find a whole world standing still, reassured.',
+        'The nations held fast, as they were told. Border lords stayed behind walls that are already failing. ' +
+        'The pilgrims went home to fields that cannot feed them through the hard years ahead. The grief was ' +
+        'not spared. It was only put off.',
       changes: keepChanges(ANCHORED_AFTERMATH, ['anchored_age_held', 'anchored_unborn']),
-      reactionPrompt:
-        'The age has been told to hold, and the grief has only been put off. What does the god do with a world ' +
-        'it has steadied in the wrong place?',
+      reactionPrompt: 'The hard years are still coming, and no one is ready. What does the god do next?',
     },
   },
 };
@@ -437,15 +360,15 @@ export const COMET_AT_THE_TURNING_TEMPLATE: UnifiedActionTemplate = withEncounte
   id: 'star.turning.comet_omen',
   stakes: {
     goal: 'read the comet as the turning of the age',
-    risk: 'send false ruins out to the nations as prophecy',
+    risk: 'send false wars and ruins out as prophecy',
     won: 'proclaimed the turning to the nations',
     lost: 'spoke the turning in a shaking voice',
-    lostBadly: 'named false ruins and sent them out as prophecy',
+    lostBadly: 'named false wars and ruins as prophecy',
     arms: {
       let_them_read_it: {
-        won: 'told a frightened world to hold fast',
-        lost: 'gave a hedged reading that left nations arguing',
-        lostBadly: 'told the nations to hold fast against ruin',
+        won: 'told the nations to hold fast',
+        lost: 'gave a hedged reading the nations argued over',
+        lostBadly: 'told the nations to hold fast before hard years',
       },
     },
   },
@@ -473,15 +396,12 @@ export const COMET_AT_THE_TURNING_TEMPLATE: UnifiedActionTemplate = withEncounte
 
   narrativeTemplates: {
     initiation:
-      'A comet hangs in the western sky, and a threaded prophet has climbed above the rooftops to read it ' +
-      'while the nations wait. Whatever they proclaim by morning will be carried to the capitals — the end ' +
-      'of the age, or the proof that it endures. A god can sway what the prophet sees in the sky.',
+      'A comet hangs in the sky, and a threaded prophet must tell the nations what it means: the end of the ' +
+      'age, or a sign that it holds. A god can sway the reading.',
     success:
-      'The prophet reads the comet — as an ending or as a constancy — and the reading rides out to reshape ' +
-      'the fate of nations, for good and for ill, on the strength of one upturned face and one god\'s choice.',
+      'The prophet reads the comet, and couriers carry the reading to the nations.',
     failure:
-      'The reading comes out shaken and hedged, and the nations are left to quarrel over what the prophet ' +
-      'meant; the omen turns the age all the same, only messier, and no one quite in command of it.',
+      'The prophet\'s reading comes out shaken, and the nations argue over what it meant.',
   },
 
 
@@ -489,26 +409,17 @@ export const COMET_AT_THE_TURNING_TEMPLATE: UnifiedActionTemplate = withEncounte
     0: [
       {
         id: 'proclaim_the_turning',
-        label: 'Open the vastness to them.',
+        label: 'Show them the size of the sky.',
         intent:
-          'Pour the height through the prophet until the age beneath them goes small — one breath among ' +
-          'uncountable breaths — and they read the comet as the ending it could be. They will proclaim the ' +
-          'turning: that the old order has reached the end of its season and the only sin left is to cling. ' +
-          'The words will reshape the fate of nations. Some of what they unseat needed unseating; some of ' +
-          'it was holding people up.',
+          'Show the prophet how small the age is beside the sky, and push them toward a reading of endings.',
         targetLabel: 'The prophet',
         essenceCost: 2, // THR-1800 — the god's push is paid for
         interventionType: 'coercive',
       },
       {
         id: 'let_them_read_it',
-        label: 'Stay your hand. Let them read the sky alone.',
-        intent:
-          'Pour nothing. Steady only their footing on the cold hill, and let the frightened, faithful human ' +
-          'read the human meaning — that the heavens keep their old appointments, that the age is watched ' +
-          'over and not ended, that the people should hold fast. The nations will exhale. A great deal of ' +
-          'grief will be prevented, and something that wanted to be born under the comet will go quietly ' +
-          'back to sleep, mourned by no one but you.',
+        label: 'Hold back. Let them read the sky alone.',
+        intent: 'Push nothing. Only keep the prophet steady on the cold hill, and let them read the sky on their own.',
         targetLabel: 'The prophet',
         essenceCost: 0, // THR-1800 — staying your hand costs nothing
         interventionType: 'withdrawn',
@@ -526,8 +437,8 @@ export const COMET_AT_THE_TURNING_TEMPLATE: UnifiedActionTemplate = withEncounte
   },
 
   description:
-    'A comet crosses a sky the whole world is watching, and a prophet must say whether it marks '
-    + 'an ending or an enduring. A god can sway what the prophet sees.',
+    'A comet crosses the sky, and a prophet must tell the nations whether the age is ending or holding. '
+    + 'A god can sway the reading.',
 });
 
 export default COMET_AT_THE_TURNING_TEMPLATE;

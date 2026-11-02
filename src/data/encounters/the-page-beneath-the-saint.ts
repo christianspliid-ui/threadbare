@@ -49,30 +49,23 @@ const step0TheFind: ActionStep = {
   onSuccess: [],
   onFailure: [],
   failBehavior: 'continue_weakened',
+  // THR-2134: all player text rewritten to Prose Doctrine v2 (opening skeleton).
   narrativeTemplate:
-    'The lamp had burned down to a thumb-width and the archivist had not noticed. They were holding the ' +
-    'founding chronicle — the real one, in the first scribe\'s own cramped hand, sealed two centuries ago in ' +
-    'the lowest course of the stacks where no pilgrim ever goes — and reading, for the third time, the ' +
-    'sentence that took the floor out from under a whole region. The saint had not healed the dying at the ' +
-    'river. There had been no river-miracle. There had been a frightened young preacher, a borrowed corpse, ' +
-    'a paid witness, and a relic dressed from a butcher\'s shop, and from those four cheap things had grown ' +
-    'the faith that now set the region\'s calendar, married its couples, judged its thieves, and sat at the ' +
-    'bedside of every dying farmer for a hundred miles to tell them the river was waiting. The archivist ' +
-    'loved that faith. They had given it their eyes and their back and their best decades. And they were holding ' +
-    'the page that unmade it, in a guttering light, knowing that to know a true thing is already to have ' +
-    'half-decided what to do with it. The god stood in the dark between the shelves and could feel the weight ' +
-    'of the page and the weight of the hundred thousand graves it would reopen.',
-  successAfterimage: 'The archivist held the founding chronicle in the failing lamplight and could not put it down.',
-  failureAfterimage: 'The archivist\'s hands shook so badly that the brittle page nearly tore, and they had to set it flat and breathe.',
+    '{actor}, an archivist, is working late in the sealed lower stacks of the great library at {location}.\n\n' +
+    '{actor} finds the faith\'s founding chronicle, in the first scribe\'s own hand. It says the saint never ' +
+    'healed the dying at the river. The miracle was staged with a borrowed corpse and a paid witness, and ' +
+    'the relic came from a butcher\'s shop.\n\n' +
+    'The whole region lives by that faith. {actor} must decide what to do with the page.',
+  successAfterimage: '{actor} held the chronicle under the lamp and could not put it down.',
+  failureAfterimage: '{actor}\'s hands shook so badly that the old page nearly tore.',
   // THR-1667 S3: the missing afterimages. Step 0 is the authored choice, so it
   // carries no hand (a hand on a choice step would replace the fork).
-  successAtCostAfterimage: 'The archivist kept hold of the chronicle, but gripped it hard enough to crack the page along its old fold.',
+  successAtCostAfterimage: '{actor} kept hold of the chronicle, but gripped it hard enough to crack the page along its fold.',
   criticalSuccessAfterimage:
-    'Under the lamp the archivist found a second hand in the margin: a later scribe who had read the same page, ' +
-    'and had written nothing but a small cross beside it.',
+    '{actor} found a note in the margin from a later scribe. That scribe had read the same page and drawn ' +
+    'a small cross beside it.',
   criticalFailureAfterimage:
-    'The lamp went out. The archivist groped for the stair in the dark and came up with the page crushed in ' +
-    'one fist.',
+    'The lamp went out. {actor} found the stair in the dark and came up with the page crushed in one fist.',
 };
 
 /**
@@ -88,31 +81,20 @@ const step1BuryItDeeper: ActionStep = {
   onFailure: [],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god did not tell the archivist to lie. It did something quieter and more total: it made the truth ' +
-    'feel like cruelty. It let them see the dying farmer at the bedside, and the widow lighting the river-lamp, ' +
-    'and the child who slept because the river was waiting — and it let the chronicle, by comparison, look ' +
-    'like vanity, like a scholar\'s itch to be right at the cost of everyone\'s peace. And the archivist, who ' +
-    'was not weak but was tired and had been taught all their life to revere the order they served, agreed. ' +
-    'They copied the page back into ambiguity — a marginal note here, a "later hand, unreliable" there — and ' +
-    'they sealed the original deeper than they had found it, in a course of stone they mortared themselves so ' +
-    'no one would ever read what they had read. The faith stood. The calendar turned. The farmers died ' +
-    'comforted. And the archivist became, for the rest of their life, the most devout person in the region, ' +
-    'the way a man is loudest about a debt he has decided never to pay. They had kept the peace. They had ' +
-    'also become the second forger, two centuries after the first, and they knew it every single morning.',
-  successAfterimage: 'The truth went back into the dark, deeper than before, and the region\'s faith stood untouched.',
+    'The god shows {actor} the dying farmers the faith comforts, and makes the page seem cruel beside them. ' +
+    '{actor} writes false notes into the library\'s copies, calling the old hand unreliable. Then {actor} ' +
+    'seals the original in a wall deeper in the stacks, and mortars the stone shut.',
+  successAfterimage: 'The page went back into the dark, deeper than before. The faith stood untouched.',
   failureAfterimage:
-    'The burial half-took — the archivist sealed the page but botched the marginal forgeries, leaving a ' +
-    'scholar\'s thread that a sharper successor will one day pull, so the lie holds for now and rots for later.',
+    '{actor} sealed the page but botched the false notes. A sharp reader could follow them back one day.',
   // THR-1667 S3: the missing afterimages and a dealt hand.
   successAtCostAfterimage:
-    'The truth went back into the dark, but the mortaring took three nights, and a novice saw the archivist on ' +
-    'the lowest stair with a trowel in hand.',
+    'The page was sealed, but the mortaring took three nights. A novice saw {actor} on the lowest stair with a trowel.',
   criticalSuccessAfterimage:
-    'The archivist sealed the page and then, unasked, burned the only shelf-list that named it. No one will ' +
-    'know which wall to open.',
+    '{actor} sealed the page and then burned the only shelf-list that named it. No one will know which wall to open.',
   criticalFailureAfterimage:
-    'The archivist broke halfway through the forgeries and wept at their desk. A junior reader found them there, ' +
-    'with the original page lying open beside them.',
+    '{actor} broke down halfway through the false notes. A junior reader found {actor} weeping, with the ' +
+    'page open on the desk.',
   deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'presence'] },
   successMetadata: { reputationDelta: 0.14 },
   failureMetadata: { reputationDelta: -0.1 },
@@ -131,33 +113,21 @@ const step1LetTheTruthSurface: ActionStep = {
   onFailure: [],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god gave the archivist nothing — no comforting vision, no permission, no push — and left them alone ' +
-    'with the page and their own nature. And the thing about a person who has spent forty years learning to ' +
-    'tell a true document from a false one is that they cannot, in the end, un-know which is which. They did ' +
-    'not denounce the faith from a rooftop. They did it the way archivists do anything: they made copies, ' +
-    'fair and careful, with the provenance laid out so plainly that no one could call it a forgery in turn, ' +
-    'and they put one into the hands of the youngest, fiercest reader in the order, and they let the truth ' +
-    'do its own walking. It walked fast. Within a season the river-miracle was a scandal, within a year a ' +
-    'schism, and the faith that had ordered the region for two centuries cracked down the middle — the old ' +
-    'devout clinging to a comfort they now knew was staged, the young building something colder and truer ' +
-    'in the rubble. The dying farmers were not comforted anymore. But they were not lied to anymore either, ' +
-    'and a few of them, at the end, said they\'d rather have the real dark than the painted river. The ' +
-    'archivist was hated by half the region and thanked by the other half and slept, for the first time in ' +
-    'a year, all the way through the night.',
-  successAfterimage: 'The chronicle reached the light, and the region\'s faith broke open around a truth it could not bury again.',
+    'The god gives {actor} nothing, and leaves {actor} alone with the page. {actor} makes careful copies, ' +
+    'with the proof of the page\'s age set out plainly. {actor} gives one copy to the youngest reader in ' +
+    'the order and lets the others travel.',
+  successAfterimage: 'The chronicle came into the open, and the faith split around it.',
   failureAfterimage:
-    'The truth surfaced clumsily — leaked half-proven, easy to deny — so the faith neither held clean nor ' +
-    'broke clean, and the region got a long ugly rumor instead of a reckoning.',
+    'The truth leaked out half-proven and easy to deny. The region got a long rumour instead of a reckoning.',
   // THR-1667 S3: the missing afterimages and a dealt hand.
   successAtCostAfterimage:
-    'The chronicle reached the light, but the order took the archivist\'s keys the day the copies went out. The ' +
-    'archivist watched the schism begin from outside the library door.',
+    'The chronicle came into the open, but the order took {actor}\'s keys the day the copies went out.',
   criticalSuccessAfterimage:
-    'The first to read the copies was the order\'s own high reader, who laid the page beside the relic\'s ' +
-    'certificate and said aloud, in chapter, that the page was genuine.',
+    'The order\'s own high reader compared the page with the relic\'s papers, and declared in chapter that ' +
+    'the page was genuine.',
   criticalFailureAfterimage:
-    'The order called the chronicle a forgery before the copies were a day old. The archivist was named a ' +
-    'heretic from every pulpit, and the copies burned in the square.',
+    'The order called the chronicle a forgery before the copies were a day old. {actor} was named a ' +
+    'heretic, and the copies burned in the square.',
   deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'insight'] },
   successMetadata: { reputationDelta: 0.08 },
   failureMetadata: { reputationDelta: -0.13 },
@@ -176,56 +146,38 @@ const step1Branch: ActionStepBranch = {
 
 const TRUTH_BURIED_AFTERMATH = {
   overview:
-    'A buried truth does not stop being true; it only stops being known, and starts being load-bearing. The ' +
-    'region went on as it had — the calendar, the courts, the river-lamps in the windows of the dying — and ' +
-    'every stone of that order now rested, knowingly, on a forgery a god had helped re-seal. The comfort was ' +
-    'real. The farmers died easier for it. But somewhere in the lowest course of the stacks the original page ' +
-    'waited in its fresh mortar, and the archivist who sealed it grew old as the region\'s most fervent ' +
-    'believer, carrying the one fact that could end everything like a stone swallowed whole. Peace had been ' +
-    'kept. It had been kept the way a wound is kept by not looking at it, and the god\'s name was now on the ' +
-    'not-looking.',
+    'The region\'s faith goes on as before: the calendar, the courts, the lamps lit for the dying. All of it ' +
+    'rests on a forged founding. {actor} has become the most devout believer in the region, and knows ' +
+    'exactly what is sealed in the lower stacks.',
   changes: [
     {
       id: 'page_faith_preserved',
       kind: 'future_hook' as const,
       title: 'A Faith Kept Whole',
-      detail:
-        'The regional faith stands undisturbed. Its calendar turns, its courts judge, its river-lamps burn ' +
-        'in the windows of the dying — all of it resting, now knowingly, on the forged founding the god helped ' +
-        'press back into the dark.',
+      detail: 'The faith stands undisturbed on a forged founding.',
       polarity: 'gain' as const,
     },
     {
       id: 'page_archivist_haunted',
       kind: 'reputation' as const,
-      title: 'The Most Devout Person in the Region',
-      detail:
-        'The archivist sealed the truth with their own hands and became the loudest believer alive — a ' +
-        'fervor that is really a debt they have decided never to pay. They know, every morning, what they buried.',
+      title: 'The Most Devout in the Region',
+      detail: '{actor} buried the truth, and now prays louder than anyone.',
       polarity: 'mixed' as const,
     },
     {
       id: 'page_buried_timebomb',
       kind: 'future_hook' as const,
       title: 'The Page in the Wall',
-      detail:
-        'The original chronicle waits in a fresh course of mortar in the lowest stacks. It is not gone. It ' +
-        'is load-bearing — and a sharper successor, some quiet century from now, may yet read what the god buried.',
+      detail: 'The true chronicle is mortared into a wall. Someone may find it.',
       polarity: 'loss' as const,
     },
   ],
-  reactionPrompt:
-    'The truth is sealed and the region\'s faith stands whole on top of it. The archivist carries the one ' +
-    'fact that could end it all. What does the god do with the comfort it chose to protect?',
+  reactionPrompt: 'The faith stands, and the true page is hidden. What does the god do now?',
   reactions: [
     {
       id: 'page_buried_react_bless_the_comfort',
-      label: 'Bless the comfort. Make the faith\'s mercy real even if its founding was not.',
-      intent:
-        'Commit to the lie\'s good fruit. The founding was forged, but the bedside comfort, the marriages, ' +
-        'the river-lamps are real mercies to real people — pour the divine attention into them, make the faith ' +
-        'true going forward by the good it does, and let the staged river stay a kindness rather than a fraud. ' +
-        'Manipulator who chose to author a mercy instead of a truth.',
+      label: 'Bless the comfort.',
+      intent: 'Make the faith\'s comfort real for the dying and the grieving, whatever its founding was.',
       effects: [
         {
           kind: 'reputation_tally' as const,
@@ -235,9 +187,7 @@ const TRUTH_BURIED_AFTERMATH = {
         {
           kind: 'recent_event' as const,
           eventType: 'narrative' as const,
-          message:
-            'The god pours itself into the faith it chose to keep whole — making the bedside comfort and the ' +
-            'river-lamps into mercies that are real now, whatever the founding was.',
+          message: 'The god blesses the comfort the faith gives the dying, whatever its founding was.',
           significance: 0.8,
         },
         {
@@ -251,12 +201,8 @@ const TRUTH_BURIED_AFTERMATH = {
     },
     {
       id: 'page_buried_react_ease_the_keeper',
-      label: 'Ease the keeper. Sit with the archivist who carries what you buried.',
-      intent:
-        'The peace was bought with one person\'s permanent unease; do not abandon them to it. Move the god\'s ' +
-        'attention to the archivist who sealed the page and now performs a devotion they no longer believe — ' +
-        'be present in their long penance, and make sure the one who paid for the region\'s comfort is not ' +
-        'left utterly alone with it.',
+      label: 'Stay with the keeper.',
+      intent: 'Stay near {actor}, who carries the secret alone and prays every day to a saint who never lived.',
       effects: [
         {
           kind: 'reputation_tally' as const,
@@ -266,9 +212,7 @@ const TRUTH_BURIED_AFTERMATH = {
         {
           kind: 'recent_event' as const,
           eventType: 'ripple_consequence' as const,
-          message:
-            'The god turns toward the archivist who buried the truth on its behalf — sitting with the keeper ' +
-            'of the secret through a devotion that is really a sentence.',
+          message: 'The god stays near {actor}, who carries the buried secret alone.',
           significance: 0.72,
         },
         {
@@ -285,57 +229,38 @@ const TRUTH_BURIED_AFTERMATH = {
 
 const TRUTH_SURFACED_AFTERMATH = {
   overview:
-    'A truth let out of the dark is a fire that warms and burns the same hands. The region\'s faith broke — ' +
-    'not all at once, but the way a great house comes down once the founding stone is shown to be false: a ' +
-    'schism, then a scattering, then two centuries of order suddenly unsure what to do with a Tuesday. The ' +
-    'old devout grieved a comfort they could no longer un-know was staged. The young built something colder ' +
-    'and harder and, in its way, more honest, in the rubble of the river-faith. Many dying farmers went into ' +
-    'the real dark without the painted river, and some of them cursed the archivist for it, and a few of them ' +
-    'thanked them. No one in the region is comforted the way they were a year ago. Everyone in the region is ' +
-    'standing, for the first time in two centuries, on what is actually there.',
+    'The faith has split. The old believers grieve a miracle they now know was staged. The young are building ' +
+    'a colder, more honest faith of their own. The dying no longer have the saint\'s river to hope for. Some ' +
+    'curse {actor} for it, and a few give thanks.',
   changes: [
     {
       id: 'page_faith_shattered',
       kind: 'future_hook' as const,
-      title: 'A Faith Come Apart',
-      detail:
-        'The regional faith has cracked down the middle — old devout against young reformers, a schism ' +
-        'spreading through every parish. The comfort it gave a hundred thousand people is gone; what replaces ' +
-        'it is colder, truer, and not yet finished being built.',
+      title: 'A Faith Split in Two',
+      detail: 'Old believers and young reformers are fighting in every parish.',
       polarity: 'mixed' as const,
     },
     {
       id: 'page_truth_freed',
       kind: 'future_hook' as const,
-      title: 'The Truth Let Walk',
-      detail:
-        'The founding chronicle is in the open, copied past any recall, its provenance too plain to deny. The ' +
-        'region builds on what is actually there now — harder ground, but real ground.',
+      title: 'The Truth in the Open',
+      detail: 'Copies of the true chronicle are everywhere. No one can call them back.',
       polarity: 'gain' as const,
     },
     {
       id: 'page_archivist_marked',
       kind: 'reputation' as const,
       title: 'The One Who Read the Page',
-      detail:
-        'The archivist is hated by the half of the region that lost its comfort and thanked by the half that ' +
-        'wanted the truth. They are the name attached to the end of a two-century faith, and they sleep ' +
-        'through the night for the first time in a year.',
+      detail: 'Half the region hates {actor}. The other half gives thanks for the truth.',
       polarity: 'mixed' as const,
     },
   ],
-  reactionPrompt:
-    'The truth is out and the faith is coming apart around it — grief on one side, cold new honesty on the ' +
-    'other. What does the god do with the order it chose not to protect?',
+  reactionPrompt: 'The truth is out, and the faith is split. What does the god do now?',
   reactions: [
     {
       id: 'page_surfaced_react_tend_the_grieving',
-      label: 'Tend the grieving. Be present for the comfort that broke.',
-      intent:
-        'The truth was worth letting out; the grief it caused is still real. Move the god\'s attention to the ' +
-        'old devout who lost the river they were promised at the bedside — do not gloat over the broken lie, ' +
-        'but sit with the people whose comfort it took, and help them find a way to die without the painted ' +
-        'river. Seer who refuses to be cruel about being right.',
+      label: 'Comfort the grieving.',
+      intent: 'Sit with the faithful who lost their comfort, and help them face death without it.',
       effects: [
         {
           kind: 'reputation_tally' as const,
@@ -345,9 +270,7 @@ const TRUTH_SURFACED_AFTERMATH = {
         {
           kind: 'recent_event' as const,
           eventType: 'ripple_consequence' as const,
-          message:
-            'The god that let the truth out now sits with the ones it cost — tending the old devout through ' +
-            'the loss of a comfort they can no longer believe.',
+          message: 'The god sits with the faithful who lost their comfort to the truth.',
           significance: 0.75,
         },
         {
@@ -361,12 +284,8 @@ const TRUTH_SURFACED_AFTERMATH = {
     },
     {
       id: 'page_surfaced_react_father_the_new',
-      label: 'Father the new. Bless what the young build in the rubble.',
-      intent:
-        'A faith broke; something is being built where it stood. Turn the divine attention to the young ' +
-        'reformers raising a colder, truer order on the cleared ground — bless the hard honest thing they\'re ' +
-        'making, and make sure the region\'s next two centuries are founded on a stone that is actually what ' +
-        'it claims to be. Seer who stays to midwife the truth\'s consequences.',
+      label: 'Bless the reformers.',
+      intent: 'Bless the young reformers, so that what they build stands on honest ground.',
       effects: [
         {
           kind: 'reputation_tally' as const,
@@ -376,9 +295,7 @@ const TRUTH_SURFACED_AFTERMATH = {
         {
           kind: 'recent_event' as const,
           eventType: 'narrative' as const,
-          message:
-            'The god blesses the colder, truer order rising in the broken faith\'s place — founding the ' +
-            'region\'s next age on ground that is honestly what it says it is.',
+          message: 'The god blesses the young reformers and the honest faith they are building.',
           significance: 0.8,
         },
         {
@@ -406,10 +323,9 @@ const TRUTH_BURIED_ENDINGS: AftermathVariant = {
   byOutcome: {
     critical_failure: {
       overview:
-        'The burial did not hold its secret even for a season. A junior reader found the archivist weeping over ' +
-        'the open chronicle, asked what it was, and was told a lie too clumsy to believe. The page went back into ' +
-        'the wall all the same, and the region went on lighting its river-lamps. But two people now know the ' +
-        'page exists, and one of them never agreed to keep it.',
+        'The secret did not keep for even a season. A junior reader found {actor} weeping over the open ' +
+        'chronicle and was told a clumsy lie. The page went back into the wall all the same. But two people ' +
+        'now know it exists, and one of them never agreed to keep quiet.',
     },
   },
 };
@@ -422,14 +338,11 @@ const TRUTH_SURFACED_ENDINGS: AftermathVariant = {
   byOutcome: {
     critical_failure: {
       overview:
-        'The truth came out too fast and too thinly proven. The order called the chronicle a forgery before the ' +
-        'ink on the copies was dry, named the archivist a heretic from every pulpit, and burned the copies in ' +
-        'the square. The faith did not break. It hardened. The river-lamps burn in more windows than before, and ' +
-        'the archivist lives outside the library now, on what the few who believed them can spare.',
+        'The order called the chronicle a forgery and named {actor} a heretic from every pulpit. The faith did ' +
+        'not split. It hardened, and more lamps burn for the saint than before. {actor} lives outside the ' +
+        'library now, on what a few believers can spare.',
       changes: [],
-      reactionPrompt:
-        'The truth was denied and the faith has hardened around the lie. The archivist is out in the cold for ' +
-        'reading it. What does the god do now?',
+      reactionPrompt: 'The faith has hardened, and {actor} is out in the cold. What does the god do now?',
       reactions: [],
     },
   },
@@ -443,11 +356,11 @@ export const PAGE_BENEATH_THE_SAINT_TEMPLATE: UnifiedActionTemplate = withEncoun
     goal: 'seal the forged saint’s page back in the dark',
     risk: 'be found weeping over the open page',
     won: 'sealed the saint’s page deeper in the stacks',
-    lost: 'sealed the page but botched the forgeries',
+    lost: 'sealed the page but botched the false notes',
     lostBadly: 'was found weeping over the open page',
     arms: {
       let_the_truth_surface: {
-        won: 'carried the chronicle into the light',
+        won: 'carried the chronicle into the open',
         lost: 'leaked the truth half-proven and easy to deny',
         lostBadly: 'was named a heretic as the copies burned',
       },
@@ -475,16 +388,14 @@ export const PAGE_BENEATH_THE_SAINT_TEMPLATE: UnifiedActionTemplate = withEncoun
 
   narrativeTemplates: {
     initiation:
-      'A threaded archivist has found the original founding chronicle of a regional faith. It is proof that ' +
-      'the venerated saint was an invention, and that the whole order rests on a forged page. A god can press ' +
-      'the comforting truth deeper into the dark, or the disruptive one into the light.',
+      'A threaded archivist has found proof that a regional faith\'s saint was invented. A god can push the ' +
+      'page back into the dark, or leave the archivist to bring it out.',
     success:
-      'The archivist does what the god leans them toward — re-seals the page deeper, or carries it into the ' +
-      'light. A faith that orders a whole region either stands untouched on a known lie, or comes apart ' +
-      'around a truth it can no longer bury.',
+      'The archivist seals the page away or carries it into the open. The faith stands on a known lie, or ' +
+      'splits around the truth.',
     failure:
-      'The choosing goes clumsy — a botched burial that rots for later, or a half-leaked truth too easy to ' +
-      'deny. The region gets neither a clean comfort nor a clean reckoning.',
+      'The archivist\'s work goes wrong: a botched burial, or a truth leaked half-proven. The region gets ' +
+      'neither comfort nor a reckoning.',
   },
 
 
@@ -494,26 +405,15 @@ export const PAGE_BENEATH_THE_SAINT_TEMPLATE: UnifiedActionTemplate = withEncoun
         id: 'bury_it_deeper',
         label: 'Bury it deeper. Let the comfort stand.',
         intent:
-          'Make the truth feel like cruelty and the lie feel like mercy, until the archivist re-seals the ' +
-          'page deeper than they found it. The regional faith will stand untouched — its calendar, its courts, ' +
-          'the river-lamps in the windows of the dying. All of it rests, knowingly, on a forgery you helped ' +
-          'press back into the dark. The comfort is real and the farmers die easier for it; the cost is one ' +
-          'keeper carrying the fact that could end everything, for the rest of their life, with your name on ' +
-          'the not-looking.',
+          'Make the truth feel cruel and the lie feel kind, and push the archivist to seal the page away.',
         targetLabel: 'The archivist',
         essenceCost: 2, // THR-1800 — the god's push is paid for
         interventionType: 'coercive',
       },
       {
         id: 'let_the_truth_surface',
-        label: 'Stay your hand. Let the truth surface.',
-        intent:
-          'Give them nothing — no vision, no permission, no push — and let a person who spent forty years ' +
-          'learning true from false do what they cannot help doing: bring the proof into the light. The faith ' +
-          'that ordered the region for two centuries will crack. Schism, scattering, the old devout grieving ' +
-          'a comfort they now know was staged, the young building something colder and truer in the rubble. ' +
-          'The dying will not be comforted the way they were; they will also not be lied to. A reckoning ' +
-          'through restraint, paid for by everyone who loved the river.',
+        label: 'Hold back. Let the truth surface.',
+        intent: 'Give the archivist nothing, no vision and no push, and leave them alone with the page.',
         targetLabel: 'The archivist',
         essenceCost: 0, // THR-1800 — staying your hand costs nothing
         interventionType: 'withdrawn',
@@ -531,8 +431,8 @@ export const PAGE_BENEATH_THE_SAINT_TEMPLATE: UnifiedActionTemplate = withEncoun
   },
 
   description:
-    'An archivist has found proof that a regional faith\'s founding saint was forged. A god can '
-    + 'press the truth back into the dark, or let the scholar carry it into the light.',
+    'An archivist has found proof that a regional faith\'s founding saint was invented. A god can '
+    + 'push the truth back into the dark, or let the archivist bring it out.',
 });
 
 export default PAGE_BENEATH_THE_SAINT_TEMPLATE;
