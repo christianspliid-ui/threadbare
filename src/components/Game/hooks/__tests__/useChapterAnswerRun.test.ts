@@ -240,6 +240,21 @@ describe('THR-1812 — stepChapterAnswer (pure)', () => {
     expect(late.effects).toEqual([{ kind: 'stop_clock' }]);
   });
 
+  it('THR-2140 — a moveless next step keeps the run going (running and waiting), no stop, no toast', () => {
+    const moveless = [notif('n_step1', { stepIndex: 1, noPlayerMove: true, resolved: true })];
+    const run = stepChapterAnswer(running, { ...answeredInputs, encounterNotifications: moveless, tick: 101 }, null);
+    expect(run.record).not.toBeNull();
+    expect(run.effects).toEqual([]);
+    const waiting = { ...running, phase: 'waiting' as const };
+    const wait = stepChapterAnswer(waiting, { ...answeredInputs, running: false, encounterNotifications: moveless, tick: 101 }, null);
+    expect(wait.record).not.toBeNull();
+    expect(wait.effects).toEqual([]);
+    // The run's own bound still ends it.
+    const late = stepChapterAnswer(running, { ...answeredInputs, encounterNotifications: moveless, tick: 100 + CHAPTER_ANSWER_RUN_MAX_TICKS }, null);
+    expect(late.record).toBeNull();
+    expect(late.effects[0]).toEqual({ kind: 'stop_clock' });
+  });
+
   it('another interrupt holding the clock when the step answers re-points its hold to paused', () => {
     const step = stepChapterAnswer(running, { ...answeredInputs, heldRunning: true, running: false, tick: 101 }, null);
     expect(step.effects).toEqual([{ kind: 'pause_if_held' }]);

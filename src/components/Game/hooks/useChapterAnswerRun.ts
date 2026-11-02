@@ -134,6 +134,26 @@ export function hasPendingAnswerBeat(
 }
 
 /**
+ * THR-2140 — the action is playing out a step that offers the player no move
+ * (its beat posted `noPlayerMove`), past the committed one. That beat never
+ * opens, but the chapter is still live: its answer is the next move-bearing
+ * beat or the aftermath, so the run keeps going rather than reading "ended
+ * without an answer".
+ */
+export function isPlayingOutMovelessStep(
+  notifications: readonly EncounterNotification[],
+  target: Pick<ChapterAnswerTarget, 'actionId' | 'stepIndex'>,
+  actions: readonly UnifiedAction[],
+): boolean {
+  const action = actions.find(a => a.actionId === target.actionId);
+  if (!action || action.resolved || action.currentStep <= target.stepIndex) return false;
+  return notifications.some(n =>
+    n.actionId === target.actionId
+    && n.noPlayerMove === true
+    && n.stepIndex === action.currentStep);
+}
+
+/**
  * One pure step of the state machine — the hook's whole decision, so it can be
  * read and tested without React. Effects are applied by the hook in order.
  */
@@ -159,6 +179,7 @@ export function stepChapterAnswer(
 
     case 'waiting': {
       if (!isChapterStepAnswered(inputs.unifiedActions, record)) return keep(record);
+      if (isPlayingOutMovelessStep(inputs.encounterNotifications, record, inputs.unifiedActions)) return keep(record);
       // The answer opened (or will open) by itself; a veil records the paused
       // clock as its return state, so nothing more to do.
       if (inputs.veilOpen || hasPendingAnswerBeat(inputs.encounterNotifications, record, inputs.unifiedActions)) return none([]);
@@ -175,6 +196,18 @@ export function stepChapterAnswer(
         // Some other interrupt holds the clock: stop it there; the beat opens
         // when that surface closes, as today.
         if (inputs.heldRunning !== null) return none([{ kind: 'pause_if_held' }]);
+        // THR-2140 — a moveless step is playing out: keep the clock turning
+        // (the run's own max-ticks bound still applies below).
+        if (isPlayingOutMovelessStep(inputs.encounterNotifications, record, inputs.unifiedActions)) {
+          const ticksRun = record.startedAtTick === null ? 0 : inputs.tick - record.startedAtTick;
+          if (ticksRun >= CHAPTER_ANSWER_RUN_MAX_TICKS) {
+            return none([
+              { kind: 'stop_clock' },
+              { kind: 'toast', message: chapterAnswerText(CHAPTER_ANSWER_TIMEOUT_TOAST, record.chapterName) },
+            ]);
+          }
+          return keep(current);
+        }
         if (hasPendingAnswerBeat(inputs.encounterNotifications, record, inputs.unifiedActions)) {
           const at = answeredAtTick ?? inputs.tick;
           if (inputs.tick - at >= CHAPTER_ANSWER_OPEN_GRACE_TICKS) return none([{ kind: 'stop_clock' }]);
