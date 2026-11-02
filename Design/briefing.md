@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-02 21:58 local (20:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-02 22:57 local (21:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -50,7 +50,7 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([12:50](h
 
 ## Queue
 
-**Healthy (3 ready, 1 being built).** The builder took [Rewrite the five novel-prose encounters](https://linear.app/threadbare/issue/THR-2110/rewrite-the-five-novel-prose-encounters-to-prose-doctrine-v2-flawed) at 20:52 UTC, as soon as its veto window closed. All three ready tickets are waiting out veto windows: [Legibility 1](https://linear.app/threadbare/issue/THR-2122/plan-doc-legibility-1-the-shared-blocks-the-type-ladder-and-the) until 23:50 UTC, [Every card says what it buys](https://linear.app/threadbare/issue/THR-2147/every-card-says-what-it-buys-a-result-line-for-cards-that-dont-move) until 05:00 UTC, and the new [The pool says how full it can get](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar) until 08:45 UTC tomorrow. The design lane closed [Can't read what they spend](https://linear.app/threadbare/issue/THR-2143/recurs-after-fix-five-times-the-player-still-cant-read-what-they-spend) after filing its two build tickets.
+**Healthy (3 ready, 1 being built).** The first two novel-prose encounters (Flawed Steel and the Mason-Lord's Wall) merged in [#2719](https://github.com/christianspliid-ui/threadbare/pull/2719) and are live. The builder took the next slice, [the Comet, the Page Beneath the Saint and Apotheosis](https://linear.app/threadbare/issue/THR-2134/novel-prose-story-beats-slice-b-the-comet-at-the-turning-the-page), at 21:30 UTC and is building it now. All three ready tickets are waiting out veto windows: [Legibility 1](https://linear.app/threadbare/issue/THR-2122/plan-doc-legibility-1-the-shared-blocks-the-type-ladder-and-the) until 23:50 UTC, [Every card says what it buys](https://linear.app/threadbare/issue/THR-2147/every-card-says-what-it-buys-a-result-line-for-cards-that-dont-move) until 05:00 UTC, and [The pool says how full it can get](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar) until 08:45 UTC tomorrow.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -58,4 +58,4 @@ Two items for agents, not you:
 
 ## Health
 
-All green. Engine speed is 195 ms/tick, 21% above the 7-day median of 161, back down from 24% last hour and inside the 25% alarm. The live site is current (the commits since its last publish touched only notes and docs). No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 20:48 UTC.
+All green. Engine speed is 129 ms/tick, 20% below the 7-day median of 161. The live site serves the latest commit on main. No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 21:40 UTC.
