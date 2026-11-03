@@ -168,6 +168,28 @@
 
 <p>The retirement is therefore <strong>structural rather than behavioural</strong>: a quote cannot creep back onto a card without a type error first. <strong>Do not reintroduce either field.</strong> A card that wants scene grounding is asking the <em>prose</em> to do its job — that is the step spine's and <span class="mono">bandProse</span>'s work, not the card's.</p>
 
+<h3>The result line — a card that does not move the odds says what it does <span class="flag impl">IMPL</span></h3>
+
+<p>Cold playtest round 6: <em>"Only 'Boost' ever visibly changed the odds. I couldn't see what Balm or Kindle bought me."</em> THR-2147 (plan THR-2146) fills the empty odds slot. A card with <span class="mono">forecastDelta</span> 0 and a grant shows a <strong>result line</strong> there: the exact effect, the named mortal, core vocabulary, no number. The authored effect line stays above it as the card's voice; the line hovers <span class="mono">ui.card.result</span>. Built by <span class="mono">nudgeResultLine</span> (<span class="mono">buildNudgePhaseModel.ts</span>) from the first grant with a row in <span class="mono">NUDGE_GRANT_RESULT_LINES</span> (<span class="mono">nudge-card-display.ts</span>, keyed on <span class="mono">ResultLineGrantKind</span>). A noun that does not resolve takes the fallback sentence and warns once.</p>
+
+<table>
+  <tr><th>Grant kind</th><th>Result line</th><th>Fallback</th></tr>
+  <tr><td>remove_condition</td><td>Ends {Name}’s {Condition}.</td><td>Ends one of {Name}’s conditions.</td></tr>
+  <tr><td>spawn_artifact</td><td>Leaves {an item} for {Name} to find.</td><td>Leaves an item for {Name} to find.</td></tr>
+  <tr><td>assign_ambition</td><td>Wakes an ambition in {Name}: {Ambition}.</td><td>Wakes a new ambition in {Name}.</td></tr>
+  <tr><td>plant_compulsion</td><td>Plants an urge in {Name} toward {the open road}.</td><td>Plants a new urge in {Name}.</td></tr>
+  <tr><td>emit_omen</td><td colspan="2">Plants an omen: what {Name} meets next bends toward it.</td></tr>
+  <tr><td>favor_creation</td><td colspan="2">{Name} owes you a favour.</td></tr>
+  <tr><td>hidden_mark</td><td colspan="2">Leaves a hidden mark on {Name}.</td></tr>
+  <tr><td>spell_grant</td><td>{Name} learns {Spell}.</td><td>{Name} learns a working. (The spell is picked at play, so the hand always shows this.)</td></tr>
+</table>
+
+<p><strong>A card with nothing to act on is withheld.</strong> A card whose whole purchase is <span class="mono">remove_condition</span> on the actor, held by none of those conditions, gets the blocked code <span class="mono">no_target</span> (<span class="mono">nudgeHasNoTarget</span> in <span class="mono">nudges.ts</span>) and the stage withholds it like <span class="mono">sphere_locked</span>. The Balm is never sold to an unhurt mortal; the designer view lists it as <em>Nothing here for it to end</em>.</p>
+
+<p><strong>The answer arrives in the ending too.</strong> <span class="mono">dispatchNudgeCommitments</span> applies each card's grants as its own reaction and records one <span class="mono">NudgeWriteRecord</span> per grant that changed something on <span class="mono">UnifiedAction.nudgeWrites</span>; <span class="mono">buildNudgeWriteChanges</span> draws each as an Aftermath chip (<em>BOON · Wounded</em> — "Elara is no longer wounded."). A removal that found nothing records nothing, and a hidden mark never records.</p>
+
+<p><strong>The price row holds only the price.</strong> ✦ pips and the paying pool's word; the sphere mark left it (the word and the card's tint already say the sphere). On an action card the reach mark sits beside the kind chip with its word, and the scale chip is gone — its word opens the verb chip's hover (<span class="mono">ui.card.verb.&lt;crud&gt;.&lt;scale&gt;</span>).</p>
+
 <h2>The odds pip vocabulary <span class="flag impl">IMPL</span></h2>
 
 <p>Approved 2026-07-30, shipped in THR-890. Magnitude to the nearest ~5%: five pips per color tier, tier colors matching the attachment-rarity ladder, <strong>pip shape changes with tier</strong> so magnitude survives colorblindness — and shape escalation doubles as rarity feel. Stored values are raw numbers; the tiering is purely display (recorded on THR-885).</p>

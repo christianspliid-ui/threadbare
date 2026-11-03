@@ -1993,6 +1993,17 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/engine/playerReceipts.ts', 'src/data/receipt-content.ts'],
   },
   {
+    id: 'nudge-writes-reach-aftermath',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A card the god played and paid for answers in the ending (THR-2147, plan THR-2146 E3). `dispatchNudgeCommitments` applies each committed card\'s grants as its own reaction, probes the mortal before and after, and returns one `NudgeWriteRecord` per grant that changed something (a condition ended, an item left, an ambition woken, an urge or omen planted, a favour owed, a spell taught). `autonomous_aftermath` stores them on `UnifiedAction.nudgeWrites`; `buildNudgeWriteChanges` turns each into an ordinary Aftermath chip, merged beside the fight\'s and the cast\'s (the `stepCasts.writes` precedent). A removal that found nothing records nothing (Law 56), and `hidden_mark` never records — the Long Game is hidden by design.',
+    ulTerms: ['Aftermath', 'Nudge'],
+    mechanism: { kind: 'node-prop', symbols: ['nudgeWrites', 'buildNudgeWriteChanges'], module: 'src/engine/views/stage/buildNudgeWriteChanges.ts' },
+    writeSites: ['src/engine/encounters/nudgeDispatch.ts', 'src/engine/phases/phaseAutonomousAftermath.ts'],
+    readSites: ['src/engine/views/stage/buildUnifiedEncounterStageModel.ts', 'src/engine/views/stage/buildNudgeWriteChanges.ts'],
+  },
+  {
     id: 'cast-target-changes-reach-receipt',
     producerSystem: ENCOUNTERS,
     consumerSystem: NARRATIVE,

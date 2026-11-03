@@ -750,6 +750,13 @@ export interface EncounterStageNudgeCardModel {
   riderLabel?: string;
   /** Named forecast contribution. Designer view only; never rendered as a numeral. */
   forecastDelta: number;
+  /**
+   * THR-2147 — what a card that does not move the odds does to the world, in
+   * words: "Ends Elara's Wounded." Drawn in the odds slot, where the pips would
+   * be. Present only when `forecastDelta` is 0 and the card carries a grant with
+   * a result line (`NUDGE_GRANT_RESULT_LINES`).
+   */
+  resultLine?: string;
 }
 
 /** A card the player stage withholds — designer view only. */

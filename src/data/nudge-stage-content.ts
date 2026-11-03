@@ -240,6 +240,8 @@ export const NUDGE_BLOCKED_REASONS: Readonly<Record<NudgeBlockedCode, string>> =
   sphere_locked: 'Sphere beyond your reach',
   unlock_missing: 'Not yet yours to give',
   trait_missing: 'They do not carry this',
+  // THR-2147 — withheld: the card would end a condition the mortal does not carry.
+  no_target: 'Nothing here for it to end',
 };
 
 /** Rider display names — designer view only; riders never announce themselves. */

@@ -21,6 +21,7 @@ import { buildAftermathConsequences } from './buildAftermathConsequences';
 import { buildChipAnchorNameResolver, buildChipAnchorResolver, buildChipIconResolver, buildFightChipWorld } from './chipCollaborators';
 import { buildFightChanges, mergeFightChanges } from './buildFightChanges';
 import { buildCastChanges, stepCastModelFor } from './buildStepCastModel';
+import { buildNudgeWriteChanges } from './buildNudgeWriteChanges';
 import type { RealmProjectionThunk } from '../../sceneRealm';
 import { resolveEntityVisual } from '../entityVisualResolver';
 import { getFamiliarity, getKnowledgeLevel } from '../../familiarity';
@@ -883,12 +884,16 @@ function buildAftermath(
   // the cast resolver leaves on the action, merged the same way.
   const chipWorld = buildFightChipWorld(graph);
   const consequences = buildAftermathConsequences({
+    // THR-2147 — and a played card's writes from `nudgeWrites`, the same way.
     changes: mergeFightChanges(
       mergeFightChanges(
-        displayChanges,
-        buildFightChanges(activeAction.fightState, activeAction.actorId, chipWorld),
+        mergeFightChanges(
+          displayChanges,
+          buildFightChanges(activeAction.fightState, activeAction.actorId, chipWorld),
+        ),
+        buildCastChanges(activeAction.stepCasts, chipWorld),
       ),
-      buildCastChanges(activeAction.stepCasts, chipWorld),
+      buildNudgeWriteChanges(activeAction.nudgeWrites, chipWorld),
     ),
     reactions: displayReactions,
     enrich: (text) => enrichProse(text, ctx),

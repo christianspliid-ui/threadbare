@@ -379,8 +379,11 @@ export function NudgeCard({
         name: card.name,
         effectLine: card.effectLine,
         ...(card.leanLabel ? { leanLabel: card.leanLabel } : {}),
-        // A nudge *moves* the odds, so it reads them as pips (Law 10).
-        odds: { kind: 'delta', value: card.forecastDelta },
+        // A nudge *moves* the odds, so it reads them as pips (Law 10). THR-2147 —
+        // one that does not says what it does instead, in the same slot.
+        ...(card.resultLine
+          ? { odds: null, resultLine: card.resultLine }
+          : { odds: { kind: 'delta' as const, value: card.forecastDelta } }),
         ...(card.blockedReason ? { blockedReason: card.blockedReason } : {}),
         selected: card.selected,
         dimmed,

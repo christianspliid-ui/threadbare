@@ -47,6 +47,7 @@ import type {
   EncounterAftermathReaction,
   EncounterAftermathReactionEffect,
   NudgeCostChannels,
+  NudgeWriteRecord,
   StepNudge,
   UnifiedAction,
 } from '../../types/unifiedAction';
@@ -188,6 +189,11 @@ export interface NudgeDispatchResult {
    * committed no value-shifting card.
    */
   readonly driftedAxisIds: readonly string[];
+  /**
+   * THR-2147 — one record per grant that changed the world, for the Aftermath
+   * chips. Empty when the hand wrote nothing (or wrote only a hidden mark).
+   */
+  readonly nudgeWrites: readonly NudgeWriteRecord[];
 }
 
 const EMPTY_SUMMARY: AftermathMutationSummary = {
@@ -234,23 +240,37 @@ export function dispatchNudgeCommitments(
       dispatchedGrantKinds: [],
       chargedCosts: {},
       driftedAxisIds: [],
+      nudgeWrites: [],
     };
   }
 
   let nextState = state;
   let mutationSummary = EMPTY_SUMMARY;
+  const nudgeWrites: NudgeWriteRecord[] = [];
 
   // ── Grants, through the existing aftermath applier ──
-  if (grants.length > 0) {
+  //
+  // THR-2147 — one application per card, so each write is attributable to the
+  // card that paid for it (`nudgeWrites`, read by the Aftermath chips). A card
+  // that throws no longer takes the next card's grants down with it.
+  //
+  // The applier mints effect-derived ids from the reaction id and the effect's
+  // index (`artifact_spawned_…_<reaction>_<i>_<tick>`, omens, compulsions, marks),
+  // so each card after the first takes its own reaction id: two Caches in one
+  // hand must not mint the same artifact id. A one-card hand keeps the old id.
+  for (const [cardIndex, card] of collectNudgeGrantCards(step, activeNudgeIds).entries()) {
     const reaction: EncounterAftermathReaction = {
-      id: NUDGE_GRANT_REACTION_ID,
+      id: cardIndex === 0 ? NUDGE_GRANT_REACTION_ID : `${NUDGE_GRANT_REACTION_ID}_${cardIndex}`,
       label: 'the god’s hand',
-      effects: grants,
+      effects: card.grants,
     };
     try {
+      const before = nextState;
+      const probes = card.grants.map((grant) => probeGrantTarget(before, action, grant));
       const applied = applyEncounterAftermathReaction(nextState, action, reaction, tick, runtime, { recordCrossings: recordDetectionCrossings });
       nextState = applied.state;
-      mutationSummary = applied.mutationSummary;
+      mutationSummary = mergeSummaries(mutationSummary, applied.mutationSummary);
+      nudgeWrites.push(...observeNudgeWrites(card, probes, before, nextState, action, applied.mutationSummary));
     } catch (error) {
       emitNudgeTrace({
         tick,
@@ -259,7 +279,7 @@ export function dispatchNudgeCommitments(
         encounterId: action?.templateId ?? 'unknown',
         channel: 'grants',
         failReason: error instanceof Error ? error.message : String(error),
-        summary: `nudge grants failed to apply for ${action?.templateId ?? 'unknown'}`,
+        summary: `nudge grants failed to apply for ${action?.templateId ?? 'unknown'} (card ${card.cardId})`,
       });
     }
   }
@@ -397,7 +417,147 @@ export function dispatchNudgeCommitments(
     dispatchedGrantKinds: grants.map((g) => g.kind),
     chargedCosts: costs,
     driftedAxisIds,
+    nudgeWrites,
   };
+}
+
+// ─── Write records (THR-2147) ────────────────────────────────────────
+
+/** A committed card's grants, keyed by the card that carries them. */
+export function collectNudgeGrantCards(
+  step: Pick<ActionStep, 'nudges'>,
+  activeNudgeIds: readonly string[] | undefined,
+): { readonly cardId: string; readonly grants: readonly EncounterAftermathReactionEffect[] }[] {
+  if (!activeNudgeIds || activeNudgeIds.length === 0 || !step.nudges) return [];
+  const byId = new Map(step.nudges.map((n) => [n.id, n]));
+  const cards: { cardId: string; grants: readonly EncounterAftermathReactionEffect[] }[] = [];
+  for (const id of activeNudgeIds) {
+    const grants = byId.get(id)?.grants;
+    if (grants && grants.length > 0) cards.push({ cardId: id, grants });
+  }
+  return cards;
+}
+
+function mergeSummaries(a: AftermathMutationSummary, b: AftermathMutationSummary): AftermathMutationSummary {
+  return {
+    touchedWorld: a.touchedWorld || b.touchedWorld,
+    touchedStructure: a.touchedStructure || b.touchedStructure,
+    woundApplied: a.woundApplied || b.woundApplied,
+  };
+}
+
+/** The grant's mortal: `$actor` or absent ⇒ the actor; a literal node id ⇒ that node. */
+function grantTargetId(
+  state: GameState,
+  action: UnifiedAction | undefined,
+  grant: EncounterAftermathReactionEffect,
+): string | undefined {
+  const raw = 'targetAgentId' in grant ? grant.targetAgentId : undefined;
+  if (raw === undefined || raw === '$actor') return action?.actorId;
+  if (raw.startsWith('$')) return undefined; // another sentinel — not attributable here
+  return state.graph.getNode(raw) ? raw : undefined;
+}
+
+/**
+ * What a grant's mortal held before the card fired. The graph is mutated in
+ * place, so the facts the write is judged by are counted now, not diffed later.
+ */
+interface GrantProbe {
+  readonly targetId?: string;
+  readonly conditionCount: number;
+  readonly edgeIds: ReadonlySet<string>;
+}
+
+function probeGrantTarget(
+  state: GameState,
+  action: UnifiedAction | undefined,
+  grant: EncounterAftermathReactionEffect,
+): GrantProbe {
+  const targetId = grantTargetId(state, action, grant);
+  if (!targetId) return { conditionCount: 0, edgeIds: new Set() };
+  const edges = state.graph.getOutgoingEdges(targetId);
+  const conditionCount = grant.kind === 'remove_condition'
+    ? edges.filter((e) => e.type === 'has_trait' && e.target === grant.conditionTraitId).length
+    : 0;
+  return { targetId, conditionCount, edgeIds: new Set(edges.map((e) => e.id)) };
+}
+
+/** The first outgoing edge of the mortal's that the card created, if any. */
+function newEdgeTarget(state: GameState, probe: GrantProbe, types: readonly string[]): string | undefined {
+  if (!probe.targetId) return undefined;
+  return state.graph.getOutgoingEdges(probe.targetId)
+    .find((e) => !probe.edgeIds.has(e.id) && types.includes(e.type))?.target;
+}
+
+/**
+ * One record per grant that changed something (Law 56 — a chip names only state
+ * that was written). A removal that found nothing, a refused teaching or a full
+ * favour book records nothing; `hidden_mark` never records.
+ */
+function observeNudgeWrites(
+  card: { readonly cardId: string; readonly grants: readonly EncounterAftermathReactionEffect[] },
+  probes: readonly GrantProbe[],
+  before: GameState,
+  after: GameState,
+  action: UnifiedAction | undefined,
+  summary: AftermathMutationSummary,
+): NudgeWriteRecord[] {
+  const out: NudgeWriteRecord[] = [];
+  card.grants.forEach((grant, index) => {
+    const probe = probes[index];
+    const targetId = probe?.targetId;
+    if (!probe || !targetId) return;
+    const record = (kind: NudgeWriteRecord['kind'], refId?: string): void => {
+      out.push({ cardId: card.cardId, kind, targetId, ...(refId !== undefined ? { refId } : {}) });
+    };
+    switch (grant.kind) {
+      case 'remove_condition': {
+        const now = after.graph.getOutgoingEdges(targetId, 'has_trait')
+          .filter((e) => e.target === grant.conditionTraitId).length;
+        if (now < probe.conditionCount) record('remove_condition', grant.conditionTraitId);
+        break;
+      }
+      case 'spawn_artifact': {
+        const artifactId = newEdgeTarget(after, probe, ['possesses', 'bonded_to']);
+        if (artifactId) record('spawn_artifact', artifactId);
+        break;
+      }
+      case 'spell_grant': {
+        if (!summary.touchedStructure) break;
+        const spellId = newEdgeTarget(after, probe, ['knows_spell']);
+        record('spell_grant', spellId);
+        break;
+      }
+      case 'assign_ambition':
+        if (summary.touchedStructure) record('assign_ambition', grant.templateId);
+        break;
+      case 'plant_compulsion': {
+        // A new id, not a longer list: at COMPULSION_MAX_ACTIVE the applier appends
+        // one and evicts the oldest, so the length stays the same.
+        const known = new Set((before.plantedCompulsions ?? []).map((c) => c.compulsionId));
+        if (!(after.plantedCompulsions ?? []).some((c) => !known.has(c.compulsionId))) break;
+        let lean: string | undefined;
+        let weight = 0;
+        for (const [type, w] of Object.entries(grant.encounterBias)) {
+          if ((w ?? 0) > weight) { lean = type; weight = w ?? 0; }
+        }
+        record('plant_compulsion', lean);
+        break;
+      }
+      case 'emit_omen': {
+        // A new id, not a longer list: the global cap evicts as it appends.
+        const known = new Set((before.emittedOmens ?? []).map((o) => o.omenId));
+        if ((after.emittedOmens ?? []).some((o) => !known.has(o.omenId))) record('emit_omen');
+        break;
+      }
+      case 'favor_creation':
+        if (summary.touchedWorld) record('favor_creation', action?.actorId);
+        break;
+      default:
+        break;
+    }
+  });
+  return out;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────

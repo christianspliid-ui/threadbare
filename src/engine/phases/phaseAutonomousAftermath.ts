@@ -50,7 +50,9 @@ import { reachToAxisId } from '../../types/axisRegistry';
 import { applyDriftMagnitude } from '../encounters/driftAccumulator';
 import { getThreadedAgents, getAvatarsOf } from '../graphQueries';
 import { emitTrace } from '../traceBuffer';
-import { touchWorld, touchStructure } from '../simulationRuntime';
+import { touchWorld, touchStructure, type SimulationRuntime } from '../simulationRuntime';
+import { resolveStepDefinition } from '../unifiedActionLifecycle';
+import { composeDealtStepFromState } from '../encounters/dealHand';
 import {
   PERSONALITY_REACTION_WEIGHT,
   PERSONALITY_REACTION_DRIFT_DELTA,
@@ -68,11 +70,16 @@ import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
  * Fail-soft: a retired template, a step index past the end, or a branch node
  * (which carries no nudges) all yield undefined and dispatch nothing.
  */
-function templateStep(action: UnifiedAction): Pick<ActionStep, 'nudges'> | undefined {
+function templateStep(action: UnifiedAction, state: GameState): Pick<ActionStep, 'nudges'> | undefined {
   const template = UNIFIED_ACTION_TEMPLATES.find((t) => t.id === action.templateId);
-  const step = template?.steps?.[action.currentStep];
+  if (!template?.steps?.[action.currentStep]) return undefined;
+  // THR-2147 — the hand the player committed, as resolution reads it: the branch
+  // variant the choice history picked, plus the dealt fill (`composeDealtStepFromState`,
+  // pure and zero-PRNG). Reading the raw template step dropped every dealt card —
+  // a played Balm, Cache or Kindled Ambition charged essence and never dispatched.
+  const step = resolveStepDefinition(template, action.currentStep, action.choiceHistory) as ActionStep | undefined;
   if (!step || isActionStepBranch(step)) return undefined;
-  return step;
+  return composeDealtStepFromState(step, state).step;
 }
 
 /** Lazy reach-by-templateId index (templates are static; built once). */
@@ -131,7 +138,8 @@ export function processAutonomousAftermath(state: GameState, ctx: PhaseContext):
     )
     .sort((l, r) => (l.startTick !== r.startTick ? l.startTick - r.startTick : l.actionId.localeCompare(r.actionId)));
 
-  if (candidates.length === 0) return {};
+  // THR-2147 — no early return on an empty candidate list: the hero card pass
+  // below still has to run.
 
   let s = state;
   let applied = 0;
@@ -204,21 +212,58 @@ export function processAutonomousAftermath(state: GameState, ctx: PhaseContext):
     // grant lands on the world the encounter left behind rather than the one it
     // started from. A hand of plain forecast cards (the common case) returns the
     // state unchanged and costs one Map build.
-    const committedStep = templateStep(action);
-    if (committedStep && action.activeNudges?.length) {
-      const dispatched = dispatchNudgeCommitments(
-        s, action, committedStep, action.activeNudges, s.tick, runtime,
-      );
-      s = dispatched.state;
-      if (dispatched.mutationSummary.touchedStructure) touchStructure(runtime);
-      else if (dispatched.mutationSummary.touchedWorld) touchWorld(runtime);
-    }
+    // A hero whose thread later lapsed reaches this loop with its cards already
+    // paid out by the pass below; never dispatch them twice.
+    if (!action.nudgeGrantsDispatched) s = dispatchCommittedCards(s, action, runtime);
 
+    applied += 1;
+  }
+
+  // THR-2147 — the cards played on an encounter this phase does not choose for:
+  // the god's own mortals (the First, retinue, avatars), whose reaction the player
+  // picks, and any action with no authored reaction. Before this pass their cards
+  // charged essence and never reached the world — a Balm never healed the First.
+  // They dispatch once, as soon as the action resolves. A non-hero action with
+  // reactions waits for the loop above, so its cards still land after its aftermath.
+  for (const action of s.unifiedActions) {
+    if (!action.resolved || action.nudgeGrantsDispatched || !action.activeNudges?.length) continue;
+    const hasReactions = (action.aftermathSummary?.reactions?.length ?? 0) > 0;
+    if (hasReactions && !heroes.has(action.actorId)) continue;
+    s = dispatchCommittedCards(s, action, runtime);
     applied += 1;
   }
 
   if (applied === 0) return {};
   return { ...s };
+}
+
+/**
+ * THR-885 — the god's committed cards pay their non-essence costs and make their
+ * world changes, once per action (`nudgeGrantsDispatched`, THR-2147). A hand of
+ * plain forecast cards returns the state unchanged.
+ */
+function dispatchCommittedCards(state: GameState, action: UnifiedAction, runtime: SimulationRuntime): GameState {
+  let s = state;
+  const committedStep = templateStep(action, s);
+  let writes: UnifiedAction['nudgeWrites'];
+  if (committedStep && action.activeNudges?.length) {
+    const dispatched = dispatchNudgeCommitments(
+      s, action, committedStep, action.activeNudges, s.tick, runtime,
+    );
+    s = dispatched.state;
+    // THR-2147 — the card's writes ride the action, for the Aftermath chips
+    // (the `stepCasts.writes` precedent). Nothing written ⇒ the key stays absent.
+    if (dispatched.nudgeWrites.length > 0) writes = dispatched.nudgeWrites;
+    if (dispatched.mutationSummary.touchedStructure) touchStructure(runtime);
+    else if (dispatched.mutationSummary.touchedWorld) touchWorld(runtime);
+  }
+  return {
+    ...s,
+    unifiedActions: (s.unifiedActions ?? []).map((a) =>
+      a.actionId === action.actionId
+        ? { ...a, nudgeGrantsDispatched: true, ...(writes ? { nudgeWrites: writes } : {}) }
+        : a),
+  };
 }
 
 export const autonomousAftermathPhase: EnginePhase = {

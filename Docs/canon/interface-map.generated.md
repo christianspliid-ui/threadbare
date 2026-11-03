@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 111 |
-| **Total** | **347** |
+| 🔵 UNVERIFIED-OK | 112 |
+| **Total** | **348** |
 
 ## Contracts by producing subsystem
 
@@ -253,6 +253,7 @@ remediation ticket or the build fails.
 | `missed-appointment-breaks-agreement` | A missed appointment breaks the promise it was made of (THR-1479). The planter writes an `owes_favor` edge carrying `properties.appointment` — a favour of a particular shape, a member of the world-object Agreement kind's `favor` class, no new type. When the window closes without the mortal on the place's hex, `evaluateEncounterSeeds` rewrites the seed into its missed branch, marks the edge `broken` (and `brokenTick`), writes an `appointment_missed` Event node with the reason (`absent`, `unreachable`, `chose_to_miss`, `place_lost`), and the missed sequel fires wherever the mortal stands. The sheet's Bonds row reads the broken favour ("They owe … a meeting at … — broken") until the reckoning's aftermath retires it; the favour expiry sweep skips appointment favours because their lifecycle is the seed's. Kept, the edge is removed — redeemed. Registered LEAKED-with-ticket at filing for the same reason as its sibling: the seeded-run census (slice 2, THR-1518) is what proves a miss happens in a real world. | function: `breakAppointmentFavour`, `redeemAppointmentFavour`, `isAppointmentFavour`, `writeAppointmentEvent`, `plantAppointmentPromise` | Secrets & Favors | 🟢 LIVE | — |
 | `nudge-card-cost-channels-detection-and-doom` | A card can be cheap in essence and expensive somewhere else — visibility to rivals, or the doom clock — so the price of divine help is not always the same currency. | function: `collectNudgeCostChannels`, `applyRawDetectionDelta`, `accelerateDoomClock` | Spheres & Quintessence | 🔴 LEAKED | THR-883 |
 | `nudge-card-grants-dispatch-to-host-systems` | A card that says it changed the world actually changes it, through the system that owns that change — so the fiction the player is shown and the state the world holds cannot disagree. | function: `dispatchNudgeCommitments`, `collectNudgeGrants`, `assignAmbitionToActor` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | THR-883 |
+| `nudge-writes-reach-aftermath` | A card the god played and paid for answers in the ending (THR-2147, plan THR-2146 E3). `dispatchNudgeCommitments` applies each committed card's grants as its own reaction, probes the mortal before and after, and returns one `NudgeWriteRecord` per grant that changed something (a condition ended, an item left, an ambition woken, an urge or omen planted, a favour owed, a spell taught). `autonomous_aftermath` stores them on `UnifiedAction.nudgeWrites`; `buildNudgeWriteChanges` turns each into an ordinary Aftermath chip, merged beside the fight's and the cast's (the `stepCasts.writes` precedent). A removal that found nothing records nothing (Law 56), and `hidden_mark` never records — the Long Game is hidden by design. | node-prop: `nudgeWrites`, `buildNudgeWriteChanges` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `pending-rite-opens-surface` | Every mortal the god threads with the Agent Thread card gets a rite on screen with their real face, shaped by how many the god has threaded, and it waits until nothing else is open. | function: `drainThreadingRites`, `closeThreadingRite`, `planThreadingRite` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `planner-forecast-equals-roll` | A mortal chooses what to attempt by forecasting its odds, and the forecast is the number the dice use. The planner (`estimateStepProbability`, `forecastStepProbabilities`) forecasts every cache-entry step through `forecastActionAtScale` / `scaledStepProbability` at the template's `scale` — the same scale offset, difficulty cap and post-roll floor `resolveStepCore` applies — and the cache stores authored difficulty, since the roll never applies the late-game or danger multipliers (`PLANNER_DIFFICULTY_MULTIPLIERS_ENABLED = false`). Only what a mortal cannot foresee (a god's nudges, a company assist, push/resist) sits outside it. Standing modifiers (items, conditions, the effect family, terrain, place conditions, sphere alignment) sit on both sides since THR-1535: the roll adds `computeStandingModifierTotal`, and the planner adds the same per-reach total through a `createStandingModifierReader` built once per decision pass. | function: `forecastActionAtScale`, `scaledStepProbability`, `applyScaleDifficultyAdjust` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `player-action-aftermath-read` | The aftermath a player action already produces finally reaches the player — the receipt phase reads the summary that was built and discarded for player casts. THR-1002 extended the read to the toast tier: the first sentence of that overview is now the toast message, where the toast previously discarded it and said `Your <internal template name> <band>.` — the payload check this row recorded as unverified, on ~93% of casts. | function: `processPlayerReceipts`, `aftermathSummary`, `receiptToastSentence` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
@@ -521,10 +522,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Ascendant Beats & Progression → Attachments, Items & Possessions
 - **UL terms:** *Spell*, *Bestowal*
 - **Module:** `src/engine/spellGrant.ts`
-- **Production hits:** 26 total — 6 write, 2 read, 18 unclassified
+- **Production hits:** 30 total — 6 write, 2 read, 22 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/ascendantExpression.ts`, `src/engine/encounterAftermath.ts`, `src/engine/itemGenerator/mintGeneratedItem.ts`, `src/engine/rewardPool.ts` +1 more
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/agentAttachments.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/data/action-technical-effects.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/nudge-card-library.ts`, `src/data/spell-grant-constants.ts` +13 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/data/action-technical-effects.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/nudge-card-display.ts`, `src/data/nudge-card-library.ts` +17 more
 - **Verdict:** Verified 2026-10-04: THR-1672. spellGrant.test.ts: Teach a Spell on a threaded priest writes knows_spell { source: divine, grantedBy }; with no thread it no-ops (no_thread). Teaching a library transgression raises the doom clock tickModifier by DIVINE_TEACH_DARK_DOOM and the mortal’s region pressure by DIVINE_TEACH_DARK_DETECTION; teaching an authored spell moves neither. A cast of the god-taught transgression adds DIVINE_TAUGHT_CAST_DETECTION and its forbidden_contact mark reads "… was cast — <god>’s teaching". instantiateReward of reward_tomes_scrolls_veilscript_fragment teaches a farmer (source tome, viaItemId = the clone), once; the sheet entry carries learnedFrom "Veilscript Fragment"; a seized book teaches its new holder. A spell_grant nudge reaction teaches the scene actor from the god. The three pre-existing writers (seedSpellKnowing, create × Power, applySpellStamp) write byte-identical edges through grantSpell (spellGrant.pin.test.ts snapshots, written before the repoint).
 
 ### `account-carries-echoes-to-the-next-world` — 🔵 UNVERIFIED-OK
@@ -941,10 +942,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Spheres & Quintessence
 - **UL terms:** *Quintessence*, *Aftermath*
 - **Module:** `src/engine/encounterAftermath.ts`
-- **Production hits:** 22 total — 1 write, 1 read, 20 unclassified
+- **Production hits:** 23 total — 1 write, 1 read, 21 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`
 - **Read sites:** `src/engine/phaseQuintessence.ts`
-- **Other hits:** `src/data/condition-trait-content.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/encounters/apotheosis-ascension.ts`, `src/data/encounters/one-body-short.ts`, `src/data/encounters/the-broken-seal.ts` +15 more
+- **Other hits:** `src/data/condition-trait-content.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/encounters/apotheosis-ascension.ts`, `src/data/encounters/one-body-short.ts`, `src/data/encounters/the-broken-seal.ts` +16 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `authored-step-difficulty-player-resolution` — 🟢 LIVE
@@ -1183,10 +1184,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Echo*, *Undertaking*, *Dominion*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 88 total — 1 write, 4 read, 83 unclassified
+- **Production hits:** 89 total — 1 write, 4 read, 84 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/dominion.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/undertakingProse.ts`, `src/engine/views/connections.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/data/action-technical-effects.ts`, `src/data/agenda-consequence-templates.ts`, `src/data/ascendant-expression-constants.ts` +78 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/data/action-technical-effects.ts`, `src/data/agenda-consequence-templates.ts`, `src/data/ascendant-expression-constants.ts` +79 more
 - **Verdict:** Verified 2026-10-27: THR-2031. `check:undertaking-live -- cell.control_claim.item --seed 42 --seed 99 --account sample` proved on both seeds (`claim_item:ok` on `echo_relic_echo_sample_relic`). A 240-tick sample-account run took the Hollow Bell on day 10.8 (seed 42) and day 4.6 (seed 99), under its own name. Non-vacuous by `src/engine/__tests__/claimItem.test.ts`: `readThrough` is `unborne` before and `bearer` after, the borne relic fails `already_held` with the edge count unchanged, and a loose item is refused `not_lying_at_a_place`.
 
 ### `claim-resource-pays-good-sphere` — 🟢 LIVE
@@ -2131,10 +2132,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Fight*, *Condition*
 - **Module:** `src/engine/effects/conditionApplier.ts`
-- **Production hits:** 137 total — 1 write, 1 read, 135 unclassified
+- **Production hits:** 138 total — 1 write, 1 read, 136 unclassified
 - **Write sites:** `src/engine/effects/conditionApplier.ts`
 - **Read sites:** `src/engine/conditionDecay.ts`
-- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/useDebugOpenModal.ts`, `src/components/ruins/EmergenceDilemmaModal.tsx` +130 more
+- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/useDebugOpenModal.ts`, `src/components/ruins/EmergenceDilemmaModal.tsx` +131 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-complications-scoped` — 🔵 UNVERIFIED-OK
@@ -2179,10 +2180,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Fight Clock*, *SCAR*, *BOND*, *BOON*, *PATH*
 - **Module:** `src/engine/views/stage/buildFightChanges.ts`
-- **Production hits:** 31 total — 3 write, 2 read, 26 unclassified
+- **Production hits:** 32 total — 3 write, 2 read, 27 unclassified
 - **Write sites:** `src/engine/fights/fightEnding.ts`, `src/engine/fights/fightState.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/engine/views/stage/buildFightChanges.ts`, `src/engine/views/stage/buildUnifiedEncounterStageModel.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildFightChanges.ts`, `src/data/encounters/fight-duel-grudge.ts`, `src/data/encounters/fight-lair-confront.ts`, `src/data/fight-constants.ts`, `src/data/fight-screen-content.ts` +21 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildFightChanges.ts`, `src/data/encounters/fight-duel-grudge.ts`, `src/data/encounters/fight-lair-confront.ts`, `src/data/fight-constants.ts`, `src/data/fight-screen-content.ts` +22 more
 - **Verdict:** Verified 2026-09-25: THR-1553 F3. Review route `?view=game&seeded&size=medium`, ticked past 60, `spawnFight(Krenn, { clockFilled: 3, outcome: 'critical_success' })` (major lair), stepped through the veil with "Let fate decide": the aftermath rendered PATH · KRENN "Krenn was slain." ◆ slain and PATH · THE KINDLED WARREN "The Kindled Warren is cleared." ◆ cleared, plus BOON inspired and BOON Prayer Scroll (the trophy); every `getFightChips('ua_227')` sentence was in the DOM (`Docs/evidence/thr-1553/`). Non-vacuous by `src/components/Game/encounter-stage/adapters/__tests__/buildFightChanges.test.ts`: each chip is absent when its field is absent, and the adapter's aftermath carries the chips from a real `buildUnifiedEncounterStageModel`. THR-1561 (a duel's loser): `?view=game&seeded&size=medium&forceencounters`, tick 10, `spawnDuel('Corran', …, { courtPosition: 'the_first' })` → `ua_31`, where `opponentEnding` was spared with `grudgeWritten`; the aftermath drew BOND · NESRIN "Nesrin holds a grudge against Corran." ▼ (`Docs/evidence/thr-1561/`).
 
 ### `fight-fells-monster-clears-lair` — 🔵 UNVERIFIED-OK
@@ -2856,10 +2857,10 @@ exit
 
 - **Intent:** A local omen is on the map (THR-1898 Lenses II, plan D4). Encounter aftermath and the omen agenda write `state.emittedOmens`; the Trouble lens (`views/lenses/troubleLens.ts`) lights every explored hex inside a `scope.kind: 'local'` omen's reach (`radius`, default `TROUBLE_OMEN_DEFAULT_RADIUS`) until `expiresTick`, draws a dotted ring round the reach with a badge at its centre, and says "An omen of {sphere} hangs over this land." — the omen's first player-facing read; before this only agent decision bias read it.
 - **Producer → Consumer:** Omens & Atmospheric Pressure → Intelligence, Knowledge & Familiarity
-- **Production hits:** 7 total — 2 write, 1 read, 4 unclassified
+- **Production hits:** 8 total — 2 write, 1 read, 5 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/phaseOmenAgenda.ts`
 - **Read sites:** `src/engine/views/lenses/troubleLens.ts`
-- **Other hits:** `src/engine/phaseAgentDecision.ts`, `src/engine/phases/emittedOmenDecay.ts`, `src/types/gameState.ts`, `src/types/unifiedAction.ts`
+- **Other hits:** `src/engine/encounters/nudgeDispatch.ts`, `src/engine/phaseAgentDecision.ts`, `src/engine/phases/emittedOmenDecay.ts`, `src/types/gameState.ts`, `src/types/unifiedAction.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `location-condition-taxes-movement-and-gates-templates` — 🔵 UNVERIFIED-OK
@@ -3077,10 +3078,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Spell*, *Power*, *Bestowal*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 119 total — 2 write, 3 read, 114 unclassified
+- **Production hits:** 120 total — 2 write, 3 read, 115 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/seedAttachments.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/agentAttachments.ts`, `src/engine/spellActivation.ts`
-- **Other hits:** `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/useDebugOpenModal.ts`, `src/data/action-technical-effects.ts`, `src/data/attachment-slot-constants.ts`, `src/data/choice-set-catalog.ts` +109 more
+- **Other hits:** `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/useDebugOpenModal.ts`, `src/data/action-technical-effects.ts`, `src/data/attachment-slot-constants.ts`, `src/data/choice-set-catalog.ts` +110 more
 - **Verdict:** Verified 2026-09-07: THR-1429. Seeded worlds carry exactly SPELL_TEMPLATES.length definition nodes and none per bearer (seed 42 small, tick 2: 5 nodes, ids power.spell.*). `spawn undertaking npc_11 cell.create.power --band success` on seed 42 small leaves both a knows_spell edge and a wielded has_trait edge pointing at the SAME node (power.spell.spell_crystal_gate). The cap, the non-caster refusal, the already-known refusal and the no-definition fail-soft are each falsified in src/data/__tests__/dormantKindsPowersConditions.test.ts, as is the rule that the op reports the EDGE it created rather than the shared node — reporting the node handed christenCompletedWork a world-shared node to rename, observed renaming Crystal Gate for every mortal alive before the fix.
 
 ### `mortal-means-steers-board` — 🔵 UNVERIFIED-OK
@@ -3124,10 +3125,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Undertakings
 - **UL terms:** *Nudge*, *Ambition*
 - **Module:** `src/engine/encounters/nudgeDispatch.ts`
-- **Production hits:** 20 total — 1 write, 2 read, 17 unclassified
+- **Production hits:** 21 total — 1 write, 2 read, 18 unclassified
 - **Write sites:** `src/engine/phases/phaseAutonomousAftermath.ts`
 - **Read sites:** `src/engine/ambitionAssignment.ts`, `src/engine/encounterAftermath.ts`
-- **Other hits:** `src/data/encounters/comet-disputation.ts`, `src/data/encounters/the-broken-seal.ts`, `src/engine/agentLifecycle.ts`, `src/engine/ambitionTick.ts`, `src/engine/binding/mintInhabitant.ts` +12 more
+- **Other hits:** `src/data/encounters/comet-disputation.ts`, `src/data/encounters/the-broken-seal.ts`, `src/engine/agentLifecycle.ts`, `src/engine/ambitionTick.ts`, `src/engine/binding/mintInhabitant.ts` +13 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `nudge-hand-runtime-filters-and-sphere-discount` — 🔵 UNVERIFIED-OK
@@ -3140,6 +3141,18 @@ exit
 - **Write sites:** `src/data/nudge-constants.ts`
 - **Read sites:** `src/engine/meetingEncounter.ts`, `src/engine/views/stage/buildNudgePhaseModel.ts`
 - **Other hits:** `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/debug-bridge.ts`, `src/engine/encounters/dealHand.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/encounters/nudges.ts` +3 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `nudge-writes-reach-aftermath` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A card the god played and paid for answers in the ending (THR-2147, plan THR-2146 E3). `dispatchNudgeCommitments` applies each committed card's grants as its own reaction, probes the mortal before and after, and returns one `NudgeWriteRecord` per grant that changed something (a condition ended, an item left, an ambition woken, an urge or omen planted, a favour owed, a spell taught). `autonomous_aftermath` stores them on `UnifiedAction.nudgeWrites`; `buildNudgeWriteChanges` turns each into an ordinary Aftermath chip, merged beside the fight's and the cast's (the `stepCasts.writes` precedent). A removal that found nothing records nothing (Law 56), and `hidden_mark` never records — the Long Game is hidden by design.
+- **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
+- **UL terms:** *Aftermath*, *Nudge*
+- **Module:** `src/engine/views/stage/buildNudgeWriteChanges.ts`
+- **Production hits:** 6 total — 2 write, 2 read, 2 unclassified
+- **Write sites:** `src/engine/encounters/nudgeDispatch.ts`, `src/engine/phases/phaseAutonomousAftermath.ts`
+- **Read sites:** `src/engine/views/stage/buildNudgeWriteChanges.ts`, `src/engine/views/stage/buildUnifiedEncounterStageModel.ts`
+- **Other hits:** `src/data/nudge-card-display.ts`, `src/types/unifiedAction.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `offering-respects-reach-gate` — 🟢 LIVE
@@ -3309,10 +3322,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Nudge*, *Encounter*, *UnifiedActionTemplate*
 - **Module:** `src/data/encounter-content.ts`
-- **Production hits:** 6 total — 1 write, 2 read, 3 unclassified
+- **Production hits:** 7 total — 1 write, 2 read, 4 unclassified
 - **Write sites:** `src/data/encounter-content.ts`
 - **Read sites:** `src/engine/encounters/dealHand.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/data/faction-encounter-content.ts`, `src/data/settingClasses.ts`, `src/engine/attentionCadence.ts`
+- **Other hits:** `src/data/faction-encounter-content.ts`, `src/data/settingClasses.ts`, `src/engine/attentionCadence.ts`, `src/engine/phases/phaseAutonomousAftermath.ts`
 - **Verdict:** Verified 2026-09-28: THR-1634 S1. `src/data/__tests__/firedTemplateCompletion.test.ts` reads the shipped `encounter.barter_supplies` through `getUnifiedTemplateById` and finds both declarations on its steps, and finds none on `encounter.mend_equipment`, which declares none. In a browser on local dev at 1920×1080, `?view=game&seeded&size=medium&spawn=encounter.barter_with_travelers` opened the stage with a four-card hand, every card marked "From your repertoire". Dealing is pure: `readers/reach.ts 42,99 200` printed byte-identical output with the passthrough on and off, and `readers/attended.ts 42,99 150` gave the same 1,542 firing rows, outcomes included.
 
 ### `realm-holdings-to-political-map` — 🟢 LIVE
@@ -3388,10 +3401,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Nudge*, *Encounter*, *UnifiedActionTemplate*
 - **Module:** `src/engine/encounters/dealHand.ts`
-- **Production hits:** 8 total — 3 write, 3 read, 2 unclassified
+- **Production hits:** 9 total — 3 write, 3 read, 3 unclassified
 - **Write sites:** `src/data/nudge-card-library.ts`, `src/data/nudge-constants.ts`, `src/types/unifiedAction.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/unifiedActionResolution.ts`, `src/engine/views/stage/buildNudgePhaseModel.ts`
-- **Other hits:** `src/engine/encounters/dealHand.ts`, `src/engine/nudgeCardRepertoire.ts`
+- **Other hits:** `src/engine/encounters/dealHand.ts`, `src/engine/nudgeCardRepertoire.ts`, `src/engine/phases/phaseAutonomousAftermath.ts`
 - **Verdict:** Verified 2026-08-26: THR-1254. The override this replaces named exactly one outstanding condition — "no shipped encounter declares `ActionStep.deal` yet, so the deal never runs in a real playthrough" — and `The Unfinished Rite` (`encounter.delve.the_unfinished_rite`) is that encounter: a registered, contract-clean template whose step 0 authors two specials and declares `deal: { count: 4, tags: ['insight','lore'] }`. Not a fixture and not the golden exemplar (which is registered in no pool and so can never prove Stage 4): it sits in both catalog arrays, and `npm run check:encounter-live -- encounter.delve.the_unfinished_rite` returns `proved`, having spawned it on the ascendant in a seeded world, committed a hand and ticked to resolution. Non-vacuous by `src/data/encounters/__tests__/the-unfinished-rite.test.ts` § *the composed hand*, which composes the SHIPPED template's step against a repertoire built by `buildRepertoire` from a real sphere identity — deliberately not a fixture holding the whole library, which would have asserted the fixture rather than the dealer — and pins that the dealer contributed on top of the specials (`report.dealt.length > 0`, composed > authored, both specials surviving, size inside DEAL_HAND_MIN..MAX) and that two composes of the same input agree, which is the zero-PRNG guarantee the resolution read site depends on. Measured across three sphere identities the same step composes three different six-card hands — darkness/order draws Follow The Book, Hide The Deed, Open The Ledger; light/life draws Show The Obvious, Ease The Suffering, Buy The Floor; force/matter draws Throw Full Weight, Find What Remains — with the two specials constant and at least one ungated common in each, which is the contract's intent line demonstrated rather than asserted. Both specials are things the dealer structurally cannot mint: `rite.loosen_their_nerve` binds `opposes: 'rival'` to a cast key only this scene declares, and `rite.kindle_heresy` grants `axiological_mark_apply` with `reach: 'veil'`, the reach-scoped case the authoring spec § 3b names. The compiler gap found on the way is part of this verification: `encounterPackageViolations` restated the whole-hand rules and was blind to `deal`, so the only sanctioned authoring path rejected every composed encounter while the shipped gate passed it; it now delegates to `checkComposedHand`.
 
 ### `reputation-with-unified-read` — 🟢 LIVE
@@ -4041,10 +4054,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Undertaking*
 - **Module:** `src/engine/strategicGraphOps.ts`
-- **Production hits:** 125 total — 2 write, 4 read, 119 unclassified
+- **Production hits:** 126 total — 2 write, 4 read, 120 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/strategicGraphOps.ts`
 - **Read sites:** `src/engine/agentAttachments.ts`, `src/engine/ruins/clueLifecycle.ts`, `src/engine/socialLeverage.ts`, `src/engine/treasureMapConsumption.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Codex/CodexDetailPanel.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/data/action-technical-effects.ts` +114 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Codex/CodexDetailPanel.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/data/action-technical-effects.ts` +115 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 5. Six ops carry the five T1 kinds' objects, and each writes a shape an existing system consumes rather than a property only the producer reads. `mintLeverageMark` is a dedicated op rather than a `create_relation_edge` call precisely because that primitive stamps only `establishedTick` while `knows_secret_of` declares five required properties — a mark routed through the generic maker would warn on the schema every time and arrive without the fields the economy presses. Proven live on seed 99 at 150 ticks, the whole arc organically: cultivate 8 completed → 5 marks minted → press 7 completed → 6 `owes_favor` debts → burn 7; plus 4 treasure maps and 2 clues from the chart arc and 18 cache exposures. Non-vacuous by `src/engine/__tests__/undertakingT1Kinds.test.ts` (21 tests), which asserts every property each edge's schema row declares required rather than merely that an edge appeared — falsified 2-of-19 red by dropping `revealed` from the mark and by stubbing `pressTheMark`'s no-mark guard, and 1-of-21 by restoring a non-canonical `subcategory`. **Two findings recorded on the row because they are the reason it is worded around destinations.** Both artifact writers first shipped `subcategory: 'tool'` with a string `tier`; neither value exists (`PossessionSubcategory` has seven members, `AttachmentTier` is numeric 1–4), nothing threw, and `getAttachmentArtUrl` simply returned `null` forever — the items would have rendered as blank plates on every possession surface, and the seeded-world coverage test caught it only because that world happened to mint a chart and no masterwork. And `press_the_mark` completed 3 times against 3 strangers minting 0 debts, because its target rule selected on role while its resolution required a held mark: selection and resolution disagreeing silently, fixed by a `withEdgeFromActor` filter on the target rule. Full suite 18713 green; ratchet 2973 unchanged; build 10.44s; 30-tick seed-42 smoke reached tick 30, 377 agents.
 
 ### `thread-destination-on-threads-lens` — 🔵 UNVERIFIED-OK
@@ -4313,10 +4326,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Personality & Emergent Traits
 - **UL terms:** *Archetype Drift*, *Nudge*
 - **Module:** `src/engine/encounters/nudgeDispatch.ts`
-- **Production hits:** 7 total — 1 write, 0 read, 6 unclassified
+- **Production hits:** 9 total — 1 write, 0 read, 8 unclassified
 - **Write sites:** `src/engine/encounters/branchDecision.ts`
 - **Read sites:** —
-- **Other hits:** `src/engine/encounters/dealHand.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/fights/fightEnding.ts`, `src/engine/orchestrator/phaseDetectionPressure.ts`, `src/engine/phases/phaseAutonomousAftermath.ts` +1 more
+- **Other hits:** `src/engine/encounters/dealHand.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/fights/fightEnding.ts`, `src/engine/orchestrator/phaseDetectionPressure.ts`, `src/engine/phases/phaseAutonomousAftermath.ts` +3 more
 - **Verdict:** Tier 2: write sites present, declared read sites empty — the consumer is starving. — or the declared symbol does not appear at the declared site: grep 'dispatchNudgeCommitments' src/engine/encounters/driftAccumulator.ts before treating this as a leak.
 
 ### `unrest-on-trouble-lens` — 🔵 UNVERIFIED-OK

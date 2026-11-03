@@ -158,12 +158,14 @@ const CARD: NudgeHandCard = {
 };
 
 describe('nudge-card marks (D4)', () => {
-  it('cost, odds, sphere and keyword each carry a registry id, and no raw title remains', () => {
+  it('cost, odds and keyword each carry a registry id, and no raw title remains', () => {
     const { container } = render(<NudgeCard card={CARD} designerView={false} onToggle={() => {}} />);
     const ids = [...container.querySelectorAll('[data-tooltip-id]')].map((el) => el.getAttribute('data-tooltip-id'));
     expect(ids).toEqual(expect.arrayContaining([
-      'ui.card.cost', 'ui.card.odds.fated', 'sphere.force', 'ui.card.keyword.boost',
+      'ui.card.cost', 'ui.card.odds.fated', 'ui.card.keyword.boost',
     ]));
+    // THR-2147 (D3) — the sphere mark left the price row; the pool word names the sphere.
+    expect(ids.some((id) => id?.startsWith('sphere.'))).toBe(false);
     for (const id of ids) expect(resolveTooltip(id!), id!).not.toBeNull();
     expect(screen.getByTestId(`nudge-card-cost-${CARD.id}`).hasAttribute('title')).toBe(false);
     expect(screen.getByTestId(`nudge-card-odds-${CARD.id}`).hasAttribute('title')).toBe(false);
@@ -187,6 +189,15 @@ describe('nudge-card marks (D4)', () => {
     for (const tier of [...PIP_ODDS_TIERS, PIP_PENALTY_TIER]) {
       expect(resolveTooltip(`ui.card.odds.${tier.id}`), tier.id).not.toBeNull();
     }
+    // THR-2147 (U3) — the verb chip's composed hover, one per verb × scale, within Law 18.
+    for (const verb of ['create', 'read', 'update', 'delete', 'sustained']) {
+      for (const scale of ['personal', 'local', 'regional', 'cosmic']) {
+        const entry = resolveTooltip(`ui.card.verb.${verb}.${scale}`);
+        expect(entry, `${verb}.${scale}`).not.toBeNull();
+        expect(entry!.desc.length, `${verb}.${scale}`).toBeLessThanOrEqual(200);
+      }
+    }
+    expect(resolveTooltip('ui.card.result')).not.toBeNull();
   });
 });
 
