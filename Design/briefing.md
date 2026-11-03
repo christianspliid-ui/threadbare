@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-03 11:57 local (10:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-03 12:58 local (11:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -19,6 +19,13 @@
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
 ## Decided for you
+
+From 12:20 local. From [After the first follower there is no way forward](https://linear.app/threadbare/issue/THR-2138/after-the-first-follower-there-is-no-way-forward-the-gods-hunger-says). Nobody may start building either part before 23:30Z on 3 Nov.
+
+- [The goal says what fills it](https://linear.app/threadbare/issue/THR-2154/the-goal-says-what-fills-it-the-mandate-row-leads-with-the-hungers-own) — the goal still counts what it counts today. The goal row now opens with your hunger's own words ("Build a devoted community of followers bound to your court"). Under them it says what fills the goal and how many mortals you hold: "Filled by what you and the one mortal bound to you raise in Life and Spirit." Your followers' deeds already count toward the goal, but no screen says so. Veto line: "give each hunger its own way to win".
+- [The next follower has a path](https://linear.app/threadbare/issue/THR-2155/the-next-follower-has-a-path-a-threads-line-says-how-to-bind-another) — while The First is your only follower, the Threads panel shows a line once: "To bind another, find a mortal on ground you or Kael can see, and play Agent Thread on them." Veto line: "no hint in the Threads panel".
+- Same ticket — Read the Threads stops calling strangers your "Dormant court". The list becomes "Untouched lives" and names only people you have seen. "Dormant" already means one of your own followers set aside. Veto line: "keep Dormant court".
+- Same ticket — at the bonding pick, one line says: "The two you pass over go their own way. You will not meet them again." That is true today, and a tester went looking for one of them. Veto line: "let the other two stay in the world".
 
 From 09:48 local. All from [Legibility 4 — the god rail, the Ledger rail, lists and the hover tier](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover). Plan: [Legibility 4](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-03-thr-2125-legibility-rails-lists-hover.md). Nobody may start building it before 20:47Z on 3 Nov.
 
@@ -49,15 +56,7 @@ From 03:33 local. All from [Legibility 2 — Inspector pages read Who, Now, Act,
 - "Act on …" and "In this land" headings stop being gold. The highlighted line is the page's one gold. Veto line: "keep the gold headings".
 - The page's parts sit a little further apart (24 px), the same distance as the sections below them. Veto line: "keep the page tighter".
 
-From 00:41 local. From [On a running clock a chapter step still answers nothing on screen](https://linear.app/threadbare/issue/THR-2136/recurs-after-fix-on-a-running-clock-a-chapter-step-still-answers). Plan: [The answer comes here](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-03-thr-2136-the-answer-comes-here.md). Built as [The answer comes here](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage), which nobody may start before 11:35Z on 3 Nov.
-
-- After you press Play on a chapter step, the chapter stays on screen even when time is running. The card reads "Played: Boost." and "The world turns. The answer comes here." Time keeps running underneath it, and nothing pauses. Veto line: "close the chapter after Play as before".
-- When the step plays out, its answer opens in the same place: "Step 1 held. You: Boost." for a middle step, or the chapter's ending after the last one. The map never shows in between. Veto line: "show the answer on the map instead".
-- The chapter's own answer goes before any premonition or other moment that turned up while you waited. Those wait their turn; nothing is lost. In round 6 a premonition came first and the ending arrived about 20 seconds late. Veto line: "let premonitions go first".
-- "Back to the map" stays on the card as the way out. "Let the world turn" does not show there, because the world is already turning. Veto line: "keep both buttons".
-- If testers say the waiting card blocks the map, the map behind it gets undimmed while it waits. If a tester still sees no result, the next step would pause time on Play. That reverses your no-forced-pause rule, so it comes back to you first.
-
-Say "veto <title>" to reverse any of these. *— from the design lane ([00:41](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03a.md), [03:33](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03b.md), [06:43](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03c.md), [09:48](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03d.md), local time). The essence-pool decisions from 21:41 yesterday have passed their window, and [that ticket](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar) is now built and live.*
+Say "veto <title>" to reverse any of these. *— from the design lane ([03:33](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03b.md), [06:43](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03c.md), [09:48](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03d.md), [12:20](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03e.md), local time). The "answer comes here" decisions from 00:41 have passed their window, and [that ticket](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage) is now being built.*
 
 ## This week's screens
 
@@ -65,7 +64,7 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([00:41](h
 
 ## Queue
 
-**Healthy (4 ready, nothing being built, nothing waiting to merge).** [The pool says how full it can get](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar) merged at 09:16 UTC ([#2729](https://github.com/christianspliid-ui/threadbare/pull/2729)) and is live. All four ready tickets are still inside their veto windows, so the builder is waiting by design; its last three runs each said so. [The answer comes here](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage) opens at 11:35, about 40 minutes from now, [Legibility 2 — Inspector pages](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at) at 14:33, [Legibility 3 — the Stage and the dialogs](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first) at 17:42, [Legibility 4](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover) at 20:47 (all UTC).
+**Healthy (5 ready, 1 being built, nothing waiting to merge).** The builder claimed [The answer comes here](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage) when its window opened at 11:35 UTC; that run is still working (last activity 11:55). The other five ready tickets are inside their veto windows: [Legibility 2](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at) opens at 14:33, [Legibility 3](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first) at 17:42, [Legibility 4](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover) at 20:47, and the two new follower tickets, [The goal says what fills it](https://linear.app/threadbare/issue/THR-2154/the-goal-says-what-fills-it-the-mandate-row-leads-with-the-hungers-own) and [The next follower has a path](https://linear.app/threadbare/issue/THR-2155/the-next-follower-has-a-path-a-threads-line-says-how-to-bind-another), at 23:30 (all UTC).
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -73,5 +72,5 @@ Two items for agents, not you:
 
 ## Health
 
-- **Engine speed (for agents):** tick cost 199 ms/tick steady, 25% above the 7-day median (159, 129 rows since b1b18055); top phase agent_decision, 639 agents. Name the merges between b1b18055 and ea681b47: git log --oneline --merges b1b18055..ea681b47. Third high reading in a row, though lower than the hour before (215).
-- Everything else is green. The live site is up to date (ea681b47). No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 10:40 UTC. The builder has not stalled: its last three runs found nothing claimable, all four ready tickets still being inside their veto windows.
+- **Engine speed (for agents):** tick cost 224 ms/tick steady, 41% above the 7-day median (159, 128 rows since 998b05f0); top phase agent_decision, 639 agents. Name the merges between 998b05f0 and ea681b47: git log --oneline --merges 998b05f0..ea681b47. Fourth high reading in a row, and the highest yet (199 an hour ago, 215 before that); no new merge to main since, so this looks like machine-load variance on top of a real rise.
+- Everything else is green. The live site is up to date (ea681b47). No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 11:40 UTC. The builder has not stalled: it is building now.
