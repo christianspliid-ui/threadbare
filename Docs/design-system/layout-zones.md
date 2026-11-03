@@ -75,6 +75,13 @@ Overlay layers (centered, above everything):
 | Contents | One subject's page (`InspectorPage`): header, Act row, the page-layout table's sections as tabs, Connections | `inspector/InspectorPage.tsx` |
 | Behavior | Every open goes through `useRefRouter` (card → the registry row's `opensAt`, sheet → wide). History, trail, pin, Follow; Escape steps Full down, then closes. The page's Act row casts (the Action Drawer retired, THR-1912). | plan THR-1876 § D1–D4, D9 |
 
+**Page order — Who → Now → Act → Detail → Out (THR-2123, panel anatomy § 1).** Docked, one column: header → Now → *In this land* (land only) → Act → the tabs → More when widened → Connections. Wide and Full: the aside reads header → Now → *In this land* → Act → aside sections; the main column starts with the tab row; Full keeps Connections in its own aside.
+
+- **The Now slot holds one line**: the first section shown at this size that carries the R5 highlight (a person's leading ambition, the god's mandate). Failing that, the first carrying the R4 bond strip. The bond strip, when it does not take Now, stays first in Overview. The Now section is drawn once — never again in its tab (`nowSectionOf` in `InspectorPage.tsx`).
+- **An empty Now draws nothing**: no placeholder, and no chip promoted into it (Law 25).
+- **Slots sit `--space-6` apart**, the between-section distance; the tab row to its first section is `--space-2`.
+- **Fold check**: `getInspectorLab()` and `getInspectorState()` carry `fold: { who, now, act, tabs }` — each true when the slot ends inside the page's scroll box, null when absent. At 1920×1080 docked, Who, Act and the tab row must not be `false` (anatomy § 4).
+
 ### The Stage
 
 A mortal's moment plays on one panel over the dimmed map, beside the god rail, with its hex lit in a window of open map at the right edge (THR-1892; plan `Docs/plans/2026-10-14-thr-1877-encounter-stage.md` § D3). Story beats play here from S2; the encounter (THR-1895) and the journey, undertaking, premonition and emergence moments (THR-1897) follow.

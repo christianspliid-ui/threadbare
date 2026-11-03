@@ -12,7 +12,7 @@ import { LinkRows, SectionLabel } from '../../shared/Section';
 import { INSPECTOR_WORDS } from '../../../data/view-content';
 import { bandAccentColor } from '../outcomeBandAccent';
 
-const blockStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0 };
+const blockStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', minWidth: 0 };
 
 /** What a press on an armed card reports back (the host's one cast path). */
 export interface ActCastResult {
@@ -69,7 +69,8 @@ export function ActOnRow({ actOn, targetName, onCast, compact = false }: {
   }
   return (
     <section data-inspector-act="" style={blockStyle} aria-label={actOn.heading}>
-      {!compact && <SectionLabel label={actOn.heading} gold={true} />}
+      {/* THR-2123 (decision 3): an ordinary heading — the page's one gold is the Now highlight (Law 31). */}
+      {!compact && <SectionLabel label={actOn.heading} gold={false} />}
       {(
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
           {actOn.cards.map(card => {
@@ -155,10 +156,11 @@ export function ConnectionsBlock({
 export function InThisLand({ index }: { index: LandIndexVM }) {
   return (
     <section data-inspector-in-this-land="" style={blockStyle} aria-label={index.title}>
-      <SectionLabel label={index.title} gold={true} />
+      <SectionLabel label={index.title} gold={false} />
       {index.rows.map(row => (
         <div key={row.id} data-land-row={row.id} style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '2px' }}>{row.label}</div>
+          {/* THR-2123 (decision 3): a Text 700 row, not a third heading rank. */}
+          <div style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 'var(--space-1)' }}>{row.label}</div>
           {row.rows.length > 0 ? (
             <LinkRows rows={row.rows} />
           ) : (

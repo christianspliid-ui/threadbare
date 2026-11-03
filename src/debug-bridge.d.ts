@@ -571,6 +571,19 @@ export interface DebugInspectorLabCell {
   leaks: string[];
   /** THR-2097 — what the art-led dressing drew in this cell. */
   dressing: DebugInspectorDressing;
+  /** THR-2123 — which reading slots end above the fold; null before the cell reported. */
+  fold: DebugInspectorFold | null;
+}
+
+/**
+ * THR-2123 (U4) — whether each reading slot ends inside the page's scroll box
+ * (panel anatomy § 4). `null` = the slot is absent on this page.
+ */
+export interface DebugInspectorFold {
+  who: boolean;
+  now: boolean | null;
+  act: boolean | null;
+  tabs: boolean | null;
 }
 
 /** THR-2097 — the art-led dressing a page drew (plan 2026-10-31-art-led-ui-pass § Debug inspection). */
@@ -585,6 +598,8 @@ export interface DebugInspectorDressing {
   galleryTiles: number;
   /** Section typeIds whose icon drew the fallback mark. */
   iconFallbacks: string[];
+  /** THR-2123 — the section drawn in the Now slot (its typeId); null = the slot is empty. */
+  nowSection: string | null;
 }
 
 /** Result of `getInspectorState()` (THR-1911). Null before a game is running. */
@@ -605,6 +620,8 @@ export interface DebugInspectorState {
   hiddenForWidth: string[];
   /** THR-2097 — what the art-led dressing drew; null when nothing is open. */
   dressing: DebugInspectorDressing | null;
+  /** THR-2123 — which reading slots end above the fold; null when nothing is open. */
+  fold: DebugInspectorFold | null;
   /** The Act row's card ids, as the page shows them. */
   actCards: string[];
   /** THR-1913 — every rendered row's card count (`row` is `kind:id`); rows with no card are absent. */
