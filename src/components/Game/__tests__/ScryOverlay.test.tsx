@@ -107,7 +107,7 @@ describe('ScryOverlay', () => {
 
   it('renders close button with aria-label', () => {
     renderWithContext();
-    const closeBtn = screen.getByLabelText('Close Divine Court');
+    const closeBtn = screen.getByLabelText('Close');
     expect(closeBtn).toBeInTheDocument();
   });
 
@@ -125,14 +125,14 @@ describe('ScryOverlay', () => {
     const main = screen.getByTestId('sheet-columns-main');
     expect(main.contains(screen.getByTestId('scry-overlay-body'))).toBe(true);
     // The close button is in the header, never inside a scroll region.
-    expect(screen.getByTestId('sheet-columns').contains(screen.getByLabelText('Close Divine Court'))).toBe(false);
+    expect(screen.getByTestId('sheet-columns').contains(screen.getByLabelText('Close'))).toBe(false);
   });
 
   it('calls onClose when close button clicked', () => {
     const onClose = vi.fn();
     const context = { ...baseContextValue, onClose };
     renderWithContext(context);
-    const closeBtn = screen.getByLabelText('Close Divine Court');
+    const closeBtn = screen.getByLabelText('Close');
     fireEvent.click(closeBtn);
     expect(onClose).toHaveBeenCalled();
   });

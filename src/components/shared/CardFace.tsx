@@ -78,7 +78,6 @@ import { FORECAST_TIER_WORDS } from '../../data/nudge-stage-content';
 const GOLD = 'var(--veil-gold)';
 const TEXT_WARM = 'var(--veil-text-warm)';
 const TEXT_WHISPER = 'var(--veil-text-whisper)';
-const FONT_DISPLAY = "'Palatino Linotype', 'Book Antiqua', Palatino, serif";
 
 /**
  * Forecast tier → the colour the word carries. Tier classes, not new colours.
@@ -635,8 +634,8 @@ export function CardFace({
         <span style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
           <span
             style={{
-              fontFamily: FONT_DISPLAY,
-              fontSize: 'var(--text-sm)',
+              fontFamily: 'var(--font-display)',
+              fontSize: 'var(--text-lg)',
               lineHeight: 1.25,
               color: model.selected ? GOLD : 'var(--veil-text-bright)',
             }}
@@ -692,7 +691,7 @@ export function CardFace({
                   {channel.label}
                   {/* Only a worsening delta earns penalty pips; relief is stated
                       in the label alone rather than drawn as a price. */}
-                  {channel.delta > 0 && <OddsPips value={-channel.delta} size={10} muted={dimmed} />}
+                  {channel.delta > 0 && <OddsPips value={-channel.delta} size={CARD_ODDS_PIP_PX} muted={dimmed} />}
                 </span>
               </MaybeTooltip>
             ))}
@@ -710,7 +709,7 @@ export function CardFace({
             data-testid={`${p}-provenance-${id}`}
             aria-label={model.provenance.text}
             style={{
-              fontSize: 'var(--text-2xs, 11px)',
+              fontSize: 'var(--text-xs)',
               lineHeight: 1.4,
               color: TEXT_WARM,
               opacity: 0.85,
@@ -749,7 +748,7 @@ export function CardFace({
             <span
               data-testid={`${p}-lean-${id}`}
               style={{
-                fontSize: 'var(--text-2xs, 11px)',
+                fontSize: 'var(--text-xs)',
                 lineHeight: 1.4,
                 color: TEXT_WARM,
                 fontStyle: 'italic',
@@ -797,7 +796,7 @@ export function CardFace({
                 aria-label={`Forecast: ${FORECAST_TIER_WORDS[model.odds.tier] ?? model.odds.tier}`}
                 style={{
                   fontSize: 'var(--text-xs)',
-                  fontFamily: FONT_DISPLAY,
+                  fontFamily: 'var(--font-body)',
                   letterSpacing: '0.02em',
                   color: FORECAST_TIER_COLORS[model.odds.tier] ?? TEXT_WARM,
                   opacity: dimmed ? 0.7 : 1,
@@ -824,7 +823,7 @@ export function CardFace({
             Its own vocabulary (Law 9), seated in the footer so it annotates the
             card rather than competing with the kind chip. */}
         {model.rarityTier !== undefined && (
-          <span data-testid={`${p}-rarity-${id}`} style={{ fontSize: 'var(--text-2xs, 11px)' }}>
+          <span data-testid={`${p}-rarity-${id}`} style={{ fontSize: 'var(--text-xs)' }}>
             <RarityBadge tier={model.rarityTier} />
           </span>
         )}
@@ -837,7 +836,7 @@ export function CardFace({
             data-resolved-band={model.resolvedBand.word}
             style={{
               fontSize: 'var(--text-xs)',
-              fontFamily: FONT_DISPLAY,
+              fontFamily: 'var(--font-body)',
               color: model.resolvedBand.color,
             }}
           >

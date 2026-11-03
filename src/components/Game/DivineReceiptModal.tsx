@@ -109,10 +109,12 @@ export function DivineReceiptModal({ open, receipt, onAcknowledge, onReaction, t
           padding: 'var(--panel-padding)',
         }}
       >
+        {/* THR-2124 — the dialog title size (`--text-xl`), drawn here over the art band. */}
         <div
+          data-dialog-title=""
           style={{
             fontFamily: 'var(--font-display)',
-            fontSize: 'var(--text-lg)',
+            fontSize: 'var(--text-xl)',
             color: 'var(--text-primary)',
             display: 'flex',
             alignItems: 'center',

@@ -299,11 +299,12 @@ function PreReadState({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+      {/* THR-2124 — the question this dialog asks is its Now line: upright, primary. */}
       <p
+        data-dialog-now=""
         style={{
           fontSize: 'var(--text-sm)',
-          color: 'var(--text-secondary)',
-          fontStyle: 'italic',
+          color: 'var(--text-primary)',
           lineHeight: 1.6,
           margin: 0,
         }}
