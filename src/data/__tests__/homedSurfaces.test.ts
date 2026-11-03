@@ -54,7 +54,9 @@ const closed: InterruptSnapshot = {
  * listed — and then the check below fails until the list has an entry for it.
  */
 type HoldKey = 'interruptsSuppressed' | 'hasAscendantIdentity' | 'playerSurfaceOpen' | 'recentInput'
-  | 'alreadyShown' | 'foregroundIncumbent' | 'skippedKinds';
+  | 'alreadyShown' | 'foregroundIncumbent' | 'skippedKinds'
+  // THR-2151 — a modifier on `encounterOpen` (which kind the open veil renders as), not an opening flag.
+  | 'encounterAnsweringLive';
 const OPENING_FLAGS: Record<Exclude<keyof InterruptSnapshot, HoldKey>, true> = {
   encounterOpen: true,
   meetingPending: true,

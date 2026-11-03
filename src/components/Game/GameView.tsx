@@ -3820,7 +3820,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     pushToast: pushChapterAnswerToast,
     openAnswer: handleOpenChapterAnswer,
     closeVeil: handleCloseChapterAnswerCard,
-    premonitionReady: activePremonition !== null,
     // THR-2151 — something other than the live card holds the clock. Read only once the
     // registry sees the card (the mirror has caught up); before that, the hold is the
     // veil's own, from the render that committed the step.
@@ -4555,7 +4554,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           handleScryWithMutex={handleScryWithMutex}
           openCodexEntry={openCodexSheet}
           // THR-1894: the hand rests while a moment is on screen (not while one only waits its turn); an encounter deals its own hand.
-          handRest={interruptResolution.open.length > 0 ? (interruptResolution.open.includes('EncounterVeil') ? 'encounter' : 'moment') : null}
+          // THR-2151 — the live answering card stops no time, but it is the chapter veil:
+          // the hand rests under it as under any veil (review gate, round 2).
+          handRest={interruptResolution.open.length > 0
+            ? (interruptResolution.open.includes('EncounterVeil') ? 'encounter' : 'moment')
+            : interruptResolution.rendering.includes('encounter-answering') ? 'encounter' : null}
         />
         </HandPressProvider>
 

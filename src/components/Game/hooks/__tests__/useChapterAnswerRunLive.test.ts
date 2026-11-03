@@ -151,7 +151,6 @@ interface HarnessProps {
   notifications: EncounterNotification[];
   tick: number;
   veilOpen: boolean;
-  premonitionReady: boolean;
 }
 
 function setup(openAnswerResult = true) {
@@ -172,14 +171,12 @@ function setup(openAnswerResult = true) {
     pushToast,
     openAnswer,
     closeVeil,
-    premonitionReady: props.premonitionReady,
   }), {
     initialProps: {
       actions: [action(0)],
       notifications: [notif('n_step0', { stepIndex: 0 })],
       tick: 100,
       veilOpen: true,
-      premonitionReady: false,
     },
   });
   return { view, pushToast, openAnswer, closeVeil, setRunning, hold };
@@ -192,19 +189,9 @@ describe('useChapterAnswerRun — the live card (THR-2151)', () => {
     expect(view.result.current.answering).toEqual({ choiceLine: 'Played: Boost.', live: true });
     const debug = view.result.current.getDebugState();
     expect(debug.state).toBe('answering_live');
-    expect(debug.premonitionDeferred).toBe(false);
     expect(setRunning).not.toHaveBeenCalled();
     expect(hold.pauseIfHeld).not.toHaveBeenCalled();
     expect(view.result.current.answerStatus).toBe(chapterAnswerText(CHAPTER_ANSWER_TURNING_STATUS, CHAPTER));
-  });
-
-  it('names a ready premonition while the live card is up', () => {
-    const { view } = setup();
-    act(() => view.result.current.showLiveCard(TARGET));
-    view.rerender({
-      actions: [action(0)], notifications: [notif('n_step0', { stepIndex: 0 })], tick: 101, veilOpen: true, premonitionReady: true,
-    });
-    expect(view.result.current.getDebugState().premonitionDeferred).toBe(true);
   });
 
   it('opens the answer through openAnswer and ends the record', () => {
@@ -215,7 +202,6 @@ describe('useChapterAnswerRun — the live card (THR-2151)', () => {
       notifications: [notif('n_step0', { stepIndex: 0 }), notif('n_step1', { stepIndex: 1 })],
       tick: 104,
       veilOpen: true,
-      premonitionReady: false,
     });
     expect(openAnswer).toHaveBeenCalledWith('n_step1');
     expect(closeVeil).not.toHaveBeenCalled();
@@ -230,7 +216,6 @@ describe('useChapterAnswerRun — the live card (THR-2151)', () => {
       notifications: [notif('n_step0', { stepIndex: 0 }), notif('n_step1', { stepIndex: 1 })],
       tick: 104,
       veilOpen: true,
-      premonitionReady: false,
     });
     expect(openAnswer).toHaveBeenCalledWith('n_step1');
     expect(closeVeil).toHaveBeenCalledTimes(1);

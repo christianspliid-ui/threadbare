@@ -134,7 +134,6 @@ function Harness({ world, probe }: { world: World; probe: { current: Probe | nul
     pushToast: vi.fn(),
     openAnswer: (id) => { setVeilFor(id); return true; },
     closeVeil: () => setVeilFor(null),
-    premonitionReady: world.premonitionReady,
     heldElsewhere: liveAnswerPending && resolution.anyOpen,
   });
   const live = answer.record?.phase === 'answering_live';
@@ -202,6 +201,10 @@ describe('THR-2151 — the wiring at the source', () => {
     expect(GAME_VIEW).toMatch(/if \(liveAnswerPending\) return;\s*if \(isEncounterAutoOpenSuppressed/);
     expect(GAME_VIEW).toMatch(/encounterAnsweringLive: liveAnswerPending,/);
     expect(GAME_VIEW).toMatch(/openAnswer: handleOpenChapterAnswer,/);
+  });
+
+  it('the hand rests under the live card as under any veil', () => {
+    expect(GAME_VIEW).toMatch(/interruptResolution\.rendering\.includes\('encounter-answering'\) \? 'encounter' : null/);
   });
 
   it('the Stage renders both kinds from the encounter slot, so the veil never remounts', () => {

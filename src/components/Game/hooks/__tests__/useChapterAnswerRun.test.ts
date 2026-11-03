@@ -216,7 +216,7 @@ describe('THR-1812 — useChapterAnswerRun', () => {
     commitAndRun(view, START);
     view.rerender({ ...START, veilOpen: false, tick: 103 });
     expect(view.result.current.answer.getDebugState()).toEqual({
-      state: 'running', actionId: ACTION_ID, stepIndex: 0, chapterName: "The Healer's Oath", ticksRun: 3, premonitionDeferred: false,
+      state: 'running', actionId: ACTION_ID, stepIndex: 0, chapterName: "The Healer's Oath", ticksRun: 3,
     });
   });
 });

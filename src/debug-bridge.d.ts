@@ -422,8 +422,6 @@ export interface DebugChapterAnswer {
   chapterName: string | null;
   /** Ticks since *Let the world turn* (or since the live card showed); 0 otherwise. */
   ticksRun: number;
-  /** THR-2151 — a ready premonition waits behind the live answer (D3). */
-  premonitionDeferred: boolean;
 }
 
 export interface DebugActiveUIState {

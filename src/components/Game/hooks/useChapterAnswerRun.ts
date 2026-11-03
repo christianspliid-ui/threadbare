@@ -66,8 +66,6 @@ export interface DebugChapterAnswer {
   stepIndex: number | null;
   chapterName: string | null;
   ticksRun: number;
-  /** THR-2151 — a premonition is ready while the live card is up (the card yields to it on the next pass). */
-  premonitionDeferred: boolean;
 }
 
 /**
@@ -308,8 +306,6 @@ export interface UseChapterAnswerRunParams extends ChapterAnswerInputs {
   openAnswer?: (notificationId: string) => boolean;
   /** THR-2151 — close the live card's veil (no answer to open). */
   closeVeil?: () => void;
-  /** THR-2151 — a premonition is ready to show (for `premonitionDeferred`). */
-  premonitionReady?: boolean;
 }
 
 export interface ChapterAnswerRunHandle {
@@ -333,7 +329,7 @@ export interface ChapterAnswerRunHandle {
 export function useChapterAnswerRun(params: UseChapterAnswerRunParams): ChapterAnswerRunHandle {
   const {
     unifiedActions, encounterNotifications, tick, running, veilOpen, heldRunning, hold, setRunning, pushToast,
-    openAnswer, closeVeil, premonitionReady = false, heldElsewhere = false,
+    openAnswer, closeVeil, heldElsewhere = false,
   } = params;
   const [record, setRecord] = useState<ChapterAnswerRecord | null>(null);
   const answeredAtRef = useRef<number | null>(null);
@@ -405,8 +401,7 @@ export function useChapterAnswerRun(params: UseChapterAnswerRunParams): ChapterA
     ticksRun: (record?.phase === 'running' || record?.phase === 'answering_live') && record.startedAtTick !== null
       ? Math.max(0, tickRef.current - record.startedAtTick)
       : 0,
-    premonitionDeferred: record?.phase === 'answering_live' && premonitionReady,
-  }), [record, premonitionReady]);
+  }), [record]);
 
   const answering = useMemo(
     () => (record?.phase === 'answering_card'
