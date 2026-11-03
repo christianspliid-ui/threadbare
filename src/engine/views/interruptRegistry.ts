@@ -57,6 +57,12 @@ export interface InterruptSnapshot {
   /** Narrative-interrupt suppression is active (`__DEBUG.suppressBeats`). */
   interruptsSuppressed: boolean;
   encounterOpen: boolean;
+  /**
+   * THR-2151 — the open veil is the live answering card (a step committed on a running
+   * clock, waiting for its answer). It renders as `encounter-answering`, which stops no
+   * time, instead of `encounter`. Optional: absent = false.
+   */
+  encounterAnsweringLive?: boolean;
   /** `meetingState !== null` — the flow mounts only with an ascendant identity too. */
   meetingPending: boolean;
   hasAscendantIdentity: boolean;
@@ -132,7 +138,8 @@ export const HOMED_SURFACE_OPEN_WHEN: Record<HomedSurfaceKind, (s: InterruptSnap
   // The Rite of the Thread (THR-1754): every thread the god binds plays one. This is
   // the wish; `resolveInterrupts` holds it behind dialogs and the incumbent.
   'threading-rite': s => s.threadingRitePending === true,
-  encounter: s => s.encounterOpen,
+  encounter: s => s.encounterOpen && s.encounterAnsweringLive !== true,
+  'encounter-answering': s => s.encounterOpen && s.encounterAnsweringLive === true,
   premonition: s => s.premonitionPending && !s.interruptsSuppressed,
   'journey-vignette': s => s.vignettePending && !s.interruptsSuppressed,
   'story-beat': s => s.storyBeatPending && !s.interruptsSuppressed,

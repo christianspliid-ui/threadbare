@@ -13,6 +13,8 @@ import type { CeremonyHomedKind, DialogHomedKind, StageHomedKind } from '../../.
 export const STAGE_HOST_KINDS: readonly StageHomedKind[] = [
   'emergence-dilemma',
   'encounter',
+  // THR-2151 — placed by the `encounter` case (the same veil), so the swap never remounts it.
+  'encounter-answering',
   'undertaking-moment',
   'journey-vignette',
   'story-beat',

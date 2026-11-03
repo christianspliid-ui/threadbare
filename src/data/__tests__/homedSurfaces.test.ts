@@ -54,7 +54,9 @@ const closed: InterruptSnapshot = {
  * listed — and then the check below fails until the list has an entry for it.
  */
 type HoldKey = 'interruptsSuppressed' | 'hasAscendantIdentity' | 'playerSurfaceOpen' | 'recentInput'
-  | 'alreadyShown' | 'foregroundIncumbent' | 'skippedKinds';
+  | 'alreadyShown' | 'foregroundIncumbent' | 'skippedKinds'
+  // THR-2151 — a modifier on `encounterOpen` (which kind the open veil renders as), not an opening flag.
+  | 'encounterAnsweringLive';
 const OPENING_FLAGS: Record<Exclude<keyof InterruptSnapshot, HoldKey>, true> = {
   encounterOpen: true,
   meetingPending: true,
@@ -76,9 +78,9 @@ const OPENING_FLAGS: Record<Exclude<keyof InterruptSnapshot, HoldKey>, true> = {
 };
 
 describe(`the home list — ${LIST}`, () => {
-  it('holds the sixteen surfaces of plan D1 plus the end of the age (THR-1381), in render-priority order', () => {
+  it('holds the sixteen surfaces of plan D1, the end of the age (THR-1381) and the live answering card (THR-2151), in render-priority order', () => {
     expect(entries.map(e => e.kind), `the order of ${LIST} changed`).toEqual([
-      'warm-start', 'meet-the-first', 'threading-rite', 'encounter', 'premonition',
+      'warm-start', 'meet-the-first', 'threading-rite', 'encounter', 'encounter-answering', 'premonition',
       'journey-vignette', 'story-beat', 'ascendant-beat', 'choice-set', 'emergence-dilemma',
       'divine-receipt', 'chapter-ledger', 'divine-court', 'undertaking-moment', 'event-popup',
       'age-twilight', 'cycle-harvest',

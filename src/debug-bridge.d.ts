@@ -414,12 +414,13 @@ export interface DebugGiftDelivery {
  * turning the clock, or an answer waiting on a paused clock.
  */
 export interface DebugChapterAnswer {
-  state: 'none' | 'answering_card' | 'running' | 'waiting';
+  /** `answering_live` (THR-2151): the live card on a running clock, stopping no time. */
+  state: 'none' | 'answering_card' | 'answering_live' | 'running' | 'waiting';
   actionId: string | null;
   stepIndex: number | null;
   /** The chapter's display name; `null` when it did not resolve. */
   chapterName: string | null;
-  /** Ticks since *Let the world turn*; 0 outside a run. */
+  /** Ticks since *Let the world turn* (or since the live card showed); 0 otherwise. */
   ticksRun: number;
 }
 
