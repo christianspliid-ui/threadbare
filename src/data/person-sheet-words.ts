@@ -140,13 +140,13 @@ export const NATURE_LEAN_CHIP = 'leaning {word}';
  * THR-2149 — the hover on a reach tile's ▲ mark after a recent gain. `{band}` is
  * slightly / clearly / greatly (the Aftermath legend's slight · clear · great),
  * `{elapsed}` an `elapsedLabel` reading. The second form is for a gain with no band.
+ * The closing clause states the rule, never whether this gain moved the word: the
+ * growth change's tier flag is on the reach-share scale, not the word's own five
+ * capability tiers, so it cannot tell.
  */
 export const SHEET_GAIN_MARK_HEADING = '{reach} grew';
-export const SHEET_GAIN_MARK_HOVER = 'Grew {band} {elapsed} ago, in {chapter}. The word changes only at the next step.';
-export const SHEET_GAIN_MARK_HOVER_NO_BAND = 'Grew {elapsed} ago, in {chapter}. The word changes only at the next step.';
-/** The same hover when the gain crossed into a new tier, so the word above it is new. */
-export const SHEET_GAIN_MARK_HOVER_CROSSED = 'Grew {band} {elapsed} ago, in {chapter}, and reached this word.';
-export const SHEET_GAIN_MARK_HOVER_CROSSED_NO_BAND = 'Grew {elapsed} ago, in {chapter}, and reached this word.';
+export const SHEET_GAIN_MARK_HOVER = 'Grew {band} {elapsed} ago, in {chapter}. A word spans a wide range, so it can hold through a gain.';
+export const SHEET_GAIN_MARK_HOVER_NO_BAND = 'Grew {elapsed} ago, in {chapter}. A word spans a wide range, so it can hold through a gain.';
 
 /** The empty and gated lines a row says instead of going blank (Law 4). */
 export const PERSON_EMPTY_LINES = {

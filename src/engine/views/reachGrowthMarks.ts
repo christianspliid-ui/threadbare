@@ -33,8 +33,6 @@ export interface ReachGrowthMark {
   /** `slightly` / `clearly` / `greatly`; empty when the change carried no magnitude. */
   readonly band: string;
   readonly steps: 1 | 2 | 3;
-  /** The gain turned the reach's tier over (`storyWeight: 'beat'`), so the sheet word did move. */
-  readonly crossed: boolean;
   readonly chapterTitle: string;
   readonly resolvedTick: number;
 }
@@ -94,7 +92,6 @@ export function recentReachGrowth(
         reach,
         band: change.magnitude?.ladder === 'growth' ? GAIN_MARK_BAND_WORDS[steps] : '',
         steps,
-        crossed: change.storyWeight === 'beat',
         chapterTitle: record.templateName,
         resolvedTick: record.resolvedTick,
       });

@@ -124,17 +124,17 @@ describe('recentReachGrowth (THR-2149 E3)', () => {
   it('the hover says when, how much, where, and why the word held — with no numeral', () => {
     const mark = recentReachGrowth([record('a1', 376, [growth('a1', 'stone', 0.1)])], 'kael', 400, SHEET_GAIN_MARK_WINDOW_TICKS).get('stone')!;
     const label = gainMarkLabel(mark, 400);
-    expect(label).toBe('Grew clearly two days ago, in The Pilgrim Way. The word changes only at the next step.');
+    expect(label).toBe('Grew clearly two days ago, in The Pilgrim Way. A word spans a wide range, so it can hold through a gain.');
     expect(containsNumeral(label)).toBe(false);
-    expect(gainMarkLabel({ ...mark, band: '', resolvedTick: 398 }, 400)).toBe('Grew less than a day ago, in The Pilgrim Way. The word changes only at the next step.');
+    expect(gainMarkLabel({ ...mark, band: '', resolvedTick: 398 }, 400)).toBe('Grew less than a day ago, in The Pilgrim Way. A word spans a wide range, so it can hold through a gain.');
   });
 
-  it('a gain that crossed a tier says the word is new, not that it held', () => {
-    const crossing = { ...growth('a1', 'stone', 0.1), storyWeight: 'beat' as const };
-    const mark = recentReachGrowth([record('a1', 376, [crossing])], 'kael', 400, SHEET_GAIN_MARK_WINDOW_TICKS).get('stone')!;
-    expect(mark.crossed).toBe(true);
-    expect(gainMarkLabel(mark, 400)).toBe('Grew clearly two days ago, in The Pilgrim Way, and reached this word.');
-    expect(containsNumeral(gainMarkLabel(mark, 400))).toBe(false);
+  it('a tier-crossing gain gets the same hover — it never claims the word moved or held', () => {
+    // storyWeight 'beat' is a reach-share tier, not the sheet word's capability tier.
+    const plain = growth('a1', 'stone', 0.1);
+    const crossing = { ...plain, storyWeight: 'beat' as const };
+    const at = (c: typeof plain) => gainMarkLabel(recentReachGrowth([record('a1', 376, [c])], 'kael', 400, SHEET_GAIN_MARK_WINDOW_TICKS).get('stone')!, 400);
+    expect(at(crossing)).toBe(at(plain));
   });
 });
 

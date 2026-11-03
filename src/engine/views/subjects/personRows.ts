@@ -86,8 +86,6 @@ import {
   SHEET_GAIN_MARK_HEADING,
   SHEET_GAIN_MARK_HOVER,
   SHEET_GAIN_MARK_HOVER_NO_BAND,
-  SHEET_GAIN_MARK_HOVER_CROSSED,
-  SHEET_GAIN_MARK_HOVER_CROSSED_NO_BAND,
   PERSON_COUNTED_LABEL,
   PERSON_EMPTY_LINES,
   WHO_THEY_ARE_CLAUSES,
@@ -706,13 +704,10 @@ const domains: SectionResolver = (ctx) => {
   }));
 };
 
-/** The reach tile mark's hover: when, how much, where, and why the word held. */
+/** The reach tile mark's hover: when, how much, where, and why the word can hold. */
 export function gainMarkLabel(mark: ReachGrowthMark, now: number): string {
   const elapsed = elapsedLabel(Math.max(0, now - mark.resolvedTick));
-  // A gain that crossed a tier moved the word; only a gain inside a tier leaves it held.
-  const template = mark.band
-    ? (mark.crossed ? SHEET_GAIN_MARK_HOVER_CROSSED : SHEET_GAIN_MARK_HOVER)
-    : (mark.crossed ? SHEET_GAIN_MARK_HOVER_CROSSED_NO_BAND : SHEET_GAIN_MARK_HOVER_NO_BAND);
+  const template = mark.band ? SHEET_GAIN_MARK_HOVER : SHEET_GAIN_MARK_HOVER_NO_BAND;
   return personLine(template, { band: mark.band, elapsed, chapter: mark.chapterTitle });
 }
 
