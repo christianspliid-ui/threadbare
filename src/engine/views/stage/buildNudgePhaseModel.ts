@@ -19,6 +19,7 @@
  * | `sphere_locked` | withheld (ruling 4) | listed |
  * | `unlock_missing` | withheld (ruling 4) | listed |
  * | `trait_missing` | never rendered | listed |
+ * | `no_target` | withheld (THR-2147) | listed |
  *
  * Withholding sphere/unlock cards is a *deliberate divergence* from the v3
  * mockup, which dimmed them to teach the pool. That teaching role moves to the
@@ -86,10 +87,17 @@ import {
   type WhisperNextStep,
 } from '../../encounters/stepFactorLines';
 import {
+  ARTIFACT_CATEGORY_RESULT_NOUNS,
+  COMPULSION_URGE_NOUNS,
   NUDGE_COST_CHANNEL_DISPLAY,
+  formatNudgeResultLine,
+  isResultLineGrantKind,
   nudgeCardKeyword,
   type NudgeCostChannelId,
+  type ResultLineGrantKind,
 } from '../../../data/nudge-card-display';
+import { AMBITION_TEMPLATES } from '../../../data/ambition-templates';
+import type { EncounterType } from '../../../types/encounter';
 import {
   classifyMotive,
   readMotiveReceipt,
@@ -128,6 +136,8 @@ import type {
 const WITHHELD_CODES: ReadonlySet<NudgeBlockedCode> = new Set([
   'sphere_locked',
   'unlock_missing',
+  // THR-2147 — a card with nothing to act on is never sold to the player.
+  'no_target',
 ]);
 
 export interface BuildNudgePhaseModelArgs {
@@ -294,6 +304,66 @@ function dealtProvenanceLine(
     default:
       return assemble({ suffix: 'always yours.' });
   }
+}
+
+const warnedResultLines = new Set<string>();
+
+/**
+ * The noun a grant's result line names, read from the world (plan THR-2146 E2).
+ * Undefined ⇒ the kind's fallback sentence. The spell a `spell_grant` teaches is
+ * picked when the card resolves, so it is never known here.
+ */
+function resultLineThing(grant: NonNullable<StepNudge['grants']>[number], graph: WorldGraph): string | undefined {
+  switch (grant.kind) {
+    case 'remove_condition':
+      return graph.getNode(grant.conditionTraitId)?.name;
+    case 'spawn_artifact':
+      if (grant.nameOverride) return grant.nameOverride;
+      return grant.category ? ARTIFACT_CATEGORY_RESULT_NOUNS[grant.category] : undefined;
+    case 'assign_ambition':
+      return AMBITION_TEMPLATES.find((t) => t.id === grant.templateId)?.displayName;
+    case 'plant_compulsion': {
+      // The strongest lean is where the urge points.
+      let best: EncounterType | undefined;
+      let bestWeight = 0;
+      for (const [type, weight] of Object.entries(grant.encounterBias) as [EncounterType, number | undefined][]) {
+        if ((weight ?? 0) > bestWeight) { best = type; bestWeight = weight ?? 0; }
+      }
+      return best ? COMPULSION_URGE_NOUNS[best] : undefined;
+    }
+    default:
+      return undefined;
+  }
+}
+
+/** Kinds whose sentence never names a noun, so no fallback is worth a warning. */
+const NOUNLESS_RESULT_KINDS: ReadonlySet<ResultLineGrantKind> = new Set([
+  'emit_omen', 'favor_creation', 'hidden_mark', 'spell_grant',
+]);
+
+/**
+ * THR-2147 — the result line for a card that does not move the odds: the first
+ * grant with a line, naming the acting mortal. Undefined for a card that moves
+ * the odds (its pips answer) or carries no such grant (fail-soft: it renders as
+ * before). An unresolved noun takes the fallback and warns once (Law 14).
+ */
+export function nudgeResultLine(
+  nudge: Pick<StepNudge, 'id' | 'grants' | 'forecastDelta'>,
+  graph: WorldGraph,
+  actorName: string,
+): string | undefined {
+  if (nudge.forecastDelta !== 0 || !nudge.grants) return undefined;
+  const grant = nudge.grants.find((g) => isResultLineGrantKind(g.kind));
+  if (!grant || !isResultLineGrantKind(grant.kind)) return undefined;
+  const thing = resultLineThing(grant, graph);
+  if (thing === undefined && !NOUNLESS_RESULT_KINDS.has(grant.kind)) {
+    const key = `${nudge.id}:${grant.kind}`;
+    if (!warnedResultLines.has(key)) {
+      warnedResultLines.add(key);
+      console.warn(`[nudges] result line for ${nudge.id} (${grant.kind}) has no noun; using the fallback`);
+    }
+  }
+  return formatNudgeResultLine(grant.kind, actorName, thing);
 }
 
 function capitalise(word: string): string {
@@ -702,10 +772,18 @@ export function buildNudgePhaseModel(
     (repertoireEntries ?? []).map((entry) => [entry.member.id, entry.source] as const),
   );
 
+  // THR-2147 — a card that does not move the odds says what it does instead.
+  const actorName = graph.getNode(actorId)?.name ?? 'them';
+  const withResultLine = (card: EncounterStageNudgeCardModel, nudge: StepNudge): EncounterStageNudgeCardModel => {
+    const resultLine = nudgeResultLine(nudge, graph, actorName);
+    return resultLine ? { ...card, resultLine } : card;
+  };
+
   for (const entry of hand.playable) {
-    cards.push(
+    cards.push(withResultLine(
       buildNudgeCardModel(entry.nudge, accessibleSpheres, 'playable', enrich, undefined, repertoireSources),
-    );
+      entry.nudge,
+    ));
   }
 
   for (const entry of hand.dimmed) {
@@ -714,9 +792,10 @@ export function buildNudgePhaseModel(
       withheld.push({ id: nudge.id, name: enrich(nudge.name), blockedCode: blocked });
       continue;
     }
-    cards.push(
+    cards.push(withResultLine(
       buildNudgeCardModel(nudge, accessibleSpheres, 'dimmed', enrich, blocked, repertoireSources),
-    );
+      nudge,
+    ));
   }
 
   // Trait-gated cards the agent cannot hold: never in the player stage, listed

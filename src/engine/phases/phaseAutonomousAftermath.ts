@@ -210,6 +210,16 @@ export function processAutonomousAftermath(state: GameState, ctx: PhaseContext):
         s, action, committedStep, action.activeNudges, s.tick, runtime,
       );
       s = dispatched.state;
+      // THR-2147 — the card's writes ride the action, for the Aftermath chips
+      // (the `stepCasts.writes` precedent). Nothing written ⇒ the key stays absent.
+      if (dispatched.nudgeWrites.length > 0) {
+        const writes = dispatched.nudgeWrites;
+        s = {
+          ...s,
+          unifiedActions: (s.unifiedActions ?? []).map((a) =>
+            a.actionId === action.actionId ? { ...a, nudgeWrites: writes } : a),
+        };
+      }
       if (dispatched.mutationSummary.touchedStructure) touchStructure(runtime);
       else if (dispatched.mutationSummary.touchedWorld) touchWorld(runtime);
     }

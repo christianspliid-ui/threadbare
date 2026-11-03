@@ -1286,7 +1286,13 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   // The price on a card: the framed row of ✦ in the chip row.
   'ui.card.cost': {
     label: 'Essence cost',
-    desc: 'Each ✦ is one measure of essence, drawn from the pool of the sphere beside it. Your pools are listed under Essence on your bar.',
+    desc: 'Each ✦ is one measure of essence, drawn from the pool of the sphere named after it. Your pools are listed under Essence on your bar.',
+  },
+
+  // THR-2147 — the result line on a card that does not move the odds.
+  'ui.card.result': {
+    label: 'What it does',
+    desc: 'What this card does to the world when it is played. It does not move the odds.',
   },
 
   // The odds row on a nudge card, one entry per pip tier (THR-1713 D4). The ★
@@ -1513,6 +1519,33 @@ function buildCardKeywordTooltips(): Record<string, TooltipContent> {
     };
   }
   return out;
+}
+
+/**
+ * THR-2147 (U3) — an action card wears one kind chip, so its scale moves into the
+ * verb chip's hover: `ui.card.verb.<crud>.<scale>`, composed from the two existing
+ * rows (scale sentence first), each first sentence only so the pair stays within
+ * Law 18's length.
+ */
+const CARD_VERB_TOOLTIP_KEYS = ['create', 'read', 'update', 'delete', 'sustained'] as const;
+const CARD_SCALE_TOOLTIP_KEYS = ['personal', 'local', 'regional', 'cosmic'] as const;
+
+function firstSentence(text: string): string {
+  const match = /^.*?[.!?](?=\s|$)/.exec(text);
+  return match ? match[0] : text;
+}
+
+for (const verb of CARD_VERB_TOOLTIP_KEYS) {
+  const verbRow = UI_TOOLTIPS[`ui.card.verb.${verb}`];
+  if (!verbRow) continue;
+  for (const scale of CARD_SCALE_TOOLTIP_KEYS) {
+    const scaleRow = UI_TOOLTIPS[`ui.card.scale.${scale}`];
+    if (!scaleRow) continue;
+    UI_TOOLTIPS[`ui.card.verb.${verb}.${scale}`] = {
+      ...verbRow,
+      desc: `${firstSentence(scaleRow.desc)} ${firstSentence(verbRow.desc)}`,
+    };
+  }
 }
 
 /** Lookup a UI tooltip by ID. Returns null if not found. */
