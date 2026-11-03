@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-03 09:58 local (08:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-03 10:58 local (09:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,7 +20,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-**New at 09:48 local.** All from [Legibility 4 — the god rail, the Ledger rail, lists and the hover tier](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover). Plan: [Legibility 4](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-03-thr-2125-legibility-rails-lists-hover.md). Nobody may start building it before 20:47Z on 3 Nov.
+From 09:48 local. All from [Legibility 4 — the god rail, the Ledger rail, lists and the hover tier](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover). Plan: [Legibility 4](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-03-thr-2125-legibility-rails-lists-hover.md). Nobody may start building it before 20:47Z on 3 Nov.
 
 - The essence numbers on the god rail grow one step, so the amounts you can spend read before the small words around them. No number is added. Veto line: "keep the essence numbers small".
 - "Your First: Kael Thornweaver" becomes "Your First is Kael Thornweaver". "Primary: Mind", which floated at the far edge of the Essence heading, becomes the line "Your primary sphere is Mind." under it. Veto line: "keep the labels with colons".
@@ -57,7 +57,7 @@ From 00:41 local. From [On a running clock a chapter step still answers nothing 
 - "Back to the map" stays on the card as the way out. "Let the world turn" does not show there, because the world is already turning. Veto line: "keep both buttons".
 - If testers say the waiting card blocks the map, the map behind it gets undimmed while it waits. If a tester still sees no result, the next step would pause time on Play. That reverses your no-forced-pause rule, so it comes back to you first.
 
-Say "veto <title>" to reverse any of these. *— from the design lane ([00:41](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03a.md), [03:33](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03b.md), [06:43](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03c.md), [09:48](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03d.md), local time). The essence-pool decisions from 21:41 yesterday have passed their window, and [that ticket](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar) is now being built.*
+Say "veto <title>" to reverse any of these. *— from the design lane ([00:41](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03a.md), [03:33](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03b.md), [06:43](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03c.md), [09:48](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03d.md), local time). The essence-pool decisions from 21:41 yesterday have passed their window, and [that ticket](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar) is now built and live.*
 
 ## This week's screens
 
@@ -65,7 +65,7 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([00:41](h
 
 ## Queue
 
-**Healthy (3 ready, 1 being built, nothing waiting to merge).** The builder claimed [The pool says how full it can get](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar) as soon as its veto window opened and is building it now (run started 08:51 UTC). The other three are still inside their veto windows: [The answer comes here](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage) at 11:35, [Legibility 2 — Inspector pages](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at) at 14:33, [Legibility 3 — the Stage and the dialogs](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first) at 17:42 (all UTC). [Legibility 4](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover) joined Ready for Dev this hour and opens at 20:47.
+**Healthy (4 ready, nothing being built, nothing waiting to merge).** [The pool says how full it can get](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar) merged at 09:16 UTC ([#2729](https://github.com/christianspliid-ui/threadbare/pull/2729)) and is live. All four ready tickets are still inside their veto windows, so the builder is waiting by design: [The answer comes here](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage) opens at 11:35, [Legibility 2 — Inspector pages](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at) at 14:33, [Legibility 3 — the Stage and the dialogs](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first) at 17:42, [Legibility 4](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover) at 20:47 (all UTC).
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -73,5 +73,5 @@ Two items for agents, not you:
 
 ## Health
 
-- **Engine speed (for agents):** tick cost 212 ms/tick steady, 34% above the 7-day median (159, 128 rows since 10403ec8); top phase agent_decision, 639 agents. Name the merges between 10403ec8 and aac68f71: git log --oneline --merges 10403ec8..aac68f71. Last hour's reading on almost the same code was 129, and a builder run was working on the same machine during this one, so this may be load rather than a slowdown; the next readings will tell.
-- Everything else is green. The live site is up to date (c87a8c94; later commits are docs only). No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 08:53 UTC. The builder has not stalled: it is building now.
+- **Engine speed (for agents):** tick cost 215 ms/tick steady, 35% above the 7-day median (159, 129 rows since 10403ec8); top phase agent_decision, 639 agents. Name the merges between 10403ec8 and ea681b47: git log --oneline --merges 10403ec8..ea681b47. This is the second high reading in a row, and no builder run overlapped this one, so machine load explains it less well than it did an hour ago.
+- Everything else is green. The live site is up to date (ea681b47). No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 09:40 UTC. The builder has not stalled: its last two runs found nothing claimable, and the one before shipped THR-2148.
