@@ -122,6 +122,22 @@ describe('stepChapterAnswer — answering_live (THR-2151)', () => {
     expect(step.effects).toEqual([]);
   });
 
+  it('another surface holding the clock: the card yields and the answer waits as an ordinary beat', () => {
+    const step = stepChapterAnswer(LIVE, inputs({ heldElsewhere: true }), null);
+    expect(step.record?.phase).toBe('waiting');
+    expect(step.record?.startedAtTick).toBeNull();
+    expect(step.effects).toEqual([{ kind: 'close_card' }]);
+  });
+
+  it('an answer that is ready opens first, even while something else wants the screen (D3)', () => {
+    const step = stepChapterAnswer(LIVE, inputs({
+      heldElsewhere: true,
+      unifiedActions: [action(1)],
+      encounterNotifications: [notif('n_step0', { stepIndex: 0 }), notif('n_step1', { stepIndex: 1 })],
+    }), null);
+    expect(step.effects).toEqual([{ kind: 'open_answer', notificationId: 'n_step1' }]);
+  });
+
   it('a player pause leaves the card up; the TIME readout says it answers when time runs', () => {
     const step = stepChapterAnswer(LIVE, inputs({ running: false }), null);
     expect(step.record).toBe(LIVE);
@@ -182,7 +198,7 @@ describe('useChapterAnswerRun — the live card (THR-2151)', () => {
     expect(view.result.current.answerStatus).toBe(chapterAnswerText(CHAPTER_ANSWER_TURNING_STATUS, CHAPTER));
   });
 
-  it('names a ready premonition as deferred while the live answer waits (D3)', () => {
+  it('names a ready premonition while the live card is up', () => {
     const { view } = setup();
     act(() => view.result.current.showLiveCard(TARGET));
     view.rerender({

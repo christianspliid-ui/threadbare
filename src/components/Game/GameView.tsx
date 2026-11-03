@@ -417,8 +417,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   /**
    * THR-2151 — a live answer is pending: a step committed on a running clock is on
    * the Stage as the live card. Mirrored from the hook's record (declared far below,
-   * after the auto-pause it reads) so the premonition memo, the auto-open scan and the
-   * interrupt registry above it can read it. View state only.
+   * after the auto-pause it reads) so the auto-open scan and the interrupt registry
+   * above it can read it. View state only.
    */
   const [liveAnswerPending, setLiveAnswerPending] = useState(false);
   const handleToggleRunningRespectingHold = useCallback(() => {
@@ -1058,14 +1058,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   // ── Divine Premonition modal state ──
   // Pops the next ready premonition from the queue (respects display delay).
-  const readyPremonition = useMemo(() => {
+  const activePremonition = useMemo(() => {
     const queue = gameState.premonitionQueue ?? [];
     const ready = queue.find(p => gameState.tick >= p.showAfterTick);
     return ready ?? null;
   }, [gameState.premonitionQueue, gameState.tick]);
-  // THR-2151 D3 — a chapter's own answer goes first: while its live card waits, a ready
-  // premonition waits its turn. The queue is untouched; it shows once the answer is read.
-  const activePremonition = liveAnswerPending ? null : readyPremonition;
 
   // THR-1781 — a paid steer is confirmed on the spot, naming what was bought; the
   // outcome of a compulsion follows later as its own toast from the decision phase.
@@ -2968,8 +2965,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   useEffect(() => {
     heldEncounterRef.current = null;
     // THR-2151 D3 — while a live answer waits on the Stage, the chapter's own answer
-    // opens first, through the answer run (`open_answer`), with no quiet window. Every
-    // other beat waits its turn behind it, as arrivals wait behind an open interrupt.
+    // opens first, through the answer run (`open_answer`), with no quiet window. Other
+    // chapters' beats wait until it has opened (or the card has yielded).
     if (liveAnswerPending) return;
     if (isEncounterAutoOpenSuppressed(interruptsSuppressed, running)) return;
     // Don't auto-open tiered encounters while a premonition modal is active —
@@ -3772,9 +3769,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // under the cursor while the player aims. `useCardArming` is declared further down
   // (it needs the cast wiring), so it reports into this state from there.
   const [cardArmedHold, setCardArmedHold] = useState(false);
+  const clockHeldBySurface = clockHoldOpen({ interruptOpen: interruptResolution.anyOpen, inspectorFullOpen, cardArmed: cardArmedHold });
   const interruptAutoPause = useInterruptAutoPause({
     // THR-1911: the Inspector's Full view holds the clock while it is open (§ D2).
-    interruptOpen: clockHoldOpen({ interruptOpen: interruptResolution.anyOpen, inspectorFullOpen, cardArmed: cardArmedHold }),
+    interruptOpen: clockHeldBySurface,
     running,
     setRunning,
   });
@@ -3822,7 +3820,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     pushToast: pushChapterAnswerToast,
     openAnswer: handleOpenChapterAnswer,
     closeVeil: handleCloseChapterAnswerCard,
-    premonitionReady: readyPremonition !== null,
+    premonitionReady: activePremonition !== null,
+    // THR-2151 — something other than the live card holds the clock. Read only once the
+    // registry sees the card (the mirror has caught up); before that, the hold is the
+    // veil's own, from the render that committed the step.
+    heldElsewhere: liveAnswerPending && clockHeldBySurface,
   });
   chapterAnswerRef.current = chapterAnswer;
   const chapterAnswerLive = chapterAnswer.record?.phase === 'answering_live';

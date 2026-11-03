@@ -2,13 +2,14 @@
 /**
  * THR-2151 — the answer comes here. On a running clock a committed chapter step
  * stays on the Stage as the live answering card, the world turns underneath it,
- * and the step's answer opens in the same place, before a premonition that became
- * ready meanwhile.
+ * and the step's answer opens in the same place. The card stops no time, so it yields
+ * to anything that would hold the clock (review gate, round 1); an answer that is
+ * ready still opens before an arrival that is ready at the same moment.
  *
  * GameView is too heavy to mount (the THR-1976 pattern), so this file pins:
  *  1. the wiring at the source — the commit shows the live card on a running clock,
- *     the scan and the premonition stand down while it waits, the registry sees it,
- *     and the Stage renders both kinds from the one `encounter` slot;
+ *     the scan stands down while it waits, the registry sees it, the card hears when
+ *     something else holds the clock, and the Stage renders both kinds from one slot;
  *  2. the behaviour, through the real hook, the real auto-pause, the real registry
  *     and the real veil, in a harness that wires them as GameView does.
  */
@@ -109,14 +110,17 @@ function Harness({ world, probe }: { world: World; probe: { current: Probe | nul
   const [running, setRunning] = useState(true);
   const [veilFor, setVeilFor] = useState<string | null>('n_step0');
   const [liveAnswerPending, setLiveAnswerPending] = useState(false);
-  const activePremonition = liveAnswerPending ? false : world.premonitionReady;
+  const [shown, setShown] = useState<readonly string[]>([]);
   const snapshot = {
     interruptsSuppressed: false,
     encounterOpen: veilFor !== null,
     encounterAnsweringLive: liveAnswerPending,
-    premonitionPending: activePremonition,
+    premonitionPending: world.premonitionReady,
+    alreadyShown: shown,
   } as unknown as InterruptSnapshot;
   const resolution = resolveInterrupts(snapshot);
+  const openKey = resolution.open.join('|');
+  useEffect(() => { setShown(openKey ? openKey.split('|') : []); }, [openKey]);
   const hold = useInterruptAutoPause({ interruptOpen: resolution.anyOpen, running, setRunning });
   const answer = useChapterAnswerRun({
     unifiedActions: world.actions,
@@ -131,6 +135,7 @@ function Harness({ world, probe }: { world: World; probe: { current: Probe | nul
     openAnswer: (id) => { setVeilFor(id); return true; },
     closeVeil: () => setVeilFor(null),
     premonitionReady: world.premonitionReady,
+    heldElsewhere: liveAnswerPending && resolution.anyOpen,
   });
   const live = answer.record?.phase === 'answering_live';
   useEffect(() => { setLiveAnswerPending(live); }, [live]);
@@ -190,8 +195,10 @@ describe('THR-2151 — the wiring at the source', () => {
     expect(body).toMatch(/clockRuns && !CHAPTER_ANSWER_CARD_ON_RUNNING_CLOCK/);
   });
 
-  it('the scan stands down and the premonition waits while the live answer is pending', () => {
-    expect(GAME_VIEW).toMatch(/const activePremonition = liveAnswerPending \? null : readyPremonition;/);
+  it('the scan stands down while the live answer waits, and the card hears any other clock hold', () => {
+    expect(GAME_VIEW).not.toMatch(/liveAnswerPending \? null/);
+    expect(GAME_VIEW).toMatch(/heldElsewhere: liveAnswerPending && clockHeldBySurface,/);
+    expect(GAME_VIEW).toMatch(/interruptOpen: clockHeldBySurface,/);
     expect(GAME_VIEW).toMatch(/if \(liveAnswerPending\) return;\s*if \(isEncounterAutoOpenSuppressed/);
     expect(GAME_VIEW).toMatch(/encounterAnsweringLive: liveAnswerPending,/);
     expect(GAME_VIEW).toMatch(/openAnswer: handleOpenChapterAnswer,/);
@@ -245,28 +252,38 @@ describe('THR-2151 — the answer comes here', () => {
     expect(probe.current!.answer.getDebugState().state).toBe('none');
   });
 
-  it('a premonition ready during the wait opens after the Aftermath, not before it (D3)', () => {
+  it('a premonition ready during the wait: the card yields, the premonition shows, nothing expires unseen', () => {
     const { probe, rerender } = commitOnRunningClock();
-    const withPremonition: World = { ...STEP0_WORLD, tick: 102, premonitionReady: true };
-    act(() => { rerender(<Harness probe={probe} world={withPremonition} />); });
-    expect(probe.current!.answer.getDebugState().premonitionDeferred).toBe(true);
-    expect(screen.queryByTestId('premonition-shown')).not.toBeInTheDocument();
+    act(() => { rerender(<Harness probe={probe} world={{ ...STEP0_WORLD, tick: 102, premonitionReady: true }} />); });
+    // The card stops no time, so it cannot sit over a premonition that would hold the
+    // clock behind it: it yields, and the premonition takes the Stage (and the clock).
+    expect(screen.queryByTestId('chapter-answering-card')).not.toBeInTheDocument();
+    expect(probe.current!.openNotificationId).toBeNull();
+    expect(probe.current!.answer.getDebugState().state).toBe('waiting');
+    expect(screen.getByTestId('premonition-shown')).toBeInTheDocument();
+    expect(probe.current!.resolution.open).toContain('PremonitionModal');
+    expect(probe.current!.running).toBe(false);
+  });
 
-    // The chapter ends: its Aftermath opens in place first.
+  it('an answer and a premonition ready together: the Aftermath opens first, the premonition after it (D3)', () => {
+    const { probe, rerender } = commitOnRunningClock();
     act(() => {
       rerender(<Harness probe={probe} world={{
-        ...withPremonition,
+        ...STEP0_WORLD,
         tick: 105,
+        premonitionReady: true,
         actions: [{ actionId: ACTION_ID, currentStep: 0, resolved: true } as unknown as UnifiedAction],
         notifications: [notif('n_step0', { stepIndex: 0 }), notif('n_after', { kind: 'aftermath' })],
       }} />);
     });
     expect(probe.current!.openNotificationId).toBe('n_after');
     expect(screen.queryByTestId('premonition-shown')).not.toBeInTheDocument();
+    // The Aftermath holds the clock, so the waiting premonition cannot expire behind it.
+    expect(probe.current!.resolution.open).toContain('EncounterVeil');
+    expect(probe.current!.running).toBe(false);
 
     // The player closes the Aftermath; now the premonition takes the Stage.
     act(() => probe.current!.close());
     expect(screen.getByTestId('premonition-shown')).toBeInTheDocument();
-    expect(probe.current!.premonitionShown).toBe(true);
   });
 });

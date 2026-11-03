@@ -66,7 +66,7 @@ export interface DebugChapterAnswer {
   stepIndex: number | null;
   chapterName: string | null;
   ticksRun: number;
-  /** THR-2151 — a ready premonition waits behind the live answer (D3). */
+  /** THR-2151 — a premonition is ready while the live card is up (the card yields to it on the next pass). */
   premonitionDeferred: boolean;
 }
 
@@ -87,6 +87,11 @@ export interface ChapterAnswerInputs {
   veilOpen: boolean;
   /** The interrupt hold's saved state (`heldRunning`); `null` while nothing holds the clock. */
   heldRunning: boolean | null;
+  /**
+   * THR-2151 — while the live card is up, some other surface holds the clock (an arrival
+   * held behind the card, a surface the player opened). Optional: absent = false.
+   */
+  heldElsewhere?: boolean;
 }
 
 export type ChapterAnswerEffect =
@@ -210,6 +215,16 @@ export function stepChapterAnswer(
         if (beat) return none([{ kind: 'open_answer', notificationId: beat.id }]);
         return none([{ kind: 'close_card' }, dropped]);
       }
+      // The live card stops no time and cannot share the screen with anything that
+      // does. An arrival held behind it (premonition, vignette, story beat, moment) or a
+      // surface the player opened would hold the clock under a card that says the world
+      // turns: the step could never answer, and a premonition expires a few ticks after
+      // it is showable. So the card yields as any veil does — the answer waits and
+      // arrives as an ordinary beat (plan D4, fail-soft table). Checked after the answer,
+      // so an answer that is ready opens first and the arrival waits behind it (D3).
+      if (inputs.heldElsewhere) {
+        return { record: { ...record, phase: 'waiting', startedAtTick: null }, effects: [{ kind: 'close_card' }], answeredAtTick: null };
+      }
       // D5 — bounded by the run's cap; a player pause stops the count with the clock.
       const ticksLive = record.startedAtTick === null ? 0 : inputs.tick - record.startedAtTick;
       if (ticksLive >= CHAPTER_ANSWER_RUN_MAX_TICKS) {
@@ -318,7 +333,7 @@ export interface ChapterAnswerRunHandle {
 export function useChapterAnswerRun(params: UseChapterAnswerRunParams): ChapterAnswerRunHandle {
   const {
     unifiedActions, encounterNotifications, tick, running, veilOpen, heldRunning, hold, setRunning, pushToast,
-    openAnswer, closeVeil, premonitionReady = false,
+    openAnswer, closeVeil, premonitionReady = false, heldElsewhere = false,
   } = params;
   const [record, setRecord] = useState<ChapterAnswerRecord | null>(null);
   const answeredAtRef = useRef<number | null>(null);
@@ -351,7 +366,7 @@ export function useChapterAnswerRun(params: UseChapterAnswerRunParams): ChapterA
     if (!record) return;
     const step = stepChapterAnswer(
       record,
-      { unifiedActions, encounterNotifications, tick, running, veilOpen, heldRunning },
+      { unifiedActions, encounterNotifications, tick, running, veilOpen, heldRunning, heldElsewhere },
       answeredAtRef.current,
     );
     answeredAtRef.current = step.answeredAtTick;
@@ -370,7 +385,7 @@ export function useChapterAnswerRun(params: UseChapterAnswerRunParams): ChapterA
       }
     }
     if (step.record !== record) setRecord(step.record);
-  }, [record, unifiedActions, encounterNotifications, tick, running, veilOpen, heldRunning, hold, setRunning, pushToast, openAnswer, closeVeil]);
+  }, [record, unifiedActions, encounterNotifications, tick, running, veilOpen, heldRunning, heldElsewhere, hold, setRunning, pushToast, openAnswer, closeVeil]);
 
   const phase: ChapterAnswerPhase = record?.phase ?? 'none';
   const loggedPhaseRef = useRef<ChapterAnswerPhase>('none');
