@@ -179,27 +179,31 @@ function EssenceRow({ row, previewed }: EssenceRowProps) {
         }}>
           {label}
         </span>
-        <div className={styles.essenceFillBar}>
-          <div
-            data-testid={`essence-fill-${row.sphere}`}
-            data-fill-pct={Math.round(fillPct)}
-            style={{
-              height: '100%', width: `${fillPct}%`,
-              background: color,
-              opacity: row.isPrimary ? 1 : row.isSecondary ? 0.75 : 0.5,
-              transition: 'width 0.4s ease-out',
-            }}
-          />
-        </div>
-        {spendReading && (
-          <span data-testid={`essence-spend-${row.sphere}`} style={{ lineHeight: 1 }}>
-            <DeltaCluster
-              direction={spendReading.direction}
-              count={spendReading.count}
-              label={spendReading.label}
+        {/* THR-2153 — the spend mark floats over the bar, out of flow: in flow
+            it took its width from the sphere word ("M…") and the bar (0px). */}
+        <span className={styles.essenceFillSlot}>
+          <div className={styles.essenceFillBar}>
+            <div
+              data-testid={`essence-fill-${row.sphere}`}
+              data-fill-pct={Math.round(fillPct)}
+              style={{
+                height: '100%', width: `${fillPct}%`,
+                background: color,
+                opacity: row.isPrimary ? 1 : row.isSecondary ? 0.75 : 0.5,
+                transition: 'width 0.4s ease-out',
+              }}
             />
-          </span>
-        )}
+          </div>
+          {spendReading && (
+            <span data-testid={`essence-spend-${row.sphere}`} className={styles.essenceSpendMark}>
+              <DeltaCluster
+                direction={spendReading.direction}
+                count={spendReading.count}
+                label={spendReading.label}
+              />
+            </span>
+          )}
+        </span>
         {/* THR-1985 — how fast this pool refills: a rung under the balance, so it
             takes no width from the label or the bar; the word is the rung's
             accessible name and the row hover's first sentence (Law 13: a word,

@@ -196,12 +196,30 @@
   background: var(--bg-hover);
 }
 
+/* THR-2153 — holds the bar and, during a spend flash, the ▼ mark over it.
+   The mark is out of flow, so the sphere word and the bar keep their width. */
+.essenceFillSlot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  align-self: stretch;
+}
 .essenceFillBar {
   height: 3px;
   border-radius: 2px;
   background: var(--bg-raised);
   overflow: hidden;
   flex: 1;
+}
+.essenceSpendMark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  line-height: 1;
+  pointer-events: none;
 }
 /* ── Seat line (THR-1792) ──────────────────────────────────────── */
 .seatLine {
