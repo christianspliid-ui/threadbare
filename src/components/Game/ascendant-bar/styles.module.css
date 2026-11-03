@@ -196,6 +196,22 @@
   background: var(--bg-hover);
 }
 
+/* THR-2148 — the row's middle: the word and "53 / 55" over the bar and rung. */
+.essenceRowBody {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+.essenceRowLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+  line-height: 1.25;
+}
 /* THR-2153 — holds the bar and, during a spend flash, the ▼ mark over it.
    The mark is out of flow, so the sphere word and the bar keep their width. */
 .essenceFillSlot {
@@ -205,6 +221,7 @@
   flex: 1;
   min-width: 0;
   align-self: stretch;
+  min-height: 8px;
 }
 .essenceFillBar {
   height: 3px;
