@@ -144,6 +144,9 @@ export const NATURE_LEAN_CHIP = 'leaning {word}';
 export const SHEET_GAIN_MARK_HEADING = '{reach} grew';
 export const SHEET_GAIN_MARK_HOVER = 'Grew {band} {elapsed} ago, in {chapter}. The word changes only at the next step.';
 export const SHEET_GAIN_MARK_HOVER_NO_BAND = 'Grew {elapsed} ago, in {chapter}. The word changes only at the next step.';
+/** The same hover when the gain crossed into a new tier, so the word above it is new. */
+export const SHEET_GAIN_MARK_HOVER_CROSSED = 'Grew {band} {elapsed} ago, in {chapter}, and reached this word.';
+export const SHEET_GAIN_MARK_HOVER_CROSSED_NO_BAND = 'Grew {elapsed} ago, in {chapter}, and reached this word.';
 
 /** The empty and gated lines a row says instead of going blank (Law 4). */
 export const PERSON_EMPTY_LINES = {

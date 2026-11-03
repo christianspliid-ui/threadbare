@@ -312,7 +312,7 @@ describe('THR-1714 — fate line table', () => {
       expect(words.b, pair).toMatch(/^[A-Z][A-Za-z-]+$/);
       expect(words.a).not.toBe(words.b);
     }
-    expect(poleWordsFor('courage_prudence')).toEqual({ a: 'Courage', b: 'Prudence' });
+    expect(poleWordsFor('courage_prudence')).toEqual({ a: 'Courageous', b: 'Prudent' });
     expect(poleWordsFor('mercy_ruthlessness')).toEqual({ a: 'Brave', b: 'Power-Hungry' });
   });
 

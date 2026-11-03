@@ -128,6 +128,14 @@ describe('recentReachGrowth (THR-2149 E3)', () => {
     expect(containsNumeral(label)).toBe(false);
     expect(gainMarkLabel({ ...mark, band: '', resolvedTick: 398 }, 400)).toBe('Grew less than a day ago, in The Pilgrim Way. The word changes only at the next step.');
   });
+
+  it('a gain that crossed a tier says the word is new, not that it held', () => {
+    const crossing = { ...growth('a1', 'stone', 0.1), storyWeight: 'beat' as const };
+    const mark = recentReachGrowth([record('a1', 376, [crossing])], 'kael', 400, SHEET_GAIN_MARK_WINDOW_TICKS).get('stone')!;
+    expect(mark.crossed).toBe(true);
+    expect(gainMarkLabel(mark, 400)).toBe('Grew clearly two days ago, in The Pilgrim Way, and reached this word.');
+    expect(containsNumeral(gainMarkLabel(mark, 400))).toBe(false);
+  });
 });
 
 describe('Nature words and meeting leans (THR-2149 E4)', () => {
@@ -137,6 +145,9 @@ describe('Nature words and meeting leans (THR-2149 E4)', () => {
     expect(natureValueWord('honesty_cunning', 0.3)).toBe('Somewhat Fair');
     // A pair no reach axis owns keeps its own words.
     expect(natureValueWord('courage_prudence', 0.6)).toBe('Courageous');
+    // The lean on that pair uses the fate line's word, so the chip and the line agree.
+    const state = world({ outcomes: [outcome('courage_prudence', 'b', -0.3)] });
+    expect(meetingLeans(state.graph, 'kael')).toEqual([{ pair: 'courage_prudence', word: 'Prudent' }]);
   });
 
   it('meetingLeans reads the pole each test wrote, in the axis word', () => {

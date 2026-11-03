@@ -23,7 +23,7 @@ import { getArchetype, type NarrativeArchetype } from '../data/archetype-content
 import type { CooperationStrategy, InteractionRecord } from '../types/disposition';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import type { KnowledgeLevel } from '../types/familiarity';
-import { getCapabilityWord, getCapabilityTier, getValueWord, getReputationWord, getBondStrengthWord, VALUE_WORD_MAP } from '../data/domain-words';
+import { getCapabilityWord, getCapabilityTier, getValueWord, getReputationWord, getBondStrengthWord } from '../data/domain-words';
 import { computeCapability } from './domainCapability';
 import { REACH_DOMAINS } from '../types/traits';
 import { RECENT_TIER_CROSS_WINDOW_TICKS } from '../data/agent-behavior-constants';
@@ -155,7 +155,8 @@ export function natureValueWord(pair: ValuePair, value: number): string {
 export function naturePoleWord(pair: ValuePair, pole: 'a' | 'b'): string {
   const axis = getAxisByValuePair(pair);
   if (axis) return pole === 'a' ? axis.virtue.word : axis.vice.word;
-  return VALUE_WORD_MAP[pair]?.[pole === 'a' ? 0 : 1] ?? poleWordsFor(pair)[pole];
+  // The fate line's own fallback, so the lean chip and the line it echoes agree.
+  return poleWordsFor(pair)[pole];
 }
 
 /** One lean the threading meeting wrote, in the axis's own word. */

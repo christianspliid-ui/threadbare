@@ -86,6 +86,8 @@ import {
   SHEET_GAIN_MARK_HEADING,
   SHEET_GAIN_MARK_HOVER,
   SHEET_GAIN_MARK_HOVER_NO_BAND,
+  SHEET_GAIN_MARK_HOVER_CROSSED,
+  SHEET_GAIN_MARK_HOVER_CROSSED_NO_BAND,
   PERSON_COUNTED_LABEL,
   PERSON_EMPTY_LINES,
   WHO_THEY_ARE_CLAUSES,
@@ -707,9 +709,11 @@ const domains: SectionResolver = (ctx) => {
 /** The reach tile mark's hover: when, how much, where, and why the word held. */
 export function gainMarkLabel(mark: ReachGrowthMark, now: number): string {
   const elapsed = elapsedLabel(Math.max(0, now - mark.resolvedTick));
-  return mark.band
-    ? personLine(SHEET_GAIN_MARK_HOVER, { band: mark.band, elapsed, chapter: mark.chapterTitle })
-    : personLine(SHEET_GAIN_MARK_HOVER_NO_BAND, { elapsed, chapter: mark.chapterTitle });
+  // A gain that crossed a tier moved the word; only a gain inside a tier leaves it held.
+  const template = mark.band
+    ? (mark.crossed ? SHEET_GAIN_MARK_HOVER_CROSSED : SHEET_GAIN_MARK_HOVER)
+    : (mark.crossed ? SHEET_GAIN_MARK_HOVER_CROSSED_NO_BAND : SHEET_GAIN_MARK_HOVER_NO_BAND);
+  return personLine(template, { band: mark.band, elapsed, chapter: mark.chapterTitle });
 }
 
 const HARM_SUBCATEGORIES = new Set(['wound', 'injury', 'disease', 'poison']);
