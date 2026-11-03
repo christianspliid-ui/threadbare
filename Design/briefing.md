@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-03 14:58 local (13:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-03 15:58 local (14:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -19,6 +19,13 @@
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
 ## Decided for you
+
+From 15:25 local (new). From [The chosen path steers by skill, not by story](https://linear.app/threadbare/issue/THR-2144/recurs-after-fix-the-chosen-path-steers-by-skill-not-by-story-the). Nobody may start building it before 02:24Z on 4 Nov.
+
+- [The path pulls only scenes about the same thing](https://linear.app/threadbare/issue/THR-2156/the-path-pulls-only-scenes-about-the-same-thing-each-path-names-two) — the path you pick at the bond still pulls The First toward chapters in its two skills, but now only toward chapters that share the path's theme too. "Torch of the uprising" stops pulling "Enlist in the Civic Guard". Veto line: "the path should pull on skill alone".
+- Same ticket — each of the 24 paths names two themes, picked from the game's existing values and read from the path's own picture text. For example, the Torch is about keeping or changing things, and about loyalty or ambition. Veto line: "let me pick the path themes".
+- Same ticket — when a chapter that fits the path opens, its first step says so in one line, "Fits the reader of secrets.", the same line God's Will already shows. Veto line: "no fit line on the Stage".
+- Same ticket — the honest Reader of secrets taking a night job stays possible. Your 23 Sep ruling says a scene's values name what it is about, not which side it takes. "Shadow in the Night" is a paid job to take back a stolen ledger, which is a secrets scene. The new line says why it is on her road. The mortal's own values are not checked against the scene. Veto line: "an honest mortal should never get a theft".
 
 From 12:20 local. From [After the first follower there is no way forward](https://linear.app/threadbare/issue/THR-2138/after-the-first-follower-there-is-no-way-forward-the-gods-hunger-says). Nobody may start building either part before 23:30Z on 3 Nov.
 
@@ -48,15 +55,7 @@ From 06:43 local. All from [Legibility 3 — the Stage and the dialogs](https://
 - Every window's title looks the same: left edge, one size. That covers Settings, the Divine Court, the Chapter Ledger, Read the Threads and the receipt. The Court's section names, such as "The First", stop being centred gold capitals. Veto line: "keep the Court's gold headings".
 - The "A Path Opens" choice says its title once, not twice, and its story is no longer in a box. Veto line: "keep the banner".
 
-From 03:33 local. All from [Legibility 2 — Inspector pages read Who, Now, Act, Detail, Out](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at). Plan: [Legibility 2 — Inspector pages](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-03-thr-2123-legibility-inspector-pages.md). Nobody may start building it before 14:33Z on 3 Nov.
-
-- When you widen the Inspector, the page opens on the kind and name at the top left, with the portrait below them at the same size. Today the name sits centred under the portrait, halfway down the page. Veto line: "keep the portrait above the name".
-- Right under the name sits the one line that matters most: a mortal's strongest want, or the god's Mandate. The Act row comes after it. On The First's page her want takes that spot; the strip with your face and hers stays first in her Overview, and takes the spot only when she has no known want. Veto line: "the bond comes first on her page".
-- The Inspector loses the inner border it draws inside its own edge, so it reads as one surface with the highlighted line as its only box. Veto line: "keep the inner border".
-- "Act on …" and "In this land" headings stop being gold. The highlighted line is the page's one gold. Veto line: "keep the gold headings".
-- The page's parts sit a little further apart (24 px), the same distance as the sections below them. Veto line: "keep the page tighter".
-
-Say "veto <title>" to reverse any of these. *— from the design lane ([03:33](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03b.md), [06:43](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03c.md), [09:48](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03d.md), [12:20](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03e.md), local time). The "answer comes here" decisions from 00:41 have passed their window, and [that ticket](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage) is now built and live.*
+Say "veto <title>" to reverse any of these. *— from the design lane ([06:43](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03c.md), [09:48](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03d.md), [12:20](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03e.md), [15:25](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03f.md), local time). The Legibility 2 decisions from 03:33 have passed their window, and [that ticket](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at) is now built and waiting to merge.*
 
 ## This week's screens
 
@@ -64,7 +63,7 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([03:33](h
 
 ## Queue
 
-**Healthy (5 ready, nothing being built, nothing waiting to merge).** [The answer comes here](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage) shipped via [#2730](https://github.com/christianspliid-ui/threadbare/pull/2730) and is live. The builder is idle by design: all five ready tickets are inside their veto windows. [Legibility 2](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at) opens at 14:33, under an hour from now, [Legibility 3](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first) at 17:42, [Legibility 4](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover) at 20:47, and the two new follower tickets, [The goal says what fills it](https://linear.app/threadbare/issue/THR-2154/the-goal-says-what-fills-it-the-mandate-row-leads-with-the-hungers-own) and [The next follower has a path](https://linear.app/threadbare/issue/THR-2155/the-next-follower-has-a-path-a-threads-line-says-how-to-bind-another), at 23:30 (all UTC).
+**Healthy (5 ready, 1 built and waiting to merge).** [Legibility 2 — Inspector pages](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at) is built, and [#2731](https://github.com/christianspliid-ui/threadbare/pull/2731) merges on its own when its checks pass. The other ready tickets wait out their veto windows: [Legibility 3](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first) opens at 17:42, [Legibility 4](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover) at 20:47, [The goal says what fills it](https://linear.app/threadbare/issue/THR-2154/the-goal-says-what-fills-it-the-mandate-row-leads-with-the-hungers-own) and [The next follower has a path](https://linear.app/threadbare/issue/THR-2155/the-next-follower-has-a-path-a-threads-line-says-how-to-bind-another) at 23:30, and the new [The path pulls only scenes about the same thing](https://linear.app/threadbare/issue/THR-2156/the-path-pulls-only-scenes-about-the-same-thing-each-path-names-two) at 02:24 tomorrow (all UTC).
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -72,5 +71,4 @@ Two items for agents, not you:
 
 ## Health
 
-- **Engine speed (for agents):** tick cost 229 ms/tick steady, 43% above the 7-day median (160, 128 rows since c5e5a3f7); top phase agent_decision, 639 agents. Name the merges between c5e5a3f7 and cceff13d: git log --oneline --merges c5e5a3f7..cceff13d. Sixth high reading in a row (222 an hour ago), on the same commit, so nothing new has merged.
-- Everything else is green. The live site is up to date (cceff13d). No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 13:40 UTC. The builder has not stalled: its last five runs found nothing claimable (all ready tickets in veto windows).
+All green. Engine speed is back to normal: 157 ms/tick, 2% under the 7-day median, after six high readings. The live site is up to date (cceff13d). Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 14:40 UTC. The builder is not stalled: it shipped Legibility 2 at 14:52 UTC.
