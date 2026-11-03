@@ -54,6 +54,7 @@ import {
   CHAPTER_ANSWER_BACK_LABEL,
   CHAPTER_ANSWER_RUN_LABEL,
   CHAPTER_ANSWER_WAITS_LINE,
+  CHAPTER_ANSWER_LIVE_WAITS_LINE,
   NUDGE_BLOCKED_REASONS,
   NUDGE_COMMIT_LABEL,
   lastStepAnswer,
@@ -157,7 +158,7 @@ export interface EncounterVeilProps {
    * and *Back to the map*. Escape is *Back to the map*; the run button takes
    * focus, so Enter is *Let the world turn*.
    */
-  answering?: { choiceLine: string };
+  answering?: { choiceLine: string; live?: boolean };
   /** THR-1812 — run the clock until this step answers, then pause again. */
   onLetWorldTurn?: () => void;
   /** THR-1812 — close; the clock stays paused and the answer waits. */
@@ -2637,6 +2638,7 @@ export function EncounterVeil({
           {answering ? (
             <ChapterAnsweringCard
               choiceLine={answering.choiceLine}
+              live={answering.live === true}
               onLetWorldTurn={onLetWorldTurn}
               onBackToMap={onBackToMap ?? leaveVeil}
             />
@@ -2780,13 +2782,69 @@ export function EncounterVeil({
  */
 function ChapterAnsweringCard({
   choiceLine,
+  live = false,
   onLetWorldTurn,
   onBackToMap,
 }: {
   choiceLine: string;
+  /**
+   * THR-2151 — the clock is running: the world is already turning, so there is no
+   * *Let the world turn*. The waiting line sits over the sanctioned breathing
+   * placeholder (Law 54) and the answer opens in this card's place. Content-light by
+   * design (the card stops no time): the choice line and the waiting line only.
+   */
+  live?: boolean;
   onLetWorldTurn?: () => void;
   onBackToMap: () => void;
 }) {
+  if (live) {
+    return (
+      <div data-testid="chapter-answering-card" data-live="true" role="status" aria-live="polite">
+        <p
+          data-testid="chapter-answering-choice"
+          style={{ fontFamily: FONT_PROSE, fontStyle: 'italic', fontSize: 'var(--text-sm)', color: TEXT_WARM, margin: 0 }}
+        >
+          {choiceLine}
+        </p>
+        <div
+          data-testid="chapter-answering-live-wait"
+          className="animate-breathe"
+          aria-hidden="true"
+          style={{ marginTop: 16, height: 3, width: 160, borderRadius: 2, background: 'rgb(var(--veil-gold-rgb) / 0.35)' }}
+        />
+        <p
+          data-testid="chapter-answering-waits"
+          // Law 45 — the line carries information, so secondary text, not whisper.
+          style={{ fontFamily: FONT_PROSE, fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', margin: '10px 0 0' }}
+        >
+          {CHAPTER_ANSWER_LIVE_WAITS_LINE}
+        </p>
+        <div style={{ marginTop: 24, display: 'flex', alignItems: 'center', gap: 20 }}>
+          <button
+            type="button"
+            className="focus-ring"
+            data-testid="chapter-answer-back"
+            // Focus lands on the one way out (D4).
+            autoFocus
+            onClick={onBackToMap}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              color: TEXT_WARM,
+              fontFamily: FONT_PROSE,
+              fontSize: 'var(--text-xs)',
+              textDecoration: 'underline',
+              textUnderlineOffset: 3,
+              cursor: 'pointer',
+            }}
+          >
+            {CHAPTER_ANSWER_BACK_LABEL}
+          </button>
+        </div>
+      </div>
+    );
+  }
   return (
     <div data-testid="chapter-answering-card" role="status" aria-live="polite">
       <p

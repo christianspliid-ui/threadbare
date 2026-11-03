@@ -414,6 +414,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const interruptHoldRef = useRef<InterruptAutoPauseHandle | null>(null);
   /** THR-1812 — the chapter answer run; declared after the auto-pause hook it reads, reached here by ref. */
   const chapterAnswerRef = useRef<ChapterAnswerRunHandle | null>(null);
+  /**
+   * THR-2151 — a live answer is pending: a step committed on a running clock is on
+   * the Stage as the live card. Mirrored from the hook's record (declared far below,
+   * after the auto-pause it reads) so the premonition memo, the auto-open scan and the
+   * interrupt registry above it can read it. View state only.
+   */
+  const [liveAnswerPending, setLiveAnswerPending] = useState(false);
   const handleToggleRunningRespectingHold = useCallback(() => {
     if (interruptHoldRef.current?.toggleIfHeld()) return;
     handleToggleRunning();
@@ -1051,11 +1058,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   // ── Divine Premonition modal state ──
   // Pops the next ready premonition from the queue (respects display delay).
-  const activePremonition = useMemo(() => {
+  const readyPremonition = useMemo(() => {
     const queue = gameState.premonitionQueue ?? [];
     const ready = queue.find(p => gameState.tick >= p.showAfterTick);
     return ready ?? null;
   }, [gameState.premonitionQueue, gameState.tick]);
+  // THR-2151 D3 — a chapter's own answer goes first: while its live card waits, a ready
+  // premonition waits its turn. The queue is untouched; it shows once the answer is read.
+  const activePremonition = liveAnswerPending ? null : readyPremonition;
 
   // THR-1781 — a paid steer is confirmed on the spot, naming what was bought; the
   // outcome of a compulsion follows later as its own toast from the decision phase.
@@ -2704,16 +2714,21 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   ): boolean => {
     if (!tieredEncounterState) return false;
     const wasRunning = interruptHoldRef.current?.getWasRunningBeforeInterrupt() ?? null;
-    if (wasRunning !== false && !CHAPTER_ANSWER_CARD_ON_RUNNING_CLOCK) return false;
+    const clockRuns = wasRunning !== false;
+    if (clockRuns && !CHAPTER_ANSWER_CARD_ON_RUNNING_CLOCK) return false;
     const answer = chapterAnswerRef.current;
     if (!answer) return false;
-    answer.showCard({
+    const target = {
       actionId,
       stepIndex,
       notificationId: tieredEncounterState.notification.id,
       chapterName: encounterVeilModel?.header.title || null,
       choiceLine: chapterAnswerChoiceLine(choiceNames),
-    });
+    };
+    // THR-2151 — on a running clock the card is the live one: it stops no time, the
+    // world turns under it, and the step's answer opens in its place.
+    if (clockRuns) answer.showLiveCard(target);
+    else answer.showCard(target);
     return true;
   }, [tieredEncounterState, encounterVeilModel]);
 
@@ -2943,6 +2958,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // `isEncounterAutoOpenSuppressed` for the full mechanism.
   useEffect(() => {
     heldEncounterRef.current = null;
+    // THR-2151 D3 — while a live answer waits on the Stage, the chapter's own answer
+    // opens first, through the answer run (`open_answer`), with no quiet window. Every
+    // other beat waits its turn behind it, as arrivals wait behind an open interrupt.
+    if (liveAnswerPending) return;
     if (isEncounterAutoOpenSuppressed(interruptsSuppressed, running)) return;
     // Don't auto-open tiered encounters while a premonition modal is active —
     // compulsion handles encounter selection for that agent
@@ -2993,7 +3012,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       suppressedEncounterNotificationId.current,
       handleOpenEncounterFromNotification,
     );
-  }, [gameState.encounterNotifications, handleOpenEncounterFromNotification, interruptsSuppressed, running, activePremonition, encounterHoldRecheck, canOpenEncounterNotification]);
+  }, [gameState.encounterNotifications, handleOpenEncounterFromNotification, interruptsSuppressed, running, activePremonition, encounterHoldRecheck, canOpenEncounterNotification, liveAnswerPending]);
 
   // THR-1724 (review gate) — a minimised step the world resolved without the
   // player must not leave a badge that opens nothing. Since THR-1730 a
@@ -3568,6 +3587,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const stageVMByKind: Partial<Record<StageHomedKind, StageVM | null>> = {
     'story-beat': storyBeatStageVM,
     encounter: encounterStageVM,
+    'encounter-answering': encounterStageVM,
     'journey-vignette': vignetteStageVM,
     'undertaking-moment': momentStageVM,
     premonition: premonitionStageVM,
@@ -3638,6 +3658,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const interruptResolution = resolveInterrupts({
     interruptsSuppressed,
     encounterOpen: tieredEncounterState !== null,
+    // THR-2151 — the open veil is the live answering card: it renders, stopping no time.
+    encounterAnsweringLive: liveAnswerPending,
     meetingPending: meetingState !== null,
     hasAscendantIdentity: !!ascendantIdentity,
     threadingRitePending: pendingRite !== null && !isRiteAgentMissing(gameState.graph, pendingRite),
@@ -3765,6 +3787,20 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     });
   }, [handlePushToast, gameState.tick]);
   const setRunningPlain = useCallback((next: boolean) => setRunning(next), [setRunning]);
+  /**
+   * THR-2151 D2 — open the step's answer beat in the live card's place. The veil
+   * stays up: the answer is for the same mortal and chapter, so the Stage swaps
+   * content and never shows the map.
+   */
+  const handleOpenChapterAnswer = useCallback((notificationId: string): boolean => {
+    const beat = (gameState.encounterNotifications ?? []).find(n => n.id === notificationId);
+    return beat ? handleOpenEncounterFromNotification(beat) : false;
+  }, [gameState.encounterNotifications, handleOpenEncounterFromNotification]);
+  /** THR-2151 — the live card ends with nothing to open: close it as a commit closes. */
+  const handleCloseChapterAnswerCard = useCallback(() => {
+    setInterruptSuppressedUntilTick(gameState.tick + 1);
+    setTieredEncounterState(null);
+  }, [gameState.tick]);
   const chapterAnswer = useChapterAnswerRun({
     unifiedActions: gameState.unifiedActions ?? EMPTY_UNIFIED_ACTIONS,
     encounterNotifications: gameState.encounterNotifications ?? EMPTY_ENCOUNTER_NOTIFICATIONS,
@@ -3775,8 +3811,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     hold: interruptAutoPause,
     setRunning: setRunningPlain,
     pushToast: pushChapterAnswerToast,
+    openAnswer: handleOpenChapterAnswer,
+    closeVeil: handleCloseChapterAnswerCard,
+    premonitionReady: readyPremonition !== null,
   });
   chapterAnswerRef.current = chapterAnswer;
+  const chapterAnswerLive = chapterAnswer.record?.phase === 'answering_live';
+  useEffect(() => {
+    setLiveAnswerPending(chapterAnswerLive);
+  }, [chapterAnswerLive]);
 
   // ── First-run Play prompt (THR-1716 U3) ──
   // While the clock has never run and nothing holds it, the Play control asks for

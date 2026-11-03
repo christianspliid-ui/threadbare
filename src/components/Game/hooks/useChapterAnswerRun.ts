@@ -26,6 +26,10 @@ import {
  *   state is set to paused (`pauseIfHeld`), so the god who paused stays paused.
  * - `waiting` — *Back to the map*, or the player paused mid-run: the clock
  *   stays where the player put it and the TIME readout names what is pending.
+ * - `answering_live` — THR-2151: the same card after a commit on a *running*
+ *   clock. The veil registers as `EncounterVeilAnswering`, which stops no time, so
+ *   the world turns underneath it; when the step answers, its next beat or
+ *   Aftermath opens in the card's place (`open_answer`). No *Let the world turn*.
  * - `none`.
  *
  * No forced resume (rulebook §3, 2026-09-27): the run starts through the hold's
@@ -33,7 +37,7 @@ import {
  * through `pauseIfHeld()` (THR-1711) or `setRunning(false)`.
  */
 
-export type ChapterAnswerPhase = 'none' | 'answering_card' | 'running' | 'waiting';
+export type ChapterAnswerPhase = 'none' | 'answering_card' | 'answering_live' | 'running' | 'waiting';
 
 /** What the player committed and where its answer will come from. */
 export interface ChapterAnswerTarget {
@@ -49,7 +53,7 @@ export interface ChapterAnswerTarget {
 
 export interface ChapterAnswerRecord extends ChapterAnswerTarget {
   phase: Exclude<ChapterAnswerPhase, 'none'>;
-  /** Tick *Let the world turn* was pressed; `null` outside a run. */
+  /** Tick *Let the world turn* was pressed (or the live card shown); `null` outside a run. */
   startedAtTick: number | null;
   /** The clock was seen moving during this run — a later stop is the player's. */
   sawRunning: boolean;
@@ -62,6 +66,8 @@ export interface DebugChapterAnswer {
   stepIndex: number | null;
   chapterName: string | null;
   ticksRun: number;
+  /** THR-2151 — a ready premonition waits behind the live answer (D3). */
+  premonitionDeferred: boolean;
 }
 
 /**
@@ -85,6 +91,10 @@ export interface ChapterAnswerInputs {
 
 export type ChapterAnswerEffect =
   | { kind: 'pause_if_held' }
+  /** THR-2151 — open the step's answer beat in the live card's place. */
+  | { kind: 'open_answer'; notificationId: string }
+  /** THR-2151 — the live card ends with no answer to open: close the veil. */
+  | { kind: 'close_card' }
   | { kind: 'stop_clock' }
   | { kind: 'toast'; message: string };
 
@@ -121,8 +131,17 @@ export function hasPendingAnswerBeat(
   target: Pick<ChapterAnswerTarget, 'actionId' | 'notificationId' | 'stepIndex'>,
   actions: readonly UnifiedAction[],
 ): boolean {
+  return findPendingAnswerBeat(notifications, target, actions) !== undefined;
+}
+
+/** THR-2151 — the pending answer beat itself (see `hasPendingAnswerBeat`), first in list order. */
+export function findPendingAnswerBeat(
+  notifications: readonly EncounterNotification[],
+  target: Pick<ChapterAnswerTarget, 'actionId' | 'notificationId' | 'stepIndex'>,
+  actions: readonly UnifiedAction[],
+): EncounterNotification | undefined {
   const action = actions.find(a => a.actionId === target.actionId);
-  return notifications.some(n => {
+  return notifications.find(n => {
     if (n.actionId !== target.actionId || n.id === target.notificationId) return false;
     if (!shouldAutoOpenEncounterNotification(n)) return false;
     if (n.kind === 'aftermath') return true;
@@ -176,6 +195,31 @@ export function stepChapterAnswer(
       // The card is the veil. Closed by any route other than its own two
       // controls, the answer is still pending — say so on the readout.
       return inputs.veilOpen ? keep(record) : keep({ ...record, phase: 'waiting' });
+
+    case 'answering_live': {
+      // THR-2151 — the card is the veil, and the clock runs under it. Closed by
+      // *Back to the map* (or any other route), the answer arrives as an
+      // ordinary beat: a waiting answer, as on the paused path (D4).
+      if (!inputs.veilOpen) return keep({ ...record, phase: 'waiting', startedAtTick: null });
+      if (
+        isChapterStepAnswered(inputs.unifiedActions, record)
+        && !isPlayingOutMovelessStep(inputs.encounterNotifications, record, inputs.unifiedActions)
+      ) {
+        // D2 — the answer opens in the card's place, before anything else (D3).
+        const beat = findPendingAnswerBeat(inputs.encounterNotifications, record, inputs.unifiedActions);
+        if (beat) return none([{ kind: 'open_answer', notificationId: beat.id }]);
+        return none([{ kind: 'close_card' }, dropped]);
+      }
+      // D5 — bounded by the run's cap; a player pause stops the count with the clock.
+      const ticksLive = record.startedAtTick === null ? 0 : inputs.tick - record.startedAtTick;
+      if (ticksLive >= CHAPTER_ANSWER_RUN_MAX_TICKS) {
+        return none([
+          { kind: 'close_card' },
+          { kind: 'toast', message: chapterAnswerText(CHAPTER_ANSWER_TIMEOUT_TOAST, record.chapterName) },
+        ]);
+      }
+      return keep(record);
+    }
 
     case 'waiting': {
       if (!isChapterStepAnswered(inputs.unifiedActions, record)) return keep(record);
@@ -231,8 +275,10 @@ export function stepChapterAnswer(
 /** The TIME readout's status text for this record, or `undefined` for the usual one. */
 export function chapterAnswerStatus(record: ChapterAnswerRecord | null, running: boolean): string | undefined {
   if (!record) return undefined;
-  if (record.phase === 'running' && running) return chapterAnswerText(CHAPTER_ANSWER_TURNING_STATUS, record.chapterName);
-  if (record.phase === 'waiting' && !running) return chapterAnswerText(CHAPTER_ANSWER_PAUSED_STATUS, record.chapterName);
+  if ((record.phase === 'running' || record.phase === 'answering_live') && running) {
+    return chapterAnswerText(CHAPTER_ANSWER_TURNING_STATUS, record.chapterName);
+  }
+  if ((record.phase === 'waiting' || record.phase === 'answering_live') && !running) return chapterAnswerText(CHAPTER_ANSWER_PAUSED_STATUS, record.chapterName);
   return undefined;
 }
 
@@ -240,15 +286,26 @@ export interface UseChapterAnswerRunParams extends ChapterAnswerInputs {
   hold: Pick<InterruptAutoPauseHandle, 'pauseIfHeld' | 'runIfHeld'>;
   setRunning: (running: boolean) => void;
   pushToast: (message: string) => void;
+  /**
+   * THR-2151 — open a pending answer beat in place; `false` when it declines (the
+   * auto-open scan opens it on its next pass, the thread badge is the recovery route).
+   */
+  openAnswer?: (notificationId: string) => boolean;
+  /** THR-2151 — close the live card's veil (no answer to open). */
+  closeVeil?: () => void;
+  /** THR-2151 — a premonition is ready to show (for `premonitionDeferred`). */
+  premonitionReady?: boolean;
 }
 
 export interface ChapterAnswerRunHandle {
   /** The current record; `null` when nothing is pending. */
   record: ChapterAnswerRecord | null;
   /** The answering card's model while the card is up. */
-  answering: { choiceLine: string } | null;
+  answering: { choiceLine: string; live?: boolean } | null;
   /** A commit on a paused clock: keep the veil up as the answering card. */
   showCard: (target: ChapterAnswerTarget) => void;
+  /** THR-2151 — a commit on a running clock: keep the veil up as the live card. */
+  showLiveCard: (target: ChapterAnswerTarget) => void;
   /** *Let the world turn* — call while the veil still holds the clock, then close it. */
   letWorldTurn: () => void;
   /** *Back to the map* — the answer waits; close the veil. */
@@ -259,7 +316,10 @@ export interface ChapterAnswerRunHandle {
 }
 
 export function useChapterAnswerRun(params: UseChapterAnswerRunParams): ChapterAnswerRunHandle {
-  const { unifiedActions, encounterNotifications, tick, running, veilOpen, heldRunning, hold, setRunning, pushToast } = params;
+  const {
+    unifiedActions, encounterNotifications, tick, running, veilOpen, heldRunning, hold, setRunning, pushToast,
+    openAnswer, closeVeil, premonitionReady = false,
+  } = params;
   const [record, setRecord] = useState<ChapterAnswerRecord | null>(null);
   const answeredAtRef = useRef<number | null>(null);
   const tickRef = useRef(tick);
@@ -268,6 +328,11 @@ export function useChapterAnswerRun(params: UseChapterAnswerRunParams): ChapterA
   const showCard = useCallback((target: ChapterAnswerTarget) => {
     answeredAtRef.current = null;
     setRecord({ ...target, phase: 'answering_card', startedAtTick: null, sawRunning: false });
+  }, []);
+
+  const showLiveCard = useCallback((target: ChapterAnswerTarget) => {
+    answeredAtRef.current = null;
+    setRecord({ ...target, phase: 'answering_live', startedAtTick: tickRef.current, sawRunning: true });
   }, []);
 
   const letWorldTurn = useCallback(() => {
@@ -295,12 +360,17 @@ export function useChapterAnswerRun(params: UseChapterAnswerRunParams): ChapterA
         if (!hold.pauseIfHeld()) setRunning(false);
       } else if (effect.kind === 'stop_clock') {
         if (!hold.pauseIfHeld()) setRunning(false);
+      } else if (effect.kind === 'open_answer') {
+        // A declined open must not leave the spent step on screen.
+        if (!openAnswer?.(effect.notificationId)) closeVeil?.();
+      } else if (effect.kind === 'close_card') {
+        closeVeil?.();
       } else {
         pushToast(effect.message);
       }
     }
     if (step.record !== record) setRecord(step.record);
-  }, [record, unifiedActions, encounterNotifications, tick, running, veilOpen, heldRunning, hold, setRunning, pushToast]);
+  }, [record, unifiedActions, encounterNotifications, tick, running, veilOpen, heldRunning, hold, setRunning, pushToast, openAnswer, closeVeil]);
 
   const phase: ChapterAnswerPhase = record?.phase ?? 'none';
   const loggedPhaseRef = useRef<ChapterAnswerPhase>('none');
@@ -317,13 +387,16 @@ export function useChapterAnswerRun(params: UseChapterAnswerRunParams): ChapterA
     actionId: record?.actionId ?? null,
     stepIndex: record?.stepIndex ?? null,
     chapterName: record?.chapterName ?? null,
-    ticksRun: record?.phase === 'running' && record.startedAtTick !== null
+    ticksRun: (record?.phase === 'running' || record?.phase === 'answering_live') && record.startedAtTick !== null
       ? Math.max(0, tickRef.current - record.startedAtTick)
       : 0,
-  }), [record]);
+    premonitionDeferred: record?.phase === 'answering_live' && premonitionReady,
+  }), [record, premonitionReady]);
 
   const answering = useMemo(
-    () => (record?.phase === 'answering_card' ? { choiceLine: record.choiceLine } : null),
+    () => (record?.phase === 'answering_card'
+      ? { choiceLine: record.choiceLine }
+      : record?.phase === 'answering_live' ? { choiceLine: record.choiceLine, live: true } : null),
     [record],
   );
 
@@ -331,6 +404,7 @@ export function useChapterAnswerRun(params: UseChapterAnswerRunParams): ChapterA
     record,
     answering,
     showCard,
+    showLiveCard,
     letWorldTurn,
     backToMap,
     answerStatus: chapterAnswerStatus(record, running),

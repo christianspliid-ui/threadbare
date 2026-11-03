@@ -190,8 +190,16 @@ export function StageHost({
   // so at most one of these), each through this exhaustive switch.
   const renders = new Set<HomedSurfaceKind>(interruptResolution.rendering);
   const renderStageSurface = (kind: StageHomedKind): ReactNode => {
-    if (!renders.has(kind)) return null;
+    // THR-2151 — the live answering card is the encounter veil under another registry
+    // id (it stops no time); the `encounter` slot renders both, so the veil keeps its
+    // place in the tree when the card gives way to the step's answer.
+    const rendersHere = kind === 'encounter'
+      ? renders.has('encounter') || renders.has('encounter-answering')
+      : renders.has(kind);
+    if (!rendersHere) return null;
     switch (kind) {
+    case 'encounter-answering': return null;
+
     // Emergence Dilemma — a delve awaits a divine decision (THR-153); on the Stage (THR-1897).
     case 'emergence-dilemma': return gameState.pendingEmergenceDecision && (
         <EmergenceDilemmaModal
