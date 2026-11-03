@@ -183,6 +183,21 @@ describe('EssenceBlock', () => {
     expect(parseInt(cluster.style.fontSize, 10)).toBeGreaterThanOrEqual(DELTA_CLUSTER_GLYPH_SIZE_PX);
   });
 
+  // THR-2153 — in the row's flow the mark took the sphere word's and the bar's
+  // width; it now sits in the bar's slot, beside the bar, not a row item.
+  it('puts the spend mark in the bar slot, not in the row flow', () => {
+    const pool = fullPool();
+    const spent = { ...pool, mind: pool.mind - 5 };
+    const { rerender } = render(<EssenceBlock rows={rowsFor(pool)} />);
+    rerender(<EssenceBlock rows={rowsFor(spent, recordEssenceMovement(undefined, pool, spent, 'spend_nudge', 10))} />);
+    const row = screen.getByTestId('essence-row-mind');
+    const mark = screen.getByTestId('essence-spend-mind');
+    const bar = screen.getByTestId('essence-fill-mind').parentElement!;
+    expect(mark.parentElement).toBe(bar.parentElement);
+    expect(mark.parentElement).not.toBe(row);
+    expect(Array.from(row.children)).not.toContain(mark);
+  });
+
   it('does not flash for a sub-measure spend', () => {
     const pool = fullPool();
     const next = { ...pool, mind: pool.mind - 0.3 };
