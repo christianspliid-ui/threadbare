@@ -185,6 +185,16 @@ describe('THR-2147 — a played card’s write reaches the Aftermath', () => {
     expect(chip.detail).toBe(`Elara learns ${spellName}.`);
   });
 
+  it('two Cache cards in one hand each leave their own item (no id collision)', () => {
+    const state = buildState();
+    const a = libraryCard('card.cache.signature.matter');
+    const b = libraryCard('card.cache.hunger.gather');
+    const step = { nudges: [a, b] } as Pick<ActionStep, 'nudges'>;
+    const result = dispatchNudgeCommitments(state, ACTION, step, [a.id, b.id], TICK, runtime);
+    expect(result.nudgeWrites.map((w) => w.cardId)).toEqual([a.id, b.id]);
+    expect(new Set(result.nudgeWrites.map((w) => w.refId)).size).toBe(2);
+  });
+
   it('a hidden mark is never recorded — the Long Game stays hidden', () => {
     const result = play(buildState(), libraryCard('card.long_game.hunger.sever'), runtime);
     expect(result.state.hiddenMarks?.length ?? 0).toBeGreaterThan(0);

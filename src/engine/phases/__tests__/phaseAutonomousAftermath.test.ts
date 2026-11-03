@@ -156,6 +156,35 @@ describe('phaseAutonomousAftermath', () => {
     expect(tally(state, 'heart.positive')).toBe(0);
   });
 
+  // THR-2147 — a card played on the god's own mortal reaches the world. Before,
+  // this phase skipped heroes entirely and read only the template's authored
+  // cards, so a dealt card on the First charged essence and changed nothing.
+  it('dispatches a dealt card played on a hero’s encounter, once', () => {
+    const KINDLE = 'dealt.card.kindled_ambition.signature.spirit';
+    const base = makeState({ threaded: true });
+    const state = {
+      ...base,
+      ascendantIdentity: { sphereAlignment: { primary: 'mind', secondary: 'spirit' }, hungerId: 'hunger.witness' },
+      unifiedActions: [{
+        ...makeAction([]),
+        templateId: 'encounter.town.assize_letter',
+        activeNudges: [KINDLE],
+      }],
+    } as unknown as GameState;
+
+    const next = processAutonomousAftermath(state, { runtime }) as GameState;
+    const action = next.unifiedActions[0];
+    expect(action.nudgeGrantsDispatched).toBe(true);
+    expect(action.nudgeWrites).toEqual([expect.objectContaining({
+      cardId: KINDLE, kind: 'assign_ambition', targetId: 'mortal-1', refId: 'ambition_great_work',
+    })]);
+    // The hero's own reaction still waits for the player.
+    expect(action.autonomousAftermathApplied).toBeUndefined();
+
+    const again = processAutonomousAftermath(next, { runtime });
+    expect(Object.keys(again).length).toBe(0); // never pays out twice
+  });
+
   it('no-ops without a runtime (fail-soft)', () => {
     const state = makeState({ profile: { loyalty_ambition: 0.8 } });
     const next = processAutonomousAftermath(state, {});

@@ -3488,6 +3488,12 @@ export interface UnifiedAction {
    */
   readonly nudgeWrites?: readonly NudgeWriteRecord[];
   /**
+   * THR-2147 — the committed cards' grants and costs have been dispatched
+   * (`autonomous_aftermath`). Set once, so a card never pays out twice. Absent on
+   * actions from before this field.
+   */
+  readonly nudgeGrantsDispatched?: boolean;
+  /**
    * THR-636: per-resolved-step replay records — the enriched prose the player
    * saw at each step's resolution, frozen so the encounter step-navigator can
    * replay a past step without re-enriching against a moved-on world. Additive/

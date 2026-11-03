@@ -253,9 +253,14 @@ export function dispatchNudgeCommitments(
   // THR-2147 — one application per card, so each write is attributable to the
   // card that paid for it (`nudgeWrites`, read by the Aftermath chips). A card
   // that throws no longer takes the next card's grants down with it.
-  for (const card of collectNudgeGrantCards(step, activeNudgeIds)) {
+  //
+  // The applier mints effect-derived ids from the reaction id and the effect's
+  // index (`artifact_spawned_…_<reaction>_<i>_<tick>`, omens, compulsions, marks),
+  // so each card after the first takes its own reaction id: two Caches in one
+  // hand must not mint the same artifact id. A one-card hand keeps the old id.
+  for (const [cardIndex, card] of collectNudgeGrantCards(step, activeNudgeIds).entries()) {
     const reaction: EncounterAftermathReaction = {
-      id: NUDGE_GRANT_REACTION_ID,
+      id: cardIndex === 0 ? NUDGE_GRANT_REACTION_ID : `${NUDGE_GRANT_REACTION_ID}_${cardIndex}`,
       label: 'the god’s hand',
       effects: card.grants,
     };
