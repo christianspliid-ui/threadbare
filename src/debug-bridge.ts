@@ -617,7 +617,10 @@ if (import.meta.env.DEV) {
           { ...r, direction: essenceDirection(r, state.essencePool?.[sphere as import('./types').SphereName] ?? 0, cap) },
         ]),
       );
-      return { ...reading, spheres, upkeepSphere: alignment?.primary ?? null };
+      // THR-2148 — the cap each row's bar ends at, and who pays the upkeep (counts).
+      const { upkeepPayers } = await import('./engine/essenceIncome');
+      const capped = Object.fromEntries(Object.entries(spheres).map(([sphere, r]) => [sphere, { ...r, cap }]));
+      return { ...reading, spheres: capped, upkeepSphere: alignment?.primary ?? null, upkeepPayers: upkeepPayers(state.graph, state.ascendantId) };
     },
 
     // THR-1768 — sphere bags per node kind: total / seeded / unseeded / non-integer / route.

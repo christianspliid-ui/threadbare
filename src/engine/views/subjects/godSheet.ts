@@ -38,9 +38,15 @@ import { readEssenceMovement, type EssenceMovementReading, type EssenceMovementR
 import { readEssenceRefill, essenceDirection, type EssenceRefillBand } from '../essenceRefill';
 import { computeMaxEssence } from '../../../engine/influence';
 import {
+  ESSENCE_CAP_HOVER,
   ESSENCE_REFILL_UPKEEP_HOVER,
   ESSENCE_REFILL_WORDS,
+  ESSENCE_UPKEEP_PAYER_NOUNS,
 } from '../../../data/essence-refill-content';
+import { BASE_MAX_ESSENCE, MAX_ESSENCE_PER_THREAD } from '../../../data/influence-content';
+import { upkeepPayers } from '../../../engine/essenceIncome';
+import { countWord } from '../../../engine/aftermathWords';
+import { formatEssencePool } from '../../../data/essence-format';
 import { heldSources } from '../../../engine/essenceSources';
 import { faithLine } from '../../../engine/prayers';
 import { resolveToParentLocation } from '../../../engine/sublocationShape';
@@ -167,6 +173,14 @@ export interface EssenceRowView {
    */
   refill?: EssenceRowRefill;
   /**
+   * THR-2148 (plan E1) — the pool's limit (`computeMaxEssence`), which the bar
+   * ends at and the row reads as "53 / 55", and the thread count it is made of.
+   * Absent when the cap could not be read (fail-soft: the bar ends at
+   * `ESSENCE_BAR_CEILING` and the row shows the balance alone).
+   */
+  cap?: number;
+  threads?: number;
+  /**
    * THR-2061 (plan E4) — the sphere's movement record, passed through by
    * reference so the row's ▼ can read the player's own spends between two
    * renders (`playerSpendSince`). Absent ⇒ nothing has moved the pool yet.
@@ -177,6 +191,56 @@ export interface EssenceRowView {
 export interface EssenceRowRefill {
   band: EssenceRefillBand;
   upkeep: boolean;
+}
+
+/** THR-2148 — the pool's limit and its parts, as the row hover's first sentence. */
+export interface EssenceRowCap {
+  cap: number;
+  threads: number;
+}
+
+/** THR-2148 — who pays the god's upkeep (`upkeepPayers`); counts, never amounts. */
+export interface EssenceRowUpkeep {
+  threads: number;
+  sources: number;
+}
+
+/**
+ * The cap sentence, in its zero-, one- or many-thread form. Figures are whole
+ * numbers from the economy's own constants (NFP #1).
+ */
+export function essenceCapSentence(cap: EssenceRowCap): string {
+  const form = cap.threads <= 0 ? ESSENCE_CAP_HOVER.none : cap.threads === 1 ? ESSENCE_CAP_HOVER.one : ESSENCE_CAP_HOVER.many;
+  return form
+    .replace('{cap}', formatEssencePool(cap.cap))
+    .replace('{base}', formatEssencePool(BASE_MAX_ESSENCE))
+    .replace('{perThread}', formatEssencePool(MAX_ESSENCE_PER_THREAD));
+}
+
+/** One counted payer phrase: "thread", "two threads". */
+function payerPhrase(count: number, nouns: { one: string; many: string }, alone: boolean): string {
+  if (count === 1) return alone ? nouns.one : `one ${nouns.one}`;
+  return `${countWord(count)} ${nouns.many}`;
+}
+
+/**
+ * The paying row's upkeep sentence, with its payers counted in words. No digit
+ * (THR-1426). `null` when nothing pays (before the bond); `undefined` payers
+ * (the walk could not be read) give the uncounted form.
+ */
+export function essenceUpkeepSentence(refillWord: string, payers: EssenceRowUpkeep | undefined): string | null {
+  if (!payers) return ESSENCE_REFILL_UPKEEP_HOVER.unknown.replace('{word}', refillWord);
+  const groups: Array<[number, { one: string; many: string }]> = [
+    [payers.threads, ESSENCE_UPKEEP_PAYER_NOUNS.thread],
+    [payers.sources, ESSENCE_UPKEEP_PAYER_NOUNS.source],
+  ];
+  const present = groups.filter(([n]) => n > 0);
+  if (present.length === 0) return null;
+  if (present.length === 1 && present[0][0] === 1) {
+    return ESSENCE_REFILL_UPKEEP_HOVER.one.replace('{word}', refillWord).replace('{payer}', present[0][1].one);
+  }
+  const phrase = present.map(([n, nouns]) => payerPhrase(n, nouns, false)).join(' and ');
+  return ESSENCE_REFILL_UPKEEP_HOVER.many.replace('{word}', refillWord).replace('{payers}', phrase);
 }
 
 /** Join cause phrases as "a" / "a and b". */
@@ -193,17 +257,21 @@ export function essenceRowHover(
   sphere: SphereName,
   reading: EssenceMovementReading,
   refill?: EssenceRowRefill,
+  cap?: EssenceRowCap,
+  upkeep?: EssenceRowUpkeep,
 ): string {
   const role = SPHERE_COPY[sphere]?.role ?? '';
-  // THR-1985 — the hover's first sentence names the refill speed; the deepest
-  // sphere's says why it can read slower than the pour screen promised.
+  // THR-2148 — the hover opens with the pool's limit and what it is made of.
+  const capSentence = cap ? essenceCapSentence(cap) : '';
+  // THR-1985 — then the refill speed; the deepest sphere's says when and why its
+  // upkeep is taken, which is why a full pool sits just under its limit.
   const refillWord = refill ? ESSENCE_REFILL_WORDS[refill.band].row : '';
   const refillSentence = !refill
     ? ''
     : refill.upkeep
-      ? ESSENCE_REFILL_UPKEEP_HOVER.replace('{word}', refillWord)
+      ? (essenceUpkeepSentence(refillWord, upkeep) ?? `${refillWord}.`)
       : `${refillWord}.`;
-  const parts = [refillSentence, role, `${ESSENCE_TREND_WORDS[reading.trend]}.`];
+  const parts = [capSentence, refillSentence, role, `${ESSENCE_TREND_WORDS[reading.trend]}.`];
   if (reading.feeds.length > 0) {
     parts.push(`${ESSENCE_FED_LEAD} ${joinPhrases(reading.feeds.map((c) => ESSENCE_CAUSE_PHRASES[c].fed))}.`);
   }
@@ -234,7 +302,14 @@ export function selectEssenceRows(
   const refill = readEssenceRefill(gameState.graph, gameState.ascendantId, gameState.controlEffects).spheres;
   // THR-2061 (E3) — the cap the essence phase clamps to; a full pool reads steady.
   let cap = Infinity;
-  try { cap = computeMaxEssence(gameState.graph, gameState.ascendantId); } catch { /* fail-soft: no cap ⇒ never "full" */ }
+  // THR-2148 (E1/E2) — the cap's parts and the upkeep payers, read once for every row.
+  let rowCap: EssenceRowCap | undefined;
+  try {
+    cap = computeMaxEssence(gameState.graph, gameState.ascendantId);
+    rowCap = { cap, threads: gameState.graph.getOutgoingEdges(gameState.ascendantId, 'thread').length };
+  } catch { /* fail-soft: no cap ⇒ never "full", and the row shows the balance alone */ }
+  let payers: EssenceRowUpkeep | undefined;
+  try { payers = upkeepPayers(gameState.graph, gameState.ascendantId); } catch { /* fail-soft: the uncounted sentence */ }
 
   const identity: SphereName[] = primary === secondary ? [primary] : [primary, secondary];
   const rest = SPHERE_NAMES.filter((sphere) => !identity.includes(sphere));
@@ -263,7 +338,8 @@ export function selectEssenceRows(
         isPrimary,
         isSecondary,
         isElder: foundation.has(sphere) && !isPrimary && !isSecondary,
-        hoverDesc: essenceRowHover(sphere, reading, rowRefill),
+        hoverDesc: essenceRowHover(sphere, reading, rowRefill, rowCap, payers),
+        ...(rowCap ? { cap: rowCap.cap, threads: rowCap.threads } : {}),
         ...(rowRefill ? { refill: rowRefill } : {}),
         ...(movement ? { movement } : {}),
       };

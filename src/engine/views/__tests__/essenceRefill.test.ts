@@ -130,7 +130,8 @@ describe('readEssenceRefill — the live rows', () => {
     const order = rows.find((r) => r.sphere === 'order')!;
     expect(life.refill).toEqual({ band: 'fast', upkeep: true });
     expect(order.refill).toEqual({ band: 'fast', upkeep: false });
-    expect(life.hoverDesc).toMatch(/^Refills fast: your threads’ upkeep is paid from this pool\./);
-    expect(order.hoverDesc).toMatch(/^Refills fast\./);
+    // THR-2148 — the hover opens with the cap; before the bond nothing pays upkeep yet.
+    expect(life.hoverDesc).toMatch(/^Holds up to 50\. Each mortal you thread lets every pool hold 5 more\. Refills fast\./);
+    expect(order.hoverDesc).toMatch(/^Holds up to 50\. .* Refills fast\./);
   });
 });

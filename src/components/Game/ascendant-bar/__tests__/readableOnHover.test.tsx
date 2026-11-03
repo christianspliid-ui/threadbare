@@ -107,12 +107,14 @@ describe('essence rows (D1, D2)', () => {
     }
   });
 
-  it('never puts a numeral in the hover (Law 13 — the balance is the only number)', () => {
+  it('puts no numeral in the hover but the limit (Law 13 — the balance and, since 2026-11-02, the limit)', () => {
     let rec = recordEssenceMovement(undefined, pool(), pool({ mind: 57.25 }), 'income', 1);
     rec = recordEssenceMovement(rec, pool(), pool({ mind: 41 }), 'spend_nudge', 2);
     rec = recordEssenceMovement(rec, pool(), pool({ mind: 46 }), 'other', 3);
     for (const row of selectEssenceRows(makeState(100, { essenceMovement: rec }), ARCHETYPE)) {
-      expect(row.hoverDesc, row.sphere).not.toMatch(/\d/);
+      // THR-2148 — the cap sentence is the one sanctioned numeral; nothing else carries a digit.
+      const rest = (row.hoverDesc ?? '').replace(/^Holds up to \d+[^.]*\.(?: Each mortal you thread lets every pool hold \d+ more\.)?/, '');
+      expect(rest, row.sphere).not.toMatch(/\d/);
     }
   });
 
@@ -235,7 +237,7 @@ describe('forecast words (D5)', () => {
     for (const tier of FORECAST_TIERS) {
       const desc = resolveTooltip(`ui.forecast.${tier}`)?.desc ?? '';
       // THR-1985 — Fated opens by naming its rung, so grey never reads as the worst.
-      expect(desc, tier).toMatch(tier === 'fated' ? /^The best word on the ladder. As things stand/ : /^As things stand/);
+      expect(desc, tier).toMatch(tier === 'fated' ? /^The best word on the ladder: a sure thing needs no god\. As things stand/ : /^As things stand/);
       expect(desc, tier).toContain('{{ui.nudge_forecast}}');
     }
   });
