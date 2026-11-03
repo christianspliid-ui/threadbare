@@ -316,7 +316,7 @@ const CONSEQUENCE_TAG_MIN_PX = 74;
  * The value is 210 rather than the 240 the ticket proposed, because the sentence
  * beside the tag is `flex: 1` inside a 540px container: every pixel the tag
  * gains is a pixel the prose loses. Measured over the four Grateful Kin bands
- * and the six widest authored tags in the corpus (Palatino 16px / 0.16em, the
+ * and the six widest authored tags in the corpus (the then display face at 16px / 0.16em, the
  * real row geometry):
  *
  * | maxWidth | tag lines | sentence column | row height | tag↔sentence gap |
