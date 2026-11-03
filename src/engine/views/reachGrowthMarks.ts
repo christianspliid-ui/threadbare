@@ -88,6 +88,9 @@ export function recentReachGrowth(
       const prior = marks.get(reach);
       if (prior && prior.resolvedTick > record.resolvedTick) continue;
       const steps = stepsFor(change);
+      // Same chapter: an authored growth line with no magnitude rides after the
+      // engine's measured one and must not shrink the ▲ run the Aftermath drew.
+      if (prior && prior.resolvedTick === record.resolvedTick && change.magnitude?.ladder !== 'growth' && prior.band) continue;
       marks.set(reach, {
         reach,
         band: change.magnitude?.ladder === 'growth' ? GAIN_MARK_BAND_WORDS[steps] : '',

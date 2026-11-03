@@ -121,6 +121,13 @@ describe('recentReachGrowth (THR-2149 E3)', () => {
     expect(marks.get('star')).toMatchObject({ steps: 1, band: '' });
   });
 
+  it('an authored growth line with no magnitude never shrinks the measured mark in the same chapter', () => {
+    // The ending's authored changes ride after the engine's measured `:growth:<reach>` change.
+    const authored = { ...growth('a1', 'iron', 0.1), id: 'toll.iron_tested', magnitude: undefined };
+    const marks = recentReachGrowth([record('a1', 390, [growth('a1', 'iron', 0.1), authored])], 'kael', 400, SHEET_GAIN_MARK_WINDOW_TICKS);
+    expect(marks.get('iron')).toMatchObject({ steps: 2, band: 'clearly' });
+  });
+
   it('the hover says when, how much, where, and why the word held — with no numeral', () => {
     const mark = recentReachGrowth([record('a1', 376, [growth('a1', 'stone', 0.1)])], 'kael', 400, SHEET_GAIN_MARK_WINDOW_TICKS).get('stone')!;
     const label = gainMarkLabel(mark, 400);
