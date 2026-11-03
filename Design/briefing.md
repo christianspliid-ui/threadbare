@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-03 16:58 local (15:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-03 17:59 local (16:59 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -71,4 +71,4 @@ Two items for agents, not you:
 
 ## Health
 
-All green. Engine speed: 128 ms/tick, 20% under the 7-day median. The live site is up to date (49d616a7). Checks on main and the scheduled background jobs pass, and no PRs are waiting to merge. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 15:40 UTC. The builder is not stalled: its last four runs each found every ready ticket inside a veto window.
+All green. Engine speed: 130 ms/tick, 18% under the 7-day median. The live site is up to date (49d616a7). Checks on main and the scheduled background jobs pass, and no PRs are waiting to merge. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 16:40 UTC. The builder is not stalled: its last nine short runs each found every ready ticket inside a veto window, and the first window (Legibility 3) opens at 17:42 UTC.
