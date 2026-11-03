@@ -525,7 +525,9 @@ export function CardFace({
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: 3,
-                      fontFamily: 'var(--font-display)',
+                      // The label rule (THR-1833): Alegreya Sans 700 below 22 px.
+                      fontFamily: 'var(--font-body)',
+                      fontWeight: 700,
                       fontSize: 'var(--text-xs)',
                       letterSpacing: '0.04em',
                       color: dimmed ? TEXT_WHISPER : TEXT_WARM,
