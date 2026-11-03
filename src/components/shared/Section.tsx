@@ -1,4 +1,4 @@
-import { Fragment, createContext, useCallback, useContext, useId, type MouseEvent, type ReactNode } from 'react';
+import { Fragment, createContext, useCallback, useContext, useId, type CSSProperties, type HTMLAttributes, type MouseEvent, type ReactNode } from 'react';
 import type {
   CardsSection,
   ChipDescriptor,
@@ -31,44 +31,106 @@ import { Tooltip } from './Tooltip';
 import { StepDots } from './StepDots';
 import { FIGHT_CLOCK_PIP_SIZE, FIGHT_TOOLTIP_IDS } from '../../data/fight-screen-content';
 
-function SectionLabel({ label, gold, tier, tooltipId, icon }: { label: string; gold: boolean; tier?: string; tooltipId?: string; icon?: IconName }) {
+interface SectionLabelProps {
+  label: ReactNode;
+  gold?: boolean;
+  tier?: string;
+  tooltipId?: string;
+  icon?: IconName;
+  /** THR-2122 (decision 4) — "words · n", tabular figures; 0 and 1 shown. Absent, no count. */
+  count?: number;
+  as?: 'div' | 'h2' | 'h3' | 'h4';
+  className?: string;
+  /** No bottom margin: the parent spaces it (SectionHeading, the hand). */
+  flush?: boolean;
+  /** Extra attributes on the heading element (SectionHeading's `data-heading-icon`). */
+  attrs?: Record<string, string>;
+  style?: CSSProperties;
+}
+
+/**
+ * The one section heading (THR-2122 U3): the label rule — body face 700, `--text-xs`,
+ * tertiary, sentence case, no tracking. `SectionHeading` and the hand delegate here.
+ */
+function SectionLabel({ tooltipId, ...props }: SectionLabelProps) {
   // THR-1909: a label that names a concept explains itself on hover (Law 17).
   if (tooltipId) {
     return (
       <Tooltip id={tooltipId}>
-        <SectionLabel label={label} gold={gold} tier={tier} icon={icon} />
+        <SectionLabel {...props} />
       </Tooltip>
     );
   }
+  const { label, gold = false, tier, icon, count, as: Tag = 'div', className, flush = false, attrs, style } = props;
   // Notable / chronicle tiers add a thin gold underline (per plan §5.4). Routine
   // sections render with the default tertiary label.
   const decorate = tier === 'notable' || tier === 'chronicle';
+  // "words · n" — one text run when the words are a string, so the heading reads (and is
+  // found) as one phrase; the figures are tabular on the whole heading.
+  const text: ReactNode =
+    count === undefined ? label : typeof label === 'string' ? `${label} · ${count}` : <>{label}{` · ${count}`}</>;
   return (
-    <div
+    <Tag
       data-section-label=""
+      className={className}
       style={{
         fontFamily: 'var(--font-body)',
         fontWeight: 700,
         fontSize: 'var(--text-xs)',
         color: gold ? 'var(--accent-gold)' : 'var(--text-tertiary)',
-        marginBottom: '6px',
+        letterSpacing: 0,
+        ...(count !== undefined ? { fontVariantNumeric: 'tabular-nums' } : {}),
+        margin: 0,
+        marginBottom: flush ? 0 : 'var(--space-2)',
         borderBottom:
           gold || decorate ? '1px solid var(--accent-gold-dim, var(--border-gold))' : 'none',
-        paddingBottom: gold || decorate ? '2px' : 0,
+        paddingBottom: gold || decorate ? 'var(--space-1)' : 0,
         // THR-2097 (rule R2): the concept's carved idea before the label, in the label's colour.
-        ...(icon ? { display: 'flex', alignItems: 'center', gap: '6px' } : {}),
+        ...(icon ? { display: 'flex', alignItems: 'center', gap: 'var(--space-2)' } : {}),
+        ...style,
       }}
       {...(icon ? { 'data-section-icon': icon } : {})}
+      {...attrs}
     >
       {icon && <Icon name={icon} size="chip" decorative />}
-      {icon ? <span>{label}</span> : label}
-    </div>
+      {icon ? <span>{text}</span> : text}
+    </Tag>
   );
 }
 
-/** Every section's label, with its icon and tooltip — one call so no renderer drops either. */
+/**
+ * Every section's label, with its icon and tooltip — one call so no renderer drops either.
+ * Detail sections draw no gold heading and no tier rule (THR-2118 § 3.2): the page's one
+ * gold is the R5 highlight (Law 31). `section.gold` stays in the view model, unread here.
+ */
 function LabelOf({ section, label }: { section: DetailSection; label?: string }) {
-  return <SectionLabel label={label ?? section.label} gold={section.gold} tier={section.tier} tooltipId={section.labelTooltipId} icon={section.icon} />;
+  return <SectionLabel label={label ?? section.label} gold={false} tooltipId={section.labelTooltipId} icon={section.icon} />;
+}
+
+/**
+ * THR-2122 (U1) — every section's frame: its label, its body, and the one between-section
+ * distance (`--space-6`; the kill-criteria fallback is `--space-5`). Not a primitive.
+ */
+function SectionShell({
+  section,
+  shape,
+  label = true,
+  style,
+  children,
+  ...rest
+}: {
+  section: DetailSection;
+  shape: string;
+  label?: boolean;
+  style?: CSSProperties;
+  children?: ReactNode;
+} & Omit<HTMLAttributes<HTMLDivElement>, 'style' | 'children'>) {
+  return (
+    <div {...rest} data-section-shape={shape} style={{ marginBottom: 'var(--space-6)', ...style }}>
+      {label && <LabelOf section={section} />}
+      {children}
+    </div>
+  );
 }
 
 /**
@@ -96,13 +158,13 @@ function HighlightBlock({ highlight, children }: { highlight: NonNullable<ProseS
   return (
     <div
       data-highlight=""
-      style={{ background: 'var(--bg-raised)', border: '1px solid var(--accent-gold-dim, var(--border-gold))', borderRadius: 'var(--radius-panel)', padding: '10px 12px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}
+      style={{ background: 'var(--bg-raised)', border: '1px solid var(--accent-gold-dim, var(--border-gold))', borderRadius: 'var(--radius-panel)', padding: 'var(--space-2) var(--space-3)', display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-start' }}
     >
       <span style={{ color: 'var(--accent-gold)', display: 'inline-flex', flexShrink: 0 }}>
         <Icon name={highlight.icon} size="list" decorative />
       </span>
       <div style={{ minWidth: 0 }}>
-        <div style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', color: 'var(--text-primary)', lineHeight: 1.2 }}>{highlight.headline}</div>
+        <div style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', color: 'var(--text-primary)', lineHeight: 1.2 }}>{highlight.headline}</div>
         {children}
       </div>
     </div>
@@ -135,12 +197,15 @@ function ProseSectionRenderer({ section }: { section: ProseSection }) {
   // land page's prose) keeps its paragraphs. A one-paragraph section renders as before.
   const paragraphs = section.prose.split(/\n\n+/);
   const variant = section.variant ?? 'body';
+  // THR-2122 (U1.3–4): UI prose on the ladder's Text step and the UI measure; lede and
+  // quote are story prose (`--measure-prose`).
   const style = {
     color: variant === 'quote' ? 'var(--text-secondary)' : 'var(--text-primary)',
     lineHeight: 1.7,
     margin: 0,
-    fontSize: variant === 'lede' ? 'var(--text-base)' : '0.9rem',
+    fontSize: variant === 'lede' ? 'var(--text-base)' : 'var(--text-sm)',
     fontStyle: variant === 'quote' ? ('italic' as const) : undefined,
+    maxWidth: variant === 'body' ? 'var(--measure-ui)' : 'var(--measure-prose)',
   };
   let text: ReactNode;
   if (section.parts) {
@@ -152,7 +217,7 @@ function ProseSectionRenderer({ section }: { section: ProseSection }) {
     text = <div onClick={handleClick} style={style} dangerouslySetInnerHTML={{ __html: section.prose }} />;
   } else {
     text = (
-      <div onClick={handleClick} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div onClick={handleClick} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
         {paragraphs.map((para, index) => (
           <p key={index} style={style} dangerouslySetInnerHTML={{ __html: para }} />
         ))}
@@ -161,12 +226,7 @@ function ProseSectionRenderer({ section }: { section: ProseSection }) {
   }
   if (section.highlight) text = <HighlightBlock highlight={section.highlight}>{text}</HighlightBlock>;
   if (section.bond) text = <BondStrip bond={section.bond}>{text}</BondStrip>;
-  return (
-    <div style={{ marginBottom: '20px' }} data-section-shape="prose">
-      <LabelOf section={section} />
-      {text}
-    </div>
-  );
+  return <SectionShell section={section} shape="prose">{text}</SectionShell>;
 }
 
 function escapeText(text: string): string {
@@ -196,8 +256,8 @@ function ChipPill({ chip, open }: { chip: ChipDescriptor; open: OpenByRef | unde
       }
       {...(chip.lead ? { 'data-chip-lead': '' } : {})}
       style={{
-        padding: '3px 8px',
-        borderRadius: '4px',
+        padding: 'var(--space-1) var(--space-2)',
+        borderRadius: 'var(--radius-control)',
         // THR-2097 (rule R7): the leading trait reads first — primary text, a heavier border.
         // A chip with no sphere draws a neutral edge — the force red read as a warning (THR-2097).
         border: `${chip.lead ? 2 : 1}px solid ${chip.sphere ? `var(--sphere-${chip.sphere}-bright, var(--border-gold))` : 'var(--border-medium, var(--border-gold))'}`,
@@ -206,7 +266,7 @@ function ChipPill({ chip, open }: { chip: ChipDescriptor; open: OpenByRef | unde
           : chip.sentiment === 'positive'
             ? 'var(--sphere-life-bright, var(--accent-gold))'
             : chip.lead ? 'var(--text-primary)' : 'var(--text-secondary)',
-        fontSize: '0.75rem',
+        fontSize: 'var(--text-xs)',
         fontFamily: 'var(--font-body)',
         fontWeight: 700,
         cursor: clickable ? 'pointer' : 'default',
@@ -214,7 +274,7 @@ function ChipPill({ chip, open }: { chip: ChipDescriptor; open: OpenByRef | unde
       }}
     >
       {chip.label}
-      {chip.flavour && <em style={{ marginLeft: '4px', opacity: 0.7 }}>{chip.flavour}</em>}
+      {chip.flavour && <em style={{ marginLeft: 'var(--space-1)', opacity: 0.7 }}>{chip.flavour}</em>}
     </span>
   );
 
@@ -232,37 +292,35 @@ function ChipPill({ chip, open }: { chip: ChipDescriptor; open: OpenByRef | unde
 function ChipsSectionRenderer({ section }: { section: ChipsSection }) {
   const open = useDetailPageOpener();
   return (
-    <div style={{ marginBottom: '20px' }}>
-      <LabelOf section={section} />
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+    <SectionShell section={section} shape="chips">
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
         {section.chips.map((chip, index) => (
           <ChipPill key={`${chip.label}-${index}`} chip={chip} open={open} />
         ))}
       </div>
-    </div>
+    </SectionShell>
   );
 }
 
 /** A story list (THR-1909): each entry its when-word, then its line. Not one click target. */
 function EventListRenderer({ section, entries }: { section: EventCardSection; entries: NonNullable<EventCardSection['entries']> }) {
   return (
-    <div style={{ marginBottom: '20px' }} data-section-shape="event-list">
-      <LabelOf section={section} />
+    <SectionShell section={section} shape="event-list">
       {entries.length === 0 ? (
         section.prose && <p style={{ color: 'var(--text-tertiary)', fontStyle: 'italic', margin: 0, fontSize: 'var(--text-sm)' }}>{section.prose}</p>
       ) : (
-        <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
           {entries.map((entry, index) => (
             <li key={`${entry.whenLabel}-${index}`} style={{ fontSize: 'var(--text-sm)', lineHeight: 1.5, minWidth: 0, overflowWrap: 'anywhere' }}>
               {entry.whenLabel && (
-                <span style={{ color: 'var(--text-tertiary)', fontWeight: 700, marginRight: '6px' }}>{entry.whenLabel}</span>
+                <span style={{ color: 'var(--text-tertiary)', fontWeight: 700, marginRight: 'var(--space-2)' }}>{entry.whenLabel}</span>
               )}
               <span style={{ color: 'var(--text-secondary)' }}>{entry.prose}</span>
             </li>
           ))}
         </ol>
       )}
-    </div>
+    </SectionShell>
   );
 }
 
@@ -274,8 +332,21 @@ function EventCardSectionRenderer({ section }: { section: EventCardSection }) {
   const handleClick = () => {
     if (clickable && open && eventRef) open(eventRef);
   };
+  // THR-2122 (decision 3): framed only while it opens something — a box is for a thing you
+  // press (THR-2120 § 3). Unclickable, it is a section like any other.
+  const frame: CSSProperties = clickable
+    ? {
+        border: '1px solid var(--border-gold)',
+        borderRadius: 'var(--radius-panel)',
+        padding: 'var(--space-2) var(--space-3)',
+        background: 'var(--bg-raised)',
+        cursor: 'pointer',
+      }
+    : {};
   return (
-    <div
+    <SectionShell
+      section={section}
+      shape="event-card"
       role={clickable ? 'button' : undefined}
       tabIndex={clickable ? 0 : undefined}
       onClick={clickable ? handleClick : undefined}
@@ -289,23 +360,15 @@ function EventCardSectionRenderer({ section }: { section: EventCardSection }) {
             }
           : undefined
       }
-      style={{
-        marginBottom: '20px',
-        border: '1px solid var(--border-gold)',
-        borderRadius: '6px',
-        padding: '10px 12px',
-        background: 'var(--bg-raised)',
-        cursor: clickable ? 'pointer' : 'default',
-      }}
+      style={frame}
     >
-      <LabelOf section={section} />
       <div
         style={{
           fontSize: 'var(--text-xs)',
           color: 'var(--text-tertiary)',
           fontFamily: 'var(--font-body)',
           fontWeight: 700,
-          marginBottom: '6px',
+          marginBottom: 'var(--space-2)',
         }}
       >
         {section.whenLabel}
@@ -316,12 +379,13 @@ function EventCardSectionRenderer({ section }: { section: EventCardSection }) {
           fontStyle: 'italic',
           lineHeight: 1.6,
           margin: 0,
-          fontSize: '0.85rem',
+          fontSize: 'var(--text-sm)',
+          maxWidth: 'var(--measure-ui)',
         }}
       >
         {section.prose}
       </p>
-    </div>
+    </SectionShell>
   );
 }
 
@@ -332,33 +396,43 @@ function PanelSectionRenderer({ section }: { section: PanelSection }) {
     return 'var(--text-secondary)';
   };
 
+  // THR-2122 (U2) — the facts block: a right-aligned label column flush against its values
+  // across one fixed seam (THR-2119 rule 1). Rows group by space, no per-row rule (decision 2).
   return (
-    <div style={{ marginBottom: '20px' }}>
-      <LabelOf section={section} />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+    <SectionShell section={section} shape="panel">
+      <div
+        data-facts-block=""
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'max-content minmax(0, 1fr)',
+          columnGap: 'var(--space-3)',
+          rowGap: 'var(--space-2)',
+          alignItems: 'baseline',
+        }}
+      >
         {section.rows.map((row, index) => row.poles && row.meter != null && Number.isFinite(row.meter) ? (
           <PoleBarRow key={`${row.left}-${index}`} row={row} poles={row.poles} meter={row.meter} />
         ) : (
-          <div
-            key={`${row.left}-${index}`}
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '4px 0',
-              borderBottom: '1px solid var(--border-gold)',
-              fontSize: '0.8rem',
-            }}
-          >
-            <span style={{ color: 'var(--text-tertiary)' }}>{row.left}</span>
-            <PanelValue row={row} color={sentimentColor(row.sentiment)} />
+          <div key={`${row.left}-${index}`} data-facts-row="" style={{ display: 'contents' }}>
+            <span data-facts-label="" style={FACTS_LABEL_STYLE}>{row.left}</span>
+            <span style={{ fontSize: 'var(--text-sm)', minWidth: 0 }}>
+              <PanelValue row={row} color={sentimentColor(row.sentiment)} />
+            </span>
           </div>
         ))}
       </div>
-    </div>
+    </SectionShell>
   );
 }
+
+/** The facts block's label cell: the label rule, right-aligned on the seam (THR-2122 U2). */
+const FACTS_LABEL_STYLE: CSSProperties = {
+  justifySelf: 'end',
+  textAlign: 'right',
+  fontSize: 'var(--text-xs)',
+  fontWeight: 700,
+  color: 'var(--text-tertiary)',
+};
 
 /** Width of a two-pole bar's track (NFP #1, THR-2097). */
 export const POLE_BAR_TRACK_W = '8rem';
@@ -370,24 +444,27 @@ export const POLE_BAR_TRACK_W = '8rem';
  */
 function PoleBarRow({ row, poles, meter }: { row: PanelRow; poles: [string, string]; meter: number }) {
   const at = Math.max(0, Math.min(1, meter));
+  // THR-2122 (decision 1): the first pole word sits in the facts block's label column; the
+  // track, the second pole word and the leaning word in the value column.
   return (
-    <div
-      data-pole-bar=""
-      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 0', fontSize: '0.8rem', minWidth: 0, flexWrap: 'wrap' }}
-    >
-      <span style={{ color: 'var(--text-tertiary)', minWidth: '5.5rem', textAlign: 'right' }}>{poles[0]}</span>
-      <span
-        role="img"
-        aria-label={row.right}
-        style={{ position: 'relative', width: POLE_BAR_TRACK_W, height: '4px', borderRadius: 'var(--radius-control)', background: 'var(--bg-deep)', flexShrink: 0 }}
-      >
+    <div data-pole-bar="" style={{ display: 'contents' }}>
+      <span style={{ ...FACTS_LABEL_STYLE, fontWeight: 400 }}>{poles[0]}</span>
+      <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', minWidth: 0, flexWrap: 'wrap', alignSelf: 'center' }}>
         <span
-          data-pole-marker=""
-          style={{ position: 'absolute', top: '50%', left: `${at * 100}%`, width: '10px', height: '10px', borderRadius: '50%', background: 'var(--text-secondary)', transform: 'translate(-50%, -50%)' }}
-        />
+          role="img"
+          aria-label={row.right}
+          // Sizes, not spacing: the track's 4px height.
+          style={{ position: 'relative', width: POLE_BAR_TRACK_W, height: '4px', borderRadius: 'var(--radius-control)', background: 'var(--bg-deep)', flexShrink: 0 }}
+        >
+          <span
+            data-pole-marker=""
+            // Size, not spacing: the 10px marker dot.
+            style={{ position: 'absolute', top: '50%', left: `${at * 100}%`, width: '10px', height: '10px', borderRadius: '50%', background: 'var(--text-secondary)', transform: 'translate(-50%, -50%)' }}
+          />
+        </span>
+        <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>{poles[1]}</span>
+        <span style={{ color: 'var(--text-primary)', fontStyle: 'italic', fontSize: 'var(--text-sm)' }}>{row.right}</span>
       </span>
-      <span style={{ color: 'var(--text-tertiary)', minWidth: '5.5rem' }}>{poles[1]}</span>
-      <span style={{ color: 'var(--text-primary)', fontStyle: 'italic' }}>{row.right}</span>
     </div>
   );
 }
@@ -407,11 +484,12 @@ function PanelValue({ row, color }: { row: PanelRow; color: string }) {
   if (row.meter == null || !Number.isFinite(row.meter)) return withTip;
   const fill = Math.max(0, Math.min(1, row.meter));
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)' }}>
       {withTip}
       <span
         aria-hidden="true"
         data-meter=""
+        // Sizes, not spacing: the meter's 4rem × 4px bar.
         style={{ width: '4rem', height: '4px', borderRadius: 'var(--radius-control)', background: 'var(--bg-deep)', overflow: 'hidden' }}
       >
         <span style={{ display: 'block', width: `${fill * 100}%`, height: '100%', background: 'var(--text-secondary)' }} />
@@ -428,19 +506,19 @@ function PanelValue({ row, color }: { row: PanelRow; color: string }) {
 function LinksSectionRenderer({ section }: { section: LinksSection }) {
   const groups = section.groups ?? [{ label: '', rows: section.rows, total: section.rows.length }];
   return (
-    <div style={{ marginBottom: '20px' }} data-section-shape="links">
-      <LabelOf section={section} />
+    <SectionShell section={section} shape="links">
       {groups.map((group, gi) => (
-        <div key={`${group.label}-${gi}`} style={{ marginBottom: '8px' }}>
+        <div key={`${group.label}-${gi}`} style={{ marginBottom: 'var(--space-3)' }}>
           {group.label && (
-            <div style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '4px' }}>
+            // THR-2122 (U3.5): a Text 700 row over its group, not a second label rank.
+            <div data-links-group-label="" style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 'var(--space-1)' }}>
               {group.total > 1 ? `${group.label} · ${group.total}` : group.label}
             </div>
           )}
           <LinkRows rows={group.rows} />
         </div>
       ))}
-    </div>
+    </SectionShell>
   );
 }
 
@@ -484,7 +562,7 @@ export function LinkRows({ rows }: { rows: LinksSection['rows'] }) {
     return `${ref}:${n}`;
   });
   return (
-    <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+    <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
       {rows.map((row, index) => {
         const armed = accessory?.rowState?.(row) ?? null;
         return (
@@ -492,7 +570,7 @@ export function LinkRows({ rows }: { rows: LinksSection['rows'] }) {
           <li
             data-link-row={`${row.ref.kind}:${row.ref.id}`}
             data-armed={armed ?? undefined}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, fontSize: 'var(--text-sm)', opacity: armed ? LINK_ROW_ARMED_OPACITY[armed] : undefined, transition: 'opacity var(--anim-fast)' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', minWidth: 0, fontSize: 'var(--text-sm)', opacity: armed ? LINK_ROW_ARMED_OPACITY[armed] : undefined, transition: 'opacity var(--anim-fast)' }}
           >
             <Chip role="identity" size="sm" target={row.ref} label={row.name} tooltipId={row.ref.tooltipId} />
             {row.fact && <span style={{ color: 'var(--text-tertiary)', minWidth: 0, overflowWrap: 'anywhere' }}>{row.fact}</span>}
@@ -509,7 +587,7 @@ export function LinkRows({ rows }: { rows: LinksSection['rows'] }) {
 /** "{lead} {name}" with the name a link (Law 21) — inline after a clock word ("slain by Vara"). */
 function TileByLine({ byLine }: { byLine: NonNullable<CardsSection['tiles'][number]['byLine']> }) {
   return (
-    <span data-tile-by="" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'var(--text-secondary)', fontSize: 'var(--text-xs)' }}>
+    <span data-tile-by="" style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-1)', color: 'var(--text-secondary)', fontSize: 'var(--text-xs)' }}>
       <span>{byLine.lead}</span>
       <Chip role="identity" size="sm" target={byLine.ref} label={byLine.name} />
     </span>
@@ -530,8 +608,9 @@ function TileArt({ tile }: { tile: CardsSection['tiles'][number] }) {
   if (!image) return null;
   const target = tile.ref;
   const picture = <img src={image.src} alt={image.alt} loading="lazy" style={{ width: '100%', aspectRatio: ENTITY_VISUAL_HERO_ASPECT, objectFit: 'cover', display: 'block' }} />;
-  // The tile clips its corners (overflow hidden), so the band bleeds to its edges square.
-  const bleed = { display: 'block', width: 'calc(100% + 20px)', height: 'auto', margin: '-8px -10px 6px', padding: 0, border: 'none', background: 'var(--bg-deep)', overflow: 'hidden' } as const;
+  // The tile clips its corners (overflow hidden), so the band bleeds to its edges square —
+  // the tile's own padding (`--space-2` / `--space-3`) undone on three sides (THR-2122 U1.2).
+  const bleed = { display: 'block', width: 'calc(100% + 2 * var(--space-3))', height: 'auto', margin: 'calc(-1 * var(--space-2)) calc(-1 * var(--space-3)) var(--space-2)', padding: 0, border: 'none', background: 'var(--bg-deep)', overflow: 'hidden' } as const;
   if (!target || !router) return <div data-tile-art="" style={bleed}>{picture}</div>;
   return (
     <Button variant="ghost" data-tile-art="" aria-label={tile.title} onClick={() => router.open(target, 'card', { via: 'detail-link' })} style={{ ...bleed, cursor: 'pointer' }}>
@@ -543,14 +622,13 @@ function TileArt({ tile }: { tile: CardsSection['tiles'][number] }) {
 function CardsSectionRenderer({ section, inAside = false }: { section: CardsSection; inAside?: boolean }) {
   const columns = inAside ? `repeat(${INSPECTOR_GALLERY_COLUMNS}, minmax(0, 1fr))` : 'repeat(auto-fill, minmax(10rem, 1fr))';
   return (
-    <div style={{ marginBottom: '20px' }} data-section-shape="cards">
-      <LabelOf section={section} />
-      <div style={{ display: 'grid', gridTemplateColumns: columns, gap: '8px' }}>
+    <SectionShell section={section} shape="cards">
+      <div style={{ display: 'grid', gridTemplateColumns: columns, gap: 'var(--space-2)' }}>
         {section.tiles.map((tile, index) => (
           <div
             key={`${tile.title}-${index}`}
             {...(tile.image ? { 'data-art-tile': '' } : {})}
-            style={{ border: '1px solid var(--border-gold)', borderRadius: 'var(--radius-panel)', padding: '8px 10px', background: 'var(--bg-raised)', minWidth: 0, overflow: 'hidden' }}
+            style={{ border: '1px solid var(--border-gold)', borderRadius: 'var(--radius-panel)', padding: 'var(--space-2) var(--space-3)', background: 'var(--bg-raised)', minWidth: 0, overflow: 'hidden' }}
           >
             <TileArt tile={tile} />
             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', fontWeight: 700 }}>
@@ -563,7 +641,7 @@ function CardsSectionRenderer({ section, inAside = false }: { section: CardsSect
               <div key={li} style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', lineHeight: 1.5 }}>{line}</div>
             ))}
             {tile.clock && (
-              <div data-tile-clock="" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '4px' }}>
+              <div data-tile-clock="" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap', marginTop: 'var(--space-1)' }}>
                 <Tooltip id={FIGHT_TOOLTIP_IDS.clock.tooltipId}>
                   <span style={{ display: 'inline-flex' }}>
                     <StepDots variant="magnitude" shape="square" totalSteps={tile.clock.size} currentStepIndex={tile.clock.filled} size={FIGHT_CLOCK_PIP_SIZE} ariaLabel={tile.clock.ariaLabel} />
@@ -578,14 +656,15 @@ function CardsSectionRenderer({ section, inAside = false }: { section: CardsSect
             {tile.byLine && !tile.clock && <div><TileByLine byLine={tile.byLine} /></div>}
             {tile.durationWord && <div style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>{tile.durationWord}</div>}
             {tile.meter != null && Number.isFinite(tile.meter) && (
-              <div aria-hidden="true" data-meter="" style={{ marginTop: '4px', height: '4px', borderRadius: 'var(--radius-control)', background: 'var(--bg-deep)', overflow: 'hidden' }}>
+              // Size, not spacing: the meter's 4px height.
+              <div aria-hidden="true" data-meter="" style={{ marginTop: 'var(--space-1)', height: '4px', borderRadius: 'var(--radius-control)', background: 'var(--bg-deep)', overflow: 'hidden' }}>
                 <div style={{ width: `${Math.max(0, Math.min(1, tile.meter)) * 100}%`, height: '100%', background: 'var(--text-secondary)' }} />
               </div>
             )}
           </div>
         ))}
       </div>
-    </div>
+    </SectionShell>
   );
 }
 
@@ -593,18 +672,20 @@ function PortraitSectionRenderer({ section }: { section: PortraitSection }) {
   // THR-2079 — no art, no frame. The page header shows the subject through
   // EntityVisual; an empty box with the name in it is a broken state (UI Law 4).
   const url = section.portraitRef.url;
+  // The side-by-side layout sits inside the shell; the label heads the words column.
   return (
-    <div style={{ marginBottom: '20px', display: 'flex', gap: '16px' }} data-testid="portrait-section">
+    <SectionShell section={section} shape="portrait" label={false} style={{ display: 'flex', gap: 'var(--space-3)' }} data-testid="portrait-section">
       {url && (
         <div
           data-testid="portrait-section-frame"
           style={{
+            // Sizes, not spacing: the portrait box (180 × 220).
             width: 180,
             height: 220,
             flexShrink: 0,
             background: 'var(--bg-deep)',
             border: '1px solid var(--border-gold)',
-            borderRadius: '4px',
+            borderRadius: 'var(--radius-control)',
             overflow: 'hidden',
           }}
         >
@@ -615,15 +696,15 @@ function PortraitSectionRenderer({ section }: { section: PortraitSection }) {
           />
         </div>
       )}
-      <div style={{ flex: 1 }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
         <LabelOf section={section} />
         {section.bodyProse && (
-          <p style={{ color: 'var(--text-primary)', lineHeight: 1.7, margin: 0, fontSize: '0.9rem' }}>
+          <p style={{ color: 'var(--text-primary)', lineHeight: 1.7, margin: 0, fontSize: 'var(--text-sm)', maxWidth: 'var(--measure-ui)' }}>
             {section.bodyProse}
           </p>
         )}
       </div>
-    </div>
+    </SectionShell>
   );
 }
 
@@ -636,17 +717,16 @@ function PortraitSectionRenderer({ section }: { section: PortraitSection }) {
  */
 function TriggersSectionRenderer({ section }: { section: TriggersSection }) {
   return (
-    <div style={{ marginBottom: '20px' }}>
-      <LabelOf section={section} />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }} data-testid="trigger-block">
+    <SectionShell section={section} shape="triggers">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }} data-testid="trigger-block">
         {section.triggers.map((trigger, index) => (
-          <div key={`${trigger.condition}-${index}`} style={{ fontSize: '0.8rem' }}>
+          <div key={`${trigger.condition}-${index}`} style={{ fontSize: 'var(--text-sm)' }}>
             <div
               style={{
                 color: 'var(--text-primary)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
+                gap: 'var(--space-2)',
               }}
             >
               <span>{trigger.condition}</span>
@@ -661,7 +741,7 @@ function TriggersSectionRenderer({ section }: { section: TriggersSection }) {
           </div>
         ))}
       </div>
-    </div>
+    </SectionShell>
   );
 }
 

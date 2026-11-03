@@ -23,6 +23,7 @@ import {
   CEREMONY_PANEL_MAX_W_REM,
   LAYOUT_BREAKPOINTS_PX,
   MEASURE_PROSE_EM,
+  MEASURE_UI_EM,
   MODAL_MAX_HEIGHT_VH,
   ROOT_FONT_STEP,
   TEXT_TOKENS_REM,
@@ -126,6 +127,7 @@ describe('layoutContract — CSS ↔ TS parity', () => {
     expect(decl(base, '--dialog-m-w')).toBe(`${TEXT_TOKENS_REM.dialogMW}rem`);
     expect(decl(rootBlock('fhd'), '--panel-padding')).toBe(`${TEXT_TOKENS_REM.panelPaddingFhd}rem`);
     expect(decl(base, '--measure-prose')).toBe(`${MEASURE_PROSE_EM}em`);
+    expect(decl(base, '--measure-ui')).toBe(`${MEASURE_UI_EM}em`);
     expect(decl(base, '--modal-max-h')).toBe(`${MODAL_MAX_HEIGHT_VH}vh`);
   });
 

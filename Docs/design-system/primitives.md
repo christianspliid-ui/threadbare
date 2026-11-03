@@ -83,34 +83,57 @@ SectionHeading → Button → IconButton → ListRow → Card → Modal → Drop
 
 **Replaces:** `.section-heading` CSS class used with raw `<div>` or `<h3>` elements across all panels.
 
+Since THR-2122 `SectionHeading` is a thin wrapper over **`SectionLabel`** (`shared/Section.tsx`), the game's one section heading (Law 27). Detail sections, `SectionHeading` and the god rail's "Your cards" all draw it.
+
 ### API
 
 ```tsx
 interface SectionHeadingProps {
   children: React.ReactNode;       // Label text (e.g. "Retinue")
-  count?: number;                  // Optional count badge (e.g. 3) → renders as "(3)"
+  count?: number;                  // Optional count → renders as "Retinue · 3"
   as?: 'h2' | 'h3' | 'h4' | 'div'; // HTML element, default 'h3'
+  ornamental?: boolean;            // flanking gold rules (ornamental use only)
+  icon?: IconName | null;          // R2 carved icon before the text
 }
+// SectionLabel: { label, count?, as? (default 'div'), icon?, tooltipId?, flush? }
 ```
 
 ### Render
 
 ```html
-<h3 class="section-heading">RETINUE (3)</h3>
+<h3 class="section-heading" data-section-label>Retinue<span data-section-count> · 3</span></h3>
 ```
 
-### Styling
-- Font: `--font-display`
+### Styling — the label rule
+- Font: `--font-body` (Alegreya Sans)
 - Size: `--text-xs`
 - Weight: 700
 - Color: `--text-tertiary`
-- Transform: uppercase
-- Letter-spacing: 0.12em
+- Transform: none — sentence case is written in the string
+- Letter-spacing: 0
 
 ### Rules
-- Always renders uppercase — never pass pre-uppercased text
-- Count renders in parentheses, same style as label
-- No margin — parent controls spacing
+- **Count form: "words · n"** — a middle dot, tabular figures, no brackets, beside its words, never at the far edge. Any count the caller passes shows, 0 and 1 included (THR-2122 decision 4).
+- No gold in a Detail section (THR-2118 § 3.2); gold stays for ornamental use.
+- `SectionHeading` has no margin — parent controls spacing. Inside `Section`, the label sits `--space-2` over its body.
+
+---
+
+## Blocks
+
+Every panel is built from seven blocks (THR-2120 § 1). A panel that needs something these do not cover adds a `Section` kind; it does not hand-build a block (Law 58).
+
+| Block | Slot | The one implementation |
+|---|---|---|
+| **Header** | Who | `SubjectHeader` (Inspector); `Modal.Header` / `Card.Header` follow the same order and the Title role |
+| **Now line** | Now | `HighlightBlock` (R5) or `BondStrip` (R4). At most one per surface |
+| **Act row** | Act | `ActOnRow`; `Modal.Footer` in a dialog; the Stage's commit. Empty state `QuietSlot` |
+| **Section** | Detail | `Section`: one heading + one body shape |
+| **Section heading** | inside Section | `SectionLabel` — the label rule, the R2 icon, an inline count |
+| **Link group** | Out | `ConnectionsBlock` / the `links` section shape |
+| **Empty** | any slot | `QuietSlot` |
+
+A Section's body takes one of five shapes: **Prose** (`prose`; UI text of 3+ lines at `--measure-ui`), **Facts block** (`panel`, `layout.md` § Facts block), **Chip row** (`chips`), **Tile grid** (`cards`), **List** (`links`, and `ListRow` outside the Inspector). `event-card`, `portrait` and `triggers` are specialised kinds inside the same shell.
 
 ---
 

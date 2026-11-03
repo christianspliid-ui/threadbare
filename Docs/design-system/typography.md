@@ -41,7 +41,7 @@ Three faces, one job each. **One face per role; never a fourth.**
 Small labels are **Alegreya Sans 700, sentence case, tertiary text colour, at the 16 px floor, letter-spacing 0** (THR-1833 call 2, confirmed by Christian 2026-10-14). Big titles keep Cinzel's carved capitals, and only at 22 px and up.
 
 - **Sentence case is written in the string, never produced by a transform.** `text-transform: uppercase` and `capitalize` are not substitutes, and a helper that lower-cases strings would break proper nouns. Strings from data keys go through the display vocabularies (Law 14).
-- The shared label homes follow it: `.section-heading` (tertiary), `.section-heading-gold` (the gold ornamental variant), `.topbar-section-label`, `.quote-block .quote-attr`, `.subloc-badge`, `.avail-label`, and `--type-section-label`.
+- The shared label homes follow it: `.section-heading` (tertiary), `.section-heading-gold` (the gold variant — **ornamental use only**, never a Detail section head, THR-2118 § 3.2), `.topbar-section-label`, `.quote-block .quote-attr`, `.subloc-badge`, `.avail-label`, and `--type-section-label`.
 - The remaining capital labels on kept surfaces are THR-1905's sweep; the `uppercase` ratchet row only goes down.
 
 ---
@@ -69,10 +69,29 @@ Six steps, rem-based (THR-1819). No two adjacent steps are closer than 2px at 10
 
 - **The body default is `--text-sm` (18px).** Text with no explicit size reads as UI text.
 - **Story prose** runs at `--text-base` with line-height **1.6** (`--type-body-prose`, `--type-flavor`), capped at `--measure-prose` (34em: 680px at 1080p).
+- **UI text that wraps to three lines or more** (a section's body prose, an event line) is capped at `--measure-ui` (26em: about 70 characters of Alegreya Sans at any root; THR-2118 § 3.4). `--measure-prose` is calibrated on the story face and runs ~91 characters of the UI face.
 - **Not on the scale:** `em`/`%` sizes (relative to text already on it), named px constants (HexMapV2 map labels by zoom band, THR-1831), SVG `fontSize=` attributes. Tailwind sizes above `text-2xl` fall through to Tailwind's defaults and are off-scale. `--text-2xs` is **not** defined — the nine references to it are counted as literal-size debt, not aliased.
 - **Faces and roles** (which face, which case) are the type-and-icons plan doc's (THR-1879; THR-1833 feeds). This section sets sizes only.
 
 **Rule:** `--text-xs` (16px) is the absolute minimum for any text in the game UI. The historical `0.65rem` (~10px) sizes in badges must be replaced — see `components.md §Badges`.
+
+---
+
+## The ladder
+
+Five roles, each with one size per panel kind (THR-2118 § 3.1, decided 2026-11-01; first applied in `shared/Section.tsx` by THR-2122). The scale above is unchanged; this decides which steps a panel uses.
+
+| Role | Face, weight, colour | Inspector page | Dialog · Stage | Rail · list · hover |
+|---|---|---|---|---|
+| **Title** (the Who line) | Cinzel 400–600, primary | `--text-2xl` at every Inspector size | `--text-xl` | `--text-lg`. A row name in a list is **Text 700**, not a title |
+| **Headline** (R5's Now line; a card name on a full card face) | Cinzel, primary | `--text-lg` | `--text-lg` on card faces | not used |
+| **Text** (values, rows, body, buttons, choices, effect lines) | Alegreya Sans 400; 700 for a name or the row's name | `--text-sm` | `--text-sm` | `--text-sm` |
+| **Label** (kind label, section heading, field label, chip, caption, count) | the label rule | `--text-xs` | `--text-xs` | `--text-xs` |
+| **Story** (prose only) | `--type-body-prose` / `--type-flavor` | `--text-base` | `--text-base` | `--text-base` |
+
+- **A panel draws its operating text from Title, Text and Label: three sizes.** Story is the one permitted fourth wherever a panel carries prose. The Inspector also allows one Headline per surface (R5), since Cinzel cannot go below 22 px.
+- **`--text-xl` is the dialog and Stage title step, and nothing else.**
+- **One section-heading treatment** (THR-2118 § 3.2): the label rule with its carved icon (R2), space above it at least 3× the space below (`layout.md` § Spacing rhythm). The gold heading with a rule and the secondary-colour sub-head are **retired from Detail sections** — gold is the god's attention (Law 31). A sub-head inside a section is a Text 700 row, not a third rank. The one implementation is `SectionLabel` (`primitives.md` § 1).
 
 ---
 
