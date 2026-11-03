@@ -31,6 +31,7 @@ import { useScryContext } from './contexts/ScryContext';
 import { Tooltip } from '../shared/Tooltip';
 import { formatEssencePool } from '../shared/formatEssence';
 import { Modal } from '../shared/Modal';
+import { SectionLabel } from '../shared/Section';
 import { SheetColumns } from '../shared/SheetColumns';
 import { Button } from '../shared/Button';
 import { SCRY_BACK_TO_COURT_LABEL, COURT_WORDS, fillCourtWords } from '../../data/ui-content';
@@ -744,21 +745,9 @@ export function ScryOverlay() {
   return (
     <Modal open onClose={handleEscape} size="l" aria-label="Divine Court">
       <div data-testid="scry-overlay" className="flex flex-col overflow-hidden" style={{ flex: 1, minHeight: 0 }}>
-        {/* Header — outside the scroll regions, so the ✕ is always reachable */}
-        <div className="flex items-center justify-between px-6 pt-5 shrink-0">
-          <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
-            Divine Court
-          </h1>
-          <button
-            onClick={onClose}
-            aria-label="Close Divine Court"
-            title="Close (Esc)"
-            className="transition text-2xl"
-            style={{ color: 'var(--text-tertiary)' }}
-          >
-            ✕
-          </button>
-        </div>
+        {/* Header — outside the scroll regions, so the ✕ is always reachable.
+            THR-2124: the shared dialog title, like every other dialog. */}
+        <Modal.Header onClose={onClose}>Divine Court</Modal.Header>
 
         <SheetColumns
           asideLabel="The court"
@@ -793,19 +782,13 @@ export function ScryOverlay() {
               {/* Sacred Sites & Artifacts */}
               <div className="grid grid-cols-2 gap-4 mt-4">
                 <div>
-                  <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
-                    <HeadingShape name={dialogHeadingIcon('courtSacredSites')} />
-                    Sacred Sites
-                  </h2>
+                  <SectionLabel as="h2" label={<><HeadingShape name={dialogHeadingIcon('courtSacredSites')} />Sacred Sites</>} />
                   {/* THR-2101 (decision 5): no sacred site yet → one quiet line, not "Coming Soon". */}
                   <QuietSlot data-testid="scry-empty-sacred-sites">{COURT_WORDS.emptySacredSite}</QuietSlot>
                 </div>
 
                 <div>
-                  <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
-                    <HeadingShape name={dialogHeadingIcon('courtArtifacts')} />
-                    Divine Artifacts
-                  </h2>
+                  <SectionLabel as="h2" label={<><HeadingShape name={dialogHeadingIcon('courtArtifacts')} />Divine Artifacts</>} />
                   <QuietSlot data-testid="scry-empty-artifacts">{COURT_WORDS.emptyArtifact}</QuietSlot>
                 </div>
               </div>
@@ -854,12 +837,8 @@ export function ScryOverlay() {
               {/* The First — auto-populated from court position, above all other ranks */}
               {theFirstAgent && (
                 <div className="relative z-10 mb-2">
-                  <h2
-                    className="text-sm font-bold uppercase tracking-wider mb-3 text-center"
-                    style={{ color: 'var(--accent-gold)' }}
-                  >
-                    The First
-                  </h2>
+                  {/* THR-2124 — an ordinary section label: the gold stays on the seat itself (Law 31). */}
+                  <SectionLabel as="h2" label="The First" />
                   <div className="flex justify-center">
                     <button
                       onClick={() => onAgentSelect?.(theFirstAgent.id)}
@@ -896,11 +875,7 @@ export function ScryOverlay() {
 
               {/* FE-TT-15: Apex with tooltip */}
               <div className="relative z-10">
-                <Tooltip id="ui.scry_rank_champion">
-                  <h2 className="text-sm font-bold uppercase tracking-wider mb-3 cursor-help text-center" style={{ color: 'var(--text-secondary)' }}>
-                    Apex
-                  </h2>
-                </Tooltip>
+                <SectionLabel as="h2" label="Apex" tooltipId="ui.scry_rank_champion" className="cursor-help" />
                 <div className="flex gap-4 justify-center">
                   {apexPositions.map(pos => (
                     <div key={pos.id} {...seatHighlight(pos.id)}>
@@ -920,11 +895,7 @@ export function ScryOverlay() {
 
               {/* FE-TT-15: Inner with tooltip */}
               <div className="relative z-10">
-                <Tooltip id="ui.scry_rank_steward">
-                  <h2 className="text-sm font-bold uppercase tracking-wider mb-3 cursor-help text-center" style={{ color: 'var(--text-secondary)' }}>
-                    Inner Circle
-                  </h2>
-                </Tooltip>
+                <SectionLabel as="h2" label="Inner Circle" tooltipId="ui.scry_rank_steward" className="cursor-help" />
                 <div className="flex gap-4 justify-center">
                   {innerPositions.map(pos => (
                     <div key={pos.id} {...seatHighlight(pos.id)}>
@@ -944,11 +915,7 @@ export function ScryOverlay() {
 
               {/* FE-TT-15: Outer with tooltip */}
               <div className="relative z-10">
-                <Tooltip id="ui.scry_rank_herald">
-                  <h2 className="text-sm font-bold uppercase tracking-wider mb-3 cursor-help text-center" style={{ color: 'var(--text-secondary)' }}>
-                    Outer Reaches
-                  </h2>
-                </Tooltip>
+                <SectionLabel as="h2" label="Outer Reaches" tooltipId="ui.scry_rank_herald" className="cursor-help" />
                 <div className="flex gap-3 justify-center flex-wrap">
                   {outerPositions.map(pos => (
                     <div key={pos.id} {...seatHighlight(pos.id)}>

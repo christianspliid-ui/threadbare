@@ -83,6 +83,7 @@ export function EncounterStakesLine({ line, style, onSelectAgent, onSelectLocati
   return (
     <div
       data-testid="encounter-stakes-line"
+      data-stage-now=""
       data-lead-source={line.leadSource}
       style={style}
     >

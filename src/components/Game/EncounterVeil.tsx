@@ -246,7 +246,8 @@ function VeilLeftColumn({
   return (
     <div
       data-testid="veil-left-column"
-      style={{ display: 'flex', flexDirection: 'column', gap: 16, minHeight: 0, flex: 1, overflowY: 'auto', background: 'var(--veil-void)' }}
+      // THR-2124 — paints no surface: its host (the Stage panel, or the in-place frame) does.
+      style={{ display: 'flex', flexDirection: 'column', gap: 16, minHeight: 0, flex: 1, overflowY: 'auto' }}
     >
       {illustration && (
         <figure style={{ margin: 0, flexShrink: 0, overflow: 'hidden' }}>
@@ -394,7 +395,6 @@ function consequenceReach(domain: string | undefined): ReachDomain | undefined {
 
 const VOID = 'var(--veil-void)';
 const FONT_PROSE = 'var(--font-prose)';
-const FONT_DISPLAY = "'Palatino Linotype', 'Book Antiqua', Palatino, serif";
 const GOLD = 'var(--veil-gold)';
 const GOLD_DIM = 'var(--veil-gold-dim)';
 // Law 45: these three carry subtitles, prompts and step prose, so all three sit
@@ -404,6 +404,8 @@ const GOLD_DIM = 'var(--veil-gold-dim)';
 const TEXT_WARM = 'var(--veil-text-warm)';
 const TEXT_WHISPER = 'var(--veil-text-whisper)';
 const TEXT_GHOST = 'var(--veil-text-ghost)';
+/** THR-2124 — the Stage's primary text (9.5:1): the title and the stakes line. */
+const TEXT_BRIGHT = 'var(--veil-text-bright)';
 
 /** Art opacity per thread tier */
 const ART_OPACITY: Record<ThreadTier, number> = {
@@ -500,6 +502,17 @@ export function forwardVeilWheel(
  * are gone with it (plan THR-1877 § D4).
  */
 const PROSE_MEASURE = 'var(--measure-prose)';
+
+/**
+ * THR-2124 — the Stage's Now slot: the stakes line (or the subtitle fallback),
+ * upright Text in the Stage's primary colour, one between-block gap above the scene.
+ */
+const STAGE_NOW_STYLE: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 'var(--text-sm)',
+  color: TEXT_BRIGHT,
+  marginBottom: 'var(--space-6)',
+};
 
 /**
  * THR-1895 — the aftermath's exit. Was "Return to the world"; on the Stage the world
@@ -954,7 +967,6 @@ export function EncounterVeil({
             display: 'flex',
             flexDirection: 'column',
             padding: VEIL_COLUMN_PADDING,
-            background: VOID,
             // The column's only scroll box, the whole height of the panel (Law 57).
             overflowY: 'auto',
           }}
@@ -985,12 +997,12 @@ export function EncounterVeil({
           {/* Encounter title — what encounter this was */}
           <div
             data-testid="aftermath-encounter-title"
+            data-stage-title=""
             style={{
-              fontFamily: FONT_DISPLAY,
-              fontSize: 'var(--text-xs)',
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              color: TEXT_GHOST,
+              fontFamily: 'var(--font-display)',
+              fontSize: 'var(--text-xl)',
+              lineHeight: 1.15,
+              color: TEXT_BRIGHT,
               marginBottom: 6,
               ...aftermathEntrance(0.6, 0.8),
             }}
@@ -1043,7 +1055,7 @@ export function EncounterVeil({
           <div
             data-testid="aftermath-section-label"
             style={{
-              fontFamily: FONT_DISPLAY,
+              fontFamily: 'var(--font-body)',
               fontSize: 'var(--text-xs)',
               letterSpacing: '0.18em',
               textTransform: 'uppercase',
@@ -1075,7 +1087,7 @@ export function EncounterVeil({
               >
                 <span
                   style={{
-                    fontFamily: FONT_DISPLAY,
+                    fontFamily: 'var(--font-display)',
                     fontSize: '3.4em',
                     float: 'left',
                     lineHeight: 0.75,
@@ -1124,7 +1136,7 @@ export function EncounterVeil({
                   <div>
                     <div
                       style={{
-                        fontFamily: FONT_DISPLAY,
+                        fontFamily: 'var(--font-body)',
                         fontSize: 'var(--text-xs)',
                         letterSpacing: '0.06em',
                         color: TEXT_WARM,
@@ -1255,7 +1267,7 @@ export function EncounterVeil({
                   <span
                     data-testid={`consequence-chip-tag-${chip.category}`}
                     style={{
-                      fontFamily: FONT_DISPLAY,
+                      fontFamily: 'var(--font-body)',
                       fontSize: 'var(--text-xs)',
                       letterSpacing: '0.16em',
                       color: consequenceToneColor(chip.tone),
@@ -1411,8 +1423,8 @@ export function EncounterVeil({
                     gap: 14,
                     paddingLeft: 14,
                     marginTop: 2,
-                    fontFamily: FONT_DISPLAY,
-                    fontSize: 'var(--text-2xs)',
+                    fontFamily: 'var(--font-body)',
+                    fontSize: 'var(--text-xs)',
                     letterSpacing: '0.12em',
                     color: TEXT_WHISPER,
                   }}
@@ -1516,7 +1528,7 @@ export function EncounterVeil({
                 >
                   <div
                     style={{
-                      fontFamily: FONT_DISPLAY,
+                      fontFamily: 'var(--font-body)',
                       fontSize: 'var(--text-xs)',
                       letterSpacing: '0.05em',
                       color: TEXT_WARM,
@@ -1808,7 +1820,6 @@ export function EncounterVeil({
           position: 'relative',
           flex: 1,
           minHeight: 0,
-          background: VOID,
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
@@ -1830,7 +1841,7 @@ export function EncounterVeil({
         >
           <div
             style={{
-              fontFamily: FONT_DISPLAY,
+              fontFamily: 'var(--font-body)',
               fontSize: 'var(--text-xs)',
               letterSpacing: '0.18em',
               textTransform: 'uppercase',
@@ -1915,7 +1926,7 @@ export function EncounterVeil({
             {/* Diamond icon */}
             <div
               style={{
-                fontFamily: FONT_DISPLAY,
+                fontFamily: 'var(--font-display)',
                 fontSize: '1.8rem',
                 color: GOLD,
                 opacity: 0.35,
@@ -2240,7 +2251,7 @@ export function EncounterVeil({
         position: 'relative',
         flex: 1,
         minHeight: 0,
-        background: VOID,
+        // THR-2124 — one surface: the host paints the void, the column paints nothing.
         overflow: 'hidden',
       }}
     >
@@ -2346,12 +2357,13 @@ export function EncounterVeil({
         >
           <div
             data-testid="veil-title"
+            data-stage-title=""
             style={{
-              fontFamily: FONT_DISPLAY,
-              fontSize: 'var(--text-xs)',
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              color: TEXT_GHOST,
+              // THR-2124 — the title is the header's strongest text (Who first).
+              fontFamily: 'var(--font-display)',
+              fontSize: 'var(--text-xl)',
+              lineHeight: 1.15,
+              color: TEXT_BRIGHT,
             }}
           >
             <StageLabelIcon label="encounterTitle" />
@@ -2428,24 +2440,10 @@ export function EncounterVeil({
             line={model.header.stakesLine}
             onSelectAgent={onSelectAgent}
             onSelectLocation={onSelectEntity ? (id) => onSelectEntity(id, 'location') : undefined}
-            style={{
-              fontFamily: FONT_PROSE,
-              fontStyle: 'italic',
-              fontSize: 'var(--text-xs)',
-              color: TEXT_WHISPER,
-              marginBottom: 20,
-            }}
+            style={STAGE_NOW_STYLE}
           />
         ) : model.header.subtitle && (
-          <div
-            style={{
-              fontFamily: FONT_PROSE,
-              fontStyle: 'italic',
-              fontSize: 'var(--text-xs)',
-              color: TEXT_WHISPER,
-              marginBottom: 20,
-            }}
-          >
+          <div data-stage-now="" style={STAGE_NOW_STYLE}>
             {model.header.subtitle}
           </div>
         )}
@@ -2497,10 +2495,7 @@ export function EncounterVeil({
                 {answer.prose && (
                   <p
                     style={{
-                      fontFamily: FONT_PROSE,
-                      fontStyle: 'italic',
-                      fontSize: 'var(--text-xs)',
-                      lineHeight: 1.7,
+                      font: 'var(--type-flavor)',
                       color: TEXT_WHISPER,
                       margin: 0,
                     }}
@@ -2518,13 +2513,12 @@ export function EncounterVeil({
             return (
               <p
                 key={para.id}
+                data-stage-scene-line={isFirst ? '' : undefined}
                 style={{
-                  fontFamily: FONT_PROSE,
-                  fontStyle: 'italic',
-                  fontSize: 'var(--text-xs)',
-                  lineHeight: 1.85,
+                  // THR-2124 — story text reads at the Story size, upright.
+                  font: 'var(--type-body-prose)',
                   color: TEXT_WARM,
-                  marginBottom: 16,
+                  marginBottom: 'var(--space-3)',
                   maxWidth: PROSE_MEASURE,
                 }}
               >
@@ -2532,7 +2526,7 @@ export function EncounterVeil({
                   <>
                     <span
                       style={{
-                        fontFamily: FONT_DISPLAY,
+                        fontFamily: 'var(--font-display)',
                         fontSize: '3.4em',
                         float: 'left',
                         lineHeight: 0.75,
@@ -2842,7 +2836,7 @@ function ChapterAnsweringCard({
               border: `1px solid ${GOLD}`,
               background: 'rgb(var(--veil-gold-rgb) / 0.1)',
               color: GOLD,
-              fontFamily: FONT_DISPLAY,
+              fontFamily: 'var(--font-body)',
               fontSize: 'var(--text-base)',
               letterSpacing: '0.06em',
               cursor: onLetWorldTurn ? 'pointer' : 'default',
@@ -2946,7 +2940,7 @@ function ResolutionReadoutBlock({
     >
       <div
         style={{
-          fontFamily: FONT_DISPLAY,
+          fontFamily: 'var(--font-body)',
           fontSize: 'var(--text-xs)',
           letterSpacing: '0.16em',
           textTransform: 'uppercase',
@@ -2985,7 +2979,7 @@ function ResolutionCheckCard({ entry }: { entry: EncounterStageResolutionCheckMo
       >
         <div
           style={{
-            fontFamily: FONT_DISPLAY,
+            fontFamily: 'var(--font-body)',
             fontSize: 'var(--text-xs)',
             letterSpacing: '0.08em',
             color: TEXT_WARM,
@@ -3071,7 +3065,7 @@ function StageCommit({
           border: `1px solid ${GOLD}`,
           background: 'rgb(var(--veil-gold-rgb) / 0.1)',
           color: GOLD,
-          fontFamily: FONT_DISPLAY,
+          fontFamily: 'var(--font-body)',
           fontSize: 'var(--text-base)',
           letterSpacing: '0.06em',
           opacity: disabled ? 0.4 : 1,
@@ -3272,7 +3266,7 @@ function ChoiceBlock({ choice, selected, onClick }: ChoiceBlockProps) {
       {choice.godVoice && (
         <div
           style={{
-            fontFamily: FONT_DISPLAY,
+            fontFamily: 'var(--font-body)',
             fontStyle: 'italic',
             fontSize: 'var(--text-xs)',
             color: GOLD,
@@ -3410,7 +3404,7 @@ function CastStrip({
               <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                 <span
                   style={{
-                    fontFamily: FONT_DISPLAY,
+                    fontFamily: 'var(--font-body)',
                     fontSize: 'var(--text-xs)',
                     letterSpacing: '0.06em',
                     color: TEXT_WARM,
@@ -3463,7 +3457,7 @@ function FalloutPreview({ fallout }: { fallout: EncounterStageFalloutModel[] }) 
     >
       <span
         style={{
-          fontFamily: FONT_DISPLAY,
+          fontFamily: 'var(--font-body)',
           fontSize: 'var(--text-xs)',
           letterSpacing: '0.16em',
           textTransform: 'uppercase',
@@ -3608,7 +3602,7 @@ function ContextStrip({
           />}
           <span
             style={{
-              fontFamily: FONT_DISPLAY,
+              fontFamily: 'var(--font-body)',
               fontSize: 'var(--text-xs)',
               letterSpacing: '0.06em',
               color: TEXT_WARM,
@@ -4031,7 +4025,7 @@ function StepReplayView({
       >
         <span
           style={{
-            fontFamily: FONT_DISPLAY,
+            fontFamily: 'var(--font-body)',
             fontSize: 'var(--text-xs)',
             letterSpacing: '0.14em',
             textTransform: 'uppercase',
@@ -4109,7 +4103,7 @@ function StepReplayView({
       {entry.choiceText && (
         <div
           style={{
-            fontFamily: FONT_DISPLAY,
+            fontFamily: 'var(--font-body)',
             fontStyle: 'italic',
             fontSize: 'var(--text-xs)',
             color: GOLD,

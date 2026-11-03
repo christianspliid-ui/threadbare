@@ -286,6 +286,17 @@ export interface DebugStageState {
    * chip's carved shape, and the relic paintings on chips. Reports what was drawn, not why.
    */
   dressing: { face: 'art' | 'fallback' | 'none'; labelIcons: string[]; consequenceIcons: string[]; relicTiles: number };
+  /**
+   * THR-2124 — the Stage's reading order, read off its DOM: the title's computed size, whether
+   * it is larger than every other text in the header (the context strip and the stakes line),
+   * and per anatomy element whether its top edge lies inside `[data-stage-panel]`'s visible
+   * rect. A fold value is `null` when that element is absent (no stakes line, no hand).
+   */
+  anatomy: {
+    titleSizePx: number;
+    titleIsLargestHeaderText: boolean;
+    fold: { title: boolean; now: boolean | null; firstSceneLine: boolean | null; firstHandRow: boolean | null; commit: boolean | null };
+  };
 }
 
 /** `openHomedSurface(kind)` (THR-1892) — whether the lever opened the moment, and why not. */
@@ -326,9 +337,11 @@ export interface DebugOpenHomedSurfaceResult {
   /**
    * THR-2101 — what an opened dialog drew (chapter-ledger, divine-court, choice-set,
    * ascendant-beat), read off its DOM: the first face's tier (`data-dialog-face`), every
-   * heading shape (`data-dialog-heading-icon`) and the quiet slots.
+   * heading shape (`data-dialog-heading-icon`) and the quiet slots. THR-2124: `titles` counts
+   * `[data-dialog-title]` (one per dialog) and `titleAlign` is the first title's computed
+   * `text-align` (`''` when there is none).
    */
-  dressing?: { face: 'art' | 'fallback' | 'none'; headingIcons: string[]; quietSlots: number };
+  dressing?: { face: 'art' | 'fallback' | 'none'; headingIcons: string[]; quietSlots: number; titles: number; titleAlign: string };
 }
 
 /** `getInterruptState()` (THR-1608) — the Stellaris clock's registry, as data. */

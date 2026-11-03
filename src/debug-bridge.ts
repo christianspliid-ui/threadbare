@@ -1433,6 +1433,7 @@ if (import.meta.env.DEV) {
       scrollingBelowCap: [],
       handCardsBelowBar: 0,
       dressing: { face: 'none', labelIcons: [], consequenceIcons: [], relicTiles: 0 },
+      anatomy: { titleSizePx: 0, titleIsLargestHeaderText: false, fold: { title: false, now: null, firstSceneLine: null, firstHandRow: null, commit: null } },
     },
     openHomedSurface: async (kind: string) => _openHomedSurfaceCb?.(kind) ?? { opened: false, reason: 'Game not loaded' },
     getClockHold: async () => _clockHoldProvider?.()

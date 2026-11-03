@@ -153,8 +153,14 @@ function ModalRoot({ open, onClose, size, maxWidth, animation = 'anim-fade-up', 
 /**
  * THR-2101 (S5.2) — `icon` draws the heading's carved shape at `chip` size before the
  * title, decorative, in the title's colour (Law 27). Null or absent → no shape, as before.
+ *
+ * THR-2124 — the one dialog title: `--text-xl` at the left edge (Type hierarchy § 3.1),
+ * marked `data-dialog-title`. `kind` draws the label rule above it (what sort of thing
+ * this is); a kind that repeats the title, ignoring case, is not drawn.
  */
-function Header({ children, onClose, icon }: { children: React.ReactNode; onClose?: () => void; icon?: IconName | null }) {
+function Header({ children, onClose, icon, kind }: { children: React.ReactNode; onClose?: () => void; icon?: IconName | null; kind?: string | null }) {
+  const showKind = typeof kind === 'string' && kind.trim() !== ''
+    && !(typeof children === 'string' && children.trim().toLowerCase() === kind.trim().toLowerCase());
   return (
     <div
       style={{
@@ -162,8 +168,6 @@ function Header({ children, onClose, icon }: { children: React.ReactNode; onClos
         alignItems: 'center',
         padding: 'var(--panel-padding)',
         borderBottom: '1px solid var(--dlg-rule, var(--border-gold))',
-        fontFamily: 'var(--font-display)',
-        fontSize: 'var(--text-lg)',
         color: 'var(--dlg-text, var(--text-primary))',
       }}
     >
@@ -172,7 +176,22 @@ function Header({ children, onClose, icon }: { children: React.ReactNode; onClos
           <Icon name={icon} size="chip" decorative />
         </span>
       )}
-      <span style={{ flex: 1 }}>{children}</span>
+      <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+        {showKind && (
+          <span
+            data-dialog-kind=""
+            style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-tertiary)' }}
+          >
+            {kind}
+          </span>
+        )}
+        <span
+          data-dialog-title=""
+          style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', lineHeight: 1.15, textAlign: 'left' }}
+        >
+          {children}
+        </span>
+      </span>
       {onClose && (
         <IconButton icon={<Icon name="close" size="chip" decorative />} variant="close" size="sm" aria-label="Close" onClick={onClose} />
       )}
