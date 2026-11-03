@@ -40,6 +40,21 @@ export function computeEssenceIncome(
 }
 
 /**
+ * THR-2148 (plan E2) — who pays the god's upkeep: threads whose tier carries a
+ * maintenance charge, and the sources `upkeepChargedSources` charges. The same
+ * walk {@link computeEssenceIncomeBreakdown} charges, so the row's words and the
+ * charge cannot disagree (THR-1652). Pure; counts only, never an amount.
+ */
+export function upkeepPayers(graph: WorldGraph, ascendantId: string): { threads: number; sources: number } {
+  let threads = 0;
+  for (const edge of graph.getOutgoingEdges(ascendantId, 'thread')) {
+    const tier = edge.properties.tier as InfluenceTier | undefined;
+    if (tier !== undefined && (TIER_MAINTENANCE[tier] ?? 0) > 0) threads++;
+  }
+  return { threads, sources: upkeepChargedSources(graph, ascendantId).length };
+}
+
+/**
  * THR-1985 — the same ledger read, plus the god's total **gross** income per tick
  * (every sphere's share of the base, thread, seat, place and aspect income, plus
  * typed-source and control-effect income, before upkeep). The refill band reads a

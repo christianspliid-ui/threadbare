@@ -23,7 +23,6 @@ import React, { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { SphereIcon } from '../../shared/SphereIcon';
 import { Tooltip } from '../../shared/Tooltip';
 import { DeltaCluster } from '../../shared/DeltaCluster';
-import { formatEssencePool } from '../../shared/formatEssence';
 import { getSphereColor } from '../../../data/sphereIcons';
 import { SPHERE_COPY, ESSENCE_ELDER_FOLD_LABEL, ESSENCE_TREND_WORDS } from '../../../data/ascendant-bar-content';
 import { sphereDeltaReading } from '../../../engine/aftermathWords';
@@ -45,6 +44,7 @@ import {
   readElderHeaderLatch,
   writeElderHeaderLatch,
   essenceFillPct,
+  essenceBalanceText,
   getEssencePreviewSphere,
   subscribeEssencePreview,
 } from './essenceDisplay';
@@ -148,7 +148,9 @@ function EssenceRow({ row, previewed }: EssenceRowProps) {
   const label = sphereCopy?.label ?? row.sphere;
   const trendColor = TREND_COLOR[row.trend];
   const arrow = TREND_ARROW[row.trend];
-  const fillPct = essenceFillPct(row.level);
+  // THR-2148 (U1) — the bar ends at the pool's limit; the starting 50 is the fallback.
+  const fillPct = essenceFillPct(row.level, row.cap ?? ESSENCE_BAR_CEILING);
+  const balance = essenceBalanceText(row.level, row.cap);
   const spent = useSpendFlash(row.movement);
   const spendReading = spent > 0 ? sphereDeltaReading(-spent / ESSENCE_BAR_CEILING, label) : null;
 
@@ -211,15 +213,18 @@ function EssenceRow({ row, previewed }: EssenceRowProps) {
         <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2, flexShrink: 0 }}>
         <span
             data-testid={`essence-balance-${row.sphere}`}
+            data-cap={row.cap}
+            aria-label={balance.aria}
             style={{
               fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)', fontWeight: 600,
               color: row.isPrimary || row.isSecondary ? 'var(--text-primary)' : 'var(--text-secondary)',
               minWidth: 22, textAlign: 'right',
               fontVariantNumeric: 'tabular-nums',
+              whiteSpace: 'nowrap',
               cursor: 'help',
             }}
           >
-            {formatEssencePool(row.level)}
+            {balance.text}
           </span>
           {row.refill && refillWords && (
             <RefillRung

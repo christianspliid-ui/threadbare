@@ -2163,9 +2163,13 @@ export interface DebugBridge {
           import('./types').SphereName,
           import('./engine/views/essenceRefill').EssenceRefillSphere & {
             direction: import('./engine/views/essenceRefill').EssenceDirection;
+            /** THR-2148 — the pool's limit (`computeMaxEssence`), where the row's bar ends. */
+            cap: number;
           }
         >>;
         upkeepSphere: import('./types').SphereName | null;
+        /** THR-2148 — who pays the upkeep: maintained threads and charged sources (counts). */
+        upkeepPayers: { threads: number; sources: number };
       })
     | { error: string }
   >;
