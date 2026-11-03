@@ -197,7 +197,6 @@ function EssenceRow({ row, previewed }: EssenceRowProps) {
               direction={spendReading.direction}
               count={spendReading.count}
               label={spendReading.label}
-              size={10}
             />
           </span>
         )}

@@ -7,7 +7,8 @@
  * Plan: `Docs/plans/2026-09-27-thr-1606-what-your-hand-did.md` § UI pillar, B4.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import { render, screen, fireEvent, act, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, act, cleanup, within } from '@testing-library/react';
+import { DELTA_CLUSTER_GLYPH_SIZE_PX } from '../../../shared/DeltaCluster';
 import { resolveTooltip } from '../../../../engine/tooltipResolver';
 import { ASCENDANT_REACH_REGISTER, reachTierTooltipId } from '../../../../data/ascendant-reach-register';
 import { selectEssenceRows, type EssenceRowView } from '../selectors';
@@ -170,6 +171,16 @@ describe('EssenceBlock', () => {
     act(() => { vi.advanceTimersByTime(ESSENCE_SPEND_FLASH_MS + 10); });
     expect(screen.queryByTestId('essence-spend-mind')).toBeNull();
     vi.useRealTimers();
+  });
+
+  // THR-2152 — the triangle count is the reading, so it holds the Law 11 floor.
+  it('draws the spend mark at the Law 11 glyph floor', () => {
+    const pool = fullPool();
+    const spent = { ...pool, mind: pool.mind - 5 };
+    const { rerender } = render(<EssenceBlock rows={rowsFor(pool)} />);
+    rerender(<EssenceBlock rows={rowsFor(spent, recordEssenceMovement(undefined, pool, spent, 'spend_nudge', 10))} />);
+    const cluster = within(screen.getByTestId('essence-spend-mind')).getByTestId('delta-cluster');
+    expect(parseInt(cluster.style.fontSize, 10)).toBeGreaterThanOrEqual(DELTA_CLUSTER_GLYPH_SIZE_PX);
   });
 
   it('does not flash for a sub-measure spend', () => {
