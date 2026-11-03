@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-03 03:59 local (02:59 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-03 04:58 local (03:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,7 +20,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-**New this hour.** All from [Legibility 2 — Inspector pages read Who, Now, Act, Detail, Out](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at). Plan: [Legibility 2 — Inspector pages](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-03-thr-2123-legibility-inspector-pages.md). Nobody may start building it before 14:33Z on 3 Nov.
+**New at 03:33 local.** All from [Legibility 2 — Inspector pages read Who, Now, Act, Detail, Out](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at). Plan: [Legibility 2 — Inspector pages](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-03-thr-2123-legibility-inspector-pages.md). Nobody may start building it before 14:33Z on 3 Nov.
 
 - When you widen the Inspector, the page opens on the kind and name at the top left, with the portrait below them at the same size. Today the name sits centred under the portrait, halfway down the page. Veto line: "keep the portrait above the name".
 - Right under the name sits the one line that matters most: a mortal's strongest want, or the god's Mandate. The Act row comes after it. On The First's page her want takes that spot; the strip with your face and hers stays first in her Overview, and takes the spot only when she has no known want. Veto line: "the bond comes first on her page".
@@ -62,7 +62,7 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([18:45](h
 
 ## Queue
 
-**Healthy (4 ready, 1 being built).** The builder took [The sheet says what grew](https://linear.app/threadbare/issue/THR-2149/the-sheet-says-what-grew-a-reach-tile-shows-the-aftermaths-for-three) at 02:30 UTC and is working on it now. The four ready tickets each wait out a veto window: [Every card says what it buys](https://linear.app/threadbare/issue/THR-2147/every-card-says-what-it-buys-a-result-line-for-cards-that-dont-move) opens at 05:00 UTC, [The pool says how full it can get](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar) at 08:45, [The answer comes here](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage) at 11:35, and the new [Legibility 2 — Inspector pages](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at) at 14:33.
+**Healthy (4 ready, 1 being built, 1 waiting to merge).** [The sheet says what grew](https://linear.app/threadbare/issue/THR-2149/the-sheet-says-what-grew-a-reach-tile-shows-the-aftermaths-for-three) is built and checked; [its pull request](https://github.com/christianspliid-ui/threadbare/pull/2723) is set to merge once its checks pass. The builder then took a small fix, [the essence rail's ▲/▼ mark is drawn too small](https://linear.app/threadbare/issue/THR-2152/essence-rail-spend-mark-draws-its-at-10px-below-the-law-11-glyph-floor), at 03:30 UTC and is working on it now. The four ready tickets each wait out a veto window: [Every card says what it buys](https://linear.app/threadbare/issue/THR-2147/every-card-says-what-it-buys-a-result-line-for-cards-that-dont-move) opens at 05:00 UTC, [The pool says how full it can get](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar) at 08:45, [The answer comes here](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage) at 11:35, and the new [Legibility 2 — Inspector pages](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at) at 14:33.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -70,4 +70,4 @@ Two items for agents, not you:
 
 ## Health
 
-All green. Engine speed is 131 ms/tick, 18% below the 7-day median of 161. The live site serves the latest game build. Commits since then (fffad27e) touched only notes and docs. No pull requests are waiting to merge. Checks on main, heavy tests and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 02:40 UTC. A builder run is working now, so the builder has not stalled.
+All green. Engine speed is 147 ms/tick, 8% below the 7-day median of 159. The live site serves the latest game build. Commits since then (fffad27e) touched only notes and docs. One pull request ([#2723](https://github.com/christianspliid-ui/threadbare/pull/2723)) is waiting on its checks and will merge on green. Checks on main, heavy tests and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 03:40 UTC. A builder run is working now, so the builder has not stalled.
