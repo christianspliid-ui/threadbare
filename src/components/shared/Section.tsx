@@ -620,9 +620,6 @@ function TileArt({ tile }: { tile: CardsSection['tiles'][number] }) {
   );
 }
 
-/** THR-2149 — the reach tile gain mark's glyph size, the essence rail's spend-mark size. */
-const TILE_GAIN_MARK_SIZE_PX = 10;
-
 function CardsSectionRenderer({ section, inAside = false }: { section: CardsSection; inAside?: boolean }) {
   const columns = inAside ? `repeat(${INSPECTOR_GALLERY_COLUMNS}, minmax(0, 1fr))` : 'repeat(auto-fill, minmax(10rem, 1fr))';
   return (
@@ -644,11 +641,12 @@ function CardsSectionRenderer({ section, inAside = false }: { section: CardsSect
             {tile.lines.map((line, li) => (
               <div key={li} style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', lineHeight: 1.5 }}>
                 {line}
-                {/* THR-2149: a recent gain draws the Aftermath's ▲ cluster after the first line's word. */}
+                {/* THR-2149: a recent gain draws the Aftermath's ▲ cluster after the first line's word,
+                    at DeltaCluster's default size — the Law 11 floor, since the count is the reading. */}
                 {li === 0 && tile.mark && (
                   <Tooltip label={tile.mark.heading} desc={tile.mark.label}>
                     <span data-growth-steps={tile.mark.steps} style={{ marginLeft: 'var(--space-1)', lineHeight: 1 }}>
-                      <DeltaCluster direction="gain" count={tile.mark.steps} label={tile.mark.label} size={TILE_GAIN_MARK_SIZE_PX} />
+                      <DeltaCluster direction="gain" count={tile.mark.steps} label={tile.mark.label} />
                     </span>
                   </Tooltip>
                 )}
