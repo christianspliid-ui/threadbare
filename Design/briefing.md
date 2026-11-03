@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-03 08:58 local (07:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-03 09:58 local (08:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,7 +20,17 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-**New at 06:43 local.** All from [Legibility 3 — the Stage and the dialogs](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first). Plan: [Legibility 3 — the Stage and the dialogs](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-03-thr-2124-legibility-stage-and-dialogs.md). Nobody may start building it before 17:42Z on 3 Nov.
+**New at 09:48 local.** All from [Legibility 4 — the god rail, the Ledger rail, lists and the hover tier](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover). Plan: [Legibility 4](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-03-thr-2125-legibility-rails-lists-hover.md). Nobody may start building it before 20:47Z on 3 Nov.
+
+- The essence numbers on the god rail grow one step, so the amounts you can spend read before the small words around them. No number is added. Veto line: "keep the essence numbers small".
+- "Your First: Kael Thornweaver" becomes "Your First is Kael Thornweaver". "Primary: Mind", which floated at the far edge of the Essence heading, becomes the line "Your primary sphere is Mind." under it. Veto line: "keep the labels with colons".
+- "Threads" and "Chronicle" head the right rail the same way, as titles, and neither sits in a box any more. Today the Chronicle has a gold-bordered box and a small label for a title. Veto line: "keep the Chronicle's gold box".
+- "Before you woke" stops being gold. It becomes an ordinary label, so gold stays the god's own colour. Veto line: "keep Before you woke gold".
+- In a thread row, the mortal's name is bold, in normal case and whole ("Kael Thornweaver"), not capitals cut short ("KAEL T…"). A long name wraps to a second line. Names in the Chronicle, Notables and Rivals lists turn bold and stop being cut off too. Veto line: "keep the capital names".
+- Tooltip headings and the hover card use the game's plain font, not the title font at small sizes. Veto line: "keep the carved tooltip headings".
+- The hover card says what its subject is in one line ("Actor · Gatekeeper of the Iron Market · sworn to Order"). Under the name it shows what is going on with them: a mortal's strongest want ("Seek Revenge") or your Mandate. A faction's card shows no such line, because its highlighted line is just its own name. Veto line: "keep the hover card as it was".
+
+From 06:43 local. All from [Legibility 3 — the Stage and the dialogs](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first). Plan: [Legibility 3 — the Stage and the dialogs](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-03-thr-2124-legibility-stage-and-dialogs.md). Nobody may start building it before 17:42Z on 3 Nov.
 
 - On an encounter, the encounter's name becomes the biggest, brightest words at the top of the screen. Today it is small grey capitals and the dimmest text there. Veto line: "keep the encounter name small".
 - The sentence saying what is at stake sits right under it in plain, upright text, not faint italics. Veto line: "keep the stakes line in italics".
@@ -47,19 +57,7 @@ From 00:41 local. From [On a running clock a chapter step still answers nothing 
 - "Back to the map" stays on the card as the way out. "Let the world turn" does not show there, because the world is already turning. Veto line: "keep both buttons".
 - If testers say the waiting card blocks the map, the map behind it gets undimmed while it waits. If a tester still sees no result, the next step would pause time on Play. That reverses your no-forced-pause rule, so it comes back to you first.
 
-From 21:41 local yesterday ([The pool says how full it can get](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar), your (b) + (c) answer, [plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-02-thr-2143-the-sheet-says-what-grew.md), not built before 08:45 UTC on 3 Nov):
-
-- The pool's row reads "53 / 55", and its hover says "Holds up to 55: 50, and 5 more for the mortal you have threaded." Before the bond: "Holds up to 50. Each mortal you thread lets every pool hold 5 more." Veto line: "say the limit differently".
-- Your answer is written into the UI rules as an exception for the limit only; upkeep and refill speeds still show as words, never numbers. Veto line: "keep the Vision pages as they were".
-- If a tester reads "53 / 55" as a score to fill up, the number leaves the row and stays only in the hover. Veto line: "keep the row number regardless".
-- The essence bar ends at the pool's real limit, not at the starting 50. Veto line: "keep the bar ending at the starting amount".
-- Upkeep is explained as a sentence, with no amount shown. Veto line: "show the upkeep amount".
-- [The sheet says what grew](https://linear.app/threadbare/issue/THR-2149/the-sheet-says-what-grew-a-reach-tile-shows-the-aftermaths-for-three) (merged and live): a grown skill's tile shows the Aftermath's ▲ for three days. Veto line: "keep the mark until I have looked".
-- A lean from the first meeting shows on Nature as "leaning Scheming", with the same pole words as everywhere else (Fair / Scheming). Veto line: "keep the Nature words".
-- The meeting's fate line says "Elara leans Scheming now" instead of "came out Scheming". Veto line: "keep 'came out'".
-- Fated stays grey. Its hover starts with your own words: "The best word on the ladder: a sure thing needs no god."
-
-Say "veto <title>" to reverse any of these. *— from the design lane ([21:41](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02g.md), [00:41](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03a.md), [03:33](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03b.md), [06:43](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03c.md), local time). The card-price decisions from 18:45 yesterday have passed their window.*
+Say "veto <title>" to reverse any of these. *— from the design lane ([00:41](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03a.md), [03:33](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03b.md), [06:43](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03c.md), [09:48](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03d.md), local time). The essence-pool decisions from 21:41 yesterday have passed their window, and [that ticket](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar) is now being built.*
 
 ## This week's screens
 
@@ -67,7 +65,7 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([21:41](h
 
 ## Queue
 
-**Healthy (4 ready, none being built, nothing waiting to merge).** No new builds this hour. All four ready tickets are still inside their veto windows, so builder runs stand down until the first opens: [The pool says how full it can get](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar) at 08:45, [The answer comes here](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage) at 11:35, [Legibility 2 — Inspector pages](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at) at 14:33, [Legibility 3 — the Stage and the dialogs](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first) at 17:42 (all UTC).
+**Healthy (3 ready, 1 being built, nothing waiting to merge).** The builder claimed [The pool says how full it can get](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar) as soon as its veto window opened and is building it now (run started 08:51 UTC). The other three are still inside their veto windows: [The answer comes here](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage) at 11:35, [Legibility 2 — Inspector pages](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at) at 14:33, [Legibility 3 — the Stage and the dialogs](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first) at 17:42 (all UTC). [Legibility 4](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover) joined Ready for Dev this hour and opens at 20:47.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -75,4 +73,5 @@ Two items for agents, not you:
 
 ## Health
 
-All green. Engine speed is 129 ms/tick, 19% below the 7-day median of 159. The live site serves the latest commit on main (c87a8c94). No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 07:40 UTC. The builder has not stalled: it shipped THR-2153 at 06:47 UTC, and its short runs since report only veto-window holds.
+- **Engine speed (for agents):** tick cost 212 ms/tick steady, 34% above the 7-day median (159, 128 rows since 10403ec8); top phase agent_decision, 639 agents. Name the merges between 10403ec8 and aac68f71: git log --oneline --merges 10403ec8..aac68f71. Last hour's reading on almost the same code was 129, and a builder run was working on the same machine during this one, so this may be load rather than a slowdown; the next readings will tell.
+- Everything else is green. The live site is up to date (c87a8c94; later commits are docs only). No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 08:53 UTC. The builder has not stalled: it is building now.
