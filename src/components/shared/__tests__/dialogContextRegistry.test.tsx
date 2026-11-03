@@ -109,7 +109,8 @@ describe('every registry surface declares its context (THR-1586)', () => {
 
   it('the palette-owning surfaces are the Premonition and the veil', () => {
     const owners = DIALOG_CONTEXT_SURFACES.filter((s) => s.ownsPalette).map((s) => `${s.surface}:${s.context}`);
-    expect(owners.sort()).toEqual(['EncounterVeil:encounter', 'PremonitionModal:divine']);
+    // THR-2151 — the live answering card is the veil under its non-stopping id.
+    expect(owners.sort()).toEqual(['EncounterVeil:encounter', 'EncounterVeilAnswering:encounter', 'PremonitionModal:divine']);
   });
 });
 

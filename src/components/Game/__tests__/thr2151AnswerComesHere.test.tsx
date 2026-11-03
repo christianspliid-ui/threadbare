@@ -201,6 +201,11 @@ describe('THR-2151 — the wiring at the source', () => {
     expect(STAGE_HOST).toMatch(/renders\.has\('encounter'\) \|\| renders\.has\('encounter-answering'\)/);
     expect(STAGE_HOST_KINDS).toContain('encounter-answering');
   });
+
+  it('the Stage is keyed per chapter, so the answer swaps in without the Stage re-entering', () => {
+    expect(GAME_VIEW).toMatch(/const openEncounterStageKey = tieredEncounterState\s*\?\s*`\$\{tieredEncounterState\.agentId\}::\$\{tieredEncounterState\.notification\?\.actionId \?\?/);
+    expect(GAME_VIEW).toMatch(/openEncounterKey=\{openEncounterStageKey\}/);
+  });
 });
 
 describe('THR-2151 — the answer comes here', () => {

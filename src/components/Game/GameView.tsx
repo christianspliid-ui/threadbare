@@ -1172,6 +1172,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const openEncounterKey = tieredEncounterState
     ? `${tieredEncounterState.agentId}::${tieredEncounterState.notification?.id ?? tieredEncounterState.template.id}`
     : null;
+  /**
+   * THR-2151 D2 — the Stage's key: one per *chapter* (agent and action), not per beat.
+   * When a step's answer opens in the live card's place, the next beat or the Aftermath
+   * swaps into the Stage that is already up, so the Stage never re-enters and the map
+   * never shows in between. A legacy encounter with no action keys on its beat as before.
+   */
+  const openEncounterStageKey = tieredEncounterState
+    ? `${tieredEncounterState.agentId}::${tieredEncounterState.notification?.actionId ?? tieredEncounterState.notification?.id ?? tieredEncounterState.template.id}`
+    : null;
   // THR-1777 — why the last aftermath pick did not land, in player words, or
   // null. Same lifetime as the taken id: it describes the open encounter only.
   const [aftermathReactionError, setAftermathReactionError] = useState<string | null>(null);
@@ -4806,7 +4815,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         tieredEncounterState={tieredEncounterState}
         encounterVeilModel={encounterVeilModel}
         encounterStageVM={encounterStageVM}
-        openEncounterKey={openEncounterKey}
+        openEncounterKey={openEncounterStageKey}
         describeFollowFor={describeFollowFor}
         handleToggleFollow={handleToggleFollow}
         encounterPayingEssence={encounterPayingEssence}

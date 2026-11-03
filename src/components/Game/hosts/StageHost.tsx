@@ -73,7 +73,10 @@ export interface StageHostProps {
   encounterVeilModel: EncounterStageModel | null;
   /** THR-1895 — the Stage view model for the open encounter (lit hex, place tag). */
   encounterStageVM: StageVM | null;
-  /** THR-1895 — which encounter is open; keys its Stage so a new one mounts fresh. */
+  /**
+   * THR-1895 — which encounter is open; keys its Stage so a new one mounts fresh.
+   * THR-2151 — one key per chapter, so a chapter's next beat swaps in place.
+   */
   openEncounterKey: string | null;
   describeFollowFor: (agentId: string) => FollowDescriptor;
   handleToggleFollow: (agentId: string, source: 'arc_panel' | 'encounter_ui') => void;
