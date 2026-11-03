@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-03 01:58 local (00:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-03 02:58 local (01:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -58,8 +58,8 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([15:38](h
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (14 days). It needs gate and CI edits that unattended runs are refused; agents can un-park it in an attended run.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (14 days); no branch and no local worktree holds work for it. It needs gate and CI edits that unattended runs are refused; agents can un-park it in an attended run.
 
 ## Health
 
-All green. Engine speed is 133 ms/tick, 17% below the 7-day median of 161. The live site serves the latest main (fffad27e, Legibility 1). No pull requests are waiting to merge. Checks on main, heavy tests and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 00:40 UTC. The builder's last three runs were short, each because every ready ticket is on a veto hold — idle by design, not a stall.
+All green. Engine speed is 144 ms/tick, 10% below the 7-day median of 161. The live site serves the latest main (fffad27e, Legibility 1). No pull requests are waiting to merge. Checks on main, heavy tests and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 01:40 UTC. The builder's last three runs were short, each because every ready ticket is on a veto hold — idle by design, not a stall.
