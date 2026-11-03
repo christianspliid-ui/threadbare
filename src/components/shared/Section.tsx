@@ -65,9 +65,10 @@ function SectionLabel({ tooltipId, ...props }: SectionLabelProps) {
   // Notable / chronicle tiers add a thin gold underline (per plan §5.4). Routine
   // sections render with the default tertiary label.
   const decorate = tier === 'notable' || tier === 'chronicle';
-  const countText = count !== undefined && (
-    <span data-section-count="" style={{ fontVariantNumeric: 'tabular-nums' }}>{` · ${count}`}</span>
-  );
+  // "words · n" — one text run when the words are a string, so the heading reads (and is
+  // found) as one phrase; the figures are tabular on the whole heading.
+  const text: ReactNode =
+    count === undefined ? label : typeof label === 'string' ? `${label} · ${count}` : <>{label}{` · ${count}`}</>;
   return (
     <Tag
       data-section-label=""
@@ -78,6 +79,7 @@ function SectionLabel({ tooltipId, ...props }: SectionLabelProps) {
         fontSize: 'var(--text-xs)',
         color: gold ? 'var(--accent-gold)' : 'var(--text-tertiary)',
         letterSpacing: 0,
+        ...(count !== undefined ? { fontVariantNumeric: 'tabular-nums' } : {}),
         margin: 0,
         marginBottom: flush ? 0 : 'var(--space-2)',
         borderBottom:
@@ -91,7 +93,7 @@ function SectionLabel({ tooltipId, ...props }: SectionLabelProps) {
       {...attrs}
     >
       {icon && <Icon name={icon} size="chip" decorative />}
-      {icon || countText ? <span>{label}{countText}</span> : label}
+      {icon ? <span>{text}</span> : text}
     </Tag>
   );
 }

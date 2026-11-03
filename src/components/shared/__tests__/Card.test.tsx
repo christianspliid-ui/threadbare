@@ -48,7 +48,7 @@ describe('Card', () => {
         <Card.Header title="Retinue" count={3} />
       </Card>,
     );
-    expect(screen.getByText(/Retinue/).textContent).toContain('(3)');
+    expect(screen.getByText(/Retinue/).textContent).toContain('Retinue · 3');
   });
 
   it('renders Header back button', () => {
