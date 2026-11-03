@@ -51,14 +51,25 @@ in data).
 - **Schema:** `StepNudge` (incl. `costs`, `grants`, `requiresGroup`/`requiresFavor`; `fiction` and `fictionBySetting` were **retired** by THR-1225 — do not author them) / `ActionStep.nudges` / `TraitVariant` / template-level `settings` + `openings` (`src/types/unifiedAction.ts`); hand resolution in `src/engine/encounters/nudges.ts`, dispatch in `src/engine/encounters/nudgeDispatch.ts`, envelopes in `src/data/settingClasses.ts`.
 - **Program plan:** [2026-07-26-nudge-model-encounter-system.md](../plans/2026-07-26-nudge-model-encounter-system.md) (THR-772) · WS0 substrate [2026-07-26-nudge-model-ws0-engine-substrate.md](../plans/2026-07-26-nudge-model-ws0-engine-substrate.md) · WS1/WS2 [2026-07-27-nudge-encounter-experience-ws1-ws2.md](../plans/2026-07-27-nudge-encounter-experience-ws1-ws2.md) · frameworks [2026-07-30-encounter-authoring-frameworks.md](../plans/2026-07-30-encounter-authoring-frameworks.md) (THR-884/THR-885, both shipped 2026-07-30).
 
-**Migration state — WS5 is complete (THR-1086, 2026-08-11).** No shipped encounter
-authors `authoredChoices` any more. The last one was `encounter.apotheosis.ascension`,
-the Influence capstone, converted under the THR-866 design decision:
+**Migration state — WS5 converted the mortal-drawable set; 32 older templates still
+carry the player pick (corrected 2026-11-03, THR-2135).** WS5 (THR-1086, 2026-08-11)
+converted `encounter.apotheosis.ascension` under the THR-866 design decision:
 [2026-08-11-thr-866-apotheosis-nudge-conversion.md](../plans/2026-08-11-thr-866-apotheosis-nudge-conversion.md).
+The earlier "zero" claim was true only of the set WS3's audit measured (mortal-drawable
+templates), and its re-check grepped `authoredChoices: [` while the field is an object
+(`authoredChoices: {`). Measured on the shipped registry, 2026-11-03 (`main` @ `49d616a7`):
+**32 of 788** templates in `UNIFIED_ACTION_TEMPLATES` carry `authoredChoices`, none with a
+nudge hand; 30 key their aftermath variants to the card ids, so the click picks the ending.
+They are Flawed Steel and five sphere story beats, six seeded quests, fifteen
+`reputation.*` encounters, three mentorship moments and two `ag.elite.*` quests. The
+decision (design lane under delegation, 2026-11-03): **convert all of them, no story-beat
+exception** — the ruling below admits none, and Apotheosis, itself a seeded story beat,
+was converted. Five slices: THR-2157 → THR-2161; the last deletes the pick path and adds
+a content invariant so the claim is checked, not asserted.
 
-The **layer** still renders — the stage branches on data presence, so the rollout stayed
-per-template and reversible with no flag day, and that property is worth keeping. What
-changed is that nothing exercises it. Two consequences for an author:
+The **layer** still renders — the stage branches on data presence, so the rollout stays
+per-template and reversible with no flag day. Until THR-2161 lands it is still exercised
+by the templates above. Two consequences for an author:
 
 - Do not author `authoredChoices`. A fork the *player* picks is the rejected design
   (see § Rejected, below); a fork the **mortal** picks is `ActionStepBranch.decidedBy`.
@@ -277,7 +288,7 @@ Each encounter's primary reach maps to an archetype-axis in the Cosmological Pat
 - ❌ AgentWheel / fixed action-count slots — replaced by `ActionDrawer` with context-filtered cards via Generalized Action Targeting (see CLAUDE.md Rejected Approaches)
 - ❌ Pure LLM-generated encounter prose — replaced by hybrid layered engine with enrichment placeholders
 - ❌ Player-as-character framing ("choose how the character responds") — the player is a god who intervenes indirectly. All player-facing options must be *god actions*. Any choice that makes the mortal the agent must be reframed.
-- ❌ **Choosing between authored futures** ("Forge the truth" / "Temper the narrative") — rejected 2026-07-26 (THR-772, Christian, chat). The player must never pick an ending. The god plays concrete, sphere-flavoured **nudges** that shift the odds; fate rolls the outcome. Superseded the `authoredChoices` layer at design level; the content migration is **complete** (WS5, THR-1086 — zero shipped encounters author it, re-verified 2026-08-25). Do not author `authoredChoices` on a new encounter.
+- ❌ **Choosing between authored futures** ("Forge the truth" / "Temper the narrative") — rejected 2026-07-26 (THR-772, Christian, chat). The player must never pick an ending. The god plays concrete, sphere-flavoured **nudges** that shift the odds; fate rolls the outcome. Superseded the `authoredChoices` layer at design level; the content migration is **not** complete — 32 older templates still carry it (measured 2026-11-03, THR-2135; the 2026-08-25 "zero" re-check grepped the wrong shape), and their conversion is filed as THR-2157 → THR-2161 with no exception for story beats. Do not author `authoredChoices` on a new encounter.
 - ❌ **A percentage anywhere on the mortal-facing surface** — rejected 2026-07-26 (THR-772 ruling 1). Odds are legible in words only: the five forecast tier words and the four difficulty words (`severe / steep / fair / gentle`). Numbers exist behind the words; the designer/debug view is the sole exception. An `effectLine` carrying a digit is an editorial reject, not a nit.
 - ❌ **A nudge with no failure-band payoff** — the god's hand must be traceable in failure at any size (THR-772 program ruling: payoff at every band). A card that vanishes on a loss makes failure read as punishment, which inverts the design.
 - ❌ **Scene art that depicts the interaction, or a second human likeness** — rejected 2026-07-30 (THR-868 audit). Image doctrine ruling 10: a scene omits or silhouettes the agent, because the portrait chosen at Sensing is the only likeness across the flow. The audit of all 32 meeting scene files found five violations, and the reachable one was rendering: `plague-ward.jpg` (an individuated child's face) won any dilemma tagged `sacrifice` or `compassion`. `prison-cell.jpg` had the retired choice mechanic painted in as two UI buttons — "GRANT MERCY" / "IMPOSE JUDGMENT" — so the art taught the rejected model even after the code stopped. Two more carried baked-in caption text. Quarantine list + enforcement: `QUARANTINED_SCENE_ASSETS` in `src/data/meeting-art-library.ts`, pinned by `src/data/__tests__/meetingSceneDoctrine.test.ts`. **A wrong picture type-checks** — this class is invisible to every test that does not look at the pool. *(2026-09-17, THR-876: all five were regenerated under the same filenames as unpeopled scenes and re-registered, so the quarantine list is currently empty; the mechanism and its test stay, kept honest by a falsification arm. Evidence: `Docs/evidence/thr-876/`.)*
@@ -296,6 +307,8 @@ Each encounter's primary reach maps to an archetype-axis in the Cosmological Pat
 - **Phase 2a wiring (THR-306):** When THR-306 lands, the `encounter-pipeline` skill will load this Canon page as its explicit Step 0. Until then, authoring agents must load this page manually before running the pipeline.
 
 ## Last-reviewed
+
+2026-11-03 by Claude Opus (design lane, THR-2135 — the WS5-complete claim corrected: 32 of 788 shipped templates still carry `authoredChoices`, measured on the registry; conversion decided with no story-beat exception and filed as THR-2157 → THR-2161).
 
 2026-09-22 by Claude Fable (THR-790 — the pool-reads-the-place section added: the four minted location traits, the `locationTraitBonus` term keyed trait × content tag, the bearer-kind carve on `condition_template`, and the pool census).
 
