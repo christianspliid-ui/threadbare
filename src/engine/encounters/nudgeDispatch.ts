@@ -532,8 +532,10 @@ function observeNudgeWrites(
         if (summary.touchedStructure) record('assign_ambition', grant.templateId);
         break;
       case 'plant_compulsion': {
-        const grew = (after.plantedCompulsions?.length ?? 0) > (before.plantedCompulsions?.length ?? 0);
-        if (!grew) break;
+        // A new id, not a longer list: at COMPULSION_MAX_ACTIVE the applier appends
+        // one and evicts the oldest, so the length stays the same.
+        const known = new Set((before.plantedCompulsions ?? []).map((c) => c.compulsionId));
+        if (!(after.plantedCompulsions ?? []).some((c) => !known.has(c.compulsionId))) break;
         let lean: string | undefined;
         let weight = 0;
         for (const [type, w] of Object.entries(grant.encounterBias)) {
@@ -542,9 +544,12 @@ function observeNudgeWrites(
         record('plant_compulsion', lean);
         break;
       }
-      case 'emit_omen':
-        if ((after.emittedOmens?.length ?? 0) > (before.emittedOmens?.length ?? 0)) record('emit_omen');
+      case 'emit_omen': {
+        // A new id, not a longer list: the global cap evicts as it appends.
+        const known = new Set((before.emittedOmens ?? []).map((o) => o.omenId));
+        if ((after.emittedOmens ?? []).some((o) => !known.has(o.omenId))) record('emit_omen');
         break;
+      }
       case 'favor_creation':
         if (summary.touchedWorld) record('favor_creation', action?.actorId);
         break;

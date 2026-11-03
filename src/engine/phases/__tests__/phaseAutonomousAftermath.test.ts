@@ -185,6 +185,29 @@ describe('phaseAutonomousAftermath', () => {
     expect(Object.keys(again).length).toBe(0); // never pays out twice
   });
 
+  it('never pays a hero’s cards out twice when the thread later lapses', () => {
+    const KINDLE = 'dealt.card.kindled_ambition.signature.spirit';
+    const base = makeState({ threaded: true });
+    const state = {
+      ...base,
+      ascendantIdentity: { sphereAlignment: { primary: 'mind', secondary: 'spirit' }, hungerId: 'hunger.witness' },
+      unifiedActions: [{
+        ...makeAction([HEART_VICE, HEART_VIRTUE]),
+        templateId: 'encounter.town.assize_letter',
+        activeNudges: [KINDLE],
+      }],
+    } as unknown as GameState;
+    const first = processAutonomousAftermath(state, { runtime }) as GameState;
+    expect(first.unifiedActions[0].nudgeGrantsDispatched).toBe(true);
+    const pursuesBefore = first.graph.getOutgoingEdges('mortal-1').length;
+
+    first.graph.removeEdge('t1'); // no longer a hero: the reaction loop now takes it
+    const second = processAutonomousAftermath(first, { runtime }) as GameState;
+    expect(second.unifiedActions[0].autonomousAftermathApplied).toBe(true);
+    expect(second.graph.getOutgoingEdges('mortal-1').length).toBe(pursuesBefore);
+    expect(second.unifiedActions[0].nudgeWrites).toEqual(first.unifiedActions[0].nudgeWrites);
+  });
+
   it('no-ops without a runtime (fail-soft)', () => {
     const state = makeState({ profile: { loyalty_ambition: 0.8 } });
     const next = processAutonomousAftermath(state, {});

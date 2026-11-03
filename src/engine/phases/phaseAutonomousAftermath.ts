@@ -212,7 +212,9 @@ export function processAutonomousAftermath(state: GameState, ctx: PhaseContext):
     // grant lands on the world the encounter left behind rather than the one it
     // started from. A hand of plain forecast cards (the common case) returns the
     // state unchanged and costs one Map build.
-    s = dispatchCommittedCards(s, action, runtime);
+    // A hero whose thread later lapsed reaches this loop with its cards already
+    // paid out by the pass below; never dispatch them twice.
+    if (!action.nudgeGrantsDispatched) s = dispatchCommittedCards(s, action, runtime);
 
     applied += 1;
   }

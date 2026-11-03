@@ -14,6 +14,7 @@ import { createSimulationRuntime, type SimulationRuntime } from '../../simulatio
 import { buildNudgeWriteChanges } from '../../views/stage/buildNudgeWriteChanges';
 import { buildFightChipWorld } from '../../views/stage/chipCollaborators';
 import { PLAY_PROFILES } from '../../../data/nudge-card-library';
+import { EMITTED_OMEN_MAX_ACTIVE } from '../../../data/game-config';
 import { allSpellDefinitionNodes } from '../../../data/spell-templates';
 import { allStrainConditionNodes } from '../../../data/strain-conditions';
 import { CONDITION_TRAIT_DEFINITIONS } from '../../../data/condition-trait-content';
@@ -147,6 +148,18 @@ describe('THR-2147 — a played card’s write reaches the Aftermath', () => {
     expect(result.nudgeWrites).toEqual([expect.objectContaining({ kind: 'emit_omen', targetId: ACTOR })]);
     const [chip] = buildNudgeWriteChanges(result.nudgeWrites, buildFightChipWorld(result.state.graph));
     expect(chip.detail).toBe('An omen bends what Elara meets next.');
+  });
+
+  it('an omen planted at the global cap is still recorded (append + evict)', () => {
+    const state = buildState();
+    const full = Array.from({ length: EMITTED_OMEN_MAX_ACTIVE }, (_, i) => ({
+      omenId: `old_${i}`, sourceEncounterId: 'x', sourceReactionId: 'x', category: 'cultural',
+      intensity: 0.1, scope: { kind: 'global' }, narrativeHook: 'old', emittedTick: 1, expiresTick: 999,
+    }));
+    const capped = { ...state, emittedOmens: full } as unknown as GameState;
+    const result = play(capped, libraryCard('card.omen.signature.time'), runtime);
+    expect(result.state.emittedOmens).toHaveLength(EMITTED_OMEN_MAX_ACTIVE);
+    expect(result.nudgeWrites).toEqual([expect.objectContaining({ kind: 'emit_omen' })]);
   });
 
   it('Favour records a debt the chip names', () => {
