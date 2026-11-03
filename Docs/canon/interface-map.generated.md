@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 109 |
-| **Total** | **345** |
+| 🔵 UNVERIFIED-OK | 111 |
+| **Total** | **347** |
 
 ## Contracts by producing subsystem
 
@@ -204,6 +204,7 @@ remediation ticket or the build fails.
 | `authored-tier-ramp-target-scaled-price` | The authored per-tier advancement ramp reaches the player. `TIER_ADVANCEMENT_ESSENCE_COST` / `TIER_ADVANCEMENT_DIFFICULTY` / `TIER_ADVANCEMENT_DURATION` author a 3-row ladder, but only row 1 had a consumer — a static template step cannot read its target's tier — so advancing a Mundane artifact and a Mythic one both cost 4 essence at difficulty 0.20, and both took 2–3 ticks. | function: `tierScaledEssenceCost`, `tierScaledDifficulty`, `tierScaledDuration`, `essenceCostContext` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `branch-decision-writes-archetype-drift` | A fork the mortal took becomes part of who they are: taking the cunning branch drifts them cunning, so a mortal the player keeps leaning one way visibly becomes that person instead of resetting each encounter. | function: `applyAgentDecidedBranches`, `decideBranchPole`, `decideBranchRoute`, `driftAxisIdForValuePair` | Personality & Emergent Traits | 🔴 LEAKED | THR-883 |
 | `cast-target-changes-reach-receipt` | The receipt names who a cast changed and how (THR-1606, extends `player-action-aftermath-read`). The step resolver snapshots a player cast's *target* before and after its ops (`snapshotCastTarget` / `snapshotTargetChanges`) and records each real write — a new divine influence, a trait placed or lifted — as an aftermath change carrying `subjectId`. The receipt leads with the first such change when its overview never names the target, keeps it on the toast tier with a chip, and declares the target as the event's world reference so the toast opens the mortal (Law 1). No change is produced for a write that did not happen (Law 56). | function: `snapshotCastTarget`, `snapshotTargetChanges`, `targetSideChanges`, `subjectId` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
+| `chapter-growth-marks-reach-tile` | The sheet says what grew (THR-2149). The person sheet's reach tiles read the chapter archive's `aftermathSummary` growth changes through `recentReachGrowth` (`engine/views/reachGrowthMarks.ts`): the newest growth per reach inside `SHEET_GAIN_MARK_WINDOW_TICKS` draws the Aftermath's ▲ cluster beside the reach word, and its hover names the chapter. A ▲▲ gain usually leaves the 0.2-wide tier word unchanged, so before this the Aftermath and the sheet disagreed. Read only; nothing is written. | node-prop: `aftermathSummary` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `compulsion-card-plants-agent-decision-bias` | A god can steer one mortal without seizing them: the card plants an urge, and that mortal's own next decision leans toward it — you steered them, they still chose. | function: `derivePlantedCompulsionEncounterBias`, `phasePlantedCompulsionDecay` | Encounters & Dilemmas | 🔴 LEAKED | THR-883 |
 | `content-objects-registry` | Every kind of authored content the game hands out has one name, in game words, and one registered home — the catalogs that hold it, the id prefixes its entries carry, the world object a granted entry becomes, and the machine gate that validates it — so an authoring agent and a runtime reader agree on what a piece of content IS without reading each other. The sibling of the world-object registry: that one says what the engine mints, this one says what a person writes, and instantiatesAs is the one-way join. Slice 1 of THR-1481 adds vocabulary and guards only; the tag vocabulary (slice 2) and the content query that lets content name content by kind and tags instead of by rotting literal id (slice 3) are what the registry exists to carry. Adding a kind is one PR: registry row, loader entry, UL term, canon row (THR-1485). | function: `CONTENT_OBJECT_KINDS`, `CONTENT_CATALOGS`, `entriesOfKind`, `contentKindsForId`, `contentKindsForWorldObject`, `SHARED_ID_PREFIXES` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `content-tag-vocabulary` | Every word an author may hang on a piece of content comes from one closed list, so a query can ask for content by what it IS rather than by its id. Five axes: form and family authored, reach and sphere derived from REACH_DOMAINS and SPHERE_NAMES so a ninth reach appears in the vocabulary the day it is added, polarity the two words the condition proxy-event classifier already reads. Where a kind declares a typed projection field the tag is derived and never authored, and an authored tag contradicting its projection fails. The corpus held 153 spellings, 62 of them worn by one or two entries and read by nothing; a query written against that matches whatever the last author typed, which is why the list is closed and why adding to it is a design-session decision rather than a keystroke (THR-1486). | function: `CONTENT_TAGS`, `isContentTag`, `axisOfContentTag`, `contentTagsOnAxis`, `contentTagTooltipId`, `effectiveTags`, `authoredTags`, `projectedTags` | Attachments, Items & Possessions | 🟢 LIVE | — |
@@ -245,6 +246,7 @@ remediation ticket or the build fails.
 | `journey-keeps-encounter-target` | A mortal who sets out for an encounter keeps it as the goal of the trip: the journey records the pull that chose it, a reroute has to beat that pull and carries its own target, and on arrival the encounter it came for is still on the board. The goal is the encounter *here* (THR-1674): a copy of the template in another town never carries the commitment. | node-prop: `targetEncounterId`, `motivationPull`, `journeyGoal`, `JOURNEY_GOAL_CAP_RESERVE`, `ARRIVAL_GOAL_COMMITMENT_MULTIPLIER` | Movement & Colocation | 🟢 LIVE | — |
 | `location-condition-taxes-movement-and-gates-templates` | A place can be in a state — a pass shut for the season, a town under a plague scare — and that state is something other systems act on, not scenery. | function: `isLocationCarrier`, `LOCATION_CONDITION_MOVEMENT_TAX`, `buildLocationTargetContext`, `LocationProfileModal`, `conditionEffectLine`, `LOCATION_CONDITION_STEP_MODIFIER`, `collectLocationConditionContributions`, `phaseLocationTraits` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `meeting-bond-writes-the-first` | Meeting The First ends in a bond: the chosen mortal gets a `thread` edge at court position `the_first`, and from then on the game treats them as the player's First — the meeting stops offering itself, and their encounters are raised to shaping attention. Since THR-1644 the Agent Thread card writes the same position when the god holds no First, so the meeting is the first route to a First, not the only one. | edge-prop: `the_first` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
+| `meeting-leans-on-nature` | A meeting lean shows on Nature (THR-2149). `meetingLeans` (`engine/agentDetail.ts`) reads the thread edge's `meetingChoiceRecord.formativeOutcomes` and returns the pole each formative test wrote, in the axis registry's word; the person sheet's Nature row adds a "leaning {word}" chip when that word is not already shown. The fate line says "leans {x} now", so the promise and the sheet agree. Read only. | edge-prop: `formativeOutcomes` | Personality & Emergent Traits | 🔵 UNVERIFIED-OK | — |
 | `meeting-trait-seeds-land-as-narrative-descriptors` | The choices you made while meeting your First stay visible in who they are — the descriptors the meeting authored read back on their character sheet and in their backstory, instead of every First being described in the same default words. | node-prop: `narrativeDescriptors` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `meeting-writes-first-trade` | The bond writes the trade the player read onto The First — `npcRole` for every role reader (role affinity, Means at birth, caster tradition, the binder census, the job-cast chapter filter) and `tradeWord` for what the sheet, the land index and the header print. Written before Means is born, so a healer First is born with a healer's Means. | node-prop: `npcRole`, `tradeWord`, `writeFirstTrade` | Mortal Economy & Prosperity | 🔵 UNVERIFIED-OK | — |
 | `membership-change-writes-rank-and-faction-rank-gate-reads-it` | An ending can make someone a member of a faction, or move them up inside it — and a later scene can require the rank it gave them. | function: `joinFaction`, `leaveFaction`, `adjustMemberRank`, `resolveFactionNodeId`, `buildPredicateContext`, `FACTION_RANK_MAX` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
@@ -1146,10 +1148,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Aftermath*
 - **Module:** `src/engine/castTargetChanges.ts`
-- **Production hits:** 24 total — 2 write, 1 read, 21 unclassified
+- **Production hits:** 25 total — 2 write, 1 read, 22 unclassified
 - **Write sites:** `src/engine/castTargetChanges.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/engine/playerReceipts.ts`
-- **Other hits:** `src/components/Game/GameView.tsx`, `src/data/undertaking-objects.ts`, `src/engine/agentDetail.ts`, `src/engine/armyNotifications.ts`, `src/engine/ascendantBeat.ts` +16 more
+- **Other hits:** `src/components/Game/GameView.tsx`, `src/data/undertaking-objects.ts`, `src/engine/agentDetail.ts`, `src/engine/armyNotifications.ts`, `src/engine/ascendantBeat.ts` +17 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `cell-completion-renews-control-stance` — 🟢 LIVE
@@ -1163,6 +1165,17 @@ exit
 - **Read sites:** `src/engine/strategicPresentation.ts`, `src/engine/strategicTelemetry.ts`
 - **Other hits:** `src/audio/audioConstants.ts`, `src/components/Game/debug/AccountDebugTab.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/ReadTheThreadsPanel.tsx` +29 more
 - **Verdict:** Verified 2026-09-10: THR-1287. `renewControlStance` is the only code path in `src/` that ever writes `neglectTicks: 0` outside stance creation, or lowers `degradation` at all — before it, every stance collapsed at grace(10) + 20 degrading ticks whatever its holder did. Non-vacuous on a **generated** world by `controlRenewalReach.test.ts` (heavy lane): a small seed-42 world warmed 20 ticks, two mortals claimed onto two unheld Locations they actually stand at through the world’s own `claimControl`, then driven 45 ticks with the *only* difference being that one holder harvests every 5 ticks — the worked hold is still `active` past the collapse window with its `controls` edge intact, the unworked twin is gone and its edge released. The band rule is falsified rather than asserted in `controlRenewal.test.ts`: every one of the six `STEP_OUTCOMES` is swept and renewal tracks ladder rank against the constant exactly, with `near_miss` — the band `isStepSuccess` would have wrongly admitted — pinned as renewing nothing. An instant cell (`use`, duration [0,0,0]) renews on completion alone, matching `executeInstantMutation`’s own documented contract that a bandless instant completion takes the plain-success row; a *checkpointed* cell that lost its band still renews nothing, and both arms are pinned. **Updated by THR-1450:** such a cell no longer *reaches* the resolver bandless — the instant arm now stamps `INSTANT_COMPLETION_BAND` at the call site, because leaving the convention to each reader had already cost the harvest its entire payout. This row is unmoved either way: `renewControlStance` skips the rank test outright when `checkpointed` is false, so it never consulted the band on this path.
+
+### `chapter-growth-marks-reach-tile` — 🔵 UNVERIFIED-OK
+
+- **Intent:** The sheet says what grew (THR-2149). The person sheet's reach tiles read the chapter archive's `aftermathSummary` growth changes through `recentReachGrowth` (`engine/views/reachGrowthMarks.ts`): the newest growth per reach inside `SHEET_GAIN_MARK_WINDOW_TICKS` draws the Aftermath's ▲ cluster beside the reach word, and its hover names the chapter. A ▲▲ gain usually leaves the 0.2-wide tier word unchanged, so before this the Aftermath and the sheet disagreed. Read only; nothing is written.
+- **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
+- **UL terms:** *Agent*, *Encounter*
+- **Production hits:** 19 total — 1 write, 1 read, 17 unclassified
+- **Write sites:** `src/engine/chapterArchive.ts`
+- **Read sites:** `src/engine/views/reachGrowthMarks.ts`
+- **Other hits:** `src/components/Game/ChapterView.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/divine-working-aftermath.ts` +12 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `claim-item-takes-up-a-lying-relic` — 🟢 LIVE
 
@@ -2920,6 +2933,17 @@ exit
 - **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/encounterBadgeModel.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts` +41 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
+### `meeting-leans-on-nature` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A meeting lean shows on Nature (THR-2149). `meetingLeans` (`engine/agentDetail.ts`) reads the thread edge's `meetingChoiceRecord.formativeOutcomes` and returns the pole each formative test wrote, in the axis registry's word; the person sheet's Nature row adds a "leaning {word}" chip when that word is not already shown. The fate line says "leans {x} now", so the promise and the sheet agree. Read only.
+- **Producer → Consumer:** Encounters & Dilemmas → Personality & Emergent Traits
+- **UL terms:** *Agent*, *Encounter*
+- **Production hits:** 8 total — 1 write, 1 read, 6 unclassified
+- **Write sites:** `src/engine/meetingEncounter.ts`
+- **Read sites:** `src/engine/agentDetail.ts`
+- **Other hits:** `src/components/MeetTheFirst/meetingDebugState.ts`, `src/components/MeetTheFirst/MeetTheFirstFlow.tsx`, `src/components/ThreadingRite/ThreadingRite.tsx`, `src/engine/threadingRite.ts`, `src/engine/threadingRiteQueue.ts` +1 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `meeting-trait-seeds-land-as-narrative-descriptors` — 🟢 LIVE
 
 - **Intent:** The choices you made while meeting your First stay visible in who they are — the descriptors the meeting authored read back on their character sheet and in their backstory, instead of every First being described in the same default words.
@@ -3218,10 +3242,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Aftermath*
 - **Module:** `src/engine/playerReceipts.ts`
-- **Production hits:** 23 total — 1 write, 2 read, 20 unclassified
+- **Production hits:** 24 total — 1 write, 2 read, 21 unclassified
 - **Write sites:** `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/data/receipt-content.ts`, `src/engine/playerReceipts.ts`
-- **Other hits:** `src/components/Game/ChapterView.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/divine-working-aftermath.ts` +15 more
+- **Other hits:** `src/components/Game/ChapterView.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/divine-working-aftermath.ts` +16 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `player-action-receipts-queue` — 🔵 UNVERIFIED-OK
@@ -3307,10 +3331,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 474 total — 1 write, 1 read, 472 unclassified
+- **Production hits:** 476 total — 1 write, 1 read, 474 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +467 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +469 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `recovered-town-keeps-faith` — 🟢 LIVE

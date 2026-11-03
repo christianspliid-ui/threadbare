@@ -23,6 +23,7 @@ import { ENTITY_VISUAL_HERO_ASPECT } from './EntityVisual';
 import { useRefRouterContext } from '../../contexts/RefRouterContext';
 import type { IconName } from '../../data/icons/iconRegistry';
 import { OddsPips } from './OddsPips';
+import { DeltaCluster } from './DeltaCluster';
 import {
   useDetailPageOpener,
   type OpenByRef,
@@ -638,7 +639,18 @@ function CardsSectionRenderer({ section, inAside = false }: { section: CardsSect
               {tile.ref ? <Chip role="identity" size="sm" target={tile.ref} label={tile.title} /> : tile.title}
             </div>
             {tile.lines.map((line, li) => (
-              <div key={li} style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', lineHeight: 1.5 }}>{line}</div>
+              <div key={li} style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', lineHeight: 1.5 }}>
+                {line}
+                {/* THR-2149: a recent gain draws the Aftermath's ▲ cluster after the first line's word,
+                    at DeltaCluster's default size — the Law 11 floor, since the count is the reading. */}
+                {li === 0 && tile.mark && (
+                  <Tooltip label={tile.mark.heading} desc={tile.mark.label}>
+                    <span data-growth-steps={tile.mark.steps} style={{ marginLeft: 'var(--space-1)', lineHeight: 1 }}>
+                      <DeltaCluster direction="gain" count={tile.mark.steps} label={tile.mark.label} />
+                    </span>
+                  </Tooltip>
+                )}
+              </div>
             ))}
             {tile.clock && (
               <div data-tile-clock="" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap', marginTop: 'var(--space-1)' }}>
