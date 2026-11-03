@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-03 00:59 local (23:59 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-03 01:58 local (00:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -46,7 +46,7 @@ Still open from earlier today:
 - Same plan: an action card shows one tag ("Change"), not two; the size word moves into its hover. Veto line: "keep the size tag".
 - Same plan: what a played card did shows in the Aftermath as an ordinary result chip naming the mortal; the Long Game's hidden mark stays hidden. Veto line: "show the hidden mark too".
 
-Say "veto <title>" to reverse any of these. *— from the design lane ([15:38](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02e.md), [18:45](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02f.md), [21:41](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02g.md), [00:41](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03a.md), local time)*. Legibility 1's veto window has closed and it is now being built.
+Say "veto <title>" to reverse any of these. *— from the design lane ([15:38](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02e.md), [18:45](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02f.md), [21:41](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-02g.md), [00:41](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03a.md), local time)*. Legibility 1 is now built and live.
 
 ## This week's screens
 
@@ -54,7 +54,7 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([15:38](h
 
 ## Queue
 
-**Healthy (3 ready, 1 being built).** The builder took [Legibility 1 — the shared blocks](https://linear.app/threadbare/issue/THR-2122/plan-doc-legibility-1-the-shared-blocks-the-type-ladder-and-the) when its veto window closed and is working on it now. The design lane added [The answer comes here](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage) (open from 11:35 UTC). The other two ready tickets wait out their veto windows: [Every card says what it buys](https://linear.app/threadbare/issue/THR-2147/every-card-says-what-it-buys-a-result-line-for-cards-that-dont-move) until 05:00 UTC and [The pool says how full it can get](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar) until 08:45 UTC.
+**Healthy (3 ready, none being built).** [Legibility 1 — the shared blocks](https://linear.app/threadbare/issue/THR-2122/plan-doc-legibility-1-the-shared-blocks-the-type-ladder-and-the) merged via [#2721](https://github.com/christianspliid-ui/threadbare/pull/2721) and is live. All three ready tickets wait out their veto windows, so the builder is idle by design until the first opens: [Every card says what it buys](https://linear.app/threadbare/issue/THR-2147/every-card-says-what-it-buys-a-result-line-for-cards-that-dont-move) at 05:00 UTC, [The pool says how full it can get](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar) at 08:45 UTC and [The answer comes here](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage) at 11:35 UTC.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -62,4 +62,4 @@ Two items for agents, not you:
 
 ## Health
 
-All green. Engine speed is 129 ms/tick, 20% below the 7-day median of 161. The live site is up to date (commits since the last publish touched only docs). No pull requests are waiting to merge. Checks on main, heavy tests and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 23:40 UTC. The builder is mid-run, so no stall.
+All green. Engine speed is 133 ms/tick, 17% below the 7-day median of 161. The live site serves the latest main (fffad27e, Legibility 1). No pull requests are waiting to merge. Checks on main, heavy tests and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 00:40 UTC. The builder's last three runs were short, each because every ready ticket is on a veto hold — idle by design, not a stall.

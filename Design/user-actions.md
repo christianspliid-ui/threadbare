@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-03 00:59 local (23:59 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-03 01:58 local (00:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,6 +46,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-03: Legibility 1 is live: sheets share one set of section blocks, one type ladder and one spacing rhythm** ([THR-2122](https://linear.app/threadbare/issue/THR-2122/plan-doc-legibility-1-the-shared-blocks-the-type-ladder-and-the)). Merged via [#2721](https://github.com/christianspliid-ui/threadbare/pull/2721).
 - **2026-11-02: Flawed Steel and the Mason-Lord's Wall now read in the new story voice, and it is live** ([THR-2110](https://linear.app/threadbare/issue/THR-2110/rewrite-the-five-novel-prose-encounters-to-prose-doctrine-v2-flawed)). Merged via [#2719](https://github.com/christianspliid-ui/threadbare/pull/2719).
 - **2026-11-02: town encounters now name the mortal and write their own stake line (round one), and it is live** ([THR-2130](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write)). Merged via [#2717](https://github.com/christianspliid-ui/threadbare/pull/2717).
 - **2026-11-02: seven board encounters' result lines now state what happened, and it is live** ([THR-2129](https://linear.app/threadbare/issue/THR-2129/encounter-factory-habits-slice-b-the-seven-migrated-board-encounters)). Merged via [#2716](https://github.com/christianspliid-ui/threadbare/pull/2716).
@@ -55,7 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-02: ten more board encounters now read in the new story voice, and it is live** ([THR-2108](https://linear.app/threadbare/issue/THR-2108)). Merged via [#2712](https://github.com/christianspliid-ui/threadbare/pull/2712).
 - **2026-11-02: six small faults from playtest round 6 are fixed, and it is live** ([THR-2142](https://linear.app/threadbare/issue/THR-2142/six-small-faults-from-cold-playtest-round-6-setup-screens-that-move-on)). Merged via [#2711](https://github.com/christianspliid-ui/threadbare/pull/2711).
 - **2026-11-02: the map no longer moves under your hand while a card is armed, and it is live** ([THR-2141](https://linear.app/threadbare/issue/THR-2141/the-live-map-moves-under-the-players-hand-an-armed-card-does-not-hold)). Merged via [#2710](https://github.com/christianspliid-ui/threadbare/pull/2710).
-- **2026-11-02: three chapter-screen faults are fixed, the Play button among them, and it is live** ([THR-2140](https://linear.app/threadbare/issue/THR-2140/three-chapter-screen-faults-the-authored-choice-play-button-sits-below)). Merged via [#2709](https://github.com/christianspliid-ui/threadbare/pull/2709).
 ---
 
 Older resolved items and every earlier revision of this file: `git log -p origin/ops -- Design/user-actions.md`.
