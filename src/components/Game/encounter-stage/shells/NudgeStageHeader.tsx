@@ -472,7 +472,7 @@ export function NudgeBalance({ testPanel, onOpenEntity }: NudgeBalanceProps) {
                     data-testid={`nudge-factor-kind-${factor.id}`}
                     data-factor-kind={factor.polarity}
                     style={{
-                      fontFamily: 'var(--font-display)',
+                      fontFamily: 'var(--font-body)',
                       fontSize: 'var(--text-xs)',
                       letterSpacing: '0.12em',
                       textTransform: 'uppercase',

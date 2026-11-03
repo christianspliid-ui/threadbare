@@ -168,6 +168,7 @@ Whitespace first; a box only for a thing you press (THR-2120 § 3).
 - **A block gets a frame only when it is one object the player acts on as a whole**: a card, a tile, a dialog option, a list entry that opens something — plus the surface's one Now highlight (R5, Law 31).
 - **Sections, facts blocks, chip rows, lists and link groups are grouped by space and their heading, never a box.** An `event-card` section is framed only while it opens something.
 - **Depth ≤ 2 containers: surface → card.** Controls inside a card (a chip, a toggle, a button) do not count.
+- **A hosted column paints no surface inside its host** (THR-2124). The Stage is the example: the Stage panel paints `--veil-void` when it hosts the encounter, and the veil's step, left, aftermath and watched columns paint nothing. The in-place veil (no Stage) paints the void on its own frame, because there it is the surface.
 - **A hosted page draws no frame inside its host** (THR-2123). The Inspector docked and wide: the host aside is the surface, and `InspectorPage` renders its `<article>` unframed under `PanelLevelScope level="panel"`, keeping only its padding. At Full the host is a backdrop, so the page keeps `Panel level="page"` and is the surface itself.
 
 ## Facts block

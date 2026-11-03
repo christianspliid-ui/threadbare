@@ -95,7 +95,8 @@ A mortal's moment plays on one panel over the dimmed map, beside the god rail, w
 | Window | The open map right of the panel, measured from the DOM (`data-stage-window`), never computed: 280 / 520 wide (full), 692 / 1144.5 (compact). The place tag names the lit hex at its top | `Stage.tsx` |
 | Frame while open | The Ledger rail steps aside (`hidden`), the Inspector folds and keeps its subject, the top bar's guard covers the moment, the lens is suppressed (the bar keeps its lens pressed), the map's corner controls, keys and HTML overlays hide | `ledgerFold.ts`, `InspectorHost.tsx`, `GameMap.tsx` |
 | Inspector over the Stage | A name or the lit hex clicked on the Stage opens its page docked at the right edge, at `Z_BAND.modal` (60), below the top bar, no backdrop. Escape or its close folds it back to the moment | `InspectorHost.tsx` |
-| Debug | `await window.__DEBUG.getStage()` — panel and window rects, `litHexInWindow`, camera, map dim, folds | `stage/useStageDebugBridge.ts` |
+| Debug | `await window.__DEBUG.getStage()` — panel and window rects, `litHexInWindow`, camera, map dim, folds, `anatomy` (title size, title-is-largest, the fold of title / Now / first scene line / first hand row / commit; THR-2124) | `stage/useStageDebugBridge.ts` |
+| Reading order | Who (the title, Cinzel `--text-xl`) → Now (the stakes line) → the scene → the test → the hand → fate (Panel anatomy § 2, Law 38). The title row stays the fixed chrome across steps (Law 37). One surface: the Stage panel paints `--veil-void` (StageHost's `ground`), and the veil's columns paint nothing (THR-2124) | `EncounterVeil.tsx`, `StageHost.tsx` |
 
 ### Modal Layer
 
@@ -106,6 +107,7 @@ A mortal's moment plays on one panel over the dimmed map, beside the god rail, w
 | Max height | `var(--modal-max-h)` = 85vh — the one dialog cap (Law 33) | `Modal.tsx`, `index.css` |
 | Animation | `anim-fade-up` default | `Modal.tsx:23` |
 | Behavior | An `Overlay` (backdrop, band, Escape stack, focus) with a floating `page` `Panel` (THR-1884). Escape closes it when it is the topmost surface. Backdrop click to close. | `Overlay.tsx` |
+| Title | **`Modal.Header` is the one dialog title** (THR-2124): Cinzel `--text-xl` at the left edge, marked `data-dialog-title`. Its optional `kind` draws the label rule above the title (what sort of thing this is); a kind that repeats the title is not drawn. The order is Who → Now (the question or news as one line, `data-dialog-now`) → Detail → act last. Settings and the Divine Court use it; the receipt keeps its art band and draws its own title line at the same size | `Modal.tsx` |
 
 **Two modals at equal z resolve by DOM order** — which the JSX author never sees, and which changes whenever the render order in `GameView` is edited. `MODAL_Z_ABOVE_INTERRUPT` (65) is the one sanctioned step up, for a dialog opened *from* a modal-tier interrupt that renders later in `GameView` (THR-1139 introduced it for the character sheet over `PremonitionModal`; the sheet retired in THR-1912 and the band stays for the next such dialog). It deliberately stops below 70 — a dialog contains tooltips, and `Tooltip` sits at `70 + depth`, so raising a sheet into that band would bury its own hovers. A third band is a design decision against this table, not an implementation choice (Law 35).
 
