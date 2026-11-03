@@ -20,6 +20,7 @@ import type { BondOutcome, FormativeOutcome } from '../types/meetingEncounter';
 import type { ForecastTier } from '../types/resolution';
 import type { StepOutcome } from '../types/unifiedAction';
 import { getAxisByValuePair } from '../types/axisRegistry';
+import { VALUE_WORD_MAP } from '../data/domain-words';
 import {
   FATE_ANSWER_BY_BAND,
   MEETING_FATE_LINE_BOND_CLAUSES,
@@ -82,8 +83,15 @@ export function fateAnswerForBand(band: StepOutcome): FateAnswer {
   return (MEETING_POLE_SHIFT_BY_BAND[band] ?? 0) >= 0 ? 'with' : 'turned';
 }
 
-/** `courage_prudence` → `Courage` / `Prudence`. The fallback when no reach axis owns a pair. */
+/**
+ * The fallback when no reach axis owns a pair: the sheet's own adjectives
+ * (`courage_prudence` → `Courageous` / `Prudent`, `VALUE_WORD_MAP`), so the
+ * fate line, the card tag and Nature's lean chip name the pole the same way
+ * (THR-2149). A pair missing from that table splits its key, capitalised.
+ */
 function splitValuePairWords(valuePair: ValuePair): PoleWords {
+  const sheet = VALUE_WORD_MAP[valuePair];
+  if (sheet) return { a: sheet[0], b: sheet[1] };
   const [a = '', b = ''] = String(valuePair).split('_');
   const cap = (w: string) => (w ? w.charAt(0).toUpperCase() + w.slice(1) : w);
   return { a: cap(a), b: cap(b) };
@@ -93,7 +101,7 @@ function splitValuePairWords(valuePair: ValuePair): PoleWords {
  * The words a meeting test's two poles are read as. Pole `a` is the virtue (the
  * positive direction of `AxiologicalProfile`), pole `b` the vice — the same
  * words the agent sheet shows. A pair no reach axis owns (`courage_prudence`)
- * falls back to its own key's halves, capitalised; never the raw key.
+ * falls back to the sheet's adjectives; never the raw key.
  */
 export function poleWordsFor(valuePair: ValuePair): PoleWords {
   const axis = getAxisByValuePair(valuePair);

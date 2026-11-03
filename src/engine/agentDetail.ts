@@ -41,7 +41,9 @@ import { COMPLETED_AMBITIONS_MAX_DISPLAY } from '../types/agentKnowledge';
 import { getAgentPortraitUrlFromProperties } from '../data/portrait-assets';
 import { getCompanions, type CompanionEntry } from './companions';
 import { getOriginVignetteById } from '../data/origin-vignettes';
-import { getAxisByReach, getAxisById } from '../types/axisRegistry';
+import { getAxisByReach, getAxisById, getAxisByValuePair } from '../types/axisRegistry';
+import type { FormativeOutcome } from '../types/meetingEncounter';
+import { poleWordsFor } from './meetingFateLine';
 import { getDivineInfluences } from './interventionEffects';
 import { getCurrentStrength } from './decayCurve';
 import { isWhisperHeld } from './premonitionSteer';
@@ -136,6 +138,49 @@ const VALUE_LABELS: Record<ValuePair, [string, string]> = {
   sacrifice_survival: ['Self-Sacrificing', 'Self-Preserving'],
   courage_prudence: ['Courageous', 'Prudent'],
 };
+
+/**
+ * THR-2149 — the Nature chip word for a value: the axis registry's pole word
+ * (Fair / Scheming), the same word the meeting fate line and the personality row
+ * use, so a mortal who "leans Scheming" is never shown as "Cunning". The intensity
+ * prefix is kept. A pair no reach axis owns (`courage_prudence`) falls back to
+ * `getValueWord`.
+ */
+export function natureValueWord(pair: ValuePair, value: number): string {
+  if (!getAxisByValuePair(pair)) return getValueWord(pair, value);
+  return `${intensityPrefix(Math.abs(value))}${naturePoleWord(pair, value >= 0 ? 'a' : 'b')}`;
+}
+
+/** A pole's bare Nature word: pole `a` is the virtue (positive), `b` the vice. */
+export function naturePoleWord(pair: ValuePair, pole: 'a' | 'b'): string {
+  const axis = getAxisByValuePair(pair);
+  if (axis) return pole === 'a' ? axis.virtue.word : axis.vice.word;
+  // The fate line's own fallback, so the lean chip and the line it echoes agree.
+  return poleWordsFor(pair)[pole];
+}
+
+/** One lean the threading meeting wrote, in the axis's own word. */
+export interface MeetingLean {
+  readonly pair: ValuePair;
+  readonly word: string;
+}
+
+/**
+ * THR-2149 — the leans the threading meeting wrote on this mortal, read from the
+ * thread edge's `meetingChoiceRecord.formativeOutcomes`: the pole each test's band
+ * actually wrote, one per value pair (the later test wins). Pure. No thread edge,
+ * no record, or a test that shifted nothing yields no lean (fail-soft).
+ */
+export function meetingLeans(graph: WorldGraph, agentId: string): MeetingLean[] {
+  const edge = graph.getIncomingEdges(agentId, 'thread').find(e => e.properties.meetingChoiceRecord != null);
+  const record = edge?.properties.meetingChoiceRecord as { formativeOutcomes?: readonly FormativeOutcome[] } | undefined;
+  const byPair = new Map<ValuePair, string>();
+  for (const o of record?.formativeOutcomes ?? []) {
+    if (!o?.valuePair || (o.writtenPole !== 'a' && o.writtenPole !== 'b') || !o.shift) continue;
+    byPair.set(o.valuePair, naturePoleWord(o.valuePair, o.writtenPole));
+  }
+  return [...byPair].map(([pair, word]) => ({ pair, word }));
+}
 
 // ─── Prototype flag ──────────────────────────────────────────────
 /** Set to false to gate intent visibility by familiarity tier */
@@ -1741,7 +1786,7 @@ export function getAgentInfoCard(
     if (valuesToShow.length > 0) {
       card.topValues = valuesToShow.map(tv => ({
         pair: tv.pair,
-        word: getValueWord(tv.pair, tv.value),
+        word: natureValueWord(tv.pair, tv.value),
       }));
     }
 
