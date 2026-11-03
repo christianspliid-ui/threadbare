@@ -278,7 +278,9 @@ export function InspectorPage({ page, size, graph, onWiden, onReport, toolbar, o
     ? <div data-inspector-aside-sections="">{asideSections.map(s => <Section key={s.typeId} section={s} inAside />)}</div>
     : null;
   // THR-2123 (U2): the one Now line, under Who and above Act. An empty slot draws nothing (Law 25).
-  const nowSlot = now ? <div data-inspector-now={now.typeId}><Section section={now} /></div> : null;
+  // The section keeps its own between-section margin; the slot gap already spaces it, so the
+  // wrapper takes that margin back rather than doubling it.
+  const nowSlot = now ? <div data-inspector-now={now.typeId} style={{ marginBottom: 'calc(-1 * var(--space-6))' }}><Section section={now} /></div> : null;
   const act = page.actOn ? <ActOnRow key={page.subjectKey} actOn={page.actOn} targetName={page.header.name} onCast={onCast} /> : null;
   const land = isLand ? <InThisLand index={page.inThisLand} /> : null;
   const body = <Body key={planKey} tabs={tabs} tabsLabel={page.header.name} />;
