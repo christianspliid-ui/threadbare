@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-03 17:59 local (16:59 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-03 18:58 local (17:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,7 +20,13 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-From 15:25 local (new). From [The chosen path steers by skill, not by story](https://linear.app/threadbare/issue/THR-2144/recurs-after-fix-the-chosen-path-steers-by-skill-not-by-story-the). Nobody may start building it before 02:24Z on 4 Nov.
+From 18:20 local (new). From [34 older encounters still let the player pick the mortal's path](https://linear.app/threadbare/issue/THR-2135/34-older-encounter-files-still-let-the-player-pick-the-mortals-path). Nobody may start building it before 05:40Z on 4 Nov.
+
+- [Flawed Steel and the five sphere story beats](https://linear.app/threadbare/issue/THR-2157/the-mortal-decides-flawed-steel-and-the-five-sphere-story-beats-their) — 32 encounters still let your click choose how the story ends. Flawed Steel, one of the most-met, still offers "Forge the truth" or "Temper the narrative", the exact choice you ruled out on 26 July. All 32 change the way Apotheosis did: the mortal decides, and you lean on them with cards. Veto line: "let the god pick endings in story beats".
+- Same decision — no encounter is cut. The fifteen reputation encounters, which The First no longer meets, are converted too, and they go last. Veto line: "retire the reputation encounters instead".
+- [The last player picks go](https://linear.app/threadbare/issue/THR-2161/the-last-player-picks-go-the-three-mentorship-moments-and-the-two) — once all 32 are converted, the old pick screen is deleted. A check then stops the build if an encounter ever brings it back. The rulebook claimed "none left" for three months because nothing checked. Veto line: "keep the old pick screen".
+
+From 15:25 local. From [The chosen path steers by skill, not by story](https://linear.app/threadbare/issue/THR-2144/recurs-after-fix-the-chosen-path-steers-by-skill-not-by-story-the). Nobody may start building it before 02:24Z on 4 Nov.
 
 - [The path pulls only scenes about the same thing](https://linear.app/threadbare/issue/THR-2156/the-path-pulls-only-scenes-about-the-same-thing-each-path-names-two) — the path you pick at the bond still pulls The First toward chapters in its two skills, but now only toward chapters that share the path's theme too. "Torch of the uprising" stops pulling "Enlist in the Civic Guard". Veto line: "the path should pull on skill alone".
 - Same ticket — each of the 24 paths names two themes, picked from the game's existing values and read from the path's own picture text. For example, the Torch is about keeping or changing things, and about loyalty or ambition. Veto line: "let me pick the path themes".
@@ -44,18 +50,7 @@ From 09:48 local. All from [Legibility 4 — the god rail, the Ledger rail, list
 - Tooltip headings and the hover card use the game's plain font, not the title font at small sizes. Veto line: "keep the carved tooltip headings".
 - The hover card says what its subject is in one line ("Actor · Gatekeeper of the Iron Market · sworn to Order"). Under the name it shows what is going on with them: a mortal's strongest want ("Seek Revenge") or your Mandate. A faction's card shows no such line, because its highlighted line is just its own name. Veto line: "keep the hover card as it was".
 
-From 06:43 local. All from [Legibility 3 — the Stage and the dialogs](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first). Plan: [Legibility 3 — the Stage and the dialogs](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-03-thr-2124-legibility-stage-and-dialogs.md). Nobody may start building it before 17:42Z on 3 Nov.
-
-- On an encounter, the encounter's name becomes the biggest, brightest words at the top of the screen. Today it is small grey capitals and the dimmest text there. Veto line: "keep the encounter name small".
-- The sentence saying what is at stake sits right under it in plain, upright text, not faint italics. Veto line: "keep the stakes line in italics".
-- The story text gets bigger (the size of story text elsewhere) and upright instead of italic. Its large first letter grows with it. Veto line: "keep the story text small and italic".
-- The old book-style font on the encounter screen and on cards goes. Names and the big first letter use the game's title font, and small labels use the game's plain font. Veto line: "keep the old book font".
-- The smallest text on cards, such as the rarity word "Storied", grows from 11 to 16 px, the game's floor. Veto line: "keep the rarity word small".
-- The encounter screen stops drawing a dark box inside its own frame. Veto line: "keep the inner box".
-- Every window's title looks the same: left edge, one size. That covers Settings, the Divine Court, the Chapter Ledger, Read the Threads and the receipt. The Court's section names, such as "The First", stop being centred gold capitals. Veto line: "keep the Court's gold headings".
-- The "A Path Opens" choice says its title once, not twice, and its story is no longer in a box. Veto line: "keep the banner".
-
-Say "veto <title>" to reverse any of these. *— from the design lane ([06:43](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03c.md), [09:48](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03d.md), [12:20](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03e.md), [15:25](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03f.md), local time). The Legibility 2 decisions from 03:33 have passed their window, and [that ticket](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at) is now live.*
+Say "veto <title>" to reverse any of these. *— from the design lane ([09:48](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03d.md), [12:20](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03e.md), [15:25](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03f.md), [18:20](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03g.md), local time). The Legibility 3 decisions from 06:43 have passed their window, and [that ticket](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first) is now being built.*
 
 ## This week's screens
 
@@ -63,7 +58,7 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([06:43](h
 
 ## Queue
 
-**Healthy (5 ready, none being built).** [Legibility 2 — Inspector pages](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at) merged via [#2731](https://github.com/christianspliid-ui/threadbare/pull/2731) and is live. All five ready tickets wait out their veto windows, so the builder is idle by design until the first opens: [Legibility 3](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first) opens at 17:42, [Legibility 4](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover) at 20:47, [The goal says what fills it](https://linear.app/threadbare/issue/THR-2154/the-goal-says-what-fills-it-the-mandate-row-leads-with-the-hungers-own) and [The next follower has a path](https://linear.app/threadbare/issue/THR-2155/the-next-follower-has-a-path-a-threads-line-says-how-to-bind-another) at 23:30, and the new [The path pulls only scenes about the same thing](https://linear.app/threadbare/issue/THR-2156/the-path-pulls-only-scenes-about-the-same-thing-each-path-names-two) at 02:24 tomorrow (all UTC).
+**Healthy (7 ready, 1 being built).** The builder took [Legibility 3 — the Stage and the dialogs](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first) when its window opened at 17:42 UTC and is building it now. The rest wait out their veto windows: [Legibility 4](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover) opens at 20:47, [The goal says what fills it](https://linear.app/threadbare/issue/THR-2154/the-goal-says-what-fills-it-the-mandate-row-leads-with-the-hungers-own) and [The next follower has a path](https://linear.app/threadbare/issue/THR-2155/the-next-follower-has-a-path-a-threads-line-says-how-to-bind-another) at 23:30, [The path pulls only scenes about the same thing](https://linear.app/threadbare/issue/THR-2156/the-path-pulls-only-scenes-about-the-same-thing-each-path-names-two) at 02:24 tomorrow, and the three new encounter conversions ([seeded quests](https://linear.app/threadbare/issue/THR-2158/the-mortal-decides-the-six-seeded-quests-the-rival-shrine-the-soul), [reputation half one](https://linear.app/threadbare/issue/THR-2159/the-mortal-decides-the-reputation-encounters-half-one-the-warlords), [reputation half two](https://linear.app/threadbare/issue/THR-2160/the-mortal-decides-the-reputation-encounters-half-two-the-star-pilgrim)) at 05:40 tomorrow (all UTC).
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -71,4 +66,5 @@ Two items for agents, not you:
 
 ## Health
 
-All green. Engine speed: 130 ms/tick, 18% under the 7-day median. The live site is up to date (49d616a7). Checks on main and the scheduled background jobs pass, and no PRs are waiting to merge. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 16:40 UTC. The builder is not stalled: its last nine short runs each found every ready ticket inside a veto window, and the first window (Legibility 3) opens at 17:42 UTC.
+- **One PR is stuck on a cancelled check.** [#2732](https://github.com/christianspliid-ui/threadbare/pull/2732), the design lane's rulebook correction, has its Docs gates check cancelled since about 17:30 UTC, so auto-merge will not fire. The builder's unstick duty owns the re-run.
+- Everything else is green. Engine speed: 132 ms/tick, 17% under the 7-day median. The live site is up to date (49d616a7). Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 17:51 UTC. The builder is not stalled: it is building Legibility 3 now.
