@@ -1,8 +1,9 @@
 /**
  * InspectorPage — one subject's page at one Inspector size (THR-1876 § D2, § D5, § D6).
  *
- * The one renderer for every page kind: header → Act → body tabs → More when widened →
- * Connections (the land page: header → In this land → Act → description → Around it).
+ * The one renderer for every page kind: header → Now → Act → body tabs → More when widened →
+ * Connections (the land page: header → Now → In this land → Act → description → Around it).
+ * THR-2123: the Now slot holds the page's one highlighted line (or its bond strip), drawn once.
  * It renders a `SubjectPageVM` and reads no graph (THR-1822): the body is the registry's
  * sections, filtered here by size through `sectionVisibleAt`, grouped into tabs by each
  * row's `tab`. Docked is one column; wide is two (`SheetColumns`); Full adds the
@@ -25,7 +26,7 @@ import { FALLBACK_ICON_NAME, ICON_REGISTRY, type IconName } from '../../../data/
 import type { SubjectHeaderVM } from '../../../engine/views/subjects/subjectTypes';
 import { Section } from '../../shared/Section';
 import { Tabs } from '../../shared/Tabs';
-import { Panel } from '../../shared/Panel';
+import { Panel, PanelLevelScope } from '../../shared/Panel';
 import { SheetColumns, SheetLayoutContext } from '../../shared/SheetColumns';
 import { SubjectHeader } from './SubjectHeader';
 import { ActOnRow, ConnectionsBlock, InThisLand, MoreWhenWidened, type ActCastResult } from './InspectorParts';
@@ -46,6 +47,8 @@ export interface InspectorPageReport {
   hiddenForWidth: string[];
   /** THR-2097 — what the art-led dressing drew (`getInspectorLab()`, `getInspectorState()`). */
   dressing: InspectorDressingReport;
+  /** THR-2123 (U4) — which reading slots sit above the fold. */
+  fold: InspectorFoldReport;
 }
 
 /** THR-2097 — the dressing a page drew (plan § Debug inspection). */
@@ -58,6 +61,37 @@ export interface InspectorDressingReport {
   galleryTiles: number;
   /** Section typeIds whose icon drew the fallback mark. */
   iconFallbacks: string[];
+  /** THR-2123 (U2.6) — the section drawn in the Now slot (its typeId); null = the slot is empty. */
+  nowSection: string | null;
+}
+
+/**
+ * THR-2123 (U4) — whether each reading slot ends inside the page's scroll box (anatomy § 4).
+ * `null` = the slot is absent on this page.
+ */
+export interface InspectorFoldReport {
+  who: boolean;
+  now: boolean | null;
+  act: boolean | null;
+  tabs: boolean | null;
+}
+
+/**
+ * THR-2123 (U2, decision 1) — the page's Now section: the first section visible at this size
+ * carrying the R5 highlight; failing that, the first carrying the R4 bond strip; else none.
+ * Pure, in body order (NFP #3).
+ */
+export function nowSectionOf(body: readonly DetailSection[], size: InspectorSize): DetailSection | null {
+  const visible = body.filter(s => s.kind === 'prose' && sectionVisibleAt(s, size));
+  return visible.find(s => s.kind === 'prose' && s.highlight != null)
+    ?? visible.find(s => s.kind === 'prose' && s.bond != null)
+    ?? null;
+}
+
+/** Whether `el` ends within `box`'s visible height; null when the slot is absent. */
+function endsInside(box: HTMLElement, el: Element | null): boolean | null {
+  if (!el) return null;
+  return el.getBoundingClientRect().bottom - box.getBoundingClientRect().top <= box.clientHeight;
 }
 
 interface TabGroup {
@@ -83,11 +117,15 @@ function drawsFallback(icon: IconName | undefined): boolean {
   return icon != null && (icon === FALLBACK_ICON_NAME || !(icon in ICON_REGISTRY));
 }
 
-/** The visible sections at this size, grouped into tabs in table order. */
+/**
+ * The visible sections at this size, grouped into tabs in table order. The Now section
+ * (THR-2123) is drawn once, in its slot, so its tab skips it.
+ */
 export function tabsAt(body: readonly DetailSection[], size: InspectorSize, overviewIcon: IconName | null = null): TabGroup[] {
+  const now = nowSectionOf(body, size);
   const groups: TabGroup[] = [];
   for (const section of body) {
-    if (!sectionVisibleAt(section, size) || inAsideAt(section, size)) continue;
+    if (!sectionVisibleAt(section, size) || inAsideAt(section, size) || section === now) continue;
     const id = (section.tab ?? 'overview') as InspectorTabId;
     let g = groups.find(t => t.id === id);
     if (!g) groups.push((g = { id, label: INSPECTOR_TAB_LABELS[id], icon: id === 'overview' ? overviewIcon : INSPECTOR_TAB_ICONS[id], sections: [] }));
@@ -105,6 +143,9 @@ export function tabsAt(body: readonly DetailSection[], size: InspectorSize, over
  */
 export function hiddenForWidth(body: readonly DetailSection[], size: InspectorSize): string[] {
   const shownTabs = new Set(tabsAt(body, size).map(t => t.id));
+  // The Now section's tab is shown too — its section is drawn, only higher up (THR-2123).
+  const now = nowSectionOf(body, size);
+  if (now) shownTabs.add((now.tab ?? 'overview') as InspectorTabId);
   // A section the wider sizes draw in the aside is still in its tab here; it is not hidden.
   const tabs: string[] = [];
   const sections: string[] = [];
@@ -132,7 +173,7 @@ function Body({ tabs, tabsLabel }: { tabs: TabGroup[]; tabsLabel: string }) {
         {tabs.map(t => <Tabs.Tab key={t.id} value={t.id} label={t.label} icon={t.icon ?? undefined} />)}
         {tabs.map(t => (
           <Tabs.Panel key={t.id} value={t.id}>
-            <div style={{ paddingTop: '10px' }}>{renderSections(t.sections)}</div>
+            <div style={{ paddingTop: 'var(--space-2)' }}>{renderSections(t.sections)}</div>
           </Tabs.Panel>
         ))}
       </Tabs>
@@ -159,7 +200,8 @@ interface InspectorPageProps {
 export function InspectorPage({ page, size, graph, onWiden, onReport, toolbar, onCast, headingRef }: InspectorPageProps) {
   const overviewIcon = overviewIconFor(page.header.visual.kind);
   const tabs = useMemo(() => tabsAt(page.body, size, overviewIcon), [page.body, size, overviewIcon]);
-  const asideSections = useMemo(() => page.body.filter(s => sectionVisibleAt(s, size) && inAsideAt(s, size)), [page.body, size]);
+  const now = useMemo(() => nowSectionOf(page.body, size), [page.body, size]);
+  const asideSections = useMemo(() => page.body.filter(s => sectionVisibleAt(s, size) && inAsideAt(s, size) && s !== now), [page.body, size, now]);
   const hidden = useMemo(() => hiddenForWidth(page.body, size), [page.body, size]);
   const [opened, setOpened] = useState<ReadonlySet<string>>(new Set());
   const [folded, setFolded] = useState<ReadonlySet<string>>(new Set());
@@ -194,11 +236,22 @@ export function InspectorPage({ page, size, graph, onWiden, onReport, toolbar, o
   }, [planKey, size, page.connections.groups, opened]);
 
   useLayoutEffect(() => {
-    const shown = [...tabs.flatMap(t => t.sections), ...asideSections];
+    const shown = [...(now ? [now] : []), ...tabs.flatMap(t => t.sections), ...asideSections];
     const iconFallbacks = shown.filter(s => drawsFallback(s.icon)).map(s => s.typeId);
     // The same misses feed `getIconReport().fallbacksDrawn` (plan § Debug inspection).
     for (const typeId of iconFallbacks) recordFallbackDrawn('inspector-section', typeId);
-    onReport?.({
+    if (!onReport) return;
+    // THR-2123 (U4): the fold reads run only for a host that listens — no layout pass otherwise.
+    const box = scrollRef.current;
+    const fold: InspectorFoldReport = box
+      ? {
+          who: endsInside(box, box.querySelector('[data-inspector-header]')) ?? false,
+          now: endsInside(box, box.querySelector('[data-inspector-now]')),
+          act: endsInside(box, box.querySelector('[data-inspector-act]')),
+          tabs: endsInside(box, box.querySelector('[role="tablist"]')),
+        }
+      : { who: false, now: null, act: null, tabs: null };
+    onReport({
       sectionsShown: shown.map(s => s.typeId),
       foldedGroups: [...folded].filter(id => !opened.has(id)),
       hiddenForWidth: hidden,
@@ -208,9 +261,11 @@ export function InspectorPage({ page, size, graph, onWiden, onReport, toolbar, o
         firstBadge: page.header.firstOf != null && size !== 'docked',
         galleryTiles: shown.reduce((n, s) => n + (s.kind === 'cards' ? s.tiles.filter(t => t.image).length : 0), 0),
         iconFallbacks,
+        nowSection: now?.typeId ?? null,
       },
+      fold,
     });
-  }, [onReport, tabs, asideSections, folded, opened, hidden, page.header.firstOf, size]);
+  }, [onReport, now, tabs, asideSections, folded, opened, hidden, page.header.firstOf, size]);
 
   const showAll = (id: string) => setOpened(prev => new Set([...prev, id]));
   const effectiveFolded = new Set([...folded].filter(id => !opened.has(id)));
@@ -222,18 +277,22 @@ export function InspectorPage({ page, size, graph, onWiden, onReport, toolbar, o
   const asideBody = asideSections.length > 0
     ? <div data-inspector-aside-sections="">{asideSections.map(s => <Section key={s.typeId} section={s} inAside />)}</div>
     : null;
+  // THR-2123 (U2): the one Now line, under Who and above Act. An empty slot draws nothing (Law 25).
+  const nowSlot = now ? <div data-inspector-now={now.typeId}><Section section={now} /></div> : null;
   const act = page.actOn ? <ActOnRow key={page.subjectKey} actOn={page.actOn} targetName={page.header.name} onCast={onCast} /> : null;
   const land = isLand ? <InThisLand index={page.inThisLand} /> : null;
   const body = <Body key={planKey} tabs={tabs} tabsLabel={page.header.name} />;
   const more = <MoreWhenWidened hidden={hidden} onWiden={onWiden} />;
   const connections = <ConnectionsBlock connections={page.connections} folded={effectiveFolded} onShowAll={showAll} />;
-  const gap = { display: 'flex', flexDirection: 'column' as const, gap: '16px', minWidth: 0 };
+  // THR-2123 (decision 4): page slots sit the between-section distance apart.
+  const gap = { display: 'flex', flexDirection: 'column' as const, gap: 'var(--space-6)', minWidth: 0 };
 
   let content: ReactNode;
   if (size === 'docked') {
     content = (
       <div style={gap}>
         {header}
+        {nowSlot}
         {land}
         {act}
         {body}
@@ -252,6 +311,7 @@ export function InspectorPage({ page, size, graph, onWiden, onReport, toolbar, o
     const aside = (
       <div style={gap}>
         {header}
+        {nowSlot}
         {land}
         {act}
         {asideBody}
@@ -274,20 +334,36 @@ export function InspectorPage({ page, size, graph, onWiden, onReport, toolbar, o
     );
   }
 
-  return (
-    <Panel
-      level={size === 'full' ? 'page' : 'panel'}
-      as="article"
-      padding="standard"
-      data-inspector-page={page.subjectKey}
-      data-inspector-size={size}
-      data-page-kind={page.pageKind}
-      style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, minWidth: 0 }}
-    >
+  const inner = (
+    <>
       {toolbar}
       <div ref={scrollRef} data-inspector-scroll="" style={{ flex: 1, minHeight: 0, overflowY: size === 'docked' ? 'auto' : 'hidden', overflowX: 'hidden' }}>
         {content}
       </div>
-    </Panel>
+    </>
+  );
+  const pageAttrs = {
+    'data-inspector-page': page.subjectKey,
+    'data-inspector-size': size,
+    'data-page-kind': page.pageKind,
+  };
+  const pageStyle = { display: 'flex', flexDirection: 'column' as const, height: '100%', minHeight: 0, minWidth: 0 };
+
+  // THR-2123 (decision 2): at Full the host is a backdrop, so the page is the surface.
+  if (size === 'full') {
+    return (
+      <Panel level="page" as="article" padding="standard" {...pageAttrs} style={pageStyle}>
+        {inner}
+      </Panel>
+    );
+  }
+  // Docked and wide: the host aside is the surface, so the page draws no frame of its own;
+  // nested Panels still see a panel parent (surface → card, depth ≤ 2).
+  return (
+    <PanelLevelScope level="panel">
+      <article {...pageAttrs} data-panel-level="panel" style={{ ...pageStyle, padding: 'var(--panel-padding)' }}>
+        {inner}
+      </article>
+    </PanelLevelScope>
   );
 }

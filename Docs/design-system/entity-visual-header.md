@@ -22,6 +22,10 @@ A surface that shows an entity's name in text only, where an image belongs, is a
 | `portrait` | 3:4 | Agents, avatars, NPC roles — the character header |
 | `chip` | 40px square | Cast lists, faction tags, items in play — secondary entities inline |
 
+## The Inspector header (THR-2123)
+
+At wide and Full the Inspector header is a left-aligned column: the kind label and the name **above** the lead picture (the 3:4 portrait or the 16:9 hero at `--inspector-portrait-w`), the name at `--text-2xl` like every other size; then the picture, which stays the largest object (R1); then the where-line, lede, standing chips and doing line **under** it, on the same left edge (Text positions § 4, § 6). Docked keeps the thumbnail beside the words, their first line level with the picture's top. One component (`SubjectHeader.tsx`) holds both orders.
+
 ## Resolver contract
 
 `resolveEntityVisual(ref, graph, opts) → EntityVisualDescriptor`
