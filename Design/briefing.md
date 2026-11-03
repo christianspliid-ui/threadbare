@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-03 07:58 local (06:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-03 08:58 local (07:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -67,7 +67,7 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([21:41](h
 
 ## Queue
 
-**Healthy (4 ready, none being built, nothing waiting to merge).** Both builds from last hour merged and are live: [Every card says what it buys](https://linear.app/threadbare/issue/THR-2147/every-card-says-what-it-buys-a-result-line-for-cards-that-dont-move) ([#2726](https://github.com/christianspliid-ui/threadbare/pull/2726)) and [the essence rail row is too narrow for its spend mark](https://linear.app/threadbare/issue/THR-2153/essence-rail-row-is-too-narrow-for-its-spend-mark-mind-clips-to-m-and) ([#2727](https://github.com/christianspliid-ui/threadbare/pull/2727)). All four ready tickets are inside their veto windows, so builder runs stand down until the first opens: [The pool says how full it can get](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar) at 08:45, [The answer comes here](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage) at 11:35, [Legibility 2 — Inspector pages](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at) at 14:33, [Legibility 3 — the Stage and the dialogs](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first) at 17:42 (all UTC).
+**Healthy (4 ready, none being built, nothing waiting to merge).** No new builds this hour. All four ready tickets are still inside their veto windows, so builder runs stand down until the first opens: [The pool says how full it can get](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar) at 08:45, [The answer comes here](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage) at 11:35, [Legibility 2 — Inspector pages](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at) at 14:33, [Legibility 3 — the Stage and the dialogs](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first) at 17:42 (all UTC).
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -75,4 +75,4 @@ Two items for agents, not you:
 
 ## Health
 
-All green. Engine speed is 187 ms/tick, 18% above the 7-day median of 159 (inside the 25% line). The live site serves the latest commit on main (c87a8c94). No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 06:40 UTC. The builder has not stalled: it shipped THR-2153 at 06:47 UTC, and its short runs since report only veto-window holds.
+All green. Engine speed is 129 ms/tick, 19% below the 7-day median of 159. The live site serves the latest commit on main (c87a8c94). No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 07:40 UTC. The builder has not stalled: it shipped THR-2153 at 06:47 UTC, and its short runs since report only veto-window holds.
