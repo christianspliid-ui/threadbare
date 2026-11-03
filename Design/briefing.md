@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-03 10:58 local (09:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-03 11:57 local (10:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -65,7 +65,7 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([00:41](h
 
 ## Queue
 
-**Healthy (4 ready, nothing being built, nothing waiting to merge).** [The pool says how full it can get](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar) merged at 09:16 UTC ([#2729](https://github.com/christianspliid-ui/threadbare/pull/2729)) and is live. All four ready tickets are still inside their veto windows, so the builder is waiting by design: [The answer comes here](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage) opens at 11:35, [Legibility 2 — Inspector pages](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at) at 14:33, [Legibility 3 — the Stage and the dialogs](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first) at 17:42, [Legibility 4](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover) at 20:47 (all UTC).
+**Healthy (4 ready, nothing being built, nothing waiting to merge).** [The pool says how full it can get](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar) merged at 09:16 UTC ([#2729](https://github.com/christianspliid-ui/threadbare/pull/2729)) and is live. All four ready tickets are still inside their veto windows, so the builder is waiting by design; its last three runs each said so. [The answer comes here](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage) opens at 11:35, about 40 minutes from now, [Legibility 2 — Inspector pages](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at) at 14:33, [Legibility 3 — the Stage and the dialogs](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first) at 17:42, [Legibility 4](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover) at 20:47 (all UTC).
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -73,5 +73,5 @@ Two items for agents, not you:
 
 ## Health
 
-- **Engine speed (for agents):** tick cost 215 ms/tick steady, 35% above the 7-day median (159, 129 rows since 10403ec8); top phase agent_decision, 639 agents. Name the merges between 10403ec8 and ea681b47: git log --oneline --merges 10403ec8..ea681b47. This is the second high reading in a row, and no builder run overlapped this one, so machine load explains it less well than it did an hour ago.
-- Everything else is green. The live site is up to date (ea681b47). No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 09:40 UTC. The builder has not stalled: its last two runs found nothing claimable, and the one before shipped THR-2148.
+- **Engine speed (for agents):** tick cost 199 ms/tick steady, 25% above the 7-day median (159, 129 rows since b1b18055); top phase agent_decision, 639 agents. Name the merges between b1b18055 and ea681b47: git log --oneline --merges b1b18055..ea681b47. Third high reading in a row, though lower than the hour before (215).
+- Everything else is green. The live site is up to date (ea681b47). No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 10:40 UTC. The builder has not stalled: its last three runs found nothing claimable, all four ready tickets still being inside their veto windows.
