@@ -295,7 +295,7 @@ describe('THR-1714 — fate line table', () => {
         formativeFixture({ band: 'failure', writtenPole: 'b', handForecastTier: 'favorable' }),
         'Kael',
       ).text,
-    ).toBe('Your hand made it Favorable. Fate turned against you: Kael came out Power-Hungry.');
+    ).toBe('Your hand made it Favorable. Fate turned against you: Kael leans Power-Hungry now.');
     expect(
       selectBondFateLine(
         bondFixture({ playedNudgeIds: [], band: 'success', baseForecastTier: 'uncertain', handForecastTier: 'uncertain' }),
@@ -322,7 +322,7 @@ describe('THR-1714 — fate line table', () => {
       'Kael',
     );
     expect(line.key).toBe(`leaned.with${FATE_LINE_NO_FORECAST_SUFFIX}`);
-    expect(line.text).toBe('Fate went with you: Kael came out Brave.');
+    expect(line.text).toBe('Fate went with you: Kael leans Brave now.');
   });
 
   it('an empty name reads as the shared stand-in, never a blank', () => {

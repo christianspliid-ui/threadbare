@@ -371,6 +371,11 @@ export interface CardTile {
    * Absent = the words-only tile.
    */
   image?: { src: string; alt: string };
+  /**
+   * THR-2149 (additive): a recent gain — the Aftermath's ▲ cluster drawn after the
+   * tile's word, with `heading` and `label` as its hover. Backed by the chapter archive (Law 56).
+   */
+  mark?: { steps: 1 | 2 | 3; heading: string; label: string };
 }
 
 /** A row of small cards — conditions, works, powers (THR-1876 § D6, new shape). */

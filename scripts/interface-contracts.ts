@@ -2122,6 +2122,28 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/engine/chapterArchive.ts'],
   },
   {
+    id: 'chapter-growth-marks-reach-tile',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      'The sheet says what grew (THR-2149). The person sheet\'s reach tiles read the chapter archive\'s `aftermathSummary` growth changes through `recentReachGrowth` (`engine/views/reachGrowthMarks.ts`): the newest growth per reach inside `SHEET_GAIN_MARK_WINDOW_TICKS` draws the Aftermath\'s ▲ cluster beside the reach word, and its hover names the chapter. A ▲▲ gain usually leaves the 0.2-wide tier word unchanged, so before this the Aftermath and the sheet disagreed. Read only; nothing is written.',
+    ulTerms: ['Agent', 'Encounter'],
+    mechanism: { kind: 'node-prop', symbols: ['aftermathSummary'] },
+    writeSites: ['src/engine/chapterArchive.ts'],
+    readSites: ['src/engine/views/reachGrowthMarks.ts'],
+  },
+  {
+    id: 'meeting-leans-on-nature',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: TRAITS,
+    intent:
+      'A meeting lean shows on Nature (THR-2149). `meetingLeans` (`engine/agentDetail.ts`) reads the thread edge\'s `meetingChoiceRecord.formativeOutcomes` and returns the pole each formative test wrote, in the axis registry\'s word; the person sheet\'s Nature row adds a "leaning {word}" chip when that word is not already shown. The fate line says "leans {x} now", so the promise and the sheet agree. Read only.',
+    ulTerms: ['Agent', 'Encounter'],
+    mechanism: { kind: 'edge-prop', symbols: ['formativeOutcomes'] },
+    writeSites: ['src/engine/meetingEncounter.ts'],
+    readSites: ['src/engine/agentDetail.ts'],
+  },
+  {
     id: 'player-action-receipts-queue',
     producerSystem: ENCOUNTERS,
     consumerSystem: 'Attention, Chronicle & Narrative',

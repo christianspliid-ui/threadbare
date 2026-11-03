@@ -139,16 +139,16 @@ export const MEETING_FATE_LINE_FORMATIVE_CLAUSES: Readonly<
   Record<'leaned' | 'alone', Readonly<Record<FateAnswer, string>>>
 > = {
   leaned: {
-    with: 'Fate went with you: {name} came out {leaned}.',
-    half: 'Fate met you halfway: {name} came out {leaned}, at a cost.',
+    with: 'Fate went with you: {name} leans {leaned} now.',
+    half: 'Fate met you halfway: {name} leans {leaned} now, at a cost.',
     turned_soft: 'Fate turned it, barely: {name} edged toward {other}.',
-    turned: 'Fate turned against you: {name} came out {other}.',
+    turned: 'Fate turned against you: {name} leans {other} now.',
   },
   alone: {
-    with: 'Fate chose alone, and well: {name} came out {written}.',
-    half: 'Fate chose alone: {name} came out {written}, at a cost.',
+    with: 'Fate chose alone, and well: {name} leans {written} now.',
+    half: 'Fate chose alone: {name} leans {written} now, at a cost.',
     turned_soft: 'Fate chose alone: {name} edged toward {written}.',
-    turned: 'Fate chose alone, and hard: {name} came out {written}.',
+    turned: 'Fate chose alone, and hard: {name} leans {written} now.',
   },
 };
 

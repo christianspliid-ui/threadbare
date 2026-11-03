@@ -133,6 +133,18 @@ export function personArticle(word: string, capital = false): string {
 /** THR-2097 (rule R7) — the leading nature chip: "{word} above all". */
 export const NATURE_LEAD = '{word} above all';
 
+/** THR-2149 — a lean the threading meeting wrote, as its own Nature chip. Never takes a prefix. */
+export const NATURE_LEAN_CHIP = 'leaning {word}';
+
+/**
+ * THR-2149 — the hover on a reach tile's ▲ mark after a recent gain. `{band}` is
+ * slightly / clearly / greatly (the Aftermath legend's slight · clear · great),
+ * `{elapsed}` an `elapsedLabel` reading. The second form is for a gain with no band.
+ */
+export const SHEET_GAIN_MARK_HEADING = '{reach} grew';
+export const SHEET_GAIN_MARK_HOVER = 'Grew {band} {elapsed} ago, in {chapter}. The word changes only at the next step.';
+export const SHEET_GAIN_MARK_HOVER_NO_BAND = 'Grew {elapsed} ago, in {chapter}. The word changes only at the next step.';
+
 /** The empty and gated lines a row says instead of going blank (Law 4). */
 export const PERSON_EMPTY_LINES = {
   natureHidden: "You haven't observed {name} closely enough to read their character.",
