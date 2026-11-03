@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-03 13:58 local (12:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-03 14:58 local (13:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -64,7 +64,7 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([03:33](h
 
 ## Queue
 
-**Healthy (5 ready, nothing being built, nothing waiting to merge).** [The answer comes here](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage) shipped via [#2730](https://github.com/christianspliid-ui/threadbare/pull/2730) and is live. The builder is idle by design: all five ready tickets are inside their veto windows. [Legibility 2](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at) opens at 14:33, [Legibility 3](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first) at 17:42, [Legibility 4](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover) at 20:47, and the two new follower tickets, [The goal says what fills it](https://linear.app/threadbare/issue/THR-2154/the-goal-says-what-fills-it-the-mandate-row-leads-with-the-hungers-own) and [The next follower has a path](https://linear.app/threadbare/issue/THR-2155/the-next-follower-has-a-path-a-threads-line-says-how-to-bind-another), at 23:30 (all UTC).
+**Healthy (5 ready, nothing being built, nothing waiting to merge).** [The answer comes here](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage) shipped via [#2730](https://github.com/christianspliid-ui/threadbare/pull/2730) and is live. The builder is idle by design: all five ready tickets are inside their veto windows. [Legibility 2](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at) opens at 14:33, under an hour from now, [Legibility 3](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first) at 17:42, [Legibility 4](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover) at 20:47, and the two new follower tickets, [The goal says what fills it](https://linear.app/threadbare/issue/THR-2154/the-goal-says-what-fills-it-the-mandate-row-leads-with-the-hungers-own) and [The next follower has a path](https://linear.app/threadbare/issue/THR-2155/the-next-follower-has-a-path-a-threads-line-says-how-to-bind-another), at 23:30 (all UTC).
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -72,5 +72,5 @@ Two items for agents, not you:
 
 ## Health
 
-- **Engine speed (for agents):** tick cost 222 ms/tick steady, 40% above the 7-day median (159, 129 rows since 998b05f0); top phase agent_decision, 639 agents. Name the merges between 998b05f0 and cceff13d: git log --oneline --merges 998b05f0..cceff13d. Fifth high reading in a row (224 an hour ago); the THR-2151 merge did not move it.
-- Everything else is green. The live site is up to date (cceff13d). No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 12:40 UTC. The builder has not stalled: its last two runs found nothing claimable (all ready tickets in veto windows).
+- **Engine speed (for agents):** tick cost 229 ms/tick steady, 43% above the 7-day median (160, 128 rows since c5e5a3f7); top phase agent_decision, 639 agents. Name the merges between c5e5a3f7 and cceff13d: git log --oneline --merges c5e5a3f7..cceff13d. Sixth high reading in a row (222 an hour ago), on the same commit, so nothing new has merged.
+- Everything else is green. The live site is up to date (cceff13d). No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 13:40 UTC. The builder has not stalled: its last five runs found nothing claimable (all ready tickets in veto windows).
