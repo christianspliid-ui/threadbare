@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-03 12:58 local (11:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-03 13:58 local (12:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,6 +46,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-03: after Play, a chapter step stays on the Stage while the world turns, and its answer opens in place, and it is live** ([THR-2151](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage)). Merged via [#2730](https://github.com/christianspliid-ui/threadbare/pull/2730).
 - **2026-11-03: the essence row now reads "53 / 55" and its bar ends at the limit, and it is live** ([THR-2148](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar)). Merged via [#2729](https://github.com/christianspliid-ui/threadbare/pull/2729).
 - **2026-11-03: every card now says what it buys, with a result line for cards that don't move a number, and it is live** ([THR-2147](https://linear.app/threadbare/issue/THR-2147/every-card-says-what-it-buys-a-result-line-for-cards-that-dont-move)). Merged via [#2726](https://github.com/christianspliid-ui/threadbare/pull/2726).
 - **2026-11-03: the essence rail row is now wide enough for its spend mark, and it is live** ([THR-2153](https://linear.app/threadbare/issue/THR-2153/essence-rail-row-is-too-narrow-for-its-spend-mark-mind-clips-to-m-and)). Merged via [#2727](https://github.com/christianspliid-ui/threadbare/pull/2727).
@@ -55,7 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-02: Flawed Steel and the Mason-Lord's Wall now read in the new story voice, and it is live** ([THR-2110](https://linear.app/threadbare/issue/THR-2110/rewrite-the-five-novel-prose-encounters-to-prose-doctrine-v2-flawed)). Merged via [#2719](https://github.com/christianspliid-ui/threadbare/pull/2719).
 - **2026-11-02: town encounters now name the mortal and write their own stake line (round one), and it is live** ([THR-2130](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write)). Merged via [#2717](https://github.com/christianspliid-ui/threadbare/pull/2717).
 - **2026-11-02: seven board encounters' result lines now state what happened, and it is live** ([THR-2129](https://linear.app/threadbare/issue/THR-2129/encounter-factory-habits-slice-b-the-seven-migrated-board-encounters)). Merged via [#2716](https://github.com/christianspliid-ui/threadbare/pull/2716).
-- **2026-11-02: round one of the Encounter Factory habits is live: card lines say what the god does, and held lines state the failure** ([THR-2109](https://linear.app/threadbare/issue/THR-2109)). Merged via [#2715](https://github.com/christianspliid-ui/threadbare/pull/2715).
 ---
 
 Older resolved items and every earlier revision of this file: `git log -p origin/ops -- Design/user-actions.md`.

@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-03 12:58 local (11:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-03 13:58 local (12:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -56,7 +56,7 @@ From 03:33 local. All from [Legibility 2 — Inspector pages read Who, Now, Act,
 - "Act on …" and "In this land" headings stop being gold. The highlighted line is the page's one gold. Veto line: "keep the gold headings".
 - The page's parts sit a little further apart (24 px), the same distance as the sections below them. Veto line: "keep the page tighter".
 
-Say "veto <title>" to reverse any of these. *— from the design lane ([03:33](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03b.md), [06:43](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03c.md), [09:48](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03d.md), [12:20](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03e.md), local time). The "answer comes here" decisions from 00:41 have passed their window, and [that ticket](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage) is now being built.*
+Say "veto <title>" to reverse any of these. *— from the design lane ([03:33](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03b.md), [06:43](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03c.md), [09:48](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03d.md), [12:20](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-03e.md), local time). The "answer comes here" decisions from 00:41 have passed their window, and [that ticket](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage) is now built and live.*
 
 ## This week's screens
 
@@ -64,7 +64,7 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([03:33](h
 
 ## Queue
 
-**Healthy (5 ready, 1 being built, nothing waiting to merge).** The builder claimed [The answer comes here](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage) when its window opened at 11:35 UTC; that run is still working (last activity 11:55). The other five ready tickets are inside their veto windows: [Legibility 2](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at) opens at 14:33, [Legibility 3](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first) at 17:42, [Legibility 4](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover) at 20:47, and the two new follower tickets, [The goal says what fills it](https://linear.app/threadbare/issue/THR-2154/the-goal-says-what-fills-it-the-mandate-row-leads-with-the-hungers-own) and [The next follower has a path](https://linear.app/threadbare/issue/THR-2155/the-next-follower-has-a-path-a-threads-line-says-how-to-bind-another), at 23:30 (all UTC).
+**Healthy (5 ready, nothing being built, nothing waiting to merge).** [The answer comes here](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage) shipped via [#2730](https://github.com/christianspliid-ui/threadbare/pull/2730) and is live. The builder is idle by design: all five ready tickets are inside their veto windows. [Legibility 2](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at) opens at 14:33, [Legibility 3](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first) at 17:42, [Legibility 4](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover) at 20:47, and the two new follower tickets, [The goal says what fills it](https://linear.app/threadbare/issue/THR-2154/the-goal-says-what-fills-it-the-mandate-row-leads-with-the-hungers-own) and [The next follower has a path](https://linear.app/threadbare/issue/THR-2155/the-next-follower-has-a-path-a-threads-line-says-how-to-bind-another), at 23:30 (all UTC).
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -72,5 +72,5 @@ Two items for agents, not you:
 
 ## Health
 
-- **Engine speed (for agents):** tick cost 224 ms/tick steady, 41% above the 7-day median (159, 128 rows since 998b05f0); top phase agent_decision, 639 agents. Name the merges between 998b05f0 and ea681b47: git log --oneline --merges 998b05f0..ea681b47. Fourth high reading in a row, and the highest yet (199 an hour ago, 215 before that); no new merge to main since, so this looks like machine-load variance on top of a real rise.
-- Everything else is green. The live site is up to date (ea681b47). No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 11:40 UTC. The builder has not stalled: it is building now.
+- **Engine speed (for agents):** tick cost 222 ms/tick steady, 40% above the 7-day median (159, 129 rows since 998b05f0); top phase agent_decision, 639 agents. Name the merges between 998b05f0 and cceff13d: git log --oneline --merges 998b05f0..cceff13d. Fifth high reading in a row (224 an hour ago); the THR-2151 merge did not move it.
+- Everything else is green. The live site is up to date (cceff13d). No pull requests are waiting to merge. Checks on main and the scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 12:40 UTC. The builder has not stalled: its last two runs found nothing claimable (all ready tickets in veto windows).
