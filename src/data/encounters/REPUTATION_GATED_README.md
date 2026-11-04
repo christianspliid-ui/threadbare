@@ -42,7 +42,7 @@ Use it in at least one of:
 
 ---
 
-## Rule 3a — The mortal decides; the god argues (THR-2135, THR-2159)
+## Rule 3a — The mortal decides; the god argues (THR-2135, THR-2159, THR-2160)
 
 The player never picks an ending (Christian, 2026-07-26). A reputation encounter does **not** offer step-0 cards whose ids are the aftermath variant keys — that is `authoredChoices`, and it is retired (THR-2161 deletes the field).
 
@@ -62,6 +62,14 @@ The player never picks an ending (Christian, 2026-07-26). A reputation encounter
 | `the-stones-judgement` | pole | `preservation_transformation` — + older claim · − transforming claim |
 | `the-merchants-favor` | pole | `asceticism_extravagance` — + intercede · − mark the robbers |
 | `the-oracle-consulted` | pole | `revelation_discretion` — + read openly · − riddle |
+| `the-star-pilgrim` | pole | `sacrifice_survival` — + channel the radiance · − bless and send onward (THR-2160; fallback stays −, see header) |
+| `the-infiltrators-approach` | pole | `honesty_cunning` — + accept the deal · − reveal to the master |
+| `the-renowned-duel` | pole | `courage_prudence` — + grant the duel · − decline with dignity |
+| `the-executioners-commission` | pole | `mercy_ruthlessness` — + refuse and warn the condemned · − carry out the commission |
+| `the-unmarked-crossing` | pole | `asceticism_extravagance` — + take the manifests to their owner · − sign the papers |
+| `the-silent-chamber` | pole | `revelation_discretion` — + read the lore · − burn it unread |
+| `the-jury-of-the-ruined` | pole | `loyalty_ambition` — + the verdict the circle expects · − rule against the circle |
+| `the-blinded-oracle` | pole | `revelation_discretion` — + take the prophecy · − ask how she lost her sight |
 
 ---
 

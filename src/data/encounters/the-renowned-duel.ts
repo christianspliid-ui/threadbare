@@ -6,6 +6,21 @@
  *          Reach is iron (action domain), gate is renown (access condition).
  *
  * THR-146: Middle tranche of reputation-gated content.
+ *
+ * ─── The mortal decides (THR-2160, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was two cards whose ids were the
+ * aftermath keys, so the click picked the ending. Now the fork decides on
+ * `courage_prudence`: a Vanguard (+1) takes the bout and fights it clean, a
+ * Watcher (−1) declines the blade and names the flaw they have seen instead.
+ * The god argues with a composed hand — two pole-leaning specials plus a
+ * Repertoire fill — and the mortal answers.
+ *
+ * - Fork axis: `courage_prudence`. `positive` = Grant the Duel Honorably,
+ *   `negative` = Decline with Dignity. Variants, aftermath and `stakes.arms` are
+ *   keyed to the pole (`branchDecision.ts` → `recordDecidedChoice`).
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
+ * - The step-1 prose is re-voiced so the mortal does it, not the god.
  */
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
@@ -71,6 +86,39 @@ const step0ThePlant: ActionStep = {
     'on the other side of it."',
   successAfterimage: 'The practice blade. The steady hands. The research that had gone into this moment.',
   failureAfterimage: 'The plant in the road, and then a silence that didn\'t settle the way they had practiced.',
+  successAtCostAfterimage: 'The challenge was plain, and a crowd had begun to gather at the roadside.',
+  criticalSuccessAfterimage: 'The contender\'s stance, and the flaw hidden in it, stood clear at once.',
+  criticalFailureAfterimage: 'The road blurred into dust and onlookers, and the agent chose half-blind.',
+  purposeLine: 'Size up the contender',
+  // THR-2160 — the fork's argument. Two specials, one per pole of
+  // `courage_prudence`; the Repertoire fills the rest of the hand.
+  nudges: [
+    {
+      id: 'duel.feel_the_crowd',
+      name: 'Feel The Crowd',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'courage_prudence', toward: 'positive' },
+      effectLine: 'Let them hear the roadside go quiet. A watching crowd argues for meeting the blade.',
+      bandProse: {
+        success: '{actor} heard the road go still, and stepped in.',
+        failure: '{actor} felt the crowd, and its weight sat oddly.',
+      },
+    },
+    {
+      id: 'duel.mark_the_left_shoulder',
+      name: 'Mark The Left Shoulder',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'courage_prudence', toward: 'negative' },
+      effectLine: 'Show them the hitch in the contender\'s third position. A flaw named argues against drawing.',
+      bandProse: {
+        success: '{actor} saw the hitch in the shoulder, and kept their blade sheathed.',
+        failure: '{actor} looked for the flaw, and the stance hid it.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['presence', 'might'] },
 };
 
 const step1GrantDuel: ActionStep = {
@@ -85,7 +133,7 @@ const step1GrantDuel: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god set the agent into the bout with the quality of someone for whom this is ' +
+    'The agent stepped into the bout with the quality of someone for whom this is ' +
     'a real thing happening and not a performance of a real thing. The contender felt ' +
     'the difference immediately. They adjusted. Their form was good — better than the ' +
     'practice blade suggested — and they pressed, which was the point: they had not ' +
@@ -115,7 +163,7 @@ const step1DeclineWithDignity: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god did not reach for the iron channel. It reached for something adjacent — ' +
+    'The agent did not reach for the blade. They reached for something adjacent — ' +
     'the register that recognizes what someone is asking for underneath what they\'re ' +
     'asking for. The contender wanted the duel, yes. Underneath the duel they wanted ' +
     'to be seen.\n\n' +
@@ -136,9 +184,11 @@ const step1DeclineWithDignity: ActionStep = {
 
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  // THR-2160 — the mortal decides; the fallback is the positive pole.
+  decidedBy: { axis: 'courage_prudence' },
   variants: {
-    grant_duel_honorably: step1GrantDuel,
-    decline_with_dignity: step1DeclineWithDignity,
+    positive: step1GrantDuel,
+    negative: step1DeclineWithDignity,
   },
   fallback: { ...step1GrantDuel },
 };
@@ -472,7 +522,7 @@ export const THE_RENOWNED_DUEL_TEMPLATE: UnifiedActionTemplate = withEncounterCo
     won: 'met the contender fully and disarmed them',
     lost: 'fought the bout without truly meeting the contender',
     arms: {
-      decline_with_dignity: {
+      negative: {
         won: 'declined the bout and named the contender\'s flaw',
         lost: 'declined the bout and left the contender empty-handed',
       },
@@ -517,44 +567,11 @@ export const THE_RENOWNED_DUEL_TEMPLATE: UnifiedActionTemplate = withEncounterCo
   illustrationUrl: '/concept-art/encounters/the-renowned-duel.webp',
   illustrationAlt: 'Wide shot: young duelist planted in road, practice blade visible, the agent approaching, distant spectators, Threadbare palette.',
 
-  authoredChoices: {
-    0: [
-      {
-        id: 'grant_duel_honorably',
-        label: 'Accept the bout. Fight clean.',
-        intent:
-          'The god sets the agent into the exchange as if it is a real thing, which it is. ' +
-          'No lesson, no condescension, no holding back to make the contender feel the ' +
-          'gap. A real bout, honestly concluded. The contender will discover three things ' +
-          'about themselves they did not know. The disarm will be clean.',
-        essenceCost: 1,
-        likelyBurden:
-          'A contender who has been fully met once tends to return. The rival arc ' +
-          'this opens runs on the contender\'s timeline, not the god\'s.',
-        interventionType: 'supportive',
-      },
-      {
-        id: 'decline_with_dignity',
-        label: 'Decline the blade. Name what you see instead.',
-        intent:
-          'The god does not draw. It looks. It names the specific technical observation — ' +
-          'the left shoulder, the overcorrection, the place where someone told the contender ' +
-          'something that wasn\'t quite right and the contender believed them. The refusal ' +
-          'is a different kind of recognition than the bout would have been.',
-        essenceCost: 0,
-        likelyBurden:
-          'The contender will spend real time on the named observation. What they find ' +
-          'will be theirs. The thread stays open without the god holding it.',
-        interventionType: 'withdrawn',
-      },
-    ],
-  },
-
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      grant_duel_honorably: DUEL_AFTERMATH,
-      decline_with_dignity: DECLINE_AFTERMATH,
+      positive: DUEL_AFTERMATH,
+      negative: DECLINE_AFTERMATH,
     },
     fallback: { ...DUEL_AFTERMATH },
   },

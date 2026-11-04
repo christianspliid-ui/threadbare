@@ -6,6 +6,23 @@
  * Pattern: required-negative — encounter surfaces only when gold.negative is held.
  *
  * THR-147: Final tranche of reputation-gated content.
+ *
+ * ─── The mortal decides (THR-2160, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was two cards whose ids were the
+ * aftermath keys, so the click picked the ending. Now the fork decides on
+ * `asceticism_extravagance`: a Mender (+1) carries the blank manifests to the
+ * merchant they were meant to defraud, a Magnate (−1) presses the seal and takes
+ * the cut. The god argues with a composed hand — two pole-leaning specials plus
+ * a Repertoire fill — and the mortal answers.
+ *
+ * - Fork axis: `asceticism_extravagance`. `positive` = Take the Manifest to its
+ *   Rightful Owner, `negative` = Sign the Papers. Variants, aftermath and
+ *   `stakes.arms` are keyed to the pole (`branchDecision.ts` →
+ *   `recordDecidedChoice`). The fallback and the base stakes moved to the
+ *   warning (the positive pole); signing is now the `negative` arm.
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
+ * - The step-1 prose is re-voiced so the mortal does it, not the god.
  */
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
@@ -74,6 +91,39 @@ const step0TheManifests: ActionStep = {
     'wharf by morning.',
   successAfterimage: 'Blank manifests. A wax stick. The barge still at the dock.',
   failureAfterimage: 'The smuggler laid out the offer but something in the approach didn\'t land as they\'d calculated.',
+  successAtCostAfterimage: 'The offer was plain, and the smuggler had marked the agent\'s face.',
+  criticalSuccessAfterimage: 'The cargo, the cut and the merchant it would rob all stood clear at once.',
+  criticalFailureAfterimage: 'The wharf blurred into lantern-glare and river noise, and the agent chose half-blind.',
+  purposeLine: 'Weigh the manifests',
+  // THR-2160 — the fork's argument. Two specials, one per pole of
+  // `asceticism_extravagance`; the Repertoire fills the rest of the hand.
+  nudges: [
+    {
+      id: 'crossing.name_the_merchant',
+      name: 'Name The Merchant',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'asceticism_extravagance', toward: 'positive' },
+      effectLine: 'Show them whose ledger the blank papers will empty. A named victim argues for the factor.',
+      bandProse: {
+        success: '{actor} saw the merchant behind the papers, and set the wax down.',
+        failure: '{actor} heard the merchant\'s name, and it stayed only a name.',
+      },
+    },
+    {
+      id: 'crossing.weigh_the_cut',
+      name: 'Weigh The Cut',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'asceticism_extravagance', toward: 'negative' },
+      effectLine: 'Let them feel the coin the seal is worth tonight. A cut this rich argues for pressing it.',
+      bandProse: {
+        success: '{actor} weighed the cut, and reached for the wax.',
+        failure: '{actor} weighed the cut, and found it lighter than promised.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['social', 'shadow'] },
 };
 
 const step1SignThePapers: ActionStep = {
@@ -89,7 +139,7 @@ const step1SignThePapers: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god settled a gravity through the agent\'s hands — the weight ' +
+    'The agent took up the wax, and felt in their hands the weight ' +
     'of commerce conducted in the space that legitimate commerce leaves behind, ' +
     'the recognition that the {title}\'s seal has value precisely because it is ' +
     'not worth authenticating. The smuggler had understood this correctly.\n\n' +
@@ -117,7 +167,7 @@ const step1TakeToOwner: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god redirected the agent\'s attention from the barrel-top to the cargo, ' +
+    'The agent turned their attention from the barrel-top to the cargo, ' +
     'and from the cargo to the name of the merchant the smuggler had intended to ' +
     'defraud with blank manifests and a borrowed seal. The {title} did not sign the ' +
     'papers. They carried the blank manifests to the merchant\'s factor before the ' +
@@ -135,11 +185,13 @@ const step1TakeToOwner: ActionStep = {
 
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  // THR-2160 — the mortal decides; the fallback is the positive pole.
+  decidedBy: { axis: 'asceticism_extravagance' },
   variants: {
-    sign_the_papers: step1SignThePapers,
-    take_the_manifest_to_its_rightful_owner: step1TakeToOwner,
+    positive: step1TakeToOwner,
+    negative: step1SignThePapers,
   },
-  fallback: { ...step1SignThePapers },
+  fallback: { ...step1TakeToOwner },
 };
 
 // ─── Aftermath ───────────────────────────────────────────────────
@@ -499,14 +551,14 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 export const THE_UNMARKED_CROSSING_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'reputation.gold.the_unmarked_crossing',
   stakes: {
-    goal: 'seal the smuggler\'s blank manifests',
-    risk: 'leave the barge stuck at the wharf, papers unsigned',
-    won: 'sealed the manifests and saw the barge downriver',
-    lost: 'sealed the papers on a crossing that may not hold',
+    goal: 'carry the smuggler\'s blank manifests to the merchant',
+    risk: 'warn a factor who does not know what to make of it',
+    won: 'carried the blank manifests to the merchant\'s factor',
+    lost: 'warned the factor, who did not know what to make of it',
     arms: {
-      take_the_manifest_to_its_rightful_owner: {
-        won: 'carried the blank manifests to the merchant\'s factor',
-        lost: 'warned the factor, who did not know what to make of it',
+      negative: {
+        won: 'sealed the manifests and saw the barge downriver',
+        lost: 'sealed the papers on a crossing that may not hold',
       },
     },
   },
@@ -550,49 +602,13 @@ export const THE_UNMARKED_CROSSING_TEMPLATE: UnifiedActionTemplate = withEncount
   illustrationUrl: '/concept-art/encounters/the-unmarked-crossing.png',
   illustrationAlt: 'Wide shot: river wharf at dusk, barge at dock, two figures at a barrel with blank papers, distant customs house lit, Threadbare palette.',
 
-  authoredChoices: {
-    0: [
-      {
-        id: 'sign_the_papers',
-        label: 'Press the seal. Take the cut.',
-        intent:
-          'The god settles the agent into the gravity of commerce conducted ' +
-          'in the space that legitimate commerce leaves behind. {title}\'s seal has ' +
-          'value on this document precisely because it is expected to carry weight ' +
-          'without scrutiny — the customs house has already learned to expect this ' +
-          'name on manifests that don\'t bear close inspection. The barge gets clear. ' +
-          'The percentage arrives that evening.',
-        essenceCost: 1,
-        likelyBurden:
-          'A seal on an unnamed cargo is a record, even if it\'s the wrong kind of record. ' +
-          'The customs house will find the manifest eventually, and it will have ' +
-          'this name on it.',
-        interventionType: 'coercive',
-      },
-      {
-        id: 'take_the_manifest_to_its_rightful_owner',
-        label: 'Take the blank manifests to the merchant they were meant to defraud.',
-        intent:
-          'The god turns the agent away from the barrel-top and toward the person the ' +
-          'blank manifests were designed to harm. {title}\'s standing was being used ' +
-          'as a tool for fraud. The merchant\'s factor gets the evidence before ' +
-          'the barge casts off lines. The smuggler has a grievance they can\'t file.',
-        essenceCost: 0,
-        likelyBurden:
-          'A smuggler who doesn\'t know your name but has a description and a specific ' +
-          'kind of anger will eventually find an opportunity to act on it.',
-        interventionType: 'supportive',
-      },
-    ],
-  },
-
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      sign_the_papers: SIGN_AFTERMATH,
-      take_the_manifest_to_its_rightful_owner: TURN_AFTERMATH,
+      positive: TURN_AFTERMATH,
+      negative: SIGN_AFTERMATH,
     },
-    fallback: { ...SIGN_AFTERMATH },
+    fallback: { ...TURN_AFTERMATH },
   },
 });
 
