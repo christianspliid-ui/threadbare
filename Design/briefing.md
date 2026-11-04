@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-04 23:56 local (22:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-05 00:58 local (23:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,12 +20,8 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-From the design lane's [11:34 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-04a.md) (nobody builds it before 23:35 UTC tonight) and its [14:18 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-04b.md) (nobody builds it before 02:30 UTC on 5 November).
+From the design lane's [14:18 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-04b.md) (nobody builds it before 02:30 UTC on 5 November). The town-encounter decisions from the 11:34 UTC run are past their veto window and are being built now.
 
-- [Town encounters name the mortal and write their own stake line — round 2](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write) — when a town job fails, its closing line says what this particular failure cost (the seed lost, the mill standing idle), instead of "the town sent for them, and they failed", which seventeen town jobs say in nearly the same words.
-- Same ticket — no two town jobs may share more than two sentences built the same way.
-- Same ticket — the line that tells you when and where a follow-up meeting happens stays the same everywhere, because it states a game fact.
-- Same ticket — the rewrites follow your six checks for compressed prose from 3 November.
 - [The Comet at the Turning, the Page Beneath the Saint and Apotheosis, rewritten in plain words](https://linear.app/threadbare/issue/THR-2134/novel-prose-story-beats-slice-b-the-comet-at-the-turning-the-page) — when a mortal wins at a cost, the mortal pays (strength, nerve, what they would have learned), never the god. Three Apotheosis lines change.
 - Same ticket — the ending paragraph tells what happened; the small result tag says what changed. They stop saying the same thing twice, per your 15-word tag ruling of 12 September.
 - Same ticket — a mortal's pronouns come from the mortal, so nobody is wrongly called "they". Fifteen lines change.
@@ -40,13 +36,13 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**2 tickets ready, both waiting out your veto windows.** [Town encounters, round 2](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write) opens at 23:35 UTC tonight; [the story-beats rewrite, slice B](https://linear.app/threadbare/issue/THR-2134/novel-prose-story-beats-slice-b-the-comet-at-the-turning-the-page) opens at 02:30 UTC tomorrow. The builder's short runs are expected: its 22:12, 22:32 and 22:52 UTC runs each found nothing it could take.
+**Starved: 1 ticket ready, waiting out your veto window.** [The story-beats rewrite, slice B](https://linear.app/threadbare/issue/THR-2134/novel-prose-story-beats-slice-b-the-comet-at-the-turning-the-page) opens at 02:30 UTC. The builder took [town encounters, round 2](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write) at 23:52 UTC, right after its window closed, and is building it now.
 
 Items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (15 days; In Dev since 15 Oct). No local worktree and no pushed branch holds work for it. It needs gate and CI edits that unattended runs are not allowed to make, so an agent can un-park it only in a run someone is watching.
-- **The returning-player playtest should run tomorrow.** Its rule fix merged ([PR #2739](https://github.com/christianspliid-ui/threadbare/pull/2739)). *— from [the playtest lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/warm-playtest-round-2-stale.md)*
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (16 days; In Dev since 15 Oct). No local worktree and no pushed branch holds work for it. It needs gate and CI edits that unattended runs are not allowed to make, so an agent can un-park it only in a run someone is watching.
+- **The returning-player playtest should run today.** Its rule fix merged ([PR #2739](https://github.com/christianspliid-ui/threadbare/pull/2739)). *— from [the playtest lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/warm-playtest-round-2-stale.md)*
 
 ## Health
 
-All green. The live site is up to date; commits since the last build touched only docs. Checks on main and the 3 scheduled background jobs pass. No PRs are waiting to merge. All 10 enabled scheduled tasks are on time. The builder is not stalled: both ready tickets are inside veto windows. Engine speed: 125 ms per tick, 20% below the weekly median (156). The worktree cleaner last ran at 23:40 local. The home-folder copy of the repo is 10 commits behind main. It is the read-only mirror and catches up on its own.
+All green. The live site is up to date; commits since the last build touched only docs. Checks on main and the 3 scheduled background jobs pass. No PRs are waiting to merge. All 10 enabled scheduled tasks are on time. The builder is not stalled: a run is building now. Engine speed: 124 ms per tick, 20% below the weekly median (156). The worktree cleaner last ran at 00:40 local. The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 10 commits behind main. It is the read-only mirror and catches up on its own.
