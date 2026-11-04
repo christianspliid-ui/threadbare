@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-04 09:58 local (08:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-04 10:57 local (09:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,6 +46,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-04: half one of the reputation encounters now lets the mortal decide, and it is live** ([THR-2159](https://linear.app/threadbare/issue/THR-2159)). Merged via [#2738](https://github.com/christianspliid-ui/threadbare/pull/2738).
+- **2026-11-04: the six seeded quests now let the mortal decide, and it is live** ([THR-2158](https://linear.app/threadbare/issue/THR-2158)). Merged via [#2737](https://github.com/christianspliid-ui/threadbare/pull/2737).
 - **2026-11-04: the path now pulls only scenes about the same thing, and it is live** ([THR-2156](https://linear.app/threadbare/issue/THR-2156)). Merged via [#2736](https://github.com/christianspliid-ui/threadbare/pull/2736).
 - **2026-11-04: the next follower has a path, and it is live** ([THR-2155](https://linear.app/threadbare/issue/THR-2155)). Merged via [#2735](https://github.com/christianspliid-ui/threadbare/pull/2735).
 - **2026-11-04: the Mandate row now leads with the hunger's own words and counts the mortals bound to you** ([THR-2154](https://linear.app/threadbare/issue/THR-2154/the-goal-says-what-fills-it-the-mandate-row-leads-with-the-hungers-own)). Merged via [#2734](https://github.com/christianspliid-ui/threadbare/pull/2734), and it is live.
@@ -54,8 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-03: after Play, a chapter step stays on the Stage while the world turns, and its answer opens in place, and it is live** ([THR-2151](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage)). Merged via [#2730](https://github.com/christianspliid-ui/threadbare/pull/2730).
 - **2026-11-03: the essence row now reads "53 / 55" and its bar ends at the limit, and it is live** ([THR-2148](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar)). Merged via [#2729](https://github.com/christianspliid-ui/threadbare/pull/2729).
 - **2026-11-03: every card now says what it buys, with a result line for cards that don't move a number, and it is live** ([THR-2147](https://linear.app/threadbare/issue/THR-2147/every-card-says-what-it-buys-a-result-line-for-cards-that-dont-move)). Merged via [#2726](https://github.com/christianspliid-ui/threadbare/pull/2726).
-- **2026-11-03: the essence rail row is now wide enough for its spend mark, and it is live** ([THR-2153](https://linear.app/threadbare/issue/THR-2153/essence-rail-row-is-too-narrow-for-its-spend-mark-mind-clips-to-m-and)). Merged via [#2727](https://github.com/christianspliid-ui/threadbare/pull/2727).
-- **2026-11-03: a grown skill now shows the Aftermath’s ▲ on its tile for three days, and it is live** ([THR-2149](https://linear.app/threadbare/issue/THR-2149/the-sheet-says-what-grew-a-reach-tile-shows-the-aftermaths-for-three)). Merged via [#2723](https://github.com/christianspliid-ui/threadbare/pull/2723).
 ---
 
 Older resolved items and every earlier revision of this file: `git log -p origin/ops -- Design/user-actions.md`.
