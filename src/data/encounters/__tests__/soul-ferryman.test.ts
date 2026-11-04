@@ -83,39 +83,39 @@ describe('Soul Ferryman — template structure', () => {
 
   it('step 1 branch has break_the_bargain and steady_the_courier variants', () => {
     const step1 = template.steps[1] as ActionStepBranch;
-    expect(step1.variants).toHaveProperty('break_the_bargain');
-    expect(step1.variants).toHaveProperty('steady_the_courier');
+    expect(step1.variants).toHaveProperty('negative');
+    expect(step1.variants).toHaveProperty('positive');
     expect(step1.fallback).toBeDefined();
   });
 
   it('break_the_bargain variant uses star reach at 0.50 difficulty', () => {
     const step1 = template.steps[1] as ActionStepBranch;
-    const breakBargain = step1.variants['break_the_bargain'];
+    const breakBargain = step1.variants['negative'];
     expect(breakBargain.reach).toBe('star');
     expect(breakBargain.difficulty).toBe(0.50);
   });
 
   it('steady_the_courier variant uses heart reach at 0.35 difficulty', () => {
     const step1 = template.steps[1] as ActionStepBranch;
-    const steadyCourier = step1.variants['steady_the_courier'];
+    const steadyCourier = step1.variants['positive'];
     expect(steadyCourier.reach).toBe('heart');
     expect(steadyCourier.difficulty).toBe(0.35);
   });
 
   it('both branch variants have narrative templates', () => {
     const step1 = template.steps[1] as ActionStepBranch;
-    expect(step1.variants['break_the_bargain'].narrativeTemplate).toBeTruthy();
-    expect(step1.variants['steady_the_courier'].narrativeTemplate).toBeTruthy();
+    expect(step1.variants['negative'].narrativeTemplate).toBeTruthy();
+    expect(step1.variants['positive'].narrativeTemplate).toBeTruthy();
   });
 
   it('break variant prose contains river-contract imagery', () => {
     const step1 = template.steps[1] as ActionStepBranch;
-    expect(step1.variants['break_the_bargain'].narrativeTemplate).toContain('The god cut it');
+    expect(step1.variants['negative'].narrativeTemplate).toContain('The god cut it');
   });
 
   it('steady variant prose contains Vesik naming the toll', () => {
     const step1 = template.steps[1] as ActionStepBranch;
-    expect(step1.variants['steady_the_courier'].narrativeTemplate).toContain('Your certainty');
+    expect(step1.variants['positive'].narrativeTemplate).toContain('Your certainty');
   });
 });
 
@@ -123,14 +123,14 @@ describe('Soul Ferryman — template structure', () => {
 
 describe('Soul Ferryman — branch resolution', () => {
   it('resolveStepDefinition returns break variant when choiceId is break_the_bargain', () => {
-    const choiceHistory = [makeChoiceMemory(0, 'break_the_bargain')];
+    const choiceHistory = [makeChoiceMemory(0, 'negative')];
     const resolved = resolveStepDefinition(template, 1, choiceHistory);
     expect(resolved.reach).toBe('star');
     expect(resolved.difficulty).toBe(0.50);
   });
 
   it('resolveStepDefinition returns steady variant when choiceId is steady_the_courier', () => {
-    const choiceHistory = [makeChoiceMemory(0, 'steady_the_courier')];
+    const choiceHistory = [makeChoiceMemory(0, 'positive')];
     const resolved = resolveStepDefinition(template, 1, choiceHistory);
     expect(resolved.reach).toBe('heart');
     expect(resolved.difficulty).toBe(0.35);
@@ -171,29 +171,29 @@ describe('Soul Ferryman — aftermath config', () => {
   });
 
   it('resolves to break variant for break_the_bargain choice', () => {
-    const variant = config.variants['break_the_bargain'];
+    const variant = config.variants['negative'];
     expect(variant).toBeDefined();
     expect(variant.overview).toContain('fog had thinned');
   });
 
   it('resolves to steady variant for steady_the_courier choice', () => {
-    const variant = config.variants['steady_the_courier'];
+    const variant = config.variants['positive'];
     expect(variant).toBeDefined();
     expect(variant.overview).toContain('far bank');
   });
 
   it('break aftermath has no reactions (consequence is clean)', () => {
-    const variant = config.variants['break_the_bargain'];
+    const variant = config.variants['negative'];
     expect(variant.reactions).toBeUndefined();
   });
 
   it('steady aftermath has no reactions (consequence is clean)', () => {
-    const variant = config.variants['steady_the_courier'];
+    const variant = config.variants['positive'];
     expect(variant.reactions).toBeUndefined();
   });
 
   it('break aftermath has changes covering key consequences', () => {
-    const variant = config.variants['break_the_bargain'];
+    const variant = config.variants['negative'];
     const changeIds = variant.changes.map(c => c.id);
     expect(changeIds).toContain('break_crossing_closed');
     expect(changeIds).toContain('break_vesik_unbound');
@@ -202,7 +202,7 @@ describe('Soul Ferryman — aftermath config', () => {
   });
 
   it('steady aftermath has changes covering key consequences', () => {
-    const variant = config.variants['steady_the_courier'];
+    const variant = config.variants['positive'];
     const changeIds = variant.changes.map(c => c.id);
     expect(changeIds).toContain('steady_crossing_persists');
     expect(changeIds).toContain('steady_diehl_diminished');
@@ -261,91 +261,35 @@ describe('Soul Ferryman — support bundle', () => {
   });
 });
 
-// ─── Authored Choices Tests ───────────────────────────────────────
+// ─── The mortal decides (THR-2158) ────────────────────────────────
 
-describe('Soul Ferryman — authored choices', () => {
-  it('has authored choices for step 0', () => {
-    expect(template.authoredChoices).toBeDefined();
-    expect(template.authoredChoices![0]).toBeDefined();
+describe('Soul Ferryman — the mortal decides the fork', () => {
+  it('authors no authoredChoices — the god never picks the ending', () => {
+    expect(template.authoredChoices).toBeUndefined();
   });
 
-  it('has exactly 2 choices at step 0', () => {
-    expect(template.authoredChoices![0]).toHaveLength(2);
-  });
-
-  it('first choice is break_the_bargain', () => {
-    const choice = template.authoredChoices![0][0];
-    expect(choice.id).toBe('break_the_bargain');
-    expect(choice.label).toBe('Break the Bargain');
-    expect(choice.essenceCost).toBe(3);
-    expect(choice.interventionType).toBe('coercive');
-  });
-
-  it('second choice is steady_the_courier', () => {
-    const choice = template.authoredChoices![0][1];
-    expect(choice.id).toBe('steady_the_courier');
-    expect(choice.label).toBe('Steady the Courier');
-    expect(choice.essenceCost).toBe(1);
-    expect(choice.interventionType).toBe('supportive');
-  });
-
-  it('choice ids match step 1 branch variant keys', () => {
-    const choiceIds = template.authoredChoices![0].map(c => c.id);
+  it('step 1 is decided by the mortal on sacrifice_survival', () => {
     const step1 = template.steps[1] as ActionStepBranch;
-    const branchKeys = Object.keys(step1.variants);
-    for (const id of choiceIds) {
-      expect(branchKeys).toContain(id);
+    expect(step1.decidedBy).toEqual({ axis: 'sacrifice_survival' });
+    expect(Object.keys(step1.variants).sort()).toEqual(['negative', 'positive']);
+  });
+
+  it('step 0 deals a hand that argues both poles of the fork', () => {
+    const step0 = template.steps[0];
+    if (isActionStepBranch(step0)) throw new Error('step 0 should not be a branch');
+    expect(step0.deal?.count).toBeGreaterThan(0);
+    const leans = (step0.nudges ?? []).map(n => n.poleLean).filter(Boolean);
+    expect(leans).toEqual(expect.arrayContaining([
+      { axis: 'sacrifice_survival', toward: 'positive' },
+      { axis: 'sacrifice_survival', toward: 'negative' },
+    ]));
+  });
+
+  it('both step 1 arms deal an ordinary hand from the Repertoire', () => {
+    const step1 = template.steps[1] as ActionStepBranch;
+    for (const arm of Object.values(step1.variants)) {
+      expect(arm.deal?.count).toBeGreaterThan(0);
     }
-  });
-
-  it('all choices have intent and likelyBurden prose', () => {
-    for (const choice of template.authoredChoices![0]) {
-      expect(choice.intent).toBeTruthy();
-      expect(choice.likelyBurden).toBeTruthy();
-    }
-  });
-
-  it('has authored choices for step 1', () => {
-    expect(template.authoredChoices![1]).toBeDefined();
-  });
-
-  it('has exactly 2 choices at step 1', () => {
-    expect(template.authoredChoices![1]).toHaveLength(2);
-  });
-
-  it('first step 1 choice is thread_the_fog_gently (supportive, 1 essence)', () => {
-    const choice = template.authoredChoices![1][0];
-    expect(choice.id).toBe('thread_the_fog_gently');
-    expect(choice.label).toBe('Thread the Fog Gently');
-    expect(choice.essenceCost).toBe(1);
-    expect(choice.interventionType).toBe('supportive');
-  });
-
-  it('second step 1 choice is press_through_the_current (coercive, 3 essence)', () => {
-    const choice = template.authoredChoices![1][1];
-    expect(choice.id).toBe('press_through_the_current');
-    expect(choice.label).toBe('Press Through the Current');
-    expect(choice.essenceCost).toBe(3);
-    expect(choice.interventionType).toBe('coercive');
-  });
-
-  it('step 1 choices have intent and likelyBurden prose', () => {
-    for (const choice of template.authoredChoices![1]) {
-      expect(choice.intent).toBeTruthy();
-      expect(choice.likelyBurden).toBeTruthy();
-    }
-  });
-
-  it('step 1 gentle choice intent references fog and restraint', () => {
-    const choice = template.authoredChoices![1][0];
-    expect(choice.intent).toContain('fog');
-    expect(choice.intent).toContain('restraint');
-  });
-
-  it('step 1 forceful choice intent references divine authority and the Silt', () => {
-    const choice = template.authoredChoices![1][1];
-    expect(choice.intent).toContain('divine authority');
-    expect(choice.intent).toContain('Silt');
   });
 });
 
@@ -361,13 +305,13 @@ describe('Soul Ferryman — GraphOps', () => {
 
   it('break variant has onSuccess GraphOps', () => {
     const step1 = template.steps[1] as ActionStepBranch;
-    const breakBargain = step1.variants['break_the_bargain'];
+    const breakBargain = step1.variants['negative'];
     expect(breakBargain.onSuccess.length).toBeGreaterThan(0);
   });
 
   it('steady variant has onSuccess GraphOps', () => {
     const step1 = template.steps[1] as ActionStepBranch;
-    const steadyCourier = step1.variants['steady_the_courier'];
+    const steadyCourier = step1.variants['positive'];
     expect(steadyCourier.onSuccess.length).toBeGreaterThan(0);
   });
 });

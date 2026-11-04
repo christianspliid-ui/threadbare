@@ -8,6 +8,22 @@
  * in the survivor's hands when they come back to themselves.
  *
  * Seeds: Hearthglass Ward on successful rescue.
+ *
+ * ─── The mortal decides (THR-2158, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was two cards whose ids were the
+ * aftermath keys, so the click picked the ending. Now the fork decides on
+ * `sacrifice_survival`: a Martyr (+1) goes into the disaster and threads the
+ * survivor out, a Survivor (−1) stays at the perimeter and works through the
+ * bystander with the rope. The god argues with a composed hand — two
+ * pole-leaning specials plus a Repertoire fill — and the mortal answers.
+ *
+ * - Fork axis: `sacrifice_survival`. `positive` = Thread the Survivor Out,
+ *   `negative` = Work Through the Bystander. Variants, aftermath and
+ *   `stakes.arms` are keyed to the pole, because pole mode writes the bare key.
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
+ * - Step 1's old approach cards picked nothing; each arm now deals an ordinary
+ *   hand from the god's Repertoire.
  */
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
@@ -83,6 +99,40 @@ const step0TheThreadPullsTaut: ActionStep = {
     'The god felt it before it was visible: a quintessence-thread going taut in the weave of the settlement\'s ordinary morning. Not every thread in a settlement pulls like this. Most of them drift in the slow current of lives being lived without crisis, and the god had learned to distinguish between the tension of someone who is merely afraid and the tension of someone who is about to stop existing. This was the second kind. It had the specific vibration of a thread that was being drawn to its tensile limit — not fraying, not yet, but near enough that the difference between these two conditions would be decided in the next few minutes rather than the next few hours.\n\nThe disaster had begun with something ordinary, the way disasters usually begin. A cook-fire that spread when a spark caught the thatch of the building that shared a wall with the warehouse. A timber in the grain store that had been water-compromised for three seasons and had finally stopped holding. A section of dock that had been repaired once too often with wood that was not rated for the weight it was asked to carry. The specifics were local color; the god had seen the pattern enough times to recognize it in any setting. What mattered was that {cast:survivor} was inside whatever was collapsing or burning or flooding, and the settlement\'s morning was not going to produce anyone capable of getting him out before the thread broke.\n\n{cast:bystander} was already at the perimeter of the disaster, shouting in the direction of the entrance with the desperation of someone who has been shouting for long enough to know that shouting is insufficient and has not yet been presented with an alternative. She was holding a length of rope that she had grabbed from somewhere, because she was the kind of person who grabbed a length of rope from somewhere when something went wrong, but the rope was not usable at a safe distance from the fire or the collapse, and {cast:bystander} was a practical person who understood that going to where the rope was usable was a question of whether she trusted the structure to hold her long enough to be useful. She did not trust it. She was still holding the rope. She was still shouting.\n\nThe quintessence-thread pulled another degree toward its limit, and the god made its choice.',
   successAfterimage: 'The god perceived the thread pulling taut and chose how to act before it broke.',
   failureAfterimage: 'The god perceived the crisis but arrived at the moment of it without clarity about how to act.',
+  successAtCostAfterimage: 'The god found the thread in time, and the smoke had already reached the mortal\'s lungs.',
+  criticalSuccessAfterimage: 'The whole structure lay open to the god, every beam and every way out.',
+  criticalFailureAfterimage: 'The thread blurred into heat and noise, and the mortal chose in a panic.',
+  purposeLine: 'Find the thread',
+  // THR-2158 — the fork's argument. Two specials, one per pole of
+  // `sacrifice_survival`; the Repertoire fills the rest of the hand.
+  nudges: [
+    {
+      id: 'brink.hear_the_voice',
+      name: 'Hear The Voice Inside',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'sacrifice_survival', toward: 'positive' },
+      effectLine: 'Carry the trapped man\'s voice out through the smoke. A voice calling argues for going in.',
+      bandProse: {
+        success: '{actor} heard the man inside call out, and stepped toward the door.',
+        failure: '{actor} heard a voice in the smoke, and the heat drowned it out.',
+      },
+    },
+    {
+      id: 'brink.show_the_rope',
+      name: 'Show The Rope',
+      sphere: 'order',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'sacrifice_survival', toward: 'negative' },
+      effectLine: 'Point them at the woman at the edge with a coil of rope. Another pair of hands argues for staying out.',
+      bandProse: {
+        success: '{actor} saw the rope at the perimeter, and the plan in it.',
+        failure: '{actor} saw the rope, and the woman holding it would not meet their eye.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['peril', 'insight'] },
 };
 
 /**
@@ -111,6 +161,8 @@ const step1ThreadTheSurvivorOut: ActionStep = {
     },
   ],
   failBehavior: 'fail_action',
+  purposeLine: 'Thread the way out',
+  deal: { count: 4, tags: ['peril', 'might'] },
   narrativeTemplate:
     'The god\'s attention moved through the structure like water finding its level, reading the load distribution and the points of contact and the places where mass was bearing on compromised material. There was a path. There was almost always a path, if the one who needed it could find it without the three seconds of hesitation that the human mind requires when confronted with the experience of imminent structural failure. The god removed the hesitation.\n\n{cast:survivor} moved as if he knew where he was going, which was not precisely true but was close enough. The god\'s work was in the confidence — not the knowledge, which {cast:survivor} did not have, but the bone-certainty that the next step would hold and the following turn would lead toward air and light and the world on the other side of the smoke. When the crossbeam above him cracked — not broke, cracked, which was a different thing, enough to hold for eleven more seconds before it would no longer be a question of cracking — {cast:survivor} did not look up. He turned left instead of right, which the god had made feel like his own choice rather than a correction, and the eleven seconds were more than sufficient.\n\n{cast:bystander} had moved to the only position from which the rope was useful by the time {cast:survivor} reached the perimeter. She did not ask later how she had known to move there. She remembered deciding to do it, which was accurate as far as her memory of the event was concerned. The god had arranged the sequence of small conditions — a gap in the smoke that let her see the position, a shift in the crowd that cleared her path to it — that made her decision obvious in the moment she made it. {cast:survivor}\'s hands found the rope. The beam behind him completed its failure and brought down the section of wall it had been holding, which was load-bearing only for what was behind it, not for what was in front of it, which was now {cast:bystander}\'s rope and the open air of the settlement\'s morning.\n\n{cast:survivor} sat in the street and coughed and did not speak for some time. In his coat pocket, which he did not check until he was sitting in {cast:bystander}\'s kitchen an hour later with a cup of something warm, there was a small object he did not remember placing there: a bubble of glass with a coal-dark core, warm to the touch. He held it to the light and felt the warmth of it against his palm and could not explain what it was or where it had come from, but the explanation seemed less important than the fact of the warmth, which was present and specific and felt like something that had been given rather than found.',
   successAfterimage: 'The path through the collapse revealed itself to {cast:survivor} step by step. He came out with the ward in his pocket.',
@@ -144,6 +196,8 @@ const step1WorkThroughTheBystander: ActionStep = {
     },
   ],
   failBehavior: 'fail_action',
+  purposeLine: 'Send the rescuer in',
+  deal: { count: 4, tags: ['presence', 'peril'] },
   narrativeTemplate:
     'The god did not go into the structure. The god went into {cast:bystander} instead — not with force, not with override, but with the quality of attention that locates the source of courage in a person and shows it to them without making it larger than it already is. {cast:bystander} was already holding the rope. She had already assessed the structure and made a calculation about the risk of entering it. The calculation said no. The god did not change the calculation. The god found the part of her that had grabbed the rope before the calculation was finished and let it be seen by the rest of her, and let the rest of her make a different decision than the calculation would have produced on its own.\n\nShe went in through the gap in the east wall where the smoke was thinnest. The rope was tied to the iron ring of the grain store loading gate, which was structural and had not been involved in the fire or the collapse — the god had noticed this and placed the noticing where {cast:bystander} could act on it. She moved through the smoke with a cloth pressed to her face and the speed of someone who has decided that speed is the only variable she controls and has therefore decided to control it completely. She found {cast:survivor} in the inner room, conscious but disoriented, unable to determine which direction to move through the smoke to reach the outside.\n\nThe return was slower. {cast:survivor} was heavier than {cast:bystander} had accounted for and the footing was uncertain and the smoke was thicker coming back through a route that was now also carrying the heat of the fire on the structure\'s east side. But the god was still there, in the back of {cast:bystander}\'s spine where courage lives in the body, and the combination of that presence and her own stubbornness and the rope she had tied to a structural piece of iron was sufficient. They came out through the gap in the east wall with {cast:survivor}\'s arm over {cast:bystander}\'s shoulder and the rope wrapped twice around her wrist in case one of them fell.\n\n{cast:survivor} recovered in the street. {cast:bystander} sat down next to him and shook for a few minutes, which was the appropriate physiological response to what she had just done, and then stopped shaking, which was the appropriate response to finishing shaking. The god felt the quintessence-thread go slack and then return to its normal tension, which was different from the tautness of approach and felt, in the way that physics has no name for, like relief. In {cast:survivor}\'s coat pocket, which neither of them checked until later, the small glass object was warm against the cloth.',
   successAfterimage: '{cast:bystander} went in with the rope and came back with {cast:survivor}. The ward found its way into his pocket before anyone thought to put it there.',
@@ -157,9 +211,11 @@ const step1WorkThroughTheBystander: ActionStep = {
  */
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  // THR-2158 — the mortal decides; the fallback threads the survivor out.
+  decidedBy: { axis: 'sacrifice_survival' },
   variants: {
-    thread_the_survivor_out: step1ThreadTheSurvivorOut,
-    work_through_the_bystander: step1WorkThroughTheBystander,
+    positive: step1ThreadTheSurvivorOut,
+    negative: step1WorkThroughTheBystander,
   },
   fallback: { ...step1ThreadTheSurvivorOut },
 };
@@ -488,7 +544,7 @@ export const BRINK_RESCUE_TEMPLATE: UnifiedActionTemplate = withEncounterContrac
     lost: 'saw the beam come down before he reached it',
     lostBadly: 'saw the floor go down with him into the heat',
     arms: {
-      work_through_the_bystander: {
+      negative: {
         won: 'sent the rescuer in with the rope and got him out',
         lost: 'watched the rescuer freeze at the threshold',
       },
@@ -529,60 +585,11 @@ export const BRINK_RESCUE_TEMPLATE: UnifiedActionTemplate = withEncounterContrac
 
   illustrationAlt: 'A settlement structure in partial collapse or fire, smoke rising, a bystander at the perimeter holding a coil of rope, and inside — barely visible through the haze — a figure that is still alive',
 
-  authoredChoices: {
-    0: [
-      {
-        id: 'thread_the_survivor_out',
-        label: 'Thread the Survivor Out',
-        intent:
-          'The god moves directly into the disaster — not into the body of the person inside, but into the structure itself, into the geometry of the collapse and the load distribution and the sequence in which things are about to fail. Star-reach attention finds the path through the smoke and the falling things: the beam that will hold for eleven seconds, the gap in the east wall that is structural rather than load-bearing, the turn left that leads to air rather than the turn right that leads to the fire\'s heart. The god makes this path legible to {cast:survivor} not as instruction but as bone-certainty, so that each step he takes feels like his own decision even though it was read in the physics of the structure minutes before he arrived at it.',
-        targetLabel: '{cast:survivor}',
-        essenceCost: 2,
-        likelyBurden:
-          'Reading the structure requires reading it correctly. A god that misreads load distribution in a burning building threads a survivor into a beam that falls. Star-reach precision is not infallible when the structure is actively changing around the calculation.',
-        interventionType: 'supportive',
-      },
-      {
-        id: 'work_through_the_bystander',
-        label: 'Work Through the Bystander',
-        intent:
-          '{cast:bystander} is already at the perimeter with a rope. She has done the calculation about whether to enter the structure and the calculation said no. The god does not override the calculation. The god finds the part of her that grabbed the rope before the calculation was finished and makes it present to the rest of her as a question: if not now, when does the rope become useful? Iron-reach courage flows into the back of her spine, which is where courage lives in the body. What she does with that courage is still her choice. The god\'s investment is in making the choice possible, not in making it for her.',
-        targetLabel: '{cast:bystander}',
-        essenceCost: 2,
-        likelyBurden:
-          'Investing divine courage in a person and then having them decide not to use it is its own kind of failure. If {cast:bystander}\'s calculation holds against the investment, the rope stays at the perimeter and the god has spent essence on a decision that was already made.',
-        interventionType: 'supportive',
-      },
-    ],
-    1: [
-      {
-        id: 'hold_the_structure',
-        label: 'Hold the Structure',
-        intent:
-          'The god works at the level of mass and contact and load — precisely enough that the relevant beams hold for the time that is needed, not longer. This is the minimal intervention: not clearing the path, not making {cast:survivor} faster, just ensuring that the structure does not fail in the specific places and moments that would turn a survivable route into an unsurvivable one. The god counts seconds and load-bearing points and asks the structure for eleven more.',
-        essenceCost: 1,
-        likelyBurden:
-          'Minimal intervention means the path must already be findable. If {cast:survivor} cannot identify the exit route on his own within the time that the structure holds, the minimal approach is insufficient.',
-        interventionType: 'supportive',
-      },
-      {
-        id: 'illuminate_the_route',
-        label: 'Illuminate the Route',
-        intent:
-          'The god goes further: full Star-reach presence in the disaster, reading the structure entirely and making the optimal path legible to {cast:survivor} as a felt certainty in his body at each decision point. He will not hesitate. He will not choose wrong turns. The god pays attention to every contingency in the route — including the beam that would otherwise fail prematurely — and holds all of it in place until {cast:survivor} reaches the perimeter. The cost is full investment for the full duration of the exit.',
-        essenceCost: 3,
-        likelyBurden:
-          'Full presence in the structure means the god cannot hedge or hold back any part of the attention. If the route becomes impossible despite full divine investment, the god has spent everything on a outcome that physics refused.',
-        interventionType: 'coercive',
-      },
-    ],
-  },
-
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      thread_the_survivor_out: THREAD_OUT_AFTERMATH,
-      work_through_the_bystander: BYSTANDER_AFTERMATH,
+      positive: THREAD_OUT_AFTERMATH,
+      negative: BYSTANDER_AFTERMATH,
     },
     fallback: { ...THREAD_OUT_AFTERMATH },
   },

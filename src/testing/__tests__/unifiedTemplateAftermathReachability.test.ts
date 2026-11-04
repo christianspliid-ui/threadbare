@@ -140,7 +140,10 @@ describe('aftermath variant producibility (catalog-wide, THR-989)', () => {
       return keys.every((k) => ids.has(k));
     });
 
-    expect(authoredKeyed.length).toBeGreaterThanOrEqual(25);
+    // THR-2158 — this population shrinks by design as the THR-2135 slices move
+    // templates off authoredChoices (THR-2161 retires the field). The floor is
+    // non-empty; the enumerated ids hold the guard where they are asserted.
+    expect(authoredKeyed.length).toBeGreaterThan(0);
 
     // Enumerated, not counted (THR-688 rule A): the three mentorship templates
     // are the set THR-989 was filed against under its literal predicate —
@@ -198,7 +201,10 @@ describe('aftermath variant producibility (catalog-wide, THR-989)', () => {
       return keys.every((k) => ids.has(k));
     });
 
-    expect(authoredKeyed.length).toBeGreaterThanOrEqual(25);
+    // THR-2158 — this population shrinks by design as the THR-2135 slices move
+    // templates off authoredChoices (THR-2161 retires the field). The floor is
+    // non-empty; the enumerated ids hold the guard where they are asserted.
+    expect(authoredKeyed.length).toBeGreaterThan(0);
 
     let distinctFromFallback = 0;
 
@@ -231,7 +237,8 @@ describe('aftermath variant producibility (catalog-wide, THR-989)', () => {
     // …but the suite would still pass vacuously if every variant equalled its
     // fallback, so pin that picking genuinely changes the ending in the general
     // case. This is the property that was false for all 30 templates before.
-    expect(distinctFromFallback).toBeGreaterThanOrEqual(25);
+    // Proportional, not a count (THR-688 rule A; THR-2158 shrank the set).
+    expect(distinctFromFallback).toBeGreaterThanOrEqual(Math.ceil(authoredKeyed.length / 2));
   });
 });
 
