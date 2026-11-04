@@ -579,3 +579,10 @@ export function listHeadingIcon(id: ListHeadingId): IconName | null {
 
 /** THR-2102 — one echo card at the harvest; four sit in a row at `--ceremony-panel-max-w`. */
 export const HARVEST_ECHO_TILE_W = '11rem';
+
+/**
+ * THR-2155 — Read the Threads' last section: seen mortals the god holds no thread to.
+ * Was "Dormant court", but `dormant` is a Court Position in the UL (a thread at that
+ * rank), and these people have no thread at all.
+ */
+export const READ_THREADS_UNTOUCHED_LIVES_LABEL = 'Untouched lives';

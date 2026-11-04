@@ -2742,9 +2742,10 @@ exit
 - **Intent:** Find names only what the god has seen (THR-1915, THR-1822 § D5/D10, Inspector plan § D11). The fog `visibilityMap`, `familiarityMap` and the god's `thread` / `avatar_of` edges feed the seen floor (`createSeenFloor`, `views/knowledge.ts`): a place on a visible or remembered hex, a Place inside one unless hidden, a person known to `recognised` or threaded or in sight now, a power with a nameable member or held place, an army in sight, an artifact the god's people hold or one at a nameable place. `buildFindIndex` (`views/find.ts`, `getView('findIndex')`) lists nothing else, so a query that matches only unseen names returns the same result as nonsense — "Nothing you know of by that name." A UI read only: no state is written.
 - **Producer → Consumer:** Intelligence, Knowledge & Familiarity → Intelligence, Knowledge & Familiarity
 - **UL terms:** *The First*
-- **Production hits:** 3 total — 1 write, 2 read, 0 unclassified
+- **Production hits:** 5 total — 1 write, 2 read, 2 unclassified
 - **Write sites:** `src/engine/views/knowledge.ts`
 - **Read sites:** `src/components/Game/find/FindBox.tsx`, `src/engine/views/find.ts`
+- **Other hits:** `src/components/Game/hosts/DialogHost.tsx`, `src/components/Game/ReadTheThreadsPanel.tsx`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `lair-arrival-spawns-confront` — 🟢 LIVE
@@ -3184,10 +3185,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **UL terms:** *Undertaking*
 - **Module:** `src/engine/naming/workNames.ts`
-- **Production hits:** 31 total — 3 write, 1 read, 27 unclassified
+- **Production hits:** 32 total — 3 write, 1 read, 28 unclassified
 - **Write sites:** `src/engine/binding/creationEffects.ts`, `src/engine/naming/workNames.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/groups/groupNames.ts`
-- **Other hits:** `src/data/backstory-content.ts`, `src/data/complication-templates.ts`, `src/data/content-eval/nudgeAuditDetectors.ts`, `src/data/foreshadowing-content.ts`, `src/data/item-generator-cores.ts` +22 more
+- **Other hits:** `src/data/backstory-content.ts`, `src/data/complication-templates.ts`, `src/data/content-eval/nudgeAuditDetectors.ts`, `src/data/first-use-captions.ts`, `src/data/foreshadowing-content.ts` +23 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 4. `groupNames.ts` becomes the first caller: its local `hashSeed` / `pick` / `possessive` are deleted and imported from the shared module. The group *grammar* is deliberately NOT folded in — folding companies onto the work patterns would have re-rolled every company name in every existing world, a player-facing rename with no ticket behind it, so this row guards shared primitives and two grammars rather than one namer with two callers. Pinned by `groups/__tests__/groupNameStability.test.ts`, a DIFFERENTIAL against a byte-copy of origin/main's implementation (a captured-literal golden would agree with itself the moment anyone regenerated it) across 17 contexts chosen to hit every pattern fork; falsified twice — stubbing `possessive` to always add `'s` went 2-of-20 red, and offsetting `pickFrom` by one went 12-of-20 red. The possessive rule reaches the strategic packs for the first time: `renderNameTemplate` matches `{actor}'s` as a unit so all seven shipped possessive templates render "Silas' Workshop" instead of "Silas's Workshop", and the two legacy hand-rolled name strings in `executeInstantMutation` now share it (falsified 9-of-22 red by restoring raw substitution). Christening is live: 93 firings in a 150-tick seed-42 run, producing "The Deepset Granary of Thornhaven", "Miriel's Surveyed Research Circle", "Elior's Auspice Shrine". Two defects the live run caught and unit tests could not: a concatenating `{root}{noun}` pattern produced "The StandingHouse" (removed; a legibility guard over a 200-name sample now falsifies at 55 offenders), and christening initially replaced a specific noun with a generic family one ("Rill's Research Circle at Ardenmor Keep" became "The Ardenmor Keep House") because `createSublocation` stamps `sublocationTypeId`, not `locationSubtype`. Names outlive owners: `transferHolding` never renames, `razeHolding` retires the name into the site's `nameEchoes`, and `refreshHoldingFaceNames` closes the stale-face gap slice 3's checkpoint predicted. The christened name rides the existing completion trace rather than an emission of its own — a separate trace measurably evicted `decision_board_comparison` entries from the per-tick ring buffer and reddened `decisionBoardLiveness`'s frozen-desire pin on a diff that authored no `motivations`. Full suite 18683 green ×2; ratchet 2973 unchanged; 30-tick seed-42 smoke reached tick 30, 377 agents.
 
 ### `opened-markets-draw-a-thieves-guild` — 🟢 LIVE
