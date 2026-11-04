@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-04 09:00 local (08:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-04 09:58 local (08:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -24,14 +24,12 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Queue
 
-**Healthy (6 ready).** [The goal says what fills it](https://linear.app/threadbare/issue/THR-2154/the-goal-says-what-fills-it-the-mandate-row-leads-with-the-hungers-own) merged at 07:55 UTC via [PR #2734](https://github.com/christianspliid-ui/threadbare/pull/2734). The ticket still shows In Dev with no owner, because the auto-close has not fired yet. The next builder run started at 07:51 UTC. Still ready: [The next follower has a path](https://linear.app/threadbare/issue/THR-2155) (High), [The path pulls only scenes about the same thing](https://linear.app/threadbare/issue/THR-2156) (Medium), [Legibility 4](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover), and the three encounter conversions ([seeded quests](https://linear.app/threadbare/issue/THR-2158), [reputation half one](https://linear.app/threadbare/issue/THR-2159), [reputation half two](https://linear.app/threadbare/issue/THR-2160)).
+**Healthy but thin (3 ready).** Two more shipped this hour and are live: [The next follower has a path](https://linear.app/threadbare/issue/THR-2155) via [PR #2735](https://github.com/christianspliid-ui/threadbare/pull/2735), and [The path pulls only scenes about the same thing](https://linear.app/threadbare/issue/THR-2156) via [PR #2736](https://github.com/christianspliid-ui/threadbare/pull/2736). A builder run is now working on [the six seeded quests](https://linear.app/threadbare/issue/THR-2158). Still ready: [Legibility 4](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover) and the two reputation-encounter halves ([half one](https://linear.app/threadbare/issue/THR-2159), [half two](https://linear.app/threadbare/issue/THR-2160)). The orchestrator and design lane refill the shelf when it runs low.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (15 days). No pushed branch names it. It needs gate and CI edits that unattended runs are refused, so agents can un-park it only in an attended run.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (15 days). It needs gate and CI edits that unattended runs are refused, so agents can un-park it only in an attended run.
 
 ## Health
 
-- **The live site has not picked up THR-2154 yet.** The merge commit (46510665) was pushed less than 20 minutes ago, which is normal. The next brief checks it again.
-- **Engine speed is back to normal:** 133 ms per tick, 15% below the weekly median. The 222 ms reading last brief was noise from a builder run working on the same machine.
-- Everything else is green. Checks on main and the scheduled background jobs pass. No PRs are waiting to merge. All 10 enabled scheduled tasks are on time. The worktree reaper ran this hour. The builder is not stalled: a run is working now.
+All green. The live site serves the latest main (3654f476, which includes THR-2154, THR-2155 and THR-2156). Checks on main and the scheduled background jobs pass. No PRs are waiting to merge. All 10 enabled scheduled tasks are on time. The builder is not stalled: a run is working now. Engine speed: 130 ms per tick, 17% below the weekly median. Last night's 12-hour quiet (19:25–07:19 UTC) is normal overnight quiet.

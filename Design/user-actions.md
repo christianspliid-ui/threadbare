@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-04 09:00 local (08:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-04 09:58 local (08:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,7 +46,9 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
-- **2026-11-04: the Mandate row now leads with the hunger's own words and counts the mortals bound to you** ([THR-2154](https://linear.app/threadbare/issue/THR-2154/the-goal-says-what-fills-it-the-mandate-row-leads-with-the-hungers-own)). Merged via [#2734](https://github.com/christianspliid-ui/threadbare/pull/2734); the live site picks it up shortly.
+- **2026-11-04: the path now pulls only scenes about the same thing, and it is live** ([THR-2156](https://linear.app/threadbare/issue/THR-2156)). Merged via [#2736](https://github.com/christianspliid-ui/threadbare/pull/2736).
+- **2026-11-04: the next follower has a path, and it is live** ([THR-2155](https://linear.app/threadbare/issue/THR-2155)). Merged via [#2735](https://github.com/christianspliid-ui/threadbare/pull/2735).
+- **2026-11-04: the Mandate row now leads with the hunger's own words and counts the mortals bound to you** ([THR-2154](https://linear.app/threadbare/issue/THR-2154/the-goal-says-what-fills-it-the-mandate-row-leads-with-the-hungers-own)). Merged via [#2734](https://github.com/christianspliid-ui/threadbare/pull/2734), and it is live.
 - **2026-11-03: Legibility 3 is live: the Stage and the dialogs show the title first, then the stakes** ([THR-2124](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first)). Merged via [#2733](https://github.com/christianspliid-ui/threadbare/pull/2733).
 - **2026-11-03: Legibility 2 is live: Inspector pages read Who, Now, Act, Detail, Out** ([THR-2123](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at)). Merged via [#2731](https://github.com/christianspliid-ui/threadbare/pull/2731).
 - **2026-11-03: after Play, a chapter step stays on the Stage while the world turns, and its answer opens in place, and it is live** ([THR-2151](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage)). Merged via [#2730](https://github.com/christianspliid-ui/threadbare/pull/2730).
@@ -54,8 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-03: every card now says what it buys, with a result line for cards that don't move a number, and it is live** ([THR-2147](https://linear.app/threadbare/issue/THR-2147/every-card-says-what-it-buys-a-result-line-for-cards-that-dont-move)). Merged via [#2726](https://github.com/christianspliid-ui/threadbare/pull/2726).
 - **2026-11-03: the essence rail row is now wide enough for its spend mark, and it is live** ([THR-2153](https://linear.app/threadbare/issue/THR-2153/essence-rail-row-is-too-narrow-for-its-spend-mark-mind-clips-to-m-and)). Merged via [#2727](https://github.com/christianspliid-ui/threadbare/pull/2727).
 - **2026-11-03: a grown skill now shows the Aftermath’s ▲ on its tile for three days, and it is live** ([THR-2149](https://linear.app/threadbare/issue/THR-2149/the-sheet-says-what-grew-a-reach-tile-shows-the-aftermaths-for-three)). Merged via [#2723](https://github.com/christianspliid-ui/threadbare/pull/2723).
-- **2026-11-03: the essence rail’s ▲/▼ mark is now drawn large enough to read, and it is live** ([THR-2152](https://linear.app/threadbare/issue/THR-2152/essence-rail-spend-mark-draws-its-at-10px-below-the-law-11-glyph-floor)). Merged via [#2724](https://github.com/christianspliid-ui/threadbare/pull/2724).
-- **2026-11-03: Legibility 1 is live: sheets share one set of section blocks, one type ladder and one spacing rhythm** ([THR-2122](https://linear.app/threadbare/issue/THR-2122/plan-doc-legibility-1-the-shared-blocks-the-type-ladder-and-the)). Merged via [#2721](https://github.com/christianspliid-ui/threadbare/pull/2721).
 ---
 
 Older resolved items and every earlier revision of this file: `git log -p origin/ops -- Design/user-actions.md`.
