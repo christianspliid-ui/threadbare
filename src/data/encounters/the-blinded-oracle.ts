@@ -9,6 +9,22 @@
  * who come armed in martial renown. The proud cannot enter.
  *
  * THR-147: Final tranche of reputation-gated content (NOVEL gate pattern).
+ *
+ * ─── The mortal decides (THR-2160, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was two cards whose ids were the
+ * aftermath keys, so the click picked the ending. Now the fork decides on
+ * `revelation_discretion`: a Seeker (+1) sits and takes the long-kept prophecy,
+ * a Sentinel (−1) refuses it and asks the older question — how she lost her
+ * sight. The god argues with a composed hand — two pole-leaning specials plus a
+ * Repertoire fill — and the mortal answers.
+ *
+ * - Fork axis: `revelation_discretion`. `positive` = Take the Prophecy,
+ *   `negative` = Ask How She Lost Her Sight. Variants, aftermath and
+ *   `stakes.arms` are keyed to the pole (`branchDecision.ts` →
+ *   `recordDecidedChoice`).
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
+ * - The step-1 prose is re-voiced so the mortal does it, not the god.
  */
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
@@ -89,6 +105,39 @@ const step0TheSeer: ActionStep = {
     'She had a prophecy. She had been keeping it for some time.',
   successAfterimage: 'She knew who stood in the doorway. She gestured to the bench without turning.',
   failureAfterimage: 'She sensed the arrival but something in the threshold hadn\'t fully resolved — the acknowledgment partial.',
+  successAtCostAfterimage: 'She named the agent, and something in the dying grove had begun to watch.',
+  criticalSuccessAfterimage: 'The seer, her prophecy and the wound behind it all stood clear at once.',
+  criticalFailureAfterimage: 'The hut blurred into wrong-hour light and her voice, and the agent chose half-blind.',
+  purposeLine: 'Sit with the seer',
+  // THR-2160 — the fork's argument. Two specials, one per pole of
+  // `revelation_discretion`; the Repertoire fills the rest of the hand.
+  nudges: [
+    {
+      id: 'oracle.hear_the_held_words',
+      name: 'Hear The Held Words',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'revelation_discretion', toward: 'positive' },
+      effectLine: 'Let them feel how long she has carried this prophecy. Words this heavy argue for taking them.',
+      bandProse: {
+        success: '{actor} felt the weight of the held words, and leaned in.',
+        failure: '{actor} listened for the prophecy, and heard only the grove.',
+      },
+    },
+    {
+      id: 'oracle.see_the_empty_eyes',
+      name: 'See The Empty Eyes',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'revelation_discretion', toward: 'negative' },
+      effectLine: 'Show them the face that grew around her missing sight. A wound like this argues for the older question.',
+      bandProse: {
+        success: '{actor} saw what had been taken from her, and set the prophecy aside.',
+        failure: '{actor} looked at her face, and found no question in it.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['lore', 'insight'] },
 };
 
 const step1TakeProphecy: ActionStep = {
@@ -103,7 +152,7 @@ const step1TakeProphecy: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god settled the cost of receiving through the agent and let the prophecy ' +
+    'The agent sat, paid the cost of receiving, and let the prophecy ' +
     'arrive. Not gently — the seer had been keeping this for long enough that it ' +
     'had accumulated the density of words that have been held rather than ' +
     'spoken, and it arrived in the {title}\'s awareness with the weight of a thing ' +
@@ -133,7 +182,7 @@ const step1AskAboutSight: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god redirected the agent\'s attention from the prophecy to the seer — from ' +
+    'The agent turned their attention from the prophecy to the seer — from ' +
     'what she was about to give to what had been taken from her. The {title} sat on ' +
     'the bench and did not ask for the prophecy. They asked the older question: ' +
     'how did you lose your sight?\n\n' +
@@ -155,9 +204,11 @@ const step1AskAboutSight: ActionStep = {
 
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  // THR-2160 — the mortal decides; the fallback is the positive pole.
+  decidedBy: { axis: 'revelation_discretion' },
   variants: {
-    take_the_prophecy: step1TakeProphecy,
-    ask_how_she_lost_her_sight: step1AskAboutSight,
+    positive: step1TakeProphecy,
+    negative: step1AskAboutSight,
   },
   fallback: { ...step1TakeProphecy },
 };
@@ -526,7 +577,7 @@ export const THE_BLINDED_ORACLE_TEMPLATE: UnifiedActionTemplate = withEncounterC
     won: 'received the blind seer\'s prophecy whole',
     lost: 'took in only part of the seer\'s prophecy',
     arms: {
-      ask_how_she_lost_her_sight: {
+      negative: {
         won: 'heard from the seer how she lost her sight',
         lost: 'heard only part of how the seer lost her sight',
       },
@@ -573,49 +624,11 @@ export const THE_BLINDED_ORACLE_TEMPLATE: UnifiedActionTemplate = withEncounterC
   illustrationUrl: '/concept-art/encounters/the-blinded-oracle.png',
   illustrationAlt: 'Wide shot: low hut interior, seated blinded figure in grey, visitor on a low bench, thin light from a single high window, a dying tree visible outside.',
 
-  authoredChoices: {
-    0: [
-      {
-        id: 'take_the_prophecy',
-        label: 'Sit. Take the prophecy.',
-        intent:
-          'The god settles the cost of receiving through the agent and lets what has ' +
-          'been kept arrive. The seer chose {title} specifically — the discredited sight ' +
-          'is not a barrier to the prophecy but the condition for it. The famed cannot ' +
-          'enter this hut. The proud are turned away. The {title} is here because they ' +
-          'are neither, and the prophecy has conditions that require someone the world ' +
-          'does not already believe will receive them.',
-        essenceCost: 2,
-        likelyBurden:
-          'A prophecy with conditions binds both ways. Its first condition is already ' +
-          'beginning. The order that blinded the seer maintains watchers. They will ' +
-          'notice who visits the hut.',
-        interventionType: 'supportive',
-      },
-      {
-        id: 'ask_how_she_lost_her_sight',
-        label: 'Refuse the prophecy. Ask how she lost her sight.',
-        intent:
-          'The god redirects the agent from the gift to the giver. The prophecy is not ' +
-          'taken. Instead {title} asks the older question — the one that requires the ' +
-          'asking to have been earned by a specific kind of experience. She answers slowly, ' +
-          'with the precision of a story told aloud for perhaps the second or third time. ' +
-          'The order has a name. The reason has a structure.',
-        essenceCost: 0,
-        likelyBurden:
-          'The order that blinded her has watchers at specific locations. An outsider ' +
-          'who asks the older question about a blinded oracle is exactly the kind of ' +
-          'event they track.',
-        interventionType: 'withdrawn',
-      },
-    ],
-  },
-
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      take_the_prophecy: PROPHECY_AFTERMATH,
-      ask_how_she_lost_her_sight: STORY_AFTERMATH,
+      positive: PROPHECY_AFTERMATH,
+      negative: STORY_AFTERMATH,
     },
     fallback: { ...PROPHECY_AFTERMATH },
   },

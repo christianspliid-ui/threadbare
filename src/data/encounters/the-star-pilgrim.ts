@@ -7,6 +7,26 @@
  *          those with tainted divine reputation cannot access it.
  *
  * THR-146: Middle tranche of reputation-gated content.
+ *
+ * ─── The mortal decides (THR-2160, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was two cards whose ids were the
+ * aftermath keys, so the click picked the ending. Now the fork decides on
+ * `sacrifice_survival`: a Martyr (+1) pours out the full star-channel for the
+ * child, a Survivor (−1) keeps their reserve, blesses, and points the father to
+ * the sister shrine. The god argues with a composed hand — two pole-leaning
+ * specials plus a Repertoire fill — and the mortal answers.
+ *
+ * - Fork axis: `sacrifice_survival`. `positive` = Channel the Radiance,
+ *   `negative` = Bless and Send Onward. Variants, aftermath and `stakes.arms` are
+ *   keyed to the pole (`branchDecision.ts` → `recordDecidedChoice`). The
+ *   fallback stays the blessing (`negative`), as before: the radiance aftermath
+ *   seeds `star.wider_pilgrimage`, which has no candidates yet, and a fallback
+ *   copy would add a dead seed site (`encounterSeedLiveness.test.ts` ceiling).
+ * - The two retired cards carried THR-528 per-choice moral marks (Star virtue);
+ *   they leave with the cards, as in THR-2159.
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
+ * - The step-1 prose is re-voiced so the mortal does it, not the god.
  */
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
@@ -81,6 +101,39 @@ const step0TheChild: ActionStep = {
     'He did not say anything. The unwrapping was the speech.',
   successAfterimage: 'The blanket folded back. The child\'s shallow breath. The father waiting.',
   failureAfterimage: 'The unwrapping, and then a silence that arrived at the wrong angle.',
+  successAtCostAfterimage: 'The child lay bare to the road, and the father\'s knees had begun to give.',
+  criticalSuccessAfterimage: 'The child\'s sickness, and what each mending would cost, stood clear at once.',
+  criticalFailureAfterimage: 'The road blurred into dust and the child\'s breathing, and the agent chose half-blind.',
+  purposeLine: 'Meet the child',
+  // THR-2160 — the fork's argument. Two specials, one per pole of
+  // `sacrifice_survival`; the Repertoire fills the rest of the hand.
+  nudges: [
+    {
+      id: 'pilgrim.count_the_seven_days',
+      name: 'Count The Seven Days',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'sacrifice_survival', toward: 'positive' },
+      effectLine: 'Show them the seven days in the father\'s neck. A walk this long argues for the full channel.',
+      bandProse: {
+        success: '{actor} saw the seven days on the father, and opened wide.',
+        failure: '{actor} saw the father\'s weariness, and held back still.',
+      },
+    },
+    {
+      id: 'pilgrim.point_to_the_shrine',
+      name: 'Point To The Shrine',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'sacrifice_survival', toward: 'negative' },
+      effectLine: 'Remind them the sister shrine is three hours away. A near keeper argues for a blessing.',
+      bandProse: {
+        success: '{actor} remembered the shrine road, and kept their strength.',
+        failure: '{actor} thought of the shrine, and it seemed too far.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['presence', 'lore'] },
 };
 
 const step1ChannelRadiance: ActionStep = {
@@ -95,8 +148,8 @@ const step1ChannelRadiance: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god reached through whatever it uses to reach through things — the channel that ' +
-    'star-touch runs through when it runs — and set it moving toward the child. Not ' +
+    'The agent opened the full channel — the one that star-touch runs through when it ' +
+    'runs, and that costs the one who opens it — and set it moving toward the child. Not ' +
     'curative exactly. Not a repair of something broken. More like a realignment of the ' +
     'terms the child\'s body was operating under.\n\n' +
     'The father felt it before the child did. His hands tightened on the child\'s legs ' +
@@ -124,14 +177,14 @@ const step1BlessAndSend: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god did not call the full channel. What it gave instead was a direction and a ' +
+    'The agent did not open the full channel. What they gave instead was a direction and a ' +
     'blessing of the kind that does not guarantee outcomes but changes the quality of the ' +
     'road toward them. The agent laid hands on the child\'s forehead for a moment — the ' +
     'old form, which the father recognized from something his own grandmother had done, ' +
     'which was not coincidence — and then pointed northeast, toward the sister shrine ' +
     'the {title} knew was three hours\' travel on a flat road.\n\n' +
     'The father listened. He wrapped the child back in the blanket. He turned northeast. ' +
-    'He had not said thank you yet, which some people read as ingratitude and the god ' +
+    'He had not said thank you yet, which some people read as ingratitude and the agent ' +
     'read correctly as a man who had run out of the kind of emotional surplus that thanks ' +
     'requires and was saving everything remaining for the walk.',
   successMetadata: { reputationDelta: 0.05 },
@@ -142,9 +195,13 @@ const step1BlessAndSend: ActionStep = {
 
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  // THR-2160 — the mortal decides. The fallback stays the blessing, as before the
+  // conversion: the radiance aftermath seeds `star.wider_pilgrimage`, a family with no
+  // candidates yet, and a fallback copy of it counts as a new dead seed site.
+  decidedBy: { axis: 'sacrifice_survival' },
   variants: {
-    channel_the_radiance: step1ChannelRadiance,
-    bless_and_send_onward: step1BlessAndSend,
+    positive: step1ChannelRadiance,
+    negative: step1BlessAndSend,
   },
   fallback: { ...step1BlessAndSend },
 };
@@ -483,7 +540,7 @@ export const THE_STAR_PILGRIM_TEMPLATE: UnifiedActionTemplate = withEncounterCon
     won: 'eased the child\'s breathing and heard them speak',
     lost: 'reached the child but did not mend what was wrong',
     arms: {
-      bless_and_send_onward: {
+      negative: {
         won: 'blessed the child and sent the father to the shrine',
         lost: 'sent the father onward with a weak blessing',
       },
@@ -528,52 +585,11 @@ export const THE_STAR_PILGRIM_TEMPLATE: UnifiedActionTemplate = withEncounterCon
   illustrationUrl: '/concept-art/encounters/the-star-pilgrim.webp',
   illustrationAlt: 'Wide shot: father holding cloth-wrapped child, shrine lintel behind them, dawn light, Threadbare palette.',
 
-  authoredChoices: {
-    0: [
-      {
-        id: 'channel_the_radiance',
-        label: 'Call the star-channel. Let the radiance through.',
-        intent:
-          'The god opens the full channel — the one that costs essence because it is not ' +
-          'metaphor, it is actual reach through the medium the star-domain operates in. ' +
-          'What arrives in the child is a realignment, not a cure. Whether that distinction ' +
-          'matters to the father is not the god\'s to decide.',
-        essenceCost: 2,
-        likelyBurden:
-          'What happens to the child will be described as a miracle. The story will move ' +
-          'faster than the father. The next valley is already waiting for something.',
-        interventionType: 'supportive',
-        // THR-528: pouring out radiance to lift a desperate pilgrim — the Star virtue (Beacon/Guiding).
-        moralAxis: 'star',
-        pole: 'virtue',
-        magnitude: 0.15,
-      },
-      {
-        id: 'bless_and_send_onward',
-        label: 'Lay hands. Give a direction. Point to the sister shrine.',
-        intent:
-          'The god does not call the full channel. It gives what it can give without ' +
-          'the full essence cost: the old form, a direction, a blessing that changes ' +
-          'the quality of the road rather than the road\'s destination. The shrine keeper ' +
-          'there knows what to do with what arrives.',
-        essenceCost: 1,
-        likelyBurden:
-          'The father will walk three more hours. What happens at the shrine is the ' +
-          'keeper\'s work, not the god\'s. The outcome is less certain but not absent.',
-        interventionType: 'supportive',
-        // THR-528: a quieter blessing that still sends them on with hope — the Star virtue (Beacon/Guiding).
-        moralAxis: 'star',
-        pole: 'virtue',
-        magnitude: 0.1,
-      },
-    ],
-  },
-
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      channel_the_radiance: RADIANCE_AFTERMATH,
-      bless_and_send_onward: BLESS_AFTERMATH,
+      positive: RADIANCE_AFTERMATH,
+      negative: BLESS_AFTERMATH,
     },
     fallback: { ...BLESS_AFTERMATH },
   },
