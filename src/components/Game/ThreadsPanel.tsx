@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { FirstUseCaption, FirstUseCaptionZone } from '../shared/FirstUseCaption';
+import { dismissFirstUseCaption } from '../shared/firstUseCaptionStore';
 import type { ThreadedNode, ThreadCategory, SustainedControlNode, SustainedControlCategory } from '../../engine/retinue';
 import { groupThreadedNodes, SUSTAIN_BAR_MIN_VISIBLE_FRACTION, SUSTAIN_LAPSE_RISK_TIGHTENING_TICKS } from '../../engine/retinue';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
@@ -51,6 +52,30 @@ export function threadHasWaitingChapter(
   activeEncounters: ReadonlyMap<string, unknown> | undefined,
 ): boolean {
   return node.category === 'agent' && !!activeEncounters?.has(node.id);
+}
+
+/**
+ * THR-2155 — the mortal rows the panel lists. A relic or a place the god threads
+ * (Beat 2 threads a relic) is not a mortal, so it does not count. A dead mortal's
+ * row does count: holding two mortal rows means the player has bound a second,
+ * which is what the "bind another" caption teaches.
+ */
+export function countMortalThreads(nodes: ReadonlyArray<{ category: string }>): number {
+  return nodes.filter(n => n.category === 'agent').length;
+}
+
+/**
+ * THR-2155 — whether the "bind another" caption is owed: exactly one mortal
+ * thread. Its `{name}` is The First's (the one row at `the_first`, else the one
+ * mortal held).
+ */
+export function nextThreadCaption(
+  nodes: ReadonlyArray<{ category: string; name: string; courtPosition: string | null }>,
+): { show: boolean; firstName: string | undefined } {
+  const mortals = nodes.filter(n => n.category === 'agent');
+  if (mortals.length !== 1) return { show: false, firstName: undefined };
+  const first = mortals.find(n => n.courtPosition === 'the_first') ?? mortals[0];
+  return { show: true, firstName: first.name || undefined };
 }
 
 // ─── Section config ───────────────────────────────────────────────
@@ -1119,6 +1144,13 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
 
   const groups = groupThreadedNodes(threadedNodes);
 
+  // THR-2155 — the "bind another" caption. Binding a second mortal is the use
+  // that retires it for good (Law 51), as a hover or a press retires the others.
+  const nextThread = nextThreadCaption(threadedNodes);
+  const mortalThreads = countMortalThreads(threadedNodes);  useEffect(() => {
+    if (mortalThreads >= 2) dismissFirstUseCaption('threads_next');
+  }, [mortalThreads]);
+
   const toggleSection = (category: ThreadSectionKey) => {
     setExpandedSections(prev => ({ ...prev, [category]: !prev[category] }));
   };
@@ -1175,6 +1207,8 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
         </div>
         {/* THR-1986 — what the panel holds, until the player uses it once. */}
         <FirstUseCaption id="threads" />
+        {/* THR-2155 — how to bind a second mortal, only while the god holds one. */}
+        {nextThread.show && <FirstUseCaption id="threads_next" name={nextThread.firstName} />}
 
         {/* Sections */}
         {SECTION_ORDER.map((category) => {
