@@ -191,7 +191,7 @@ describe('THR-2103 toasts (decision 4)', () => {
     expect(el.getAttribute('data-row-art')).toBe('art');
     expect(within(el).getByTestId('row-picture')).toBeTruthy();
     expect(el.querySelector('[title="Open their page"]')).toBeTruthy();
-    expect(readListDressing()).toEqual([{ surface: 'toasts', subjectRows: 1, subjectRowsBare: 0, headingIcons: [] }]);
+    expect(readListDressing()).toEqual([{ surface: 'toasts', subjectRows: 1, subjectRowsBare: 0, headingIcons: [], rowName: null, frameDepth: 0 }]);
   });
 
   it('a toast about a hex names no subject and draws as before', () => {

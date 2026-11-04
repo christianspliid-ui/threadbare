@@ -47,7 +47,52 @@ export function readListDressing(doc: Document = document): DebugListDressing[] 
       headingIcons: [...root.querySelectorAll('[data-heading-icon]')]
         .map(el => el.getAttribute('data-heading-icon') ?? '')
         .filter(Boolean),
+      ...readRowName(root),
     });
   }
   return out;
+}
+
+/** A box edge drawn on any side (THR-2120 § 3 counting). */
+function isBordered(el: Element): boolean {
+  try {
+    const cs = getComputedStyle(el);
+    return ['top', 'right', 'bottom', 'left'].some(side => {
+      const style = cs.getPropertyValue(`border-${side}-style`);
+      const width = parseFloat(cs.getPropertyValue(`border-${side}-width`)) || 0;
+      return style !== '' && style !== 'none' && style !== 'hidden' && width > 0;
+    });
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * THR-2125 R5 — the surface's first row name (`[data-row-name]`): its face, size, weight and
+ * whether it is cut (`scrollWidth > clientWidth`); and `frameDepth`, the bordered boxes from
+ * that row up to and including the surface root, the row's own border counted. No row →
+ * `rowName: null`, `frameDepth: 0`, never a throw.
+ */
+export function readRowName(root: Element): Pick<DebugListDressing, 'rowName' | 'frameDepth'> {
+  const el = root.matches('[data-row-name]') ? root : root.querySelector('[data-row-name]');
+  if (!el) return { rowName: null, frameDepth: 0 };
+  let family = '';
+  let sizePx = 0;
+  let weight = 0;
+  try {
+    const cs = getComputedStyle(el);
+    family = cs.fontFamily || (el as HTMLElement).style?.fontFamily || '';
+    sizePx = parseFloat(cs.fontSize) || 0;
+    weight = parseInt(cs.fontWeight, 10) || 0;
+  } catch {
+    // fail-soft: an unreadable style reads as zeros
+  }
+  const html = el as HTMLElement;
+  const clipped = (html.scrollWidth ?? 0) > (html.clientWidth ?? 0);
+  let frameDepth = 0;
+  for (let node: Element | null = el; node; node = node.parentElement) {
+    if (isBordered(node)) frameDepth++;
+    if (node === root) break;
+  }
+  return { rowName: { family, sizePx, weight, clipped }, frameDepth };
 }

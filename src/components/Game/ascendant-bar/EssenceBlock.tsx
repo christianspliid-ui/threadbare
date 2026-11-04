@@ -191,7 +191,7 @@ function EssenceRow({ row, previewed }: EssenceRowProps) {
               data-cap={row.cap}
               aria-label={balance.aria}
               style={{
-                fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)', fontWeight: 600,
+                fontFamily: 'var(--font-body)', fontSize: 'var(--text-sm)', fontWeight: 600, // THR-2125 R1 — the spendable pools read first
                 color: row.isPrimary || row.isSecondary ? 'var(--text-primary)' : 'var(--text-secondary)',
                 flexShrink: 0, textAlign: 'right',
                 fontVariantNumeric: 'tabular-nums',

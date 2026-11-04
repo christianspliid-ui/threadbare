@@ -54,6 +54,9 @@ export const LEDGER_THREADS_GROW = 1;
  * the per-tick doing lines and badges moved the Chronicle's tab row under the cursor
  * (THR-2141).
  */
+/** THR-2125 — tops the column gap (`--panel-padding`) up to `--space-6` between sections. */
+export const LEDGER_SECTION_EXTRA_GAP = 'calc(var(--space-6) - var(--panel-padding))';
+
 export function ledgerSectionStyle(id: LedgerSectionId): CSSProperties {
   return id === 'threads'
     ? { flex: `${LEDGER_THREADS_GROW} 1 0`, minHeight: 0, overflowY: 'auto' }
@@ -281,12 +284,14 @@ export function LedgerRail({
           </Tooltip>
         )}
       </div>
-      {SECTIONS.filter(s => sectionShown(s.id)).map((s): ReactElement => (
+      {SECTIONS.filter(s => sectionShown(s.id)).map((s, i): ReactElement => (
         <div
           key={s.id}
           ref={el => { if (where === 'rail') sectionRefs.current[s.id] = el; }}
           data-ledger-section={s.id}
-          style={ledgerSectionStyle(s.id)}
+          // THR-2125 R2.2 — the sections are unboxed, so the space between them groups:
+          // `--space-6` between rail sections (Modules § 2), the column's own gap made up.
+          style={i > 0 ? { ...ledgerSectionStyle(s.id), marginTop: LEDGER_SECTION_EXTRA_GAP } : ledgerSectionStyle(s.id)}
         >
           {LEDGER_SECTION_COMPONENTS[s.id](bag)}
         </div>

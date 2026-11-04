@@ -99,10 +99,11 @@ export const SPEED_UP_ARIA = 'Increase speed';
 
 export const GOD_RAIL_ARIA = 'Ascendant status';
 export const ESSENCE_LABEL = 'Essence';
-export const ESSENCE_PRIMARY_LABEL = 'Primary';
+/** "Your primary sphere is Mind." — its own line under the Essence heading (THR-2125, Law 16). */
+export const ESSENCE_PRIMARY_LEAD = 'Your primary sphere is';
 export const ATTENTION_LABEL = 'Attention';
-/** "Your First: Kael Thorne" — after the bond only (Law 56). */
-export const YOUR_FIRST_LABEL = 'Your First';
+/** "Your First is Kael Thorne" — a sentence, after the bond only (Laws 16, 56; THR-2125). */
+export const YOUR_FIRST_LEAD = 'Your First is';
 
 /** The hand's header on screen. "Your cards", never "Your hand" (UL: a hand is a step's dealt cards). */
 export const HAND_HEADER = 'Your cards';

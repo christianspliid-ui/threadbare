@@ -11,13 +11,14 @@ interface ListRowProps {
 
 function Title({ children }: { children: React.ReactNode }) {
   return (
+    // THR-2125 R3 — the row's name is Text 700 and whole: it wraps, it is never cut.
     <span
+      data-row-name=""
       style={{
         fontSize: 'var(--text-sm)',
+        fontWeight: 700,
         color: 'var(--text-primary)',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap',
+        overflowWrap: 'anywhere',
       }}
     >
       {children}
