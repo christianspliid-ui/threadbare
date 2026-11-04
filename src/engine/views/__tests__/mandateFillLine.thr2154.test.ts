@@ -77,6 +77,13 @@ describe('selectMandateRow — THR-2154', () => {
     expect(countBoundMortals(s)).toBe(1);
   });
 
+  it('a dead mortal keeps its thread but is not counted', () => {
+    const s = stateWith(3);
+    s.graph.getNode('m1')!.properties.deceased = true;
+    s.graph.getNode('m2')!.properties.deceasedTick = 40; // an Aspect echo
+    expect(countBoundMortals(s)).toBe(1);
+  });
+
   it('fails soft on a missing ascendant', () => {
     expect(countBoundMortals({ graph: new WorldGraph(), ascendantId: '' } as unknown as GameState)).toBe(0);
   });

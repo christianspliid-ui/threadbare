@@ -454,10 +454,16 @@ export function countBoundMortals(gameState: Pick<GameState, 'graph' | 'ascendan
     for (const e of graph.getIncomingEdges(ascendantId, 'avatar_of')) people.delete(e.source);
     people.delete(ascendantId);
     // A `thread` edge may also target an artifact or a place (Beat 2 threads a relic,
-    // ascendantBeatSeeding.ts) — only actor nodes are mortals bound to the god.
+    // ascendantBeatSeeding.ts) — only actor nodes are mortals bound to the god. The dead
+    // keep their thread edge (markMortalDead 'retain', and an Aspect echo), but make no
+    // more scenes, so they are not counted.
     let count = 0;
     for (const id of people) {
-      if (graph.getNode(id)?.type === 'actor') count++;
+      const node = graph.getNode(id);
+      if (node?.type !== 'actor') continue;
+      const p = node.properties;
+      if (p.deceased === true || p.status === 'dead' || p.deceasedTick != null) continue;
+      count++;
     }
     return count;
   } catch {
