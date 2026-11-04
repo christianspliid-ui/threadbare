@@ -69,6 +69,13 @@ more, else the first). That is a proxy for authorial grouping, not a curated tax
 | `liminal.quest` | 2 | 4 | push 2, rider 0, sphere 2, trait 0, free 0 |
 | `encounter.rival` | 1 | 4 | push 0, rider 0, sphere 3, trait 1, free 0 |
 | `broker.quest` | 1 | 2 | push 1, rider 0, sphere 1, trait 0, free 0 |
+| `reputation.iron` | 1 | 2 | push 2, rider 0, sphere 0, trait 0, free 0 |
+| `reputation.shadow` | 1 | 2 | push 2, rider 0, sphere 0, trait 0, free 0 |
+| `reputation.heart` | 1 | 2 | push 2, rider 0, sphere 0, trait 0, free 0 |
+| `reputation.veil` | 1 | 2 | push 2, rider 0, sphere 0, trait 0, free 0 |
+| `reputation.stone` | 1 | 2 | push 2, rider 0, sphere 0, trait 0, free 0 |
+| `reputation.gold` | 1 | 2 | push 2, rider 0, sphere 0, trait 0, free 0 |
+| `reputation.eye` | 1 | 2 | push 2, rider 0, sphere 0, trait 0, free 0 |
 | `encounter.hunt` | 1 | 2 | push 0, rider 0, sphere 2, trait 0, free 0 |
 
 **Hand monotony (advisory)** — one card kind dominates:
