@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-04 12:56 local (11:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-04 13:56 local (12:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -44,4 +44,4 @@ Items for agents, not you:
 
 ## Health
 
-All green. The live site serves the latest game build; commits since then touched only docs. Checks on main and the 3 scheduled background jobs pass. No PRs are waiting to merge. All 10 enabled scheduled tasks are on time. The builder is not stalled: its last three runs were short because the one ready ticket is inside its veto window. Engine speed: 141 ms per tick, 11% below the weekly median. The home folder copy is 8 commits behind main; the mirror catches up on its own.
+All green. The live site serves the latest game build; commits since then touched only docs. Checks on main and the 3 scheduled background jobs pass. No PRs are waiting to merge. All 10 enabled scheduled tasks are on time. The builder is not stalled: its last three runs were short because the one ready ticket is inside its veto window. Engine speed: 141 ms per tick, 11% below the weekly median (158). The worktree cleaner last ran at 13:40 local. The home folder copy is 8 commits behind main; the mirror catches up on its own.
