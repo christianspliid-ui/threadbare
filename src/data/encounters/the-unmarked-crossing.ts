@@ -551,7 +551,7 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 export const THE_UNMARKED_CROSSING_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'reputation.gold.the_unmarked_crossing',
   stakes: {
-    goal: 'answer the smuggler\'s blank manifests',
+    goal: 'carry the smuggler\'s blank manifests to the merchant',
     risk: 'warn a factor who does not know what to make of it',
     won: 'carried the blank manifests to the merchant\'s factor',
     lost: 'warned the factor, who did not know what to make of it',

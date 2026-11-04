@@ -565,7 +565,7 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 export const THE_EXECUTIONERS_COMMISSION_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'reputation.iron.the_executioners_commission',
   stakes: {
-    goal: 'answer the magistrate\'s quiet death sentence',
+    goal: 'warn the condemned before the quiet sentence falls',
     risk: 'send a warning that comes too late',
     won: 'warned the condemned in time to run',
     lost: 'sent a warning that may have come too late',

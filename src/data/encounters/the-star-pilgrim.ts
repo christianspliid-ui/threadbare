@@ -20,7 +20,9 @@
  * - Fork axis: `sacrifice_survival`. `positive` = Channel the Radiance,
  *   `negative` = Bless and Send Onward. Variants, aftermath and `stakes.arms` are
  *   keyed to the pole (`branchDecision.ts` → `recordDecidedChoice`). The
- *   fallback moved to the radiance, which the base stakes already describe.
+ *   fallback stays the blessing (`negative`), as before: the radiance aftermath
+ *   seeds `star.wider_pilgrimage`, which has no candidates yet, and a fallback
+ *   copy would add a dead seed site (`encounterSeedLiveness.test.ts` ceiling).
  * - The two retired cards carried THR-528 per-choice moral marks (Star virtue);
  *   they leave with the cards, as in THR-2159.
  * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
@@ -193,13 +195,15 @@ const step1BlessAndSend: ActionStep = {
 
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
-  // THR-2160 — the mortal decides; the fallback is the positive pole.
+  // THR-2160 — the mortal decides. The fallback stays the blessing, as before the
+  // conversion: the radiance aftermath seeds `star.wider_pilgrimage`, a family with no
+  // candidates yet, and a fallback copy of it counts as a new dead seed site.
   decidedBy: { axis: 'sacrifice_survival' },
   variants: {
     positive: step1ChannelRadiance,
     negative: step1BlessAndSend,
   },
-  fallback: { ...step1ChannelRadiance },
+  fallback: { ...step1BlessAndSend },
 };
 
 // ─── Aftermath ───────────────────────────────────────────────────
@@ -587,7 +591,7 @@ export const THE_STAR_PILGRIM_TEMPLATE: UnifiedActionTemplate = withEncounterCon
       positive: RADIANCE_AFTERMATH,
       negative: BLESS_AFTERMATH,
     },
-    fallback: { ...RADIANCE_AFTERMATH },
+    fallback: { ...BLESS_AFTERMATH },
   },
 });
 
