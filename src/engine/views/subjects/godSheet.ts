@@ -54,6 +54,9 @@ import { PLACE_ICON } from '../../../data/icons/conceptIcons';
 import type { IconName } from '../../../data/icons/iconRegistry';
 import { landNameFor } from './landName';
 import type { SignaturePathState } from '../../../data/ascendant-bar-content';
+import { mandateFillLine } from '../../../data/ascendant-bar-content';
+import { sphereWord } from '../../../data/essence-format';
+import { godsPeopleIds } from '../knowledge';
 import { REACH_SIGNATURE_CONTENT_TEMPLATES } from '../../../data/reach-signature-content';
 import { getAscendantProgress } from '../../../engine/phaseAscendantProgression';
 import {
@@ -411,7 +414,12 @@ export function selectActionTray(
 
 export interface MandateRowView {
   name: string;
+  /** The hunger's own words — `def.description` (THR-2154; was the stage description). */
   flavorLine: string;
+  /** Mortals bound to the god: the First plus every threaded mortal, avatars excluded (THR-2154). */
+  boundCount: number;
+  /** "Filled by what you and the one mortal bound to you raise in Life and Spirit." (THR-2154) */
+  fillLine: string;
   progress: number;           // 0–1
   stage: string;
   trend: 'rising' | 'steady' | 'ebbing';
@@ -433,6 +441,36 @@ export function sphereHasAscendantCard(
     t.sphereAffinity === sphere);
 }
 
+/**
+ * THR-2154: the mortals bound to the god — `godsPeopleIds` (the First plus every
+ * threaded mortal, and the avatar) minus the avatar(s). Fail-soft: a graph read
+ * that throws counts nobody.
+ */
+export function countBoundMortals(gameState: Pick<GameState, 'graph' | 'ascendantId'>): number {
+  try {
+    const { graph, ascendantId } = gameState;
+    if (!graph || !ascendantId) return 0;
+    const people = godsPeopleIds(gameState);
+    for (const e of graph.getIncomingEdges(ascendantId, 'avatar_of')) people.delete(e.source);
+    people.delete(ascendantId);
+    // A `thread` edge may also target an artifact or a place (Beat 2 threads a relic,
+    // ascendantBeatSeeding.ts) — only actor nodes are mortals bound to the god. The dead
+    // keep their thread edge (markMortalDead 'retain', and an Aspect echo), but make no
+    // more scenes, so they are not counted.
+    let count = 0;
+    for (const id of people) {
+      const node = graph.getNode(id);
+      if (node?.type !== 'actor') continue;
+      const p = node.properties;
+      if (p.deceased === true || p.status === 'dead' || p.deceasedTick != null) continue;
+      count++;
+    }
+    return count;
+  } catch {
+    return 0;
+  }
+}
+
 export function selectMandateRow(gameState: GameState): MandateRowView | null {
   const { mandateDefinition: def, mandateState: state } = gameState;
   if (!def || !state) return null;
@@ -447,9 +485,18 @@ export function selectMandateRow(gameState: GameState): MandateRowView | null {
 
   const STAGE_LABELS = ['I', 'II', 'III'] as const;
 
+  // THR-2154: the rail leads with the hunger's words; the stage description stays in the
+  // Mandate detail's stage list. The fill line says whose deeds count (THR-2081 Decision 2).
+  const boundCount = countBoundMortals(gameState);
+  const sphereWords = [def.primarySphere, def.secondarySphere]
+    .filter((s): s is SphereName => !!s)
+    .map(sphereWord);
+
   return {
     name: def.name,
-    flavorLine: def.stages[currentStageIdx]?.description ?? def.description,
+    flavorLine: def.description,
+    boundCount,
+    fillLine: mandateFillLine(boundCount, countWord(boundCount), sphereWords),
     progress,
     stage: STAGE_LABELS[currentStageIdx] ?? 'I',
     trend,

@@ -208,7 +208,8 @@ describe('R5 — one highlight per page', () => {
     expect(god.map(s => s.typeId)).toEqual(['mandate']);
     const mandate = god[0];
     expect(mandate.kind === 'prose' ? mandate.highlight?.headline : '').toBe('Dominion of Stone');
-    expect(proseOf(mandate)).toBe('Rising. Seize control of 2 settlements.');
+    // THR-2154: the Mandate leads with the hunger's words, not the stage description.
+    expect(proseOf(mandate)).toBe('Rising. Hold the land.');
     const faction = sections('faction', 'guild').filter(s => s.kind === 'prose' && s.highlight);
     expect(faction.map(s => s.typeId)).toEqual(['how_they_hold_her']);
   });
