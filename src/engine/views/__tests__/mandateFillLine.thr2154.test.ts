@@ -70,6 +70,13 @@ describe('selectMandateRow — THR-2154', () => {
     expect(row.fillLine).toBe('Filled by what you and the three mortals bound to you raise in Life and Spirit.');
   });
 
+  it('a threaded artifact is not a mortal', () => {
+    const s = stateWith(1);
+    s.graph.addNode({ id: 'relic', type: 'artifact', name: 'Relic', properties: {} });
+    s.graph.addEdge({ id: 'thr', source: ASC, target: 'relic', type: 'thread', properties: {} });
+    expect(countBoundMortals(s)).toBe(1);
+  });
+
   it('fails soft on a missing ascendant', () => {
     expect(countBoundMortals({ graph: new WorldGraph(), ascendantId: '' } as unknown as GameState)).toBe(0);
   });
