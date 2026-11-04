@@ -9,6 +9,21 @@
  *
  * Design doc: Docs/plans/encounters/rival-shrine-betrayal-revised.md
  * Systems audit: Docs/plans/encounters/rival-shrine-betrayal-systems.md
+ *
+ * ─── The mortal decides (THR-2158, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was two cards whose ids were the
+ * aftermath keys, so the click picked the ending. Now the fork decides on
+ * `loyalty_ambition`: a Sworn (+1) refuses to sell out Brinewall, a Renegade
+ * (−1) trades the curing secret for the shrine map. The god argues with a
+ * composed hand — two pole-leaning specials plus a Repertoire fill — and the
+ * mortal answers.
+ *
+ * - Fork axis: `loyalty_ambition`. `positive` = refuse the trade,
+ *   `negative` = accept it. Variants, aftermath and `stakes.arms` are keyed to
+ *   the pole, because pole mode writes the bare pole key.
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
+ * - Step 1 never carried cards, so its arms are unchanged.
  */
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
@@ -92,6 +107,42 @@ const step0TheOffer: ActionStep = {
     'the calcium-ite, the timing. I need a working description." ' +
     'She met the agent\'s eyes with the flat professional regard of someone who has ' +
     'calculated this conversation twelve times before having it.',
+  successAfterimage: 'The god read the ledger and the friendship it would cost.',
+  failureAfterimage: 'The god read the ledger, but the broker\'s calm made the sums hard to hold.',
+  successAtCostAfterimage: 'The god weighed the offer, and the broker saw the mortal hesitate.',
+  criticalSuccessAfterimage: 'Every line in the ledger stood clear, and what each one would cost.',
+  criticalFailureAfterimage: 'The figures swam on the page, and the mortal answered on instinct.',
+  purposeLine: 'Weigh the offer',
+  // THR-2158 — the fork's argument. Two specials, one per pole of
+  // `loyalty_ambition`; the Repertoire fills the rest of the hand.
+  nudges: [
+    {
+      id: 'ledger.recall_the_curing_shed',
+      name: 'Recall The Curing Shed',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'loyalty_ambition', toward: 'positive' },
+      effectLine: 'Bring back the afternoon in the Harkens\' curing shed. A friendship argues for refusing.',
+      bandProse: {
+        success: '{actor} remembered the tea and the dried plums, and pushed the ledger back.',
+        failure: '{actor} thought of the curing shed, and the red ink pulled their eye.',
+      },
+    },
+    {
+      id: 'ledger.show_the_circled_debt',
+      name: 'Show The Circled Debt',
+      sphere: 'darkness',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'loyalty_ambition', toward: 'negative' },
+      effectLine: 'Fix their eye on the debt circled in red and the shrine beside it. A prize argues for the trade.',
+      bandProse: {
+        success: '{actor} looked at the red circle, and reached for the ledger.',
+        failure: '{actor} studied the red circle, and the broker closed the book.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['shadow', 'social'] },
 };
 
 /**
@@ -208,9 +259,11 @@ const step1RefuseRefusal: ActionStep = {
  */
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  // THR-2158 — the mortal decides; the fallback refuses, as it always did.
+  decidedBy: { axis: 'loyalty_ambition' },
   variants: {
-    accept_trade: step1AcceptExtraction,
-    refuse_trade: step1RefuseRefusal,
+    positive: step1RefuseRefusal,
+    negative: step1AcceptExtraction,
   },
   fallback: { ...step1RefuseRefusal },
 };
@@ -652,7 +705,7 @@ export const RIVAL_SHRINE_BETRAYAL_TEMPLATE: UnifiedActionTemplate = withEncount
     won: 'traded the curing secret for the shrine map',
     lost: 'fumbled the bargain and lost the broker\'s trust',
     arms: {
-      refuse_trade: {
+      positive: {
         won: 'kept Brinewall\'s curing secret out of the deal',
         lost: 'refused, and sent the broker off to uglier paths',
       },
@@ -690,69 +743,11 @@ export const RIVAL_SHRINE_BETRAYAL_TEMPLATE: UnifiedActionTemplate = withEncount
 
   supportBundle: SUPPORT_BUNDLE,
 
-  /**
-   * The two cards step 0 was always written for (THR-989).
-   *
-   * `step0TheOffer` carries `difficulty: 0` and says why in its own comment —
-   * *"the choice is the point, not the roll"* — and both `step1Branch.variants`
-   * and `aftermathConfig.variants` key `accept_trade` / `refuse_trade`. Nothing
-   * ever authored the cards that emit those ids, so the branch took `fallback`
-   * (the refusal) on every run and `ACCEPT_AFTERMATH` was unreachable content.
-   * The ids must match the variant keys exactly — that is the contract on
-   * `UnifiedActionTemplate.authoredChoices`, and it is what
-   * `assertAftermathVariantsProducible` now holds the catalog to.
-   *
-   * Costs are symmetric at one essence: both are the god putting weight on the
-   * scale, and pricing the betrayal differently from the refusal would be a
-   * balance judgement this ticket has no mandate to make.
-   */
-  authoredChoices: {
-    0: [
-      {
-        id: 'accept_trade',
-        label: 'Let the ledger close',
-        intent:
-          'The god lets the arithmetic settle plainly in the agent\'s mind: a shrine\'s '
-          + 'location against a curing technique, seventeen years of trade intelligence '
-          + 'against a family\'s process. Put that way it is not a betrayal, it is a rate '
-          + 'of exchange — and {cast:tessaly} has already done the calculation twelve times. '
-          + 'The agent reaches for the ledger with the steadiness of someone closing a '
-          + 'transaction rather than someone breaking a trust.',
-        targetLabel: 'the agent',
-        essenceCost: 1,
-        likelyBurden:
-          '{cast:carin_harken} poured tea and showed the calcium-ite vein the way you show a '
-          + 'friend a garden. Whatever the map is worth, the god will have spent that '
-          + 'afternoon to buy it — and the Harken family will not know for a season why '
-          + 'the Guild in Greywater suddenly cures salt their way.',
-        interventionType: 'coercive',
-      },
-      {
-        id: 'refuse_trade',
-        label: 'Hold the friendship',
-        intent:
-          'The god brings the second curing shed back into the agent\'s mind — Lenne with '
-          + 'the dried plums, {cast:carin_harken}\'s hands moving through a process three '
-          + 'generations deep — and holds it there until the offer on the table has to be '
-          + 'weighed against it rather than in place of it. The refusal, when it comes, is '
-          + 'one word, and the agent has the composure to say it kindly.',
-        targetLabel: 'the agent',
-        essenceCost: 1,
-        likelyBurden:
-          'Refusal does not un-know what {cast:tessaly} knows. She said her asking was the '
-          + 'clean version and that she has other approaches, and she was not threatening '
-          + 'when she said it — she was informing. The shrine stays hidden from the god, '
-          + 'and not for long from anyone else.',
-        interventionType: 'supportive',
-      },
-    ],
-  },
-
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      accept_trade: ACCEPT_AFTERMATH,
-      refuse_trade: REFUSE_AFTERMATH,
+      positive: REFUSE_AFTERMATH,
+      negative: ACCEPT_AFTERMATH,
     },
     fallback: { ...REFUSE_AFTERMATH },
   },

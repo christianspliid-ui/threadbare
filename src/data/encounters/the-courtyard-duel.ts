@@ -9,6 +9,22 @@
  * the odds favour the outcome it wants by other means.
  *
  * Seeds: Duelist's Luck Token on honor-intact survival.
+ *
+ * ─── The mortal decides (THR-2158, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was two cards whose ids were the
+ * aftermath keys, so the click picked the ending. Now the fork decides on
+ * `courage_prudence`: a Vanguard (+1) fights the bout out on the blade, a
+ * Watcher (−1) works the Code and the arbiter instead. The god argues with a
+ * composed hand — two pole-leaning specials plus a Repertoire fill — and the
+ * mortal answers.
+ *
+ * - Fork axis: `courage_prudence`. `positive` = Tip Toward Skill,
+ *   `negative` = Manipulate the Terms. Variants, aftermath and `stakes.arms`
+ *   are keyed to the pole, because pole mode writes the bare pole key.
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
+ * - Step 1's old approach cards picked nothing; each arm now deals an ordinary
+ *   hand from the god's Repertoire.
  */
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
@@ -96,6 +112,40 @@ const step0TheGodReadsTheBout: ActionStep = {
     'The courtyard had been swept clean that morning — someone had done it deliberately, the god could tell, because the flagstones were not merely clear of debris but scoured of the windblown grit that usually collected against the east wall by midday. Whoever had prepared this space had wanted the footing honest. The two figures at the center of it were already past their opening passes: {cast:vaera} had drawn a thin line of blood across the challenger\'s forearm in the exchange, and {cast:challenger} had answered by pressing hard enough to force her back three steps toward the water trough. The audience lined the walls the way audiences line walls when they have been told not to cross a boundary and are choosing to honor it — barely. Merchants in good coats, two off-duty militia officers whose hands kept drifting toward their sword hilts as reflex, a woman in the livery of the garrison who was writing in a ledger without looking down.\n\nThe arbiter stood at the north gate with a white sash folded over one arm, the traditional token of a stopped bout. He had not raised it. His expression said he was watching something that had gone slightly beyond the parameters of the arrangement that had been described to him when he agreed to officiate, and he was deciding whether the divergence was technical or catastrophic. It was not yet catastrophic.\n\n{cast:vaera} fought with her weight forward, which was aggressive for someone in her situation — she was the challenged party, the one who had been named to answer a specific accusation in the formal language of the Code, and challengers who fight aggressive in the early passes are usually either very good or afraid. She was very good. The god could see it in the economy of her movements: nothing wasted, every step placing the blade where it needed to be, the quality of attention that looks like calm but is actually speed disguised as patience. Her problem was not her skill. Her problem was that {cast:challenger} was bigger than her by a stone and a half, and in the third pass he had found the truth of that difference: every time he drove the bind, she had to give ground or break the line.\n\n{cast:challenger} was not elegant. He was effective, which is a different and sometimes more dangerous thing. He had trained with someone who had taught him to use his weight as a weapon before the blade, and in the fourth exchange he had done something with his footwork that the god recognized as a deliberate setup for the conclusion he intended — not the killing blow, but the disarming one, the one that ends a duel with honor technically intact and one party on the ground. The Code allowed it. The audience would accept it. {cast:vaera} would not recover from the standing in the way that mattered: the accusation that had brought them here would stand unrefuted, and the truth of it would be decided by who got up last.\n\nThe god\'s attention settled on the courtyard like a hand on a scale.',
   successAfterimage: 'The god read the bout and the weight of the choice it required.',
   failureAfterimage: 'The god perceived the duel but could not hold the threads long enough to act with clarity.',
+  successAtCostAfterimage: 'The god read the bout, and a blade opened a cut while it looked.',
+  criticalSuccessAfterimage: 'Every footing and every rule of the bout stood clear at once.',
+  criticalFailureAfterimage: 'The bout blurred into steel and shouting, and the mortal chose blind.',
+  purposeLine: 'Read the bout',
+  // THR-2158 — the fork's argument. Two specials, one per pole of
+  // `courage_prudence`; the Repertoire fills the rest of the hand.
+  nudges: [
+    {
+      id: 'duel.show_the_opening',
+      name: 'Show The Opening',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'courage_prudence', toward: 'positive' },
+      effectLine: 'Point out the gap in the bigger man\'s guard. An opening argues for fighting it out.',
+      bandProse: {
+        success: '{actor} saw the gap in the guard, and their grip tightened.',
+        failure: '{actor} saw the opening, and it closed before they moved.',
+      },
+    },
+    {
+      id: 'duel.recall_the_code',
+      name: 'Recall The Code',
+      sphere: 'order',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'courage_prudence', toward: 'negative' },
+      effectLine: 'Bring the dueling Code to mind, clause by clause. A rulebook argues for winning off the blade.',
+      bandProse: {
+        success: '{actor} found the clause the arbiter would have to honor.',
+        failure: '{actor} recalled the Code, and the arbiter was not listening.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['might', 'insight'] },
 };
 
 /**
@@ -124,6 +174,8 @@ const step1TipTowardSkill: ActionStep = {
     },
   ],
   failBehavior: 'fail_action',
+  purposeLine: 'Win on the blade',
+  deal: { count: 4, tags: ['might', 'finesse'] },
   narrativeTemplate:
     'The shift arrived not as force but as precision — something in the angle of the afternoon light, or in the way sound moved differently through air that had been touched by divine attention, or perhaps in nothing visible at all. {cast:vaera} felt it as a sharpening: the next exchange came toward her and she was already moving to where it would be, her blade finding the deflection before her eyes had time to track the thrust. The bind that {cast:challenger} had been setting up — the one the god had watched him prepare through four careful passes — arrived to find the geometry wrong, his weight committed forward onto a line that was no longer there.\n\nHe recovered. He was good enough to recover, and the god had not touched his footwork, had not muddied his proprioception or injected doubt into his muscles. This was not sabotage. This was the difference between a fighter who is skilled and a fighter who is in a moment of perfect skill, and the god had leaned {cast:vaera} into the latter while doing nothing about {cast:challenger} at all. The distinction mattered. He knew he had not been interfered with. He simply found himself, in the space of the next thirty seconds, unable to close the gap between what he was trying to do and what his body was managing.\n\nThe disarming blow, when it came, was {cast:vaera}\'s. Clean, angular, and accompanied by a footwork sequence that the militia officers along the wall would discuss with each other afterward — quietly, and with the deference of professionals who had just watched something technically excellent happen. {cast:challenger}\'s blade rang against the flagstones. He stepped back. The arbiter\'s white sash stayed folded over his arm because there was nothing to stop — the bout had ended properly, within the Code, with one party standing and one party having made the concession that ends the formal language of a duel. The woman in garrison livery was still writing in her ledger. Now she had something different to write.\n\n{cast:vaera} stood in the center of the swept courtyard with her blade at rest and her breathing controlled and her expression unreadable. The audience along the walls had a quality of stunned attention that meant the outcome was not what they had expected, and the god could feel the moment they began to adjust their understanding of what they had witnessed — not from certainty of what it meant to certainty of what it would be used to mean, which is a different thing and often more important.',
   successAfterimage: '{cast:vaera}\'s technique sharpened past what weight could answer. The duel ended on honest terms.',
@@ -156,6 +208,8 @@ const step1ManipulateTheTerms: ActionStep = {
     },
   ],
   failBehavior: 'fail_action',
+  purposeLine: 'Turn the Code',
+  deal: { count: 4, tags: ['social', 'shadow'] },
   narrativeTemplate:
     'The god did not touch the fight. The fight was already lost on its current terms — {cast:challenger} was going to execute his closing move in the next exchange, and nothing short of direct intervention in the bodies of the people involved would change the physical outcome. The god worked instead on the frame around the fight: the Code, the arbiter, the ledger, the meaning.\n\nThe woman in garrison livery looked up from her writing. The arbiter shifted his weight in a way that changed how the white sash sat against his arm. A merchant near the south wall said something to his companion that made his companion turn to look at the bout from a different angle, and when he turned back his face held a new consideration. None of this was dramatic. All of it was real. The god was redistributing attention — drawing the audience toward a different reading of what they were witnessing, one in which the technical terms of the Code mattered less than the question the Code was originally designed to answer: which of these two people should be trusted.\n\n{cast:challenger} executed his closing move. He did it cleanly and correctly. {cast:vaera} went down hard against the water trough with a blow to the sword arm that would have ended any honest bout. The arbiter raised his sash. And then he held it there — not dropped, as the Code required for a formal stop, but held, chest height, while he turned to look at the garrison representative.\n\nThe argument that followed took eleven minutes. It was conducted in the formal language of the Code, which meant that its substance was about precedent and interpretation rather than about what had actually happened, and in that language the outcome was not determined by who had disarmed whom but by what the arbiter formally recorded as the character of the exchange. The god\'s thread ran through the eleven minutes like wiring behind a wall: invisible, weight-bearing, essential. When the arbiter finally set the sash down and spoke his finding, {cast:challenger} did not recognize the language of the outcome that was being used to describe his victory. He had won the bout on its physical terms. What he had not won — what the framing had made available for the arbiter\'s finding to contest — was the accusation. {cast:vaera} left the courtyard under no formal judgment. She had not won. But she had not lost what she had come there to protect.',
   successAfterimage: 'The terms shifted around the fight. {cast:vaera} left the courtyard under no formal judgment.',
@@ -167,9 +221,11 @@ const step1ManipulateTheTerms: ActionStep = {
  */
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  // THR-2158 — the mortal decides; the fallback fights it out on skill.
+  decidedBy: { axis: 'courage_prudence' },
   variants: {
-    tip_toward_skill: step1TipTowardSkill,
-    manipulate_the_terms: step1ManipulateTheTerms,
+    positive: step1TipTowardSkill,
+    negative: step1ManipulateTheTerms,
   },
   fallback: { ...step1TipTowardSkill },
 };
@@ -504,7 +560,7 @@ export const COURTYARD_DUEL_TEMPLATE: UnifiedActionTemplate = withEncounterContr
     won: 'won the duel on honest technique',
     lost: 'lost to the bigger man\'s reach and weight',
     arms: {
-      manipulate_the_terms: {
+      negative: {
         won: 'turned the Code so no judgment fell',
         lost: 'saw the arbiter rule the disarm a clean win',
       },
@@ -544,60 +600,11 @@ export const COURTYARD_DUEL_TEMPLATE: UnifiedActionTemplate = withEncounterContr
 
   illustrationAlt: 'Two figures circling in a swept stone courtyard at midday — blades drawn, weight differential visible in their stances, an arbiter with a folded white sash at the gate, and an audience arranged along the walls',
 
-  authoredChoices: {
-    0: [
-      {
-        id: 'tip_toward_skill',
-        label: 'Tip Toward Skill',
-        intent:
-          'The god\'s attention settles into {cast:vaera}\'s form and finds the angles that {cast:challenger}\'s weight cannot follow. This is not making her something she is not — she is already skilled, already precise, already working with form that earned her the bout on technical terms. The god sharpens what is already there: the read on his closing setup arrives a fraction of a second earlier, the deflection lands at the geometry that redirects rather than blocks, the footwork in the final exchange puts the disarm on a line that his recovery cannot reach. The intervention is nearly invisible because it works entirely within {cast:vaera}\'s existing capability. That is also what makes it honest, by whatever standard the god uses for honesty.',
-        targetLabel: '{cast:vaera}',
-        essenceCost: 2,
-        likelyBurden:
-          '{cast:challenger} is large and trained and not without skill of his own. If the sharpening is not enough to close the gap between his mass advantage and her technique, the intervention is wasted at the moment the bout needed it most.',
-        interventionType: 'supportive',
-      },
-      {
-        id: 'manipulate_the_terms',
-        label: 'Manipulate the Terms',
-        intent:
-          'The fight cannot be won on its physical facts. The god accepts this and works instead on the frame: the Code\'s formal language, the arbiter\'s reading of precedent, the weight that the garrison representative\'s ledger carries in the official record. Gold-reach attention flows outward along the threads of institutional authority that surround the courtyard — not into the principals, but into the people who will determine what the fight is recorded as meaning. The bout itself plays out as physics requires. The eleven minutes afterward are where the god\'s work happens.',
-        targetLabel: 'the arbiter',
-        essenceCost: 2,
-        likelyBurden:
-          'A finding that cannot be attacked on its technical merits is still a finding that can be felt as wrong by everyone who witnessed the physical bout. If {cast:challenger} or the forces behind the accusation pursue the matter with enough standing, the eleven-minute argument is a door, not a wall.',
-        interventionType: 'coercive',
-      },
-    ],
-    1: [
-      {
-        id: 'hold_the_line_precise',
-        label: 'Hold the Line Precise',
-        intent:
-          'The god works with economical force — not flooding {cast:vaera} with capability she does not have, but removing the margins of error that would have cost her the next exchange. The footwork reads true. The blade does not hesitate at the bind. The god\'s investment is in precision at the critical moment, not in transformation. What comes out of the exchange will be recognizable as {cast:vaera}\'s own work, which matters for what the bout means afterward.',
-        essenceCost: 1,
-        likelyBurden:
-          'Precision at a single critical moment is a narrow investment. If {cast:challenger} reads the deflection and adapts before the closing opportunity arrives, the god\'s window has passed.',
-        interventionType: 'supportive',
-      },
-      {
-        id: 'press_all_the_way',
-        label: 'Press All the Way',
-        intent:
-          'The god stops holding back. Full Iron-reach attention flows into the bout\'s geometry, finding every angle that favors {cast:vaera}\'s form and leaving {cast:challenger} with the experience of fighting someone who is, in this moment, not quite reachable. The outcome becomes nearly certain. The god\'s presence in the final exchange will be felt by those with the sensitivity to read it: the militia officers, the arbiter, {cast:challenger} himself. The bout ends as intended. What it costs to have it end this way is a question for afterward.',
-        essenceCost: 3,
-        likelyBurden:
-          'Full investment leaves a mark. {cast:challenger} will know something was in the courtyard that was not supposed to be. Whether he says so is his choice, but the knowledge will not leave him.',
-        interventionType: 'coercive',
-      },
-    ],
-  },
-
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      tip_toward_skill: TIP_SKILL_AFTERMATH,
-      manipulate_the_terms: MANIPULATE_TERMS_AFTERMATH,
+      positive: TIP_SKILL_AFTERMATH,
+      negative: MANIPULATE_TERMS_AFTERMATH,
     },
     fallback: { ...TIP_SKILL_AFTERMATH },
   },
