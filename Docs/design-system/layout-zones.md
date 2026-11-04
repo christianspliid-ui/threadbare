@@ -64,6 +64,12 @@ Overlay layers (centered, above everything):
 | Border | `1px solid var(--border-gold)` left edge | `GameView.tsx:2831` |
 | Contents | `ThreadsPanel`, `ChroniclePanel` (World-Soul line; Now · Years · Ledger), `LedgerStrip` when folded | `frame/LedgerRail.tsx` |
 | Behavior | Always rendered. Internal vertical scroll. A subject opens in the Inspector, never in this rail. | |
+| Sections | **One rail Title per section, no section box** (THR-2125): Threads and the Chronicle each open on `RailTitle` (Cinzel `--text-lg` 700, its carved shape first) and neither sits in a frame; the Title and `--space-6` between the sections group them (THR-2120 § 3). Group heads inside a section ("Before you woke", the Threads groups) are Labels, never gold. Entry cards keep their own border: each is one thing you press. | `frame/RailTitle.tsx`, `frame/LedgerRail.tsx` |
+| Rows | **A row's name wraps and is never truncated** (THR-2125 decision 5): Text 700 at `--text-sm`, sentence case; the marks after it keep their size. `__DEBUG.getListDressing()` reports `rowName` (`clipped` must be false) and `frameDepth` (≤ 2). | `ThreadsPanel.tsx`, `shared/ListRow.tsx` |
+
+### God rail (left)
+
+The god rail uses the docked Inspector's density for every block it shares (THR-2125, THR-2120 § 4): `--space-6` between sections (`.bar` gap), Legibility 1's `SectionLabel` as each section heading, and no "Label: value" strips (Law 16): the First reads "Your First is …", the primary sphere "Your primary sphere is Mind." on its own line under the Essence heading. The essence balances are Text 600 at `--text-sm`, tabular and right-aligned, a step above the captions around them so the spendable pools read first.
 
 ### Inspector
 

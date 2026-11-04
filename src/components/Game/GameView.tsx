@@ -104,6 +104,7 @@ import { RefRouterProvider } from '../../contexts/RefRouterContext';
 import { DetailPageOpenerProvider } from '../../contexts/DetailPageOpenerContext';
 import { useDetailNodeRefOpener, worldRefForNodeId } from '../../hooks/useDetailNodeRefOpener';
 import { HoverCard } from '../shared/HoverCard';
+import { buildSubjectPage } from '../../engine/views/subjects/subjectPage';
 import { useNotificationPreferences } from './hooks/useNotificationPreferences';
 import { IdentityChip } from './IdentityChip';
 import { GodRail } from './frame/GodRail';
@@ -3189,6 +3190,17 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     // eslint-disable-next-line react-hooks/exhaustive-deps -- the graph mutates in place; the hovered ref is the rebuild signal
     [hoverRef, gameState.familiarityMap, gameState.tiles],
   );
+  // THR-2125 (R4.4, decision 6) — the hover card's Now line is the subject's Inspector
+  // headline (R5), which resolves only with the state in context; the hover page is
+  // graph-only. Built once per hovered ref; fail-soft to no Now line.
+  const hoverComposedBody = useMemo(() => {
+    if (!hoverRef) return null;
+    try {
+      return buildSubjectPage(_gameStateRef.current, hoverRef).body;
+    } catch {
+      return null;
+    }
+  }, [hoverRef]);
 
   // THR-1851 — the links inside a detail card (faction allegiances, threads, prose
   // terms). Until this was mounted every one of them rendered as plain text in the game.
@@ -4863,7 +4875,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       />
 
       {refRouter.hoverCard && (
-        <HoverCard page={refRouter.hoverCard.page} anchorEl={refRouter.hoverCard.anchorEl} visual={hoverVisual} />
+        <HoverCard page={refRouter.hoverCard.page} anchorEl={refRouter.hoverCard.anchorEl} visual={hoverVisual} composedBody={hoverComposedBody} />
       )}
     </div>
       </GameScreenStateProvider>

@@ -10,7 +10,6 @@ import type { ReactElement } from 'react';
 import type { GameState } from '../../../types/gameState';
 import { godRailSectionIcon, type GodRailSectionId } from '../../../data/frame-registry';
 import { Chip } from '../../shared/Chip';
-import { Icon } from '../../shared/Icon';
 import { QuietSlot } from '../../shared/QuietSlot';
 import type { GodRailVM } from '../../../engine/views/godRail';
 import type { CodexRunStateFilter } from '../../Codex/codexRunState';
@@ -27,7 +26,8 @@ import { EntityLink } from '../../shared/EntityLink';
 import { Tooltip } from '../../shared/Tooltip';
 import { sphereWord } from '../../../data/essence-format';
 import { REACH_EMPTY_COPY } from '../../../data/ascendant-bar-content';
-import { ESSENCE_LABEL, ESSENCE_PRIMARY_LABEL, YOUR_FIRST_LABEL } from '../../../data/frame-content';
+import { ESSENCE_LABEL, ESSENCE_PRIMARY_LEAD, YOUR_FIRST_LEAD } from '../../../data/frame-content';
+import { SectionLabel } from '../../shared/Section';
 import { HandSection, type HandRest } from './HandSection';
 import { NEWLY_REVEALED_STYLE } from '../GameView/openingReveal';
 import { ATTENTION_GAUGE_SHOWN } from '../../../data/opening-reveal-table';
@@ -52,18 +52,11 @@ export interface GodRailBag {
   onCenterOnSeat?: (locationId: string) => void;
 }
 
-const labelStyle = {
-  fontFamily: 'var(--font-body)',
-  fontSize: 'var(--text-xs)',
-  fontWeight: 700,
-  color: 'var(--text-tertiary)',
-} as const;
-
 function IdentityBody({ vm, onOpenSheet }: GodRailBag): ReactElement | null {
   if (!vm.identity) return null;
   const { view, quintessence, first } = vm.identity;
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
       <IdentityStrip identity={view} quintessence={quintessence} treatment="breathe" onOpen={onOpenSheet} />
       {/* THR-1828 call 2 — after the bond, The First by name, as an identity link (Laws 1, 21, 56).
           THR-2099 (R6) — with their face: the identity chip, the same tile as their page header. */}
@@ -71,9 +64,10 @@ function IdentityBody({ vm, onOpenSheet }: GodRailBag): ReactElement | null {
         <div
           data-testid="god-rail-your-first"
           {...(first.visual ? { 'data-rail-face': 'true' } : {})}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', paddingLeft: 8 }}
+          style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}
         >
-          <span>{YOUR_FIRST_LABEL}:</span>
+          {/* THR-2125 R1.4 — a sentence, not a label strip (Law 16); on the rail's one left edge. */}
+          <span>{YOUR_FIRST_LEAD}</span>
           {first.visual ? (
             <Chip role="identity" size="sm" target={{ kind: 'agent', id: first.id }} label={first.name} visual={first.visual} />
           ) : (
@@ -90,22 +84,20 @@ function EssenceBody({ vm, shown, newly, onCenterOnSeat }: GodRailBag): ReactEle
   const att = vm.attention;
   const icon = godRailSectionIcon('essence');
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-        {/* THR-2099 (R2) — the heading's carved shape, read from its rail row. */}
-        <span style={{ ...labelStyle, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-          {icon && <Icon name={icon} size="floor" decorative />}
-          {ESSENCE_LABEL}
-        </span>
-        {primary && (
-          <span style={{ marginLeft: 'auto', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
-            {ESSENCE_PRIMARY_LABEL}:{' '}
-            <Tooltip id={`sphere.${primary}`} focusable={false}>
-              <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{sphereWord(primary)}</span>
-            </Tooltip>
-          </span>
-        )}
-      </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+      {/* THR-2099 (R2) — the heading's carved shape, read from its rail row.
+          THR-2125 R1.2 — Legibility 1's one section heading, not a local label style. */}
+      <SectionLabel label={ESSENCE_LABEL} icon={icon ?? undefined} flush />
+      {/* THR-2125 R1.3 — "Your primary sphere is Mind." on its own line (Law 16). */}
+      {primary && (
+        <div data-testid="god-rail-primary" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
+          {ESSENCE_PRIMARY_LEAD}{' '}
+          <Tooltip id={`sphere.${primary}`} focusable={false}>
+            <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{sphereWord(primary)}</span>
+          </Tooltip>
+          .
+        </div>
+      )}
       {/* THR-1792 — the god's seat, beside the essence it feeds. */}
       <SeatLine seat={vm.essence.seat} onCenter={onCenterOnSeat} />
       {/* THR-1986 — the essence caption, until the player hovers or uses a row once. */}

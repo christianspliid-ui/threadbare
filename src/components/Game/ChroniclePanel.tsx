@@ -21,7 +21,8 @@ import { Icon } from '../shared/Icon';
 import { Button } from '../shared/Button';
 import { ListRow } from '../shared/ListRow';
 import { RowPicture, rowDressingAttrs } from '../shared/RowPicture';
-import { ListHeadingIcon } from '../shared/ListHeadingIcon';
+import { RailTitle } from './frame/RailTitle';
+import { SectionLabel } from '../shared/Section';
 import { renderProseWithIPK } from '../ProseKeyword';
 import { NEWLY_REVEALED_STYLE } from './GameView/openingReveal';
 import type { LedgerRailVM } from '../../engine/views/ledgerRail';
@@ -179,18 +180,9 @@ function BeforeYouWoke({ groups }: { groups: BeforeYouWokeGroup[] }) {
         >
           <Caret open={sectionOpen} />
         </button>
+        {/* THR-2125 R2.5 / decision 3 — a group head is a Label; gold is the god's attention (Law 31). */}
         <Tooltip id="ui.before_you_woke">
-          <span
-            style={{
-              fontFamily: 'var(--font-body)',
-              fontWeight: 700,
-              fontSize: 'var(--text-xs)',
-              color: 'var(--accent-gold)',
-              cursor: 'help',
-            }}
-          >
-            {BEFORE_YOU_WOKE_HEADING}
-          </span>
+          <SectionLabel label={BEFORE_YOU_WOKE_HEADING} flush style={{ cursor: 'help' }} />
         </Tooltip>
       </div>
       {sectionOpen && (
@@ -513,24 +505,20 @@ export function ChroniclePanel({
       data-testid="chronicle-panel"
       data-tab={tab}
       data-tabs-rendered={rendered.map(t => t.id).join(',')}
+      // THR-2125 R2.2 / decision 2 — no section box: a section of the rail, headed by its Title.
       style={{
-        background: 'var(--bg-deep)',
-        border: '1px solid var(--border-gold)',
-        borderRadius: '8px',
-        padding: '16px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '12px',
+        gap: 'var(--space-3)',
         // Law 57: grow to the rail's free height; the entries scroll inside it at the limit.
         flex: '1 1 auto',
         minHeight: 0,
       }}
     >
       <Tooltip id="ui.chronicle" desc={chronicleTooltipDesc()}>
-        <span style={{ ...LABEL_STYLE, cursor: 'help', alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-          <ListHeadingIcon id="chronicle" />
+        <RailTitle icon="chronicle" style={{ cursor: 'help', alignSelf: 'flex-start' }}>
           {CHRONICLE_LABEL}
-        </span>
+        </RailTitle>
       </Tooltip>
 
       {vm.worldSoul && (reveal?.worldSoul ?? true) && (

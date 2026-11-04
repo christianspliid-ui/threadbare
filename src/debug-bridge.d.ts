@@ -313,6 +313,13 @@ export interface DebugListDressing {
   subjectRowsBare: number;
   /** Every heading shape drawn on the surface. */
   headingIcons: string[];
+  /**
+   * THR-2125 R5 — the surface's first `[data-row-name]`: computed face, size, weight, and
+   * whether it is cut (`scrollWidth > clientWidth`). `null` when the surface draws none.
+   */
+  rowName: { family: string; sizePx: number; weight: number; clipped: boolean } | null;
+  /** THR-2125 R5 — bordered boxes from that row up to the surface root (row included); 0 with no row. */
+  frameDepth: number;
 }
 
 export interface DebugCeremonyDressing {
