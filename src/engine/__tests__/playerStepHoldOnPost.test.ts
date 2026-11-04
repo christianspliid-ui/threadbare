@@ -138,7 +138,7 @@ describe('THR-2140 — a step with no player move is neither held nor auto-opene
     const tpl = getUnifiedTemplateById('reputation.gold.the_merchants_favor');
     expect(tpl).toBeDefined();
     expect(stepOffersPlayerMove(tpl, 0, [])).toBe(true);
-    const chose = [{ stepIndex: 0, stepId: 's0', choiceId: 'mark_the_robbers', choiceText: 'Go', tick: 5 }] as unknown as Parameters<typeof stepOffersPlayerMove>[2];
+    const chose = [{ stepIndex: 0, stepId: 's0', choiceId: 'negative', choiceText: 'Go', tick: 5 }] as unknown as Parameters<typeof stepOffersPlayerMove>[2];
     expect(stepOffersPlayerMove(tpl, 1, chose)).toBe(false);
     expect(stepOffersPlayerMove(tpl, 1, [])).toBe(false);
   });

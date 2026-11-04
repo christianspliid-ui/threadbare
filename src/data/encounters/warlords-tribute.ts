@@ -5,6 +5,26 @@
  * Pattern: required-positive — encounter surfaces only for agents with recognized martial honor.
  *
  * THR-32: First tranche of reputation-gated content.
+ *
+ * ─── The mortal decides (THR-2159, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was three cards whose ids were the
+ * aftermath keys ("Accept the tribute." / "Demand their oath instead."), so the
+ * click picked the ending. Now the fork is a three-way route decision
+ * (`decidedBy.routes`, THR-898): the mortal takes the course they are good at
+ * and inclined to, and the god argues with a composed hand.
+ *
+ * - Fork: route mode, three courses toward one door (the tribute changes hands).
+ *   - `accept_the_tribute` — Heart, `loyalty_ambition` +: take the gift and the
+ *     alliance it implies.
+ *   - `demand_the_oath` — Iron, `mercy_ruthlessness` −: press past the gift for
+ *     a binding.
+ *   - `withdraw_your_hand` — Stone, `courage_prudence` −: let the exchange stay
+ *     a clean courtesy.
+ * - Route keys are the old variant keys, so aftermath and `stakes.arms` keep
+ *   their keys; only the choosing moved.
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
+ * - The step-1 prose is re-voiced so the mortal does it, not the god.
  */
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
@@ -76,6 +96,40 @@ const step0TheHall: ActionStep = {
     'holding and made a small gesture that sent most of the room away.',
   successAfterimage: 'The hall fell quiet around the two of them. A recognition between dangerous people.',
   failureAfterimage: 'The hall fell quiet, but the recognition felt different — calculation rather than respect.',
+  successAtCostAfterimage: 'The hall fell quiet, and a lieutenant\'s hand stayed on his hilt.',
+  criticalSuccessAfterimage: 'Every man on the benches, and what each wanted, stood clear at once.',
+  criticalFailureAfterimage: 'The hall closed in, all smoke and stares, and the agent chose half-blind.',
+  purposeLine: 'Read the hall',
+  // THR-2159 — the fork's argument. Two specials naming two of the three routes;
+  // the restraint route is argued by its axis (`courage_prudence`) through the
+  // Repertoire fill and by the mortal's own Stone capability.
+  nudges: [
+    {
+      id: 'tribute.weigh_the_blade',
+      name: 'Weigh The Blade',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { route: 'accept_the_tribute' },
+      effectLine: 'Let them feel what the alliance blade means. A gift this plain argues for taking it.',
+      bandProse: {
+        success: '{actor} saw what the blade was for, and reached for it.',
+        failure: '{actor} weighed the blade, and the gift sat oddly in the hand.',
+      },
+    },
+    {
+      id: 'tribute.mark_the_weakness',
+      name: 'Mark His Weakness',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { route: 'demand_the_oath' },
+      effectLine: 'Show them the warlord cannot win this room. A cornered man argues for an oath.',
+      bandProse: {
+        success: '{actor} saw the warlord\'s time run out, and pressed.',
+        failure: '{actor} looked for the weakness, and the warlord hid it well.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['presence', 'might'] },
 };
 
 const step1AcceptTribute: ActionStep = {
@@ -99,8 +153,8 @@ const step1AcceptTribute: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god settled a current of gravitas through the agent — not heat, not force, but ' +
-    'the weight of someone who has earned the right to receive what is being ' +
+    'The agent chose to receive it, and stood with the gravity that choice asked for — not ' +
+    'heat, not force, but the weight of someone who has earned the right to receive what is being ' +
     'offered. The warlord rose from his chair, which he would not have done for most people ' +
     'in that room. He crossed to a locked chest behind the dais and unlocked it with a key ' +
     'he wore at his belt.\n\n' +
@@ -139,16 +193,16 @@ const step1DemandOath: ActionStep = {
   ],
   failBehavior: 'fail_action',
   narrativeTemplate:
-    'The god sent a current of demand through the agent — iron-edged, precise, the kind ' +
-    'of force that does not ask permission to reshape what it touches. The tribute was not ' +
-    'enough. The god wanted the man\'s oath, which was a different thing entirely: not gold, ' +
+    'The agent let the demand show — iron-edged, precise, the kind of force that does not ' +
+    'ask permission to reshape what it touches. The tribute was not enough. The agent ' +
+    'wanted the man\'s oath, which was a different thing entirely: not gold, ' +
     'not a blade, but a binding. The room understood this immediately. The men on the benches ' +
     'shifted their weight.\n\n' +
     'The warlord did not sit back down. That was the tell — a man who sits back down is buying ' +
     'time, and this one\'s time had run out. He looked at the agent with the expression of someone ' +
     'who has fought enough battles to know which ones he cannot win before the first blow is struck. ' +
     'The calculation was visible and it was honest. Then he placed his right fist against his chest.\n\n' +
-    'He named three conditions. The god accepted one and rejected two. That was not the speech he ' +
+    'He named three conditions. The agent accepted one and rejected two. That was not the speech he ' +
     'had prepared — the rejection of the other two was clearly not in the script — but the warlord ' +
     'incorporated the revision without stumbling. Professional. The oath was given in the old form, ' +
     'witnessed by his own commanders, and the room smelled different when it was done: like something ' +
@@ -167,7 +221,7 @@ const step1WithdrawHand: ActionStep = {
   onFailure: [],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god folded its presence back and let the moment find its own shape. The warlord ' +
+    'The agent pressed nothing and let the moment find its own shape. The warlord ' +
     'offered what he had prepared — the coin, the blade, the formal words — and the agent ' +
     'received them with the measured courtesy of someone who neither needed the tribute ' +
     'nor wanted to make its inadequacy visible. A clean exchange. Both parties preserved.\n\n' +
@@ -180,8 +234,20 @@ const step1WithdrawHand: ActionStep = {
   failureAfterimage: 'Withdrawn, but the moment felt incomplete — like a debt deferred rather than settled.',
 };
 
+/**
+ * The fork. Route mode (THR-898): three courses, one door. Fallback accepts the
+ * tribute, the course the encounter's base stakes describe.
+ */
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  // THR-2159 — the mortal decides which course to take.
+  decidedBy: {
+    routes: [
+      { key: 'accept_the_tribute', reach: 'heart', axis: 'loyalty_ambition', toward: 'positive' },
+      { key: 'demand_the_oath', reach: 'iron', axis: 'mercy_ruthlessness', toward: 'negative' },
+      { key: 'withdraw_your_hand', reach: 'stone', axis: 'courage_prudence', toward: 'negative' },
+    ],
+  },
   variants: {
     accept_the_tribute: step1AcceptTribute,
     demand_the_oath: step1DemandOath,
@@ -678,53 +744,6 @@ export const WARLORDS_TRIBUTE_TEMPLATE: UnifiedActionTemplate = withEncounterCon
 
   illustrationUrl: '/concept-art/encounters/warlords-tribute.jpg',
   illustrationAlt: 'A smoke-dimmed hall: war-band banners overhead, an armored warlord at a raised dais, a tribute blade laid across a table between them.',
-
-  authoredChoices: {
-    0: [
-      {
-        id: 'accept_the_tribute',
-        label: 'Accept the tribute.',
-        intent:
-          'The god settles the agent into the posture of someone who has earned this recognition ' +
-          'and knows how to receive it without diminishing either party. The warlord\'s hall will ' +
-          'read the acceptance correctly: not greed, not gratitude, but the acknowledgment of a ' +
-          'professional standing between professionals.',
-        essenceCost: 1,
-        likelyBurden:
-          'Acceptance without oath binds nothing. The warlord has given his tribute and remains ' +
-          'uncommitted. The alliance is implied, not sealed.',
-        interventionType: 'supportive',
-      },
-      {
-        id: 'demand_the_oath',
-        label: 'Demand their oath instead.',
-        intent:
-          'The god presses past the tribute and into the warlord\'s chest, where oaths live. ' +
-          'Coin and blade are transactional. An oath is structural — it changes what the warlord ' +
-          'is, in relation to the agent, from this moment forward. The hall will see this demand. ' +
-          'The warlord\'s commanders will file it in the part of their memory they do not forget.',
-        essenceCost: 2,
-        likelyBurden:
-          'An oath extracted is not an oath given. The warlord\'s pride has a long memory and ' +
-          'his lieutenants have longer ones. What is gained in binding may be lost in resentment.',
-        interventionType: 'coercive',
-      },
-      {
-        id: 'withdraw_your_hand',
-        label: 'Let the exchange be what it is.',
-        intent:
-          'The god does not press. The tribute is offered and received in the neutral register ' +
-          'of professional courtesy — neither alliance nor debt, just two dangerous people acknowledging ' +
-          'each other\'s existence. Clean. Uncommitted. Whatever the warlord makes of it afterward ' +
-          'is his to make.',
-        essenceCost: 0,
-        likelyBurden:
-          'Nothing is lost that was not already unearned. But nothing is gained either — the ' +
-          'warlord\'s hall will remember a meeting that was smooth and not much else.',
-        interventionType: 'withdrawn',
-      },
-    ],
-  },
 
   aftermathConfig: {
     branchOnStep: 0,

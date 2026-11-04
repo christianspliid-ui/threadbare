@@ -5,6 +5,20 @@
  * Pattern: required-positive — Eye+ standalone (first tranche only used Eye in AND with Veil).
  *
  * THR-146: Middle tranche of reputation-gated content.
+ *
+ * ─── The mortal decides (THR-2159, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was two cards whose ids were the
+ * aftermath keys, so the click picked the ending. Now the fork decides on
+ * `revelation_discretion`: a Seeker (+1) reads the lost script aloud, a Sentinel (−1) gives the scholars a riddle and lets them earn the answer. The god argues with a composed hand — two
+ * pole-leaning specials plus a Repertoire fill — and the mortal answers.
+ *
+ * - Fork axis: `revelation_discretion`. `positive` = Read It Openly,
+ *   `negative` = Give the Truth as a Riddle. Variants, aftermath and `stakes.arms` are keyed
+ *   to the pole, because pole mode writes the bare pole key
+ *   (`branchDecision.ts` → `recordDecidedChoice`).
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
+ * - The step-1 prose is re-voiced so the mortal does it, not the god.
  */
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
@@ -80,6 +94,39 @@ const step0TheTablet: ActionStep = {
     'they needed to say before the unwrapping.',
   successAfterimage: 'The tablet on the trestle table. The oilcloth folded back. The scholars waiting.',
   failureAfterimage: 'The tablet unwrapped, but the recognition it required arrived at an oblique angle.',
+  successAtCostAfterimage: 'The tablet gave up its script, and the scholars crowded too close.',
+  criticalSuccessAfterimage: 'The whole inscription, and the grammar beneath it, stood clear at once.',
+  criticalFailureAfterimage: 'The script swam on the stone, and the agent chose half-blind.',
+  purposeLine: 'Read the tablet',
+  // THR-2159 — the fork's argument. Two specials, one per pole of
+  // `revelation_discretion`; the Repertoire fills the rest of the hand.
+  nudges: [
+    {
+      id: 'oracle.hear_the_name',
+      name: 'Hear The Name Repeated',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'revelation_discretion', toward: 'positive' },
+      effectLine: 'Let them catch the name the tablet repeats three times. A name argues for reading aloud.',
+      bandProse: {
+        success: '{actor} heard the repeated name and wanted it spoken.',
+        failure: '{actor} caught the name, and lost it again in the script.',
+      },
+    },
+    {
+      id: 'oracle.watch_the_scholars',
+      name: 'Watch The Eager Scholars',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'revelation_discretion', toward: 'negative' },
+      effectLine: 'Show them how hungry the scholars are to be told. That hunger argues for a riddle.',
+      bandProse: {
+        success: '{actor} saw the scholars would learn more by working.',
+        failure: '{actor} watched the scholars, and misread their hurry.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['lore', 'insight'] },
 };
 
 const step1ReadOpenly: ActionStep = {
@@ -94,7 +141,7 @@ const step1ReadOpenly: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god leaned the agent\'s attention into the inscription and let it speak. The ' +
+    'The agent leaned their whole attention into the inscription and let it speak. The ' +
     'script was a survival-system — designed to be read under duress, by someone who ' +
     'knew the underlying grammar but not the surface forms. The agent read it aloud: ' +
     'a land-grant, a disputed border, and a name repeated three times that the scholars ' +
@@ -124,7 +171,7 @@ const step1GiveRiddle: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god read the tablet and gave back something true but not literal — a frame that ' +
+    'The agent read the tablet and gave back something true but not literal — a frame that ' +
     'pointed at the meaning without delivering it, so the scholars would have to close the ' +
     'remaining distance themselves. This was not cruelty. It was the difference between ' +
     'being told where the water is and learning to read the land for it.\n\n' +
@@ -144,9 +191,11 @@ const step1GiveRiddle: ActionStep = {
 
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  // THR-2159 — the mortal decides; the fallback is the positive pole.
+  decidedBy: { axis: 'revelation_discretion' },
   variants: {
-    read_it_openly: step1ReadOpenly,
-    give_truth_as_riddle: step1GiveRiddle,
+    positive: step1ReadOpenly,
+    negative: step1GiveRiddle,
   },
   fallback: { ...step1ReadOpenly },
 };
@@ -490,7 +539,7 @@ export const THE_ORACLE_CONSULTED_TEMPLATE: UnifiedActionTemplate = withEncounte
     lost: 'read most of the tablet but lost the last lines',
     lostBadly: 'misread the key line and the scholars wrote it down',
     arms: {
-      give_truth_as_riddle: {
+      negative: {
         won: 'gave the scholars a riddle that led them to the answer',
         lost: 'gave the scholars a riddle that did not catch',
         lostBadly: 'set the scholars on the wrong meaning of the tablet',
@@ -536,44 +585,11 @@ export const THE_ORACLE_CONSULTED_TEMPLATE: UnifiedActionTemplate = withEncounte
   illustrationUrl: '/concept-art/encounters/the-oracle-consulted.webp',
   illustrationAlt: 'Wide shot: trestle table, candlelight, clay tablet centered between two scholars with oilcloth folded back, painterly, Threadbare palette.',
 
-  authoredChoices: {
-    0: [
-      {
-        id: 'read_it_openly',
-        label: 'Read the inscription aloud. Give the scholars the text itself.',
-        intent:
-          'The god leans the agent\'s full attention into the inscription and delivers what ' +
-          'it says — not interpretation, not summary, but the actual reading. Twelve minutes ' +
-          'of the lost script rendered into spoken language. The scholars will have to decide ' +
-          'what to do with it.',
-        essenceCost: 1,
-        likelyBurden:
-          'The scholars now have a text that touches three settlements\' territorial claims. ' +
-          'What they do with it is theirs to carry.',
-        interventionType: 'supportive',
-      },
-      {
-        id: 'give_truth_as_riddle',
-        label: 'Give the truth as a frame. Let them close the distance.',
-        intent:
-          'The god reads and gives back a frame that points at the meaning without ' +
-          'delivering it — true but not literal, the way a teacher gives the next step ' +
-          'rather than the destination. The scholars will have to work. The working is ' +
-          'the instruction.',
-        essenceCost: 1,
-        likelyBurden:
-          'The scholars will spend four days on what could have been twelve minutes. ' +
-          'What they arrive at will be more theirs than anything given directly would have been.',
-        interventionType: 'supportive',
-      },
-    ],
-  },
-
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      read_it_openly: READ_AFTERMATH,
-      give_truth_as_riddle: RIDDLE_AFTERMATH,
+      positive: READ_AFTERMATH,
+      negative: RIDDLE_AFTERMATH,
     },
     fallback: { ...READ_AFTERMATH },
   },

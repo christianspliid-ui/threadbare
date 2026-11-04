@@ -116,7 +116,10 @@ describe('resolveInterveneChoice', () => {
       return keys.every((k) => ids.has(k));
     });
 
-    expect(authoredKeyed.length).toBeGreaterThanOrEqual(25);
+    // THR-2158 — this population shrinks by design as the THR-2135 slices move
+    // templates off authoredChoices (THR-2161 retires the field). The floor is
+    // non-empty; the enumerated ids hold the guard where they are asserted.
+    expect(authoredKeyed.length).toBeGreaterThan(0);
 
     for (const template of authoredKeyed) {
       const cfg = template.aftermathConfig!;
