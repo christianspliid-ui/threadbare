@@ -80,21 +80,21 @@ describe('The Broker\'s Ledger — template structure', () => {
 
   it('step 1 branch has accept_trade and refuse_trade variants', () => {
     const step1 = template.steps[1] as ActionStepBranch;
-    expect(step1.variants).toHaveProperty('accept_trade');
-    expect(step1.variants).toHaveProperty('refuse_trade');
+    expect(step1.variants).toHaveProperty('negative');
+    expect(step1.variants).toHaveProperty('positive');
     expect(step1.fallback).toBeDefined();
   });
 
   it('accept variant uses shadow reach at 0.45 difficulty', () => {
     const step1 = template.steps[1] as ActionStepBranch;
-    const accept = step1.variants['accept_trade'];
+    const accept = step1.variants['negative'];
     expect(accept.reach).toBe('shadow');
     expect(accept.difficulty).toBe(0.45);
   });
 
   it('refuse variant uses heart reach at 0.35 difficulty', () => {
     const step1 = template.steps[1] as ActionStepBranch;
-    const refuse = step1.variants['refuse_trade'];
+    const refuse = step1.variants['positive'];
     expect(refuse.reach).toBe('heart');
     expect(refuse.difficulty).toBe(0.35);
   });
@@ -104,14 +104,14 @@ describe('The Broker\'s Ledger — template structure', () => {
 
 describe('The Broker\'s Ledger — branch resolution', () => {
   it('resolveStepDefinition returns accept variant when choiceId is accept_trade', () => {
-    const choiceHistory = [makeChoiceMemory(0, 'accept_trade')];
+    const choiceHistory = [makeChoiceMemory(0, 'negative')];
     const resolved = resolveStepDefinition(template, 1, choiceHistory);
     expect(resolved.reach).toBe('shadow');
     expect(resolved.difficulty).toBe(0.45);
   });
 
   it('resolveStepDefinition returns refuse variant when choiceId is refuse_trade', () => {
-    const choiceHistory = [makeChoiceMemory(0, 'refuse_trade')];
+    const choiceHistory = [makeChoiceMemory(0, 'positive')];
     const resolved = resolveStepDefinition(template, 1, choiceHistory);
     expect(resolved.reach).toBe('heart');
     expect(resolved.difficulty).toBe(0.35);
@@ -152,43 +152,43 @@ describe('The Broker\'s Ledger — aftermath config', () => {
   });
 
   it('resolves to accept variant for accept_trade choice', () => {
-    const variant = config.variants['accept_trade'];
+    const variant = config.variants['negative'];
     expect(variant).toBeDefined();
     expect(variant.overview).toContain('map arrived');
   });
 
   it('resolves to refuse variant for refuse_trade choice', () => {
-    const variant = config.variants['refuse_trade'];
+    const variant = config.variants['positive'];
     expect(variant).toBeDefined();
     expect(variant.overview).toContain('shrine in the Vessen uplands');
   });
 
   it('accept aftermath has 2 reactions', () => {
-    const variant = config.variants['accept_trade'];
+    const variant = config.variants['negative'];
     expect(variant.reactions).toHaveLength(2);
   });
 
   it('refuse aftermath has 2 reactions', () => {
-    const variant = config.variants['refuse_trade'];
+    const variant = config.variants['positive'];
     expect(variant.reactions).toHaveLength(2);
   });
 
   it('all accept reactions have at least one effect', () => {
-    const variant = config.variants['accept_trade'];
+    const variant = config.variants['negative'];
     for (const reaction of variant.reactions!) {
       expect(reaction.effects.length).toBeGreaterThanOrEqual(1);
     }
   });
 
   it('all refuse reactions have at least one effect', () => {
-    const variant = config.variants['refuse_trade'];
+    const variant = config.variants['positive'];
     for (const reaction of variant.reactions!) {
       expect(reaction.effects.length).toBeGreaterThanOrEqual(1);
     }
   });
 
   it('accept aftermath has changes covering the key consequences', () => {
-    const variant = config.variants['accept_trade'];
+    const variant = config.variants['negative'];
     const changeIds = variant.changes.map(c => c.id);
     expect(changeIds).toContain('accept_intelligence_gained');
     expect(changeIds).toContain('accept_alliance_strained');
@@ -198,7 +198,7 @@ describe('The Broker\'s Ledger — aftermath config', () => {
   });
 
   it('refuse aftermath has changes covering the key consequences', () => {
-    const variant = config.variants['refuse_trade'];
+    const variant = config.variants['positive'];
     const changeIds = variant.changes.map(c => c.id);
     expect(changeIds).toContain('refuse_alliance_preserved');
     expect(changeIds).toContain('refuse_intelligence_gap');
@@ -264,7 +264,7 @@ describe('The Broker\'s Ledger — support bundle', () => {
 describe('The Broker\'s Ledger — GraphOps', () => {
   it('accept variant step has onSuccess GraphOps for intelligence attachment', () => {
     const step1 = template.steps[1] as ActionStepBranch;
-    const accept = step1.variants['accept_trade'];
+    const accept = step1.variants['negative'];
     expect(accept.onSuccess.length).toBeGreaterThan(0);
     const addNodeOp = accept.onSuccess.find(op => op.op === 'add_node');
     expect(addNodeOp).toBeDefined();
@@ -272,7 +272,7 @@ describe('The Broker\'s Ledger — GraphOps', () => {
 
   it('refuse variant step has onSuccess GraphOps for trust boost', () => {
     const step1 = template.steps[1] as ActionStepBranch;
-    const refuse = step1.variants['refuse_trade'];
+    const refuse = step1.variants['positive'];
     expect(refuse.onSuccess.length).toBeGreaterThan(0);
   });
 

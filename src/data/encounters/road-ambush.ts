@@ -8,6 +8,22 @@
  * must decide whether to Shield the Road or Turn the Chaos.
  *
  * Design doc: Docs/plans/encounters/road-ambush-final.md
+ *
+ * ─── The mortal decides (THR-2158, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was two cards whose ids were the
+ * aftermath keys, so the click picked the ending. Now the fork decides on
+ * `mercy_ruthlessness`: a Protector (+1) shields the road, a Conqueror (−1)
+ * turns the chaos to profit. The god argues with a composed hand — two
+ * pole-leaning specials plus a Repertoire fill — and the mortal answers.
+ *
+ * - Fork axis: `mercy_ruthlessness`. `positive` = Shield the Road,
+ *   `negative` = Turn the Chaos. Variants, aftermath and `stakes.arms` are keyed
+ *   to the pole, because pole mode writes the bare pole key
+ *   (`branchDecision.ts` → `recordDecidedChoice`).
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
+ * - Step 1's old approach cards picked nothing; each arm now deals an ordinary
+ *   hand from the god's Repertoire.
  */
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
@@ -95,6 +111,40 @@ const step0TheGodPerceivestheViolence: ActionStep = {
     'The god smelled the ambush before seeing it -- iron in the air, the sharp tang of a crossbow string recently released, and beneath that the sour-sweet stink of fear sweat from too many bodies in a confined space. The trade road bent around a stand of birches whose bark was peeling in long pale strips, and past the bend the road was blocked. A felled oak, its cut face still pale where the axe had bitten, lay across the packed earth between two waymarker stones that had been carved before anyone alive could remember. The stones were mossy, the runes worn to suggestions. The oak was fresh.\n\nThree wagons had stopped hard, the lead horses stamping and wide-eyed, their driver slumped sideways on the bench with a crossbow bolt standing from his left shoulder like a crude pennant. Blood had soaked through his coat and was dripping onto the footboard in a rhythm that would not last. Behind the second wagon, two guards fought from cover -- swords out, movements professional, economy of motion that said they had done this before but not against this many. Six figures in the ditches on either side, wearing tabards so faded that the insignia was only a memory in thread. Former soldiers. Their stances said discipline; their faces said hunger.\n\nA woman crouched in the bed of the third wagon, her hand white-knuckled around a short axe, watching the fight with the expression of someone calculating odds she did not like. {cast:soraya} had run goods along this road since before the border war, and she knew what an ambush looked like when it was going badly for the ambushers -- but also what it looked like when a robbery was about to become something worse. Near the lead wagon, the youngest of the attackers was advancing on the wounded driver with a short sword held wrong, the grip of someone who had learned to kill but not to fight, and his captain -- a thick man with a maimed hand and a voice going hoarse from shouting -- was trying to call him back without admitting that calling him back was a retreat.\n\nThe threads pulled tight in the dust and the shouting and the slow drip from the driver\'s shoulder. The god\'s attention settled on the road like a hand on a blade\'s edge.',
   successAfterimage: 'The god perceived the ambush and the weight of the choice it required.',
   failureAfterimage: 'The god perceived the ambush but could not hold the threads long enough to act.',
+  successAtCostAfterimage: 'The god held the road in view, and the bolt in the driver went deeper while it looked.',
+  criticalSuccessAfterimage: 'Every thread on the road stood clear, and the mortal saw them all.',
+  criticalFailureAfterimage: 'The road blurred into dust and shouting, and the mortal chose half-blind.',
+  purposeLine: 'Read the ambush',
+  // THR-2158 — the fork's argument. Two specials, one per pole of
+  // `mercy_ruthlessness`; the Repertoire fills the rest of the hand.
+  nudges: [
+    {
+      id: 'ambush.show_the_driver',
+      name: 'Show The Wounded Driver',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'mercy_ruthlessness', toward: 'positive' },
+      effectLine: 'Turn their eyes to the driver bleeding on the bench. A dying man argues for the shield.',
+      bandProse: {
+        success: '{actor} could not look away from the driver on the bench.',
+        failure: '{actor} saw the driver bleeding, and looked past him anyway.',
+      },
+    },
+    {
+      id: 'ambush.show_the_cracked_crate',
+      name: 'Show The Cracked Crate',
+      sphere: 'chaos',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'mercy_ruthlessness', toward: 'negative' },
+      effectLine: 'Let them notice the split crate and what spilled from it. Loose goods argue for the harvest.',
+      bandProse: {
+        success: '{actor} marked the spilled letters and the heavy little case.',
+        failure: '{actor} saw the spilled crate, and the fight pulled their eyes away.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['peril', 'insight'] },
 };
 
 /**
@@ -123,6 +173,8 @@ const step1ShieldTheRoad: ActionStep = {
     },
   ],
   failBehavior: 'fail_action',
+  purposeLine: 'Hold the caravan line',
+  deal: { count: 4, tags: ['might', 'peril'] },
   narrativeTemplate:
     'The shift was not dramatic -- no thunder, no blazing light, nothing the ballads would bother recording. The guard behind the second wagon found her footing on the packed earth as if the road itself had steadied under her, and her next strike caught the nearest attacker across the forearm with the clean efficiency of a cut made without hesitation. The second guard pressed forward. The lead driver, who should not have been able to stand, wrapped the reins around the brake lever and reached for the cargo hook behind his seat with his good hand -- not to fight, but to brace himself, to stay upright, to be present in the moment where survival required nothing more than not falling.\n\n{cast:dragan} saw it turn. He had commanded enough fights to know when the geometry of violence stops favoring you -- when the ground, the timing, the invisible weight of the fight tilts away from your side and every swing costs more than it earns. He shouted at the young soldier, a name swallowed by the distance, and the shout had the desperation of authority that knows it is about to be ignored or obeyed for the last time. The young man looked back. The wounded driver was still alive on the bench above him, blood dripping, hand wrapped white around the brake. The moment stretched. Then the young soldier lowered his sword -- not surrender, not exactly, but the body\'s recognition that whatever had been possible thirty seconds ago was no longer possible now.\n\nThe bandits withdrew into the ditch, into the birches, into the country that had made them. {cast:dragan} was the last to go. He looked back once, at the road, the wagons, the waymarker stones, with the expression of a man who had just learned something about the shape of the world that he did not yet have words for.',
   successAfterimage: 'The ambush broke. The defenders held. The road was quiet.',
@@ -155,6 +207,8 @@ const step1TurnTheChaos: ActionStep = {
     },
   ],
   failBehavior: 'fail_action',
+  purposeLine: 'Hold the false pause',
+  deal: { count: 4, tags: ['shadow', 'peril'] },
   narrativeTemplate:
     'The pause settled over the road like a held breath. Not silence -- the horses still stamped, the wounded driver still groaned on the bench, the birch leaves still rattled in the wind that came off the ridge -- but a thickening, a weight in the air that pressed against every raised arm and clenched jaw. The two guards behind the second wagon felt it and stopped pressing forward, confused by their own hesitation. The bandits in the ditch felt it and held position, weapons up, unable to explain why they were not advancing. The young soldier near the lead wagon stood with his sword at his side, breathing hard, staring at the wounded driver as if he had forgotten what he had been about to do.\n\nIn that manufactured stillness, the god\'s attention was elsewhere. A crate in the second wagon had cracked during the first volley -- the crossbow bolt that missed the driver had struck the slat boards and split them. The contents had shifted. Sealed letters, a merchant\'s ledger, and a small case of something that weighed more than its size suggested: medicinal preparations, expensive ones, the kind that moved between capital cities and never appeared on a village market table. The god did not take them. The god ensured they were visible, accessible, retrievable -- arranged by coincidence in the dust beside a waymarker stone, as if the road itself had offered them up.\n\n{cast:dragan} stood in the ditch with his maimed hand pressed against the earth and his good hand around his sword, and he felt the weight of the pause like a question he could not articulate. Something was watching. Something had stopped the fight, and it was not mercy and it was not fear. It was attention -- vast, patient, interested. He looked up at the sky, which was ordinary. He looked down at his hands, which were shaking. And somewhere behind the exhaustion and the hunger and the knowledge that this road had nothing left to give him, a door opened that had not been there before.',
   successAfterimage: 'The manufactured pause held. The god extracted value from the wreckage.',
@@ -162,13 +216,15 @@ const step1TurnTheChaos: ActionStep = {
 };
 
 /**
- * Step 1: Branch point. Resolves based on the choice made at Step 0.
+ * Step 1: Branch point. The mortal decides on `mercy_ruthlessness` at step 0
+ * (THR-2158); the fallback shields the road, the safer default.
  */
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  decidedBy: { axis: 'mercy_ruthlessness' },
   variants: {
-    shield_the_road: step1ShieldTheRoad,
-    turn_the_chaos: step1TurnTheChaos,
+    positive: step1ShieldTheRoad,
+    negative: step1TurnTheChaos,
   },
   fallback: { ...step1ShieldTheRoad },
 };
@@ -557,7 +613,7 @@ export const ROAD_AMBUSH_TEMPLATE: UnifiedActionTemplate = withEncounterContract
     won: 'broke the ambush with the caravan guards standing',
     lost: 'saw the caravan guards overwhelmed',
     arms: {
-      turn_the_chaos: {
+      negative: {
         won: 'stalled the fight and took what the wreck offered',
         lost: 'saw the pause collapse and the fight turn worse',
       },
@@ -596,78 +652,11 @@ export const ROAD_AMBUSH_TEMPLATE: UnifiedActionTemplate = withEncounterContract
   illustrationUrl: '/concept-art/encounters/road-ambush.jpg',
   illustrationAlt: 'A trade road ambush in late afternoon light: a felled oak across packed earth, three wagons, caravan guards fighting from cover, and crouched figures in faded military tabards in the ditches on either side',
 
-  authoredChoices: {
-    0: [
-      {
-        id: 'shield_the_road',
-        label: 'Shield the Road',
-        intent:
-          'The god\'s attention sharpens along the line of defense -- the two guards behind the second wagon, the driver clinging to the reins, the merchant with her axe. These are the threads worth strengthening. Iron-reach force flows outward not as wrath but as reinforcement: a guard\'s blade finds the angle it was searching for, the driver\'s hand steadies despite the pain, a stone shifts under an attacker\'s boot at the worst possible moment. The god leans on the line, and the road has a chance to hold.',
-        targetLabel: '{cast:soraya}',
-        essenceCost: 2,
-        likelyBurden:
-          'The bandits are defeated but not addressed -- their desperation remains, pushed down the road to someone else. ' +
-          'If the intervention is clumsy, the amplified defense becomes amplified violence. Iron reach does not always allow for nuance.',
-        interventionType: 'supportive',
-        // THR-528: standing between the strong and the weak — the Iron virtue (Protector/Brave).
-        moralAxis: 'iron',
-        pole: 'virtue',
-        magnitude: 0.15,
-      },
-      {
-        id: 'turn_the_chaos',
-        label: 'Turn the Chaos',
-        intent:
-          'The god does not see the ambush as a crisis to solve. It sees a knot of force that can be redirected. Both sides are committed, exhausted, and too far in to think clearly. The god\'s Iron-reach attention does not strengthen either side -- it freezes them both, a subtle thickening of the air, a weight on every raised arm, a pause manufactured from divine pressure. In that pause, the god\'s real work begins: reading what can be extracted from the wreckage. A crate spills. A desperate captain\'s mind cracks open to suggestion. The violence is not ended -- it is harvested.',
-        targetLabel: '{cast:dragan}',
-        essenceCost: 2,
-        likelyBurden:
-          'The manufactured pause is fragile. If it collapses, the fight resumes worse than before, and both sides may perceive the manipulation. ' +
-          'A god caught exploiting mortals earns a specific kind of enmity.',
-        interventionType: 'coercive',
-        // THR-528: harvesting the violence as raw force to exploit — the Iron vice (Conqueror/Power-Hungry).
-        moralAxis: 'iron',
-        pole: 'vice',
-        magnitude: 0.15,
-      },
-    ],
-    1: [
-      {
-        id: 'steady_the_line',
-        label: 'Steady the Line',
-        intent:
-          'The god works through the existing defenders -- no miracles, no divine lightning, just the subtle weight of Iron attention making every movement a fraction more precise. The guard\'s parry catches the blade at the perfect angle. The driver wraps the reins tighter around his good hand and does not fall. The god is a presence in the muscle memory of people who know how to fight, making them a little better than they are. {cast:dragan} will feel his people faltering and know, without understanding why, that today is not his day.',
-        essenceCost: 1,
-        likelyBurden:
-          'The subtle approach may not be enough. If the young soldier reaches the driver before the tide turns, light-touch fails and the god must escalate or accept the loss.',
-        interventionType: 'supportive',
-        // THR-528: shoring up the defenders so the road holds — the Iron virtue (Protector/Brave).
-        moralAxis: 'iron',
-        pole: 'virtue',
-        magnitude: 0.1,
-      },
-      {
-        id: 'break_their_nerve',
-        label: 'Break Their Nerve',
-        intent:
-          'The god strikes at the attackers\' cohesion. Not their bodies -- their will. Iron-reach force presses against the bandits\' discipline like a cold wind: the footing feels treacherous, the shadows between the wagons seem to move wrong, the awareness that something larger than a merchant\'s guard is watching settles into their bones. The youngest soldier\'s advance falters. {cast:dragan}\'s shouts grow desperate. The god does not hurt them -- the god makes them believe they have already lost.',
-        essenceCost: 3,
-        likelyBurden:
-          'If the morale break is too sudden, panic replaces discipline. Panicked soldiers with weapons are more dangerous than disciplined ones. The youngest might lash out instead of retreat.',
-        interventionType: 'coercive',
-        // THR-528: breaking their will through dominance and fear — the Iron vice (Conqueror/Power-Hungry).
-        moralAxis: 'iron',
-        pole: 'vice',
-        magnitude: 0.1,
-      },
-    ],
-  },
-
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      shield_the_road: SHIELD_ROAD_AFTERMATH,
-      turn_the_chaos: TURN_CHAOS_AFTERMATH,
+      positive: SHIELD_ROAD_AFTERMATH,
+      negative: TURN_CHAOS_AFTERMATH,
     },
     fallback: { ...SHIELD_ROAD_AFTERMATH },
   },
