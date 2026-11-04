@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-04 08:20 local (07:20 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-04 09:00 local (08:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -24,7 +24,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Queue
 
-**Healthy (6 ready, 1 being built).** All of yesterday's veto windows have closed. Nobody vetoed, so every ready ticket can now be built. The builder took [The goal says what fills it](https://linear.app/threadbare/issue/THR-2154/the-goal-says-what-fills-it-the-mandate-row-leads-with-the-hungers-own) at 07:16 UTC. Still ready: [The next follower has a path](https://linear.app/threadbare/issue/THR-2155) (High), [The path pulls only scenes about the same thing](https://linear.app/threadbare/issue/THR-2156) (Medium), [Legibility 4](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover), and the three encounter conversions ([seeded quests](https://linear.app/threadbare/issue/THR-2158), [reputation half one](https://linear.app/threadbare/issue/THR-2159), [reputation half two](https://linear.app/threadbare/issue/THR-2160)). [Legibility 3](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first) merged last night via [PR #2733](https://github.com/christianspliid-ui/threadbare/pull/2733) and is live.
+**Healthy (6 ready).** [The goal says what fills it](https://linear.app/threadbare/issue/THR-2154/the-goal-says-what-fills-it-the-mandate-row-leads-with-the-hungers-own) merged at 07:55 UTC via [PR #2734](https://github.com/christianspliid-ui/threadbare/pull/2734). The ticket still shows In Dev with no owner, because the auto-close has not fired yet. The next builder run started at 07:51 UTC. Still ready: [The next follower has a path](https://linear.app/threadbare/issue/THR-2155) (High), [The path pulls only scenes about the same thing](https://linear.app/threadbare/issue/THR-2156) (Medium), [Legibility 4](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover), and the three encounter conversions ([seeded quests](https://linear.app/threadbare/issue/THR-2158), [reputation half one](https://linear.app/threadbare/issue/THR-2159), [reputation half two](https://linear.app/threadbare/issue/THR-2160)).
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -32,6 +32,6 @@ Two items for agents, not you:
 
 ## Health
 
-- **Engine speed jumped this morning:** "tick cost 222 ms/tick steady, 41% above the 7-day median (157, 117 rows since a2e88585); top phase agent_decision, 639 agents. Name the merges between a2e88585 and 2c178daf: git log --oneline --merges a2e88585..2c178daf". Last night's reading was 138 ms on almost the same code: the only change since is Legibility 3, which is a UI change. This reading came while a builder run was working on the same machine, so it may be noise. If the next reading is also high, it is the builder's to chase.
-- The lanes were quiet overnight, from about 20:30 to 08:15 local. Overnight quiet is normal. They are running again.
-- Everything else is green. The live site is serving the latest main (2c178daf). Checks on main and the scheduled background jobs pass. No PRs are waiting to merge. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 06:40 UTC. The builder is not stalled: it is building now.
+- **The live site has not picked up THR-2154 yet.** The merge commit (46510665) was pushed less than 20 minutes ago, which is normal. The next brief checks it again.
+- **Engine speed is back to normal:** 133 ms per tick, 15% below the weekly median. The 222 ms reading last brief was noise from a builder run working on the same machine.
+- Everything else is green. Checks on main and the scheduled background jobs pass. No PRs are waiting to merge. All 10 enabled scheduled tasks are on time. The worktree reaper ran this hour. The builder is not stalled: a run is working now.
