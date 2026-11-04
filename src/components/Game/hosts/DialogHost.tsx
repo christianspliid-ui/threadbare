@@ -48,6 +48,7 @@ import { describeOffering, isRungOpeningOffer } from '../../../engine/godProgres
 import { isSpineBeatId } from '../../../data/ascendant-beat-content';
 import { courtFaces, dialogSubjectFace, receiptChangeArt, receiptTargetVisual } from '../../../engine/views/dialogDressing';
 import { agentRowVisuals } from '../../../engine/views/rowVisual';
+import { createSeenFloor } from '../../../engine/views/knowledge';
 import { buildCodexRunContext, type CodexRunStateFilter } from '../../Codex/codexRunState';
 import { AnimateMount } from '../../shared/AnimateMount';
 import { Modal } from '../../shared/Modal';
@@ -73,6 +74,26 @@ import { ChoiceSetModal } from '../ChoiceSetModal';
 import { useGameScreenState } from '../frame/GameScreenState';
 
 const Codex = lazy(() => import('../../Codex/Codex'));
+
+/**
+ * THR-2155 — the seen floor's person test, for Read the Threads' Untouched lives.
+ * Fail-soft: a floor that cannot be built, or a read that throws, names nobody new
+ * (the list then hides what it cannot vouch for, never leaks a stranger).
+ */
+export function readThreadsCanName(state: GameState): (agentId: string) => boolean {
+  try {
+    const floor = createSeenFloor(state);
+    return (agentId: string) => {
+      try {
+        return floor.canName({ kind: 'agent', id: agentId });
+      } catch {
+        return false;
+      }
+    };
+  } catch {
+    return () => false;
+  }
+}
 
 export interface DialogHostProps {
   gameState: GameState;
@@ -355,6 +376,8 @@ export function DialogHost({
         digestVisuals={readThreadsOpen
           ? agentRowVisuals({ graph: gameState.graph, familiarityMap: gameState.familiarityMap }, gameState.digestBuffer ?? [])
           : undefined}
+        // THR-2155: Untouched lives lists only mortals the god has seen (the seen floor).
+        canNameAgent={readThreadsOpen ? readThreadsCanName(gameState) : undefined}
         onSpendEssence={(cost) => {
           setLastReadThreadsTick(gameState.tick);
           setGameState(prev => {

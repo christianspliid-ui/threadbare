@@ -43,6 +43,20 @@ export const SENSING_FOCUS_PROMPT = 'Click again to choose. Or look at another.'
  * the second chooses (UI Law 48). Gives way to the focused line on focus.
  */
 export const SENSING_CHOOSE_HINT = 'Look closer at one, then choose.';
+/**
+ * THR-2155 — the pick is final: the candidates passed over never enter the world
+ * (`generateNarrativeCandidates`, meetingEncounter.ts), so a player who later
+ * searches for one finds nothing. Said before the choice, not after.
+ */
+export const SENSING_PASSED_OVER_LINE = 'The two you pass over go their own way. You will not meet them again.';
+/** The same line when the pool offered only two lives. */
+export const SENSING_PASSED_OVER_LINE_ONE = 'The one you pass over goes their own way. You will not meet them again.';
+
+/** The passed-over line for `count` candidates; null when there is no one to pass over. */
+export function sensingPassedOverLine(count: number): string | null {
+  if (count < 2) return null;
+  return count === 2 ? SENSING_PASSED_OVER_LINE_ONE : SENSING_PASSED_OVER_LINE;
+}
 export const SENSING_REST_PROMPT ='Three lives are open to you. Which one do you watch?';
 
 /** Beat 2 transition prose. */

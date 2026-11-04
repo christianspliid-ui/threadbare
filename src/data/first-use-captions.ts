@@ -24,6 +24,7 @@
 export type FirstUseCaptionId =
   | 'essence'
   | 'threads'
+  | 'threads_next'
   | 'asks_you'
   | 'chapter_ledger'
   | 'attention'
@@ -50,6 +51,11 @@ export interface FirstUseCaptionEntry {
 export const FIRST_USE_CAPTIONS: readonly FirstUseCaptionEntry[] = [
   { id: 'essence', text: 'Your essence. Cards spend it; each pool refills at the speed beside it.' },
   { id: 'threads', text: 'The mortals you hold a thread to. Their chapters arrive here.' },
+  // THR-2155 — how to bind a second mortal. Shown only while the god holds exactly
+  // one mortal thread (ThreadsPanel); the words match the targeting rule in
+  // `view-content.ts` (only what stands in your sight or a threaded mortal's).
+  // The ticket's 19-word line was cut to fit the 15-word caption rule.
+  { id: 'threads_next', text: 'To bind another, play Agent Thread on a mortal you or {name} can see.' },
   { id: 'asks_you', text: "{name}'s chapters keep happening either way. This only decides if they pause the world." },
   { id: 'chapter_ledger', text: 'Every chapter The First has closed, kept to read again.' },
   { id: 'attention', text: 'Your free notice. Looking in on a mortal who lives on spends it; it refills.' },
@@ -81,6 +87,9 @@ export const FIRST_USE_CAPTION_DISMISS_LABEL = 'got it';
 /** Stand-in for `{name}` when the panel cannot name its mortal. */
 export const FIRST_USE_CAPTION_NAME_FALLBACK = 'Their';
 
+/** THR-2155 — stand-in for a bare `{name}` (not a possessive) when the panel cannot name its mortal. */
+export const FIRST_USE_CAPTION_BARE_NAME_FALLBACK = 'The First';
+
 export function getFirstUseCaptionText(id: string, name?: string): string | null {
   const entry = FIRST_USE_CAPTIONS.find(c => c.id === id);
   if (!entry) return null;
@@ -88,5 +97,7 @@ export function getFirstUseCaptionText(id: string, name?: string): string | null
   // A missing name reads "Their chapters …", never "'s chapters" or a raw token.
   return name
     ? entry.text.replace('{name}', name)
-    : entry.text.replace("{name}'s", FIRST_USE_CAPTION_NAME_FALLBACK);
+    : entry.text
+      .replace("{name}'s", FIRST_USE_CAPTION_NAME_FALLBACK)
+      .replace('{name}', FIRST_USE_CAPTION_BARE_NAME_FALLBACK);
 }
