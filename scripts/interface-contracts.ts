@@ -7189,11 +7189,11 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: NARRATIVE,
     consumerSystem: ENCOUNTERS,
     intent:
-      'The path chosen on "What will they become?" comes back in The First\'s first chapter after the bond. The tick path pins that one chapter on her thread once; the encounter stage only reads the pin, so a re-render never repeats the line and a later chapter never gets it.',
+      'The path chosen on "What will they become?" comes back in The First\'s first chapter after the bond. The tick path pins that one chapter on her thread once; the encounter stage only reads the pin, so a re-render never repeats the line and a later chapter never gets it. THR-2156: every other chapter of hers the path pulls (Reach one of the path\'s two and a motivation naming one of its themeAxes) opens with the fit line instead ("Fits the reader of secrets."); firstPathFitFor reads the same pin so the recall chapter never shows both.',
     ulTerms: ['Chapter'],
     mechanism: {
       kind: 'edge-prop',
-      symbols: ['firstPathRecalledActionId', 'noteFirstPathRecall', 'firstPathRecallFor'],
+      symbols: ['firstPathRecalledActionId', 'noteFirstPathRecall', 'firstPathRecallFor', 'firstPathFitFor'],
       module: 'src/engine/firstPath.ts',
     },
     writeSites: ['src/engine/firstPath.ts', 'src/engine/orchestrator.ts'],
