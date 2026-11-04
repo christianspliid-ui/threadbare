@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-04 14:59 local (13:59 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-04 16:00 local (15:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,12 +20,17 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-From the [design lane's 11:34 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-04a.md). Nobody builds it before 23:35 UTC tonight.
+From the design lane's [11:34 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-04a.md) (nobody builds it before 23:35 UTC tonight) and its [14:18 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-04b.md) (nobody builds it before 02:30 UTC on 5 November).
 
-- [Town encounters name the mortal and write their own stake line — round 2](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write) — when a town job fails, its closing line now says what this particular failure cost (the seed lost, the mill standing idle). It no longer repeats "the town sent for them, and they failed", which seventeen town jobs currently say in nearly the same words.
-- Same ticket — no two town jobs may share more than two sentences built the same way, so a player stops reading the same line on every job.
-- Same ticket — the line that tells you when and where a follow-up meeting happens ("on court day, in three days, with the steward there to answer") stays the same everywhere, the way the small result tags do, because it states a game fact.
-- Same ticket — the rewrites follow your six checks for compressed prose from 3 November: no packed phrases, rare word senses, vague references, filler, lists in place of character, or a mortal who just sits there.
+- [Town encounters name the mortal and write their own stake line — round 2](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write) — when a town job fails, its closing line says what this particular failure cost (the seed lost, the mill standing idle), instead of "the town sent for them, and they failed", which seventeen town jobs say in nearly the same words.
+- Same ticket — no two town jobs may share more than two sentences built the same way.
+- Same ticket — the line that tells you when and where a follow-up meeting happens stays the same everywhere, because it states a game fact.
+- Same ticket — the rewrites follow your six checks for compressed prose from 3 November.
+- [The Comet at the Turning, the Page Beneath the Saint and Apotheosis, rewritten in plain words](https://linear.app/threadbare/issue/THR-2134/novel-prose-story-beats-slice-b-the-comet-at-the-turning-the-page) — when a mortal wins at a cost, the mortal pays (strength, nerve, what they would have learned), never the god. Three Apotheosis lines change.
+- Same ticket — the ending paragraph tells what happened; the small result tag says what changed. They stop saying the same thing twice, per your 15-word tag ruling of 12 September.
+- Same ticket — a mortal's pronouns come from the mortal, so nobody is wrongly called "they". Fifteen lines change.
+- Same ticket — a failed ending gets its own words. Three endings that read like a win when the mortal lost get their own failure endings, with no new effect added.
+- Same ticket — if the second rewrite still fails its cold read, each encounter ships or stays on its own merits. There is no third round.
 
 Say "veto <title>" to reverse any of these.
 
@@ -35,13 +40,13 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Starved (1 ready, held).** The design lane refilled the shelf with [town encounters, round 2](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write), but it sits in your veto window until 23:35 UTC, so the builder's short runs this hour are correct (its 13:11, 13:31 and 13:51 UTC runs each said so). [The last player picks go](https://linear.app/threadbare/issue/THR-2161/the-last-player-picks-go-the-three-mentorship-moments-and-the-two) is still in Todo, waiting on its blockers; the orchestrator promotes it when they close.
+**2 ready, both held in your veto windows.** [Town encounters, round 2](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write) opens at 23:35 UTC tonight; [the story-beats rewrite, slice B](https://linear.app/threadbare/issue/THR-2134/novel-prose-story-beats-slice-b-the-comet-at-the-turning-the-page) opens at 02:30 UTC tomorrow. Its plan merged via [PR #2743](https://github.com/christianspliid-ui/threadbare/pull/2743). The builder's short runs are correct: its 14:11, 14:31 and 14:52 UTC runs each found nothing claimable.
 
 Items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (15 days); no local worktree holds uncommitted work for it. It needs gate and CI edits that unattended runs are refused, so agents can un-park it only in an attended run.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (15 days); no local worktree or pushed branch holds work for it. It needs gate and CI edits that unattended runs are refused, so agents can un-park it only in an attended run.
 - **The returning-player playtest should run tomorrow.** Its rule fix merged ([PR #2739](https://github.com/christianspliid-ui/threadbare/pull/2739)). *— from [the playtest lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/warm-playtest-round-2-stale.md)*
 
 ## Health
 
-All green. The live site serves the latest game build; commits since then touched only docs. Checks on main and the 3 scheduled background jobs pass. No PRs are waiting to merge. All 10 enabled scheduled tasks are on time. The builder is not stalled: its last three runs were short because the one ready ticket is inside its veto window. Engine speed: 125 ms per tick, 21% below the weekly median (157). The worktree cleaner last ran at 14:49 local. The home folder copy's freshness was not checked this run (this run's worktree guard blocks that read); the mirror catches up on its own.
+All green. The live site is up to date; commits since the last build touched only docs. Checks on main and the 3 scheduled background jobs pass. No PRs are waiting to merge. All 10 enabled scheduled tasks are on time. The builder is not stalled: both ready tickets sit inside veto windows. Engine speed: 127 ms per tick, 19% below the weekly median (157). The worktree cleaner last ran at 15:40 local. The home folder copy is 10 commits behind main; it is the read-only mirror and catches up on its own.
