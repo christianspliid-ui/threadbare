@@ -67,15 +67,17 @@ more, else the first). That is a proxy for authorial grouping, not a curated tax
 | `encounter.apotheosis` | 1 | 7 | push 1, rider 1, sphere 5, trait 0, free 0 |
 | `enc` | 3 | 6 | push 3, rider 0, sphere 3, trait 0, free 0 |
 | `liminal.quest` | 2 | 4 | push 2, rider 0, sphere 2, trait 0, free 0 |
+| `reputation.iron` | 2 | 4 | push 4, rider 0, sphere 0, trait 0, free 0 |
+| `reputation.shadow` | 2 | 4 | push 4, rider 0, sphere 0, trait 0, free 0 |
+| `reputation.veil` | 2 | 4 | push 4, rider 0, sphere 0, trait 0, free 0 |
+| `reputation.stone` | 2 | 4 | push 4, rider 0, sphere 0, trait 0, free 0 |
+| `reputation.gold` | 2 | 4 | push 4, rider 0, sphere 0, trait 0, free 0 |
+| `reputation.eye` | 2 | 4 | push 4, rider 0, sphere 0, trait 0, free 0 |
 | `encounter.rival` | 1 | 4 | push 0, rider 0, sphere 3, trait 1, free 0 |
 | `broker.quest` | 1 | 2 | push 1, rider 0, sphere 1, trait 0, free 0 |
-| `reputation.iron` | 1 | 2 | push 2, rider 0, sphere 0, trait 0, free 0 |
-| `reputation.shadow` | 1 | 2 | push 2, rider 0, sphere 0, trait 0, free 0 |
 | `reputation.heart` | 1 | 2 | push 2, rider 0, sphere 0, trait 0, free 0 |
-| `reputation.veil` | 1 | 2 | push 2, rider 0, sphere 0, trait 0, free 0 |
-| `reputation.stone` | 1 | 2 | push 2, rider 0, sphere 0, trait 0, free 0 |
-| `reputation.gold` | 1 | 2 | push 2, rider 0, sphere 0, trait 0, free 0 |
-| `reputation.eye` | 1 | 2 | push 2, rider 0, sphere 0, trait 0, free 0 |
+| `reputation.star` | 1 | 2 | push 2, rider 0, sphere 0, trait 0, free 0 |
+| `reputation.power` | 1 | 2 | push 2, rider 0, sphere 0, trait 0, free 0 |
 | `encounter.hunt` | 1 | 2 | push 0, rider 0, sphere 2, trait 0, free 0 |
 
 **Hand monotony (advisory)** — one card kind dominates:
