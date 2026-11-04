@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-04 10:57 local (09:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-04 12:00 local (11:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -24,13 +24,13 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Queue
 
-**Starved (1 ready).** The builder has emptied the shelf. Two more shipped this hour and are live: [the six seeded quests now let the mortal decide](https://linear.app/threadbare/issue/THR-2158) via [PR #2737](https://github.com/christianspliid-ui/threadbare/pull/2737), and [reputation encounters, half one](https://linear.app/threadbare/issue/THR-2159) via [PR #2738](https://github.com/christianspliid-ui/threadbare/pull/2738). A builder run is now working on [half two](https://linear.app/threadbare/issue/THR-2160). The only ticket still ready is [Legibility 4](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover). The orchestrator and design lane refill the shelf when it runs low; the design lane runs next at about 11:17 UTC.
+**Starved (0 ready).** The builder emptied the shelf this hour. Three more shipped and are live: [Legibility 4 — the god rail, the Ledger rail, lists and the hover card](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover) via [PR #2741](https://github.com/christianspliid-ui/threadbare/pull/2741), [reputation encounters, half two](https://linear.app/threadbare/issue/THR-2160) via [PR #2740](https://github.com/christianspliid-ui/threadbare/pull/2740), and the playtest rule fix via [PR #2739](https://github.com/christianspliid-ui/threadbare/pull/2739). Next up is [The last player picks go](https://linear.app/threadbare/issue/THR-2161/the-last-player-picks-go-the-three-mentorship-moments-and-the-two), still in Todo; the orchestrator (next about 11:28 UTC) promotes it once its blockers have closed, and the design lane runs at about 11:17 UTC to refill the shelf.
 
 Items for agents, not you:
-- **The returning-player playtest was stuck for two weeks, and the fix is merging.** Warm round 3 waited on two design tickets, and those tickets waited on round 3. [PR #2739](https://github.com/christianspliid-ui/threadbare/pull/2739) changes the rule, and warm round 3 should run on tomorrow's daily fire. *— from [the playtest lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/warm-playtest-round-2-stale.md)*
+- **The returning-player playtest is unstuck.** [PR #2739](https://github.com/christianspliid-ui/threadbare/pull/2739) merged, so warm round 3 should run on tomorrow's daily fire. *— from [the playtest lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/warm-playtest-round-2-stale.md)*
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (15 days). It needs gate and CI edits that unattended runs are refused, so agents can un-park it only in an attended run.
 
 ## Health
 
-All green. The live site serves the latest main (82938ebe, which includes THR-2158 and THR-2159). Checks on main and the scheduled background jobs pass. One PR is waiting on checks and will merge itself: [#2739](https://github.com/christianspliid-ui/threadbare/pull/2739). All 9 enabled scheduled tasks are on time. The builder is not stalled: a run is working now. Engine speed: 179 ms per tick, 14% above the weekly median, inside the normal range.
+All green. The live site serves the latest main (2d88055e, which includes Legibility 4). Checks on main and the 3 scheduled background jobs pass. No PRs are waiting to merge. All 10 enabled scheduled tasks are on time. The builder is not stalled: its last two runs were short only because nothing is ready. Engine speed: 146 ms per tick, 8% below the weekly median. The home folder copy is 6 commits behind main; the mirror catches up on its own.

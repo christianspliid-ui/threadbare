@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-04 10:57 local (09:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-04 12:00 local (11:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,6 +46,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-04: Legibility 4 is live: the god rail, the Ledger rail, list rows and the hover card read cleaner** ([THR-2125](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover)). Merged via [#2741](https://github.com/christianspliid-ui/threadbare/pull/2741).
+- **2026-11-04: half two of the reputation encounters now lets the mortal decide, and it is live** ([THR-2160](https://linear.app/threadbare/issue/THR-2160)). Merged via [#2740](https://github.com/christianspliid-ui/threadbare/pull/2740).
 - **2026-11-04: half one of the reputation encounters now lets the mortal decide, and it is live** ([THR-2159](https://linear.app/threadbare/issue/THR-2159)). Merged via [#2738](https://github.com/christianspliid-ui/threadbare/pull/2738).
 - **2026-11-04: the six seeded quests now let the mortal decide, and it is live** ([THR-2158](https://linear.app/threadbare/issue/THR-2158)). Merged via [#2737](https://github.com/christianspliid-ui/threadbare/pull/2737).
 - **2026-11-04: the path now pulls only scenes about the same thing, and it is live** ([THR-2156](https://linear.app/threadbare/issue/THR-2156)). Merged via [#2736](https://github.com/christianspliid-ui/threadbare/pull/2736).
@@ -54,8 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-03: Legibility 3 is live: the Stage and the dialogs show the title first, then the stakes** ([THR-2124](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first)). Merged via [#2733](https://github.com/christianspliid-ui/threadbare/pull/2733).
 - **2026-11-03: Legibility 2 is live: Inspector pages read Who, Now, Act, Detail, Out** ([THR-2123](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at)). Merged via [#2731](https://github.com/christianspliid-ui/threadbare/pull/2731).
 - **2026-11-03: after Play, a chapter step stays on the Stage while the world turns, and its answer opens in place, and it is live** ([THR-2151](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage)). Merged via [#2730](https://github.com/christianspliid-ui/threadbare/pull/2730).
-- **2026-11-03: the essence row now reads "53 / 55" and its bar ends at the limit, and it is live** ([THR-2148](https://linear.app/threadbare/issue/THR-2148/the-pool-says-how-full-it-can-get-the-essence-row-reads-53-55-the-bar)). Merged via [#2729](https://github.com/christianspliid-ui/threadbare/pull/2729).
-- **2026-11-03: every card now says what it buys, with a result line for cards that don't move a number, and it is live** ([THR-2147](https://linear.app/threadbare/issue/THR-2147/every-card-says-what-it-buys-a-result-line-for-cards-that-dont-move)). Merged via [#2726](https://github.com/christianspliid-ui/threadbare/pull/2726).
 ---
 
 Older resolved items and every earlier revision of this file: `git log -p origin/ops -- Design/user-actions.md`.
