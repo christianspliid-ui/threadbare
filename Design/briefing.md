@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-04 13:56 local (12:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-04 14:59 local (13:59 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -35,13 +35,13 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Starved (1 ready, held).** The design lane refilled the shelf with [town encounters, round 2](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write), but it sits in your veto window until 23:35 UTC, so the builder's short runs this hour are correct. [The last player picks go](https://linear.app/threadbare/issue/THR-2161/the-last-player-picks-go-the-three-mentorship-moments-and-the-two) is still in Todo, waiting on its blockers; the orchestrator promotes it when they close.
+**Starved (1 ready, held).** The design lane refilled the shelf with [town encounters, round 2](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write), but it sits in your veto window until 23:35 UTC, so the builder's short runs this hour are correct (its 13:11, 13:31 and 13:51 UTC runs each said so). [The last player picks go](https://linear.app/threadbare/issue/THR-2161/the-last-player-picks-go-the-three-mentorship-moments-and-the-two) is still in Todo, waiting on its blockers; the orchestrator promotes it when they close.
 
 Items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (15 days). It needs gate and CI edits that unattended runs are refused, so agents can un-park it only in an attended run.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (15 days); no local worktree holds uncommitted work for it. It needs gate and CI edits that unattended runs are refused, so agents can un-park it only in an attended run.
 - **The returning-player playtest should run tomorrow.** Its rule fix merged ([PR #2739](https://github.com/christianspliid-ui/threadbare/pull/2739)). *— from [the playtest lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/warm-playtest-round-2-stale.md)*
 
 ## Health
 
-All green. The live site serves the latest game build; commits since then touched only docs. Checks on main and the 3 scheduled background jobs pass. No PRs are waiting to merge. All 10 enabled scheduled tasks are on time. The builder is not stalled: its last three runs were short because the one ready ticket is inside its veto window. Engine speed: 141 ms per tick, 11% below the weekly median (158). The worktree cleaner last ran at 13:40 local. The home folder copy is 8 commits behind main; the mirror catches up on its own.
+All green. The live site serves the latest game build; commits since then touched only docs. Checks on main and the 3 scheduled background jobs pass. No PRs are waiting to merge. All 10 enabled scheduled tasks are on time. The builder is not stalled: its last three runs were short because the one ready ticket is inside its veto window. Engine speed: 125 ms per tick, 21% below the weekly median (157). The worktree cleaner last ran at 14:49 local. The home folder copy's freshness was not checked this run (this run's worktree guard blocks that read); the mirror catches up on its own.
