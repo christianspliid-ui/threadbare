@@ -35,7 +35,7 @@ import { resolveFightStepInputs } from '../../fights/fightStepInputs';
 import { buildOpponentHeaderModel, fightStepLabel } from './buildOpponentHeaderModel';
 import { resolveStepDefinition } from '../../unifiedActionLifecycle';
 import { BRANCH_DECISION_INTERVENTION_TYPE } from '../../encounters/branchDecision';
-import { firstPathRecallFor } from '../../firstPath';
+import { firstPathFitFor, firstPathRecallFor } from '../../firstPath';
 import {
   getAgentPortraitUrlFromProperties,
   getPortraitUrl,
@@ -345,6 +345,15 @@ function buildNarrative(
   // THR-1988 — The First's first chapter after the bond opens by recalling the path.
   const recall = firstPathRecallFor(graph, args.gameState?.ascendantId, activeAction);
   if (recall) paragraphs.unshift(autoLinkNarrative('para-first-path', recall, linkEntries));
+  // THR-2156 — any other chapter of hers the path pulls says so on its opening step,
+  // in the same slot ("Fits the reader of secrets."). The recall chapter never doubles up.
+  const fit = recall
+    ? null
+    : firstPathFitFor(graph, args.gameState?.ascendantId, activeAction, {
+      reach: template.reach,
+      motivations: template.motivations,
+    });
+  if (fit) paragraphs.unshift(autoLinkNarrative('para-first-path', fit, linkEntries));
 
   return {
     paragraphs,

@@ -46,7 +46,7 @@ function makeState(): GameState {
 
 function cand(templateId: string, finalScore: number, reachPrimary: ReachDomain = 'gold', extra: Partial<ScoredCandidate> = {}): ScoredCandidate {
   return {
-    entry: { templateId, locationId: 'nowhere', reachPrimary, encounterType: 'explore', threatRating: 'moderate', requiresPresence: false },
+    entry: { templateId, locationId: 'nowhere', reachPrimary, motivations: ['honesty_cunning'], encounterType: 'explore', threatRating: 'moderate', requiresPresence: false },
     finalScore,
     valuePerTick: 0.4,
     desireMultiplier: 1,
@@ -161,9 +161,9 @@ describe('THR-2068 E4 — the path leans The First\'s chapters', () => {
     const path = firstPathFromRecord({ sparkVisionId: UNSEEN_BLADE } as never);
     expect(path?.reach).toBe('iron');
     expect(path?.requiredReach).toBe('shadow');
-    expect(firstPathPullFor(path, 'shadow')).toBeCloseTo(1.5, 10);
-    expect(firstPathPullFor(path, 'iron')).toBeCloseTo(1.5, 10);
-    expect(firstPathPullFor(path, 'gold')).toBe(1);
+    expect(firstPathPullFor(path, 'shadow', ['honesty_cunning'])).toBeCloseTo(1.5, 10);
+    expect(firstPathPullFor(path, 'iron', ['mercy_ruthlessness'])).toBeCloseTo(1.5, 10);
+    expect(firstPathPullFor(path, 'gold', ['honesty_cunning'])).toBe(1);
     expect(firstPathPullFor(null, 'shadow')).toBe(1);
   });
 

@@ -14,6 +14,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
     investmentAmount: 0.15,
     traitGrants: ['commanding_presence', 'earned_loyalty'],
     requiredPrimaryReach: 'iron',
+    themeAxes: ['loyalty_ambition', 'courage_prudence'],
   },
   {
     id: 'vision.iron.duelist',
@@ -27,6 +28,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
     investmentAmount: 0.15,
     traitGrants: ['razor_focus', 'solitary_mastery'],
     requiredPrimaryReach: 'iron',
+    themeAxes: ['loyalty_ambition', 'courage_prudence'],
   },
   {
     id: 'vision.iron.bulwark',
@@ -40,6 +42,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
     investmentAmount: 0.15,
     traitGrants: ['unbreakable_will', 'guardian_instinct'],
     requiredPrimaryReach: 'iron',
+    themeAxes: ['preservation_transformation', 'sacrifice_survival'],
   },
   // ─── Gold primary visions ───
   {
@@ -54,6 +57,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
     investmentAmount: 0.15,
     traitGrants: ['horizon_hunger', 'first_to_market'],
     requiredPrimaryReach: 'gold',
+    themeAxes: ['courage_prudence', 'tradition_novelty'],
   },
   {
     id: 'vision.gold.powerbroker',
@@ -67,6 +71,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
     investmentAmount: 0.15,
     traitGrants: ['web_of_influence', 'calculated_mercy'],
     requiredPrimaryReach: 'gold',
+    themeAxes: ['asceticism_extravagance', 'honesty_cunning'],
   },
   {
     id: 'vision.gold.benefactor',
@@ -80,6 +85,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
     investmentAmount: 0.15,
     traitGrants: ['open_hand', 'debt_of_gratitude'],
     requiredPrimaryReach: 'gold',
+    themeAxes: ['asceticism_extravagance', 'mercy_ruthlessness'],
   },
   // ─── Shadow primary visions ───
   {
@@ -94,6 +100,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
     investmentAmount: 0.15,
     traitGrants: ['information_web', 'patience_of_shadows'],
     requiredPrimaryReach: 'shadow',
+    themeAxes: ['revelation_discretion', 'honesty_cunning'],
   },
   {
     id: 'vision.shadow.assassin',
@@ -107,6 +114,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
     investmentAmount: 0.15,
     traitGrants: ['killing_precision', 'ghost_step'],
     requiredPrimaryReach: 'shadow',
+    themeAxes: ['mercy_ruthlessness', 'honesty_cunning'],
   },
   {
     id: 'vision.shadow.puppetmaster',
@@ -120,6 +128,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
     investmentAmount: 0.15,
     traitGrants: ['invisible_hand', 'borrowed_authority'],
     requiredPrimaryReach: 'shadow',
+    themeAxes: ['honesty_cunning', 'loyalty_ambition'],
   },
   // ─── Veil primary visions ───
   {
@@ -134,6 +143,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
     investmentAmount: 0.15,
     traitGrants: ['reality_speaker', 'planar_sight'],
     requiredPrimaryReach: 'veil',
+    themeAxes: ['tradition_novelty', 'revelation_discretion'],
   },
   {
     id: 'vision.veil.wardsmith',
@@ -147,6 +157,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
     investmentAmount: 0.15,
     traitGrants: ['living_ward', 'silent_guardian'],
     requiredPrimaryReach: 'veil',
+    themeAxes: ['preservation_transformation', 'tradition_novelty'],
   },
   {
     id: 'vision.veil.spiritcaller',
@@ -160,6 +171,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
     investmentAmount: 0.15,
     traitGrants: ['death_whisper', 'bridge_between'],
     requiredPrimaryReach: 'veil',
+    themeAxes: ['tradition_novelty', 'sacrifice_survival'],
   },
   // ─── Heart primary visions ───
   {
@@ -174,6 +186,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
     investmentAmount: 0.15,
     traitGrants: ['fire_starter', 'voice_of_the_people'],
     requiredPrimaryReach: 'heart',
+    themeAxes: ['preservation_transformation', 'loyalty_ambition'],
   },
   {
     id: 'vision.heart.unifier',
@@ -187,6 +200,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
     investmentAmount: 0.15,
     traitGrants: ['bridge_builder', 'shared_table'],
     requiredPrimaryReach: 'heart',
+    themeAxes: ['loyalty_ambition', 'mercy_ruthlessness'],
   },
   {
     id: 'vision.heart.saint',
@@ -200,6 +214,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
     investmentAmount: 0.15,
     traitGrants: ['selfless_grace', 'healing_presence'],
     requiredPrimaryReach: 'heart',
+    themeAxes: ['sacrifice_survival', 'mercy_ruthlessness'],
   },
   // ─── Eye primary visions ───
   {
@@ -214,6 +229,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
     investmentAmount: 0.15,
     traitGrants: ['lie_sense', 'weight_of_truth'],
     requiredPrimaryReach: 'eye',
+    themeAxes: ['revelation_discretion', 'honesty_cunning'],
   },
   {
     id: 'vision.eye.pathfinder',
@@ -227,6 +243,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
     investmentAmount: 0.15,
     traitGrants: ['pathfinder_sense', 'hidden_roads'],
     requiredPrimaryReach: 'eye',
+    themeAxes: ['courage_prudence', 'revelation_discretion'],
   },
   {
     id: 'vision.eye.shadowseer',
@@ -240,6 +257,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
     investmentAmount: 0.15,
     traitGrants: ['future_currents', 'shadow_sight'],
     requiredPrimaryReach: 'eye',
+    themeAxes: ['tradition_novelty', 'revelation_discretion'],
   },
   // ─── Stone primary visions ───
   {
@@ -254,6 +272,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
     investmentAmount: 0.15,
     traitGrants: ['earth_listener', 'city_shaper'],
     requiredPrimaryReach: 'stone',
+    themeAxes: ['preservation_transformation', 'tradition_novelty'],
   },
   {
     id: 'vision.stone.wardkeeper',
@@ -267,6 +286,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
     investmentAmount: 0.15,
     traitGrants: ['boundary_keeper', 'forgotten_oath'],
     requiredPrimaryReach: 'stone',
+    themeAxes: ['preservation_transformation', 'sacrifice_survival'],
   },
   {
     id: 'vision.stone.monolith',
@@ -280,6 +300,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
     investmentAmount: 0.15,
     traitGrants: ['immovable', 'fixed_point'],
     requiredPrimaryReach: 'stone',
+    themeAxes: ['preservation_transformation', 'courage_prudence'],
   },
   // ─── Star primary visions ───
   {
@@ -294,6 +315,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
     investmentAmount: 0.15,
     traitGrants: ['prophetic_voice', 'fearless_conviction'],
     requiredPrimaryReach: 'star',
+    themeAxes: ['mercy_ruthlessness', 'courage_prudence'],
   },
   {
     id: 'vision.star.inquisitor',
@@ -307,6 +329,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
     investmentAmount: 0.15,
     traitGrants: ['truth_lantern', 'righteous_burden'],
     requiredPrimaryReach: 'star',
+    themeAxes: ['revelation_discretion', 'honesty_cunning'],
   },
   {
     id: 'vision.star.anchorite',
@@ -320,5 +343,6 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
     investmentAmount: 0.15,
     traitGrants: ['magnetic_stillness', 'silent_authority'],
     requiredPrimaryReach: 'star',
+    themeAxes: ['asceticism_extravagance', 'sacrifice_survival'],
   },
 ];
