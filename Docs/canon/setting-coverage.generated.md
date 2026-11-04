@@ -65,7 +65,10 @@ more, else the first). That is a proxy for authorial grouping, not a curated tax
 | `encounter.realm` | 5 | 14 | push 0, rider 0, sphere 14, trait 0, free 0 |
 | `cg.quest` | 1 | 9 | push 6, rider 0, sphere 0, trait 0, free 3 |
 | `encounter.apotheosis` | 1 | 7 | push 1, rider 1, sphere 5, trait 0, free 0 |
+| `enc` | 3 | 6 | push 3, rider 0, sphere 3, trait 0, free 0 |
+| `liminal.quest` | 2 | 4 | push 2, rider 0, sphere 2, trait 0, free 0 |
 | `encounter.rival` | 1 | 4 | push 0, rider 0, sphere 3, trait 1, free 0 |
+| `broker.quest` | 1 | 2 | push 1, rider 0, sphere 1, trait 0, free 0 |
 | `encounter.hunt` | 1 | 2 | push 0, rider 0, sphere 2, trait 0, free 0 |
 
 **Hand monotony (advisory)** — one card kind dominates:
