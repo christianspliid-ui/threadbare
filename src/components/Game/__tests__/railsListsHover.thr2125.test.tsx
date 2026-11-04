@@ -201,4 +201,15 @@ describe('THR-2125 R4 — the hover tier', () => {
     // An empty subtitle draws the kind alone, no trailing separator.
     expect(document.querySelector('[data-hover-kind]')!.textContent).toBe('Faction');
   });
+
+  it('takes the Now line from the Inspector body when the graph-only page has none', () => {
+    const body = [
+      { typeId: 'who', label: 'Who', prose: 'A believer.' },
+      { typeId: 'leading_ambition', label: 'Wants most', prose: 'The word burned.', highlight: { icon: 'mandate', headline: 'Spread the Faith' } },
+    ];
+    render(<HoverCard page={page({})} anchorEl={anchor()} visual={null} composedBody={body} />);
+    expect(document.querySelector('[data-hover-now]')!.textContent).toBe('Spread the Faith');
+    // A faction's own-name headline is skipped on this path too.
+    expect(hoverNow(page({ displayName: 'Spread the Faith' }), body)).toBeNull();
+  });
 });

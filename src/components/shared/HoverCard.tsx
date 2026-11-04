@@ -67,14 +67,30 @@ type HoverSection = DetailPage['sections'][number];
  * the page's own name (a faction's) is skipped, so the name is said once. `null` = no Now
  * line, nothing drawn in its place.
  */
-export function hoverNow(page: DetailPage): { headline: string; icon: IconName; index: number } | null {
-  const sections = page.sections ?? [];
-  const index = sections.findIndex((s) => !!(s as { highlight?: unknown }).highlight);
+export function hoverNow(
+  page: DetailPage,
+  composedBody?: readonly unknown[] | null,
+): { headline: string; icon: IconName; index: number } | null {
+  const own = hoverNowFrom(page.sections ?? [], page.displayName);
+  if (own) return own;
+  // The hover page is the graph-only legacy page; a mortal's want resolves only with the
+  // game state in context. GameView passes the Inspector's composed body for the same
+  // subject, so the Now line is the very headline its Inspector page draws (index -1:
+  // not one of the card's own sections, so nothing in the body is stripped).
+  const composed = composedBody ? hoverNowFrom(composedBody, page.displayName) : null;
+  return composed ? { ...composed, index: -1 } : null;
+}
+
+function hoverNowFrom(
+  sections: readonly unknown[],
+  displayName: string | undefined,
+): { headline: string; icon: IconName; index: number } | null {
+  const index = sections.findIndex((s) => !!(s as { highlight?: unknown } | null)?.highlight);
   if (index < 0) return null;
   const hl = (sections[index] as { highlight?: { headline: string; icon: IconName } }).highlight;
   const headline = hl?.headline?.trim();
   if (!hl || !headline) return null;
-  if (headline.toLowerCase() === (page.displayName ?? '').trim().toLowerCase()) return null;
+  if (headline.toLowerCase() === (displayName ?? '').trim().toLowerCase()) return null;
   return { headline, icon: hl.icon, index };
 }
 
@@ -86,7 +102,7 @@ function withoutHighlight(section: HoverSection): HoverSection {
   return rest as HoverSection;
 }
 
-export function HoverCard({ page, anchorEl, visual }: {
+export function HoverCard({ page, anchorEl, visual, composedBody }: {
   page: DetailPage;
   anchorEl: HTMLElement;
   /**
@@ -94,6 +110,8 @@ export function HoverCard({ page, anchorEl, visual }: {
    * the host (knowledge-gated, Law 8). Absent or null ⇒ the header draws as before.
    */
   visual?: EntityVisualDescriptor | null;
+  /** THR-2125 R4.4 — the subject's Inspector body (state-composed), where its Now headline lives. */
+  composedBody?: readonly unknown[] | null;
 }) {
   const rect = anchorEl.getBoundingClientRect();
   const { top, left } = hoverCardPosition(rect, {
@@ -103,7 +121,7 @@ export function HoverCard({ page, anchorEl, visual }: {
 
   const sphereVar = `var(--sphere-${page.sphere}-bright, var(--accent-gold))`;
   const subtitle = page.subtitle?.trim() ?? '';
-  const now = hoverNow(page);
+  const now = hoverNow(page, composedBody);
 
   const style: CSSProperties = {
     position: 'fixed',
