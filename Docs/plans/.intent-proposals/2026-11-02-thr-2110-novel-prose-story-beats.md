@@ -45,3 +45,15 @@ None. The five files are each imported once into the template catalog.
 ## kill criteria
 
 Cold read failing P1–P4 after one round → stop, post findings, slice B waits. A fact that cannot fit its budget → raise that field's budget by the smallest step and report, never drop the fact. Id snapshot differing → revert that template and report.
+
+## Revision 2026-11-04 — slice B recalibration (THR-2134, design lane run dl-20261104T1419Z)
+
+**intent_quote (this revision):** the plan's own kill criterion — "If the cold read still finds P1–P4 after one rewrite round, stop. Post the findings on the slice's ticket. Slice B waits until the design lane revises the calibration." — and the orchestrator T2 request on THR-2134 (2026-11-04 ~12:35Z) asking the lane to rule on classes 1, 4, 5 and 8 of the executor's 2026-11-02T21:58Z kill comment.
+
+**scope:** a new § "Slice B recalibration" with lane decisions 10–13 (at-cost charges the mortal; chip carries state, overview tells the scene; pronoun tokens; `byOutcome` band entries allowed in the existing THR-1667 S3 shape with existing chips only), a second-pass order resuming branch `claude/vibrant-tu-76f798`, two Done-when lines, one kill-criterion line (per-template ship or revert, no third round), one substrate-row note.
+
+**non-goals:** no change to slice A or decisions 1–9 beyond reading decision 1 as "no mechanic moves"; no draw on THR-2109 round-2 decisions (inside their veto window); no writing-check change.
+
+**impact_class:** Reversible.
+
+**evidence:** `outcomeConsequences.ts:277-288`; `aftermathWords.ts:1197-1200`; `proseEnrichment.ts:905-911`; `hostage-exchange.ts:317`; `unifiedAction.ts:2475-2537` (`AftermathVariant.byOutcome`, `applyAftermathOutcomeBand`); encounters canon § Rejected (Law 56) and § Outcome-keyed aftermath (THR-969, THR-1509); nudge-authoring-spec § Consequences 1b; branch greps (Apotheosis :282/:367/:569 essence lines; `{actor}`+literal-pronoun line counts 4/2/9).
