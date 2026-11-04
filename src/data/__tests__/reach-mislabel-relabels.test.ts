@@ -79,7 +79,7 @@ describe('THR-2010 Reach relabels', () => {
   it('moves the executioner\'s warn arm to Shadow', () => {
     const template = getUnifiedTemplateById('reputation.iron.the_executioners_commission')!;
     const variants = (template.steps[1] as { variants?: Record<string, { reach?: string }> }).variants ?? {};
-    expect(variants.refuse_and_warn_the_condemned?.reach).toBe('shadow');
+    expect(variants.positive?.reach).toBe('shadow');
   });
 
   it('gives the reckless wager a sphere of the Twelve', () => {

@@ -6,6 +6,24 @@
  * Pattern: required-negative — encounter surfaces only when iron.negative is held.
  *
  * THR-147: Final tranche of reputation-gated content.
+ *
+ * ─── The mortal decides (THR-2160, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was two cards whose ids were the
+ * aftermath keys ("Carry out the commission." / "Refuse. Warn the condemned
+ * instead."), so the click picked the ending. Now the fork decides on
+ * `mercy_ruthlessness`: a Protector (+1) refuses and warns the condemned, a
+ * Conqueror (−1) carries out the sentence. The god argues with a composed hand —
+ * two pole-leaning specials plus a Repertoire fill — and the mortal answers.
+ *
+ * - Fork axis: `mercy_ruthlessness`. `positive` = Refuse and Warn the Condemned,
+ *   `negative` = Carry Out the Commission. Variants, aftermath and `stakes.arms`
+ *   are keyed to the pole, because pole mode writes the bare pole key
+ *   (`branchDecision.ts` → `recordDecidedChoice`). The fallback and the base
+ *   stakes moved to the warning (the positive pole); the commission is now the
+ *   `negative` arm.
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
+ * - The step-1 prose is re-voiced so the mortal does it, not the god.
  */
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
@@ -76,6 +94,39 @@ const step0TheOffer: ActionStep = {
     'choice of meeting place.',
   successAfterimage: 'A name. Tomorrow. The magistrate\'s hands stayed flat on the desk.',
   failureAfterimage: 'The offer was laid out, but something in the room hadn\'t settled into its full weight yet.',
+  successAtCostAfterimage: 'The offer was plain, and the magistrate now knew the agent\'s face.',
+  criticalSuccessAfterimage: 'The name, the coin and the condemned all stood clear at once.',
+  criticalFailureAfterimage: 'The cloister blurred into lamplight and half-words, and the agent chose half-blind.',
+  purposeLine: 'Weigh the offer',
+  // THR-2160 — the fork's argument. Two specials, one per pole of
+  // `mercy_ruthlessness`; the Repertoire fills the rest of the hand.
+  nudges: [
+    {
+      id: 'commission.speak_the_name',
+      name: 'Speak The Name Aloud',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'mercy_ruthlessness', toward: 'positive' },
+      effectLine: 'Let the condemned\'s name ring in the cloister. A name heard aloud argues for warning them.',
+      bandProse: {
+        success: '{actor} heard the name aloud, and thought of the one who wore it.',
+        failure: '{actor} heard the name, and it stayed only a name.',
+      },
+    },
+    {
+      id: 'commission.count_the_debt',
+      name: 'Count The Debt',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'mercy_ruthlessness', toward: 'negative' },
+      effectLine: 'Lay the debt out coin by coin. A debt this heavy argues for doing the work.',
+      bandProse: {
+        success: '{actor} counted the debt, and felt the cold work grow lighter.',
+        failure: '{actor} counted the debt, and the sum did not move them.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['might', 'shadow'] },
 };
 
 const step1CarryOut: ActionStep = {
@@ -91,9 +142,9 @@ const step1CarryOut: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god pressed a current of grim purpose through the agent — not heat, not righteousness, ' +
+    'The agent took the work, and carried it with grim purpose — not heat, not righteousness, ' +
     'but the cold specific gravity of work that has been accepted and must now be done. ' +
-    'The magistrate had offered debt erasure and coin; the god understood that what the ' +
+    'The magistrate had offered debt erasure and coin; the agent understood that what the ' +
     'magistrate had actually offered was a mirror of the agent\'s standing: the work ' +
     'that only {title} could do.\n\n' +
     'The sentence was carried. The magistrate never thanked the agent by name — ' +
@@ -120,7 +171,7 @@ const step1WarnTheCondemned: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god did not press for compliance. It pressed for the opposite: the ' +
+    'The agent did not comply. They chose the opposite: the ' +
     'kind of resolve that turns away from a clean exit and chooses the expensive one ' +
     'instead. The agent left the magistrate waiting in the cloister. Word went ' +
     'out by a different path — not official, not traceable — that the blade was coming ' +
@@ -138,11 +189,13 @@ const step1WarnTheCondemned: ActionStep = {
 
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  // THR-2160 — the mortal decides; the fallback is the positive pole.
+  decidedBy: { axis: 'mercy_ruthlessness' },
   variants: {
-    carry_out_the_commission: step1CarryOut,
-    refuse_and_warn_the_condemned: step1WarnTheCondemned,
+    positive: step1WarnTheCondemned,
+    negative: step1CarryOut,
   },
-  fallback: { ...step1CarryOut },
+  fallback: { ...step1WarnTheCondemned },
 };
 
 // ─── Aftermath ───────────────────────────────────────────────────
@@ -512,14 +565,14 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 export const THE_EXECUTIONERS_COMMISSION_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'reputation.iron.the_executioners_commission',
   stakes: {
-    goal: 'carry out the magistrate\'s quiet death sentence',
-    risk: 'botch the sentence under the magistrate\'s eye',
-    won: 'carried out the sentence and had the debt erased',
-    lost: 'botched the sentence and left the magistrate wary',
+    goal: 'answer the magistrate\'s quiet death sentence',
+    risk: 'send a warning that comes too late',
+    won: 'warned the condemned in time to run',
+    lost: 'sent a warning that may have come too late',
     arms: {
-      refuse_and_warn_the_condemned: {
-        won: 'warned the condemned in time to run',
-        lost: 'sent a warning that may have come too late',
+      negative: {
+        won: 'carried out the sentence and had the debt erased',
+        lost: 'botched the sentence and left the magistrate wary',
       },
     },
   },
@@ -565,48 +618,13 @@ export const THE_EXECUTIONERS_COMMISSION_TEMPLATE: UnifiedActionTemplate = withE
   illustrationUrl: '/concept-art/encounters/the-executioners-commission.png',
   illustrationAlt: 'Wide shot: two figures in a vaulted stone cloister at night, lamplight pooled on flagstones, one seated at a writing desk, the other standing in shadow.',
 
-  authoredChoices: {
-    0: [
-      {
-        id: 'carry_out_the_commission',
-        label: 'Carry out the commission.',
-        intent:
-          'The god does not soften the weight. It settles the agent into the ' +
-          'cold purpose of work accepted under the law\'s underside: the magistrate ' +
-          'needs a hand already stained because the law cannot afford one that isn\'t, ' +
-          'and {title} is the hand the courthouse found in the dark. The debt is ' +
-          'erased. The work is done. No record names who did it.',
-        essenceCost: 1,
-        likelyBurden:
-          'A commission carried without record is still a weight. The family of the ' +
-          'condemned will find the shape of the hand even without the name.',
-        interventionType: 'coercive',
-      },
-      {
-        id: 'refuse_and_warn_the_condemned',
-        label: 'Refuse. Warn the condemned instead.',
-        intent:
-          'The god turns the agent away from the clean exit and toward the expensive ' +
-          'one. The commission was offered because {title}\'s standing made acceptance ' +
-          'seem obvious. The refusal is a surprise the magistrate hasn\'t prepared for. ' +
-          'The condemned gets time. The magistrate waits in the cloister.',
-        essenceCost: 0,
-        likelyBurden:
-          'A magistrate whose commission was refused by someone they expected to comply ' +
-          'is now deciding what to do about the refusal. The quieter chambers of the ' +
-          'courthouse have a long memory.',
-        interventionType: 'supportive',
-      },
-    ],
-  },
-
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      carry_out_the_commission: CARRY_AFTERMATH,
-      refuse_and_warn_the_condemned: WARN_AFTERMATH,
+      positive: WARN_AFTERMATH,
+      negative: CARRY_AFTERMATH,
     },
-    fallback: { ...CARRY_AFTERMATH },
+    fallback: { ...WARN_AFTERMATH },
   },
 });
 

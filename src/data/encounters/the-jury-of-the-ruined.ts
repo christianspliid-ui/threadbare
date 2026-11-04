@@ -6,6 +6,22 @@
  * Pattern: required-negative — encounter surfaces only when stone.negative is held.
  *
  * THR-147: Final tranche of reputation-gated content.
+ *
+ * ─── The mortal decides (THR-2160, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was two cards whose ids were the
+ * aftermath keys, so the click picked the ending. Now the fork decides on
+ * `loyalty_ambition`: a Sworn (+1) stands with the circle of the ruined and gives
+ * the verdict they called for, a Renegade (−1) breaks with the circle and rules
+ * on the evidence against its grief. The god argues with a composed hand — two
+ * pole-leaning specials plus a Repertoire fill — and the mortal answers.
+ *
+ * - Fork axis: `loyalty_ambition`. `positive` = Deliver the Verdict the Circle
+ *   Expects, `negative` = Rule Against the Circle. Variants, aftermath and
+ *   `stakes.arms` are keyed to the pole (`branchDecision.ts` →
+ *   `recordDecidedChoice`).
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
+ * - The step-1 prose is re-voiced so the mortal does it, not the god.
  */
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
@@ -75,6 +91,39 @@ const step0TheCircle: ActionStep = {
     'wrong side of one. No record is being kept. The overcast light is impartial.',
   successAfterimage: 'The circle waiting. The accused in the center. No record being kept.',
   failureAfterimage: 'The circle acknowledged the arrival but something in the atmosphere hadn\'t settled into the shape of a proceeding yet.',
+  successAtCostAfterimage: 'The circle heard the case out, and the accused\'s families pressed at the door.',
+  criticalSuccessAfterimage: 'The charge, the grief and what the evidence held all stood clear at once.',
+  criticalFailureAfterimage: 'The grange blurred into flat light and raised voices, and the agent chose half-blind.',
+  purposeLine: 'Hear the circle',
+  // THR-2160 — the fork's argument. Two specials, one per pole of
+  // `loyalty_ambition`; the Repertoire fills the rest of the hand.
+  nudges: [
+    {
+      id: 'jury.share_the_broken_name',
+      name: 'Share The Broken Name',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'loyalty_ambition', toward: 'positive' },
+      effectLine: 'Remind them the circle called on one of its own. A shared wound argues for standing with them.',
+      bandProse: {
+        success: '{actor} felt their own broken name, and sat with the circle.',
+        failure: '{actor} remembered their own ruin, and it felt far away.',
+      },
+    },
+    {
+      id: 'jury.read_the_water_deed',
+      name: 'Read The Water Deed',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'loyalty_ambition', toward: 'negative' },
+      effectLine: 'Show them what the sale records actually say. Evidence this thin argues against the circle.',
+      bandProse: {
+        success: '{actor} read the deed, and saw the charge would not hold.',
+        failure: '{actor} read the deed, and the ink said little.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['lore', 'social'] },
 };
 
 const step1DeliverVerdict: ActionStep = {
@@ -114,7 +163,7 @@ const step1RuleAgainstCircle: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god pressed for the harder thing: not the verdict the circle wanted, but ' +
+    'The agent chose the harder thing: not the verdict the circle wanted, but ' +
     'the verdict that the evidence actually supported. The {title} examined what ' +
     'had been brought before the circle — the claims about the water rights, ' +
     'the records of what had been sold, the testimony of the accused themselves — ' +
@@ -133,9 +182,11 @@ const step1RuleAgainstCircle: ActionStep = {
 
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  // THR-2160 — the mortal decides; the fallback is the positive pole.
+  decidedBy: { axis: 'loyalty_ambition' },
   variants: {
-    deliver_the_verdict_the_circle_expects: step1DeliverVerdict,
-    rule_against_the_circle: step1RuleAgainstCircle,
+    positive: step1DeliverVerdict,
+    negative: step1RuleAgainstCircle,
   },
   fallback: { ...step1DeliverVerdict },
 };
@@ -496,7 +547,7 @@ export const THE_JURY_OF_THE_RUINED_TEMPLATE: UnifiedActionTemplate = withEncoun
     won: 'ruled against the accused as the circle wanted',
     lost: 'gave the ruling, but it fell flat with the circle',
     arms: {
-      rule_against_the_circle: {
+      negative: {
         won: 'ruled on the evidence, against the circle\'s grief',
         lost: 'ruled against the circle without being heard',
       },
@@ -543,46 +594,11 @@ export const THE_JURY_OF_THE_RUINED_TEMPLATE: UnifiedActionTemplate = withEncoun
   illustrationUrl: '/concept-art/encounters/the-jury-of-the-ruined.png',
   illustrationAlt: 'Wide shot: roofless burned-out grange, circle of seated figures on salvaged stones, two figures standing in the center, overcast sky above open walls.',
 
-  authoredChoices: {
-    0: [
-      {
-        id: 'deliver_the_verdict_the_circle_expects',
-        label: 'Deliver the verdict the circle expects.',
-        intent:
-          'The god settles a current of rough legitimacy through the agent. The circle ' +
-          'called for {title} because they needed the verdict to come from a name that ' +
-          'had been broken by the same weight they are trying to escape. The ruling ' +
-          'goes against the accused. The circle receives what they called the court for.',
-        essenceCost: 1,
-        likelyBurden:
-          'The accused have a grievance and a name now. The verdict has no official ' +
-          'weight, but it has the weight of the circle, and the accused will find ' +
-          'allies who remember what happened at the grange.',
-        interventionType: 'coercive',
-      },
-      {
-        id: 'rule_against_the_circle',
-        label: 'Rule against the circle — the evidence doesn\'t support the charge.',
-        intent:
-          'The god presses for the hard verdict. The circle called for a judge; ' +
-          '{title} will be one. The evidence examined, the ruling given as the ' +
-          'evidence demands. The circle expected solidarity. They get impartiality ' +
-          'instead — from a name they thought would vote with them.',
-        essenceCost: 0,
-        likelyBurden:
-          'The circle is going to pass their own censure. They had been waiting ' +
-          'a long time for a verdict to mean something, and the ruling they got ' +
-          'is not the one they wanted.',
-        interventionType: 'withdrawn',
-      },
-    ],
-  },
-
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      deliver_the_verdict_the_circle_expects: VERDICT_AFTERMATH,
-      rule_against_the_circle: CIRCLE_CENSURE_AFTERMATH,
+      positive: VERDICT_AFTERMATH,
+      negative: CIRCLE_CENSURE_AFTERMATH,
     },
     fallback: { ...VERDICT_AFTERMATH },
   },

@@ -6,6 +6,22 @@
  * Pattern: required-negative — encounter surfaces only when veil.negative is held.
  *
  * THR-147: Final tranche of reputation-gated content.
+ *
+ * ─── The mortal decides (THR-2160, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was two cards whose ids were the
+ * aftermath keys, so the click picked the ending. Now the fork decides on
+ * `revelation_discretion`: a Seeker (+1) reads the forbidden manuscript and lets
+ * the knowledge in, a Sentinel (−1) burns it unread. The god argues with a
+ * composed hand — two pole-leaning specials plus a Repertoire fill — and the
+ * mortal answers.
+ *
+ * - Fork axis: `revelation_discretion`. `positive` = Read the Forbidden Lore,
+ *   `negative` = Destroy the Manuscript Unread. Variants, aftermath and
+ *   `stakes.arms` are keyed to the pole (`branchDecision.ts` →
+ *   `recordDecidedChoice`).
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
+ * - The step-1 prose is re-voiced so the mortal does it, not the god.
  */
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
@@ -71,6 +87,39 @@ const step0TheDoor: ActionStep = {
     'suspended. The chamber had been waiting.',
   successAfterimage: 'The mechanism yielded. The lantern held. The manuscript on its plinth.',
   failureAfterimage: 'The chamber\'s threshold resisted — not entirely, but enough to make the entry feel uncertain.',
+  successAtCostAfterimage: 'The chamber opened, and the lantern flame bent toward the agent.',
+  criticalSuccessAfterimage: 'The manuscript, and what the guild had buried in it, stood clear at once.',
+  criticalFailureAfterimage: 'The chamber blurred into dust and guttering light, and the agent chose half-blind.',
+  purposeLine: 'Face the manuscript',
+  // THR-2160 — the fork's argument. Two specials, one per pole of
+  // `revelation_discretion`; the Repertoire fills the rest of the hand.
+  nudges: [
+    {
+      id: 'chamber.trace_the_binding',
+      name: 'Trace The Binding',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'revelation_discretion', toward: 'positive' },
+      effectLine: 'Show them the careful hand that bound these pages. Work this careful argues for reading it.',
+      bandProse: {
+        success: '{actor} traced the binding, and opened the first page.',
+        failure: '{actor} touched the binding, and the leather felt cold.',
+      },
+    },
+    {
+      id: 'chamber.read_the_censure',
+      name: 'Read The Censure',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'revelation_discretion', toward: 'negative' },
+      effectLine: 'Remind them why the guild was silenced. A buried truth argues for the flame.',
+      bandProse: {
+        success: '{actor} remembered the censure, and reached for the lantern.',
+        failure: '{actor} thought of the censure, and the manuscript still called.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['lore', 'insight'] },
 };
 
 const step1ReadTheLore: ActionStep = {
@@ -85,7 +134,7 @@ const step1ReadTheLore: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god settled the cost of attention through the agent and let the knowledge ' +
+    'The agent paid the cost of attention and let the knowledge ' +
     'arrive. Not gently — the manuscript was forbidden because it was true, and ' +
     'true things of this kind arrive with the weight of information ' +
     'that changes the shape of what you knew before. The {title} paid the essence ' +
@@ -115,7 +164,7 @@ const step1DestroyUnread: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god pressed the agent toward the lantern rather than the plinth — toward ' +
+    'The agent turned toward the lantern rather than the plinth — toward ' +
     'the ending rather than the reading. The {title} brought the flame to the ' +
     'manuscript\'s binding, which caught as undyed leather catches, without drama, ' +
     'just commitment. The pages were thorough and uniform, the way pages burn when ' +
@@ -134,9 +183,11 @@ const step1DestroyUnread: ActionStep = {
 
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  // THR-2160 — the mortal decides; the fallback is the positive pole.
+  decidedBy: { axis: 'revelation_discretion' },
   variants: {
-    read_the_forbidden_lore: step1ReadTheLore,
-    destroy_the_manuscript_unread: step1DestroyUnread,
+    positive: step1ReadTheLore,
+    negative: step1DestroyUnread,
   },
   fallback: { ...step1ReadTheLore },
 };
@@ -505,7 +556,7 @@ export const THE_SILENT_CHAMBER_TEMPLATE: UnifiedActionTemplate = withEncounterC
     won: 'read the buried manuscript and kept what it held',
     lost: 'read the manuscript but kept only scraps of it',
     arms: {
-      destroy_the_manuscript_unread: {
+      negative: {
         won: 'burned the buried manuscript unread',
         lost: 'left the manuscript half-burned on its plinth',
       },
@@ -552,47 +603,11 @@ export const THE_SILENT_CHAMBER_TEMPLATE: UnifiedActionTemplate = withEncounterC
   illustrationUrl: '/concept-art/encounters/the-silent-chamber.png',
   illustrationAlt: 'Wide shot: vaulted stone chamber, single guttering lantern, manuscript on a low stone plinth, dust motes suspended in the light, deep shadow at the edges.',
 
-  authoredChoices: {
-    0: [
-      {
-        id: 'read_the_forbidden_lore',
-        label: 'Read the manuscript. Let the knowledge in.',
-        intent:
-          'The god settles the cost of attention through the agent and lets what was ' +
-          'buried arrive whole. The chamber\'s lock opened for {title} because the ' +
-          'guild had designed it that way — the silenced can read what the silence ' +
-          'was built to conceal. The essence the chamber demands is paid. The ' +
-          'knowledge is structural now. It cannot be unfelt.',
-        essenceCost: 2,
-        likelyBurden:
-          'Forbidden because it was true. The remnant guild has ways of knowing ' +
-          'when the chamber was entered, and they will decide what to do about ' +
-          'a {title} who now carries their buried text.',
-        interventionType: 'supportive',
-      },
-      {
-        id: 'destroy_the_manuscript_unread',
-        label: 'Burn the manuscript before reading it.',
-        intent:
-          'The god presses the agent toward ending rather than opening. The {title} ' +
-          'came through the lock that refused everyone else — and used that access ' +
-          'to do the thing the guild\'s censurers decided not to do. The lantern ' +
-          'is brought to the binding. What the guild buried stays buried, in ash ' +
-          'now instead of leather. Clean hands. Colder.',
-        essenceCost: 0,
-        likelyBurden:
-          'The remnant guild held onto one buried thing. The {title} took it. ' +
-          'Whether they will forgive this is a question that will take time to answer.',
-        interventionType: 'withdrawn',
-      },
-    ],
-  },
-
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      read_the_forbidden_lore: READ_AFTERMATH,
-      destroy_the_manuscript_unread: DESTROY_AFTERMATH,
+      positive: READ_AFTERMATH,
+      negative: DESTROY_AFTERMATH,
     },
     fallback: { ...READ_AFTERMATH },
   },
