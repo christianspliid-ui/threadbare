@@ -5,6 +5,20 @@
  * Pattern: required-positive — encounter surfaces only for agents with Gold positive reputation.
  *
  * THR-146: Middle tranche of reputation-gated content.
+ *
+ * ─── The mortal decides (THR-2159, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was two cards whose ids were the
+ * aftermath keys, so the click picked the ending. Now the fork decides on
+ * `asceticism_extravagance`: a Mender (+1) spends their own standing at the guildhall for the merchant, a Magnate (−1) declines and maps the robbery for their own profit. The god argues with a composed hand — two
+ * pole-leaning specials plus a Repertoire fill — and the mortal answers.
+ *
+ * - Fork axis: `asceticism_extravagance`. `positive` = Intercede Personally,
+ *   `negative` = Mark the Robbers. Variants, aftermath and `stakes.arms` are keyed
+ *   to the pole, because pole mode writes the bare pole key
+ *   (`branchDecision.ts` → `recordDecidedChoice`).
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
+ * - The step-1 prose is re-voiced so the mortal does it, not the god.
  */
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
@@ -69,6 +83,39 @@ const step0TheKneeling: ActionStep = {
     'at a moment when the guildhall was not listening to men with empty pouches.',
   successAfterimage: 'The empty pouch. The angle of the incline. A man who has run out of people to ask.',
   failureAfterimage: 'He looked up uncertain — as if the recognition he had been pointed toward was arriving sideways.',
+  successAtCostAfterimage: 'The merchant told it all, and the telling cost him his pride.',
+  criticalSuccessAfterimage: 'The robbery and the guildhall\'s politics stood plain at once.',
+  criticalFailureAfterimage: 'The merchant\'s story blurred into numbers, and the agent chose half-blind.',
+  purposeLine: 'Hear the merchant',
+  // THR-2159 — the fork's argument. Two specials, one per pole of
+  // `asceticism_extravagance`; the Repertoire fills the rest of the hand.
+  nudges: [
+    {
+      id: 'merchant.see_his_empty_pouch',
+      name: 'See His Empty Pouch',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'asceticism_extravagance', toward: 'positive' },
+      effectLine: 'Turn their eyes to what the merchant lost. A ruined man argues for spending your standing.',
+      bandProse: {
+        success: '{actor} looked at the empty pouch and could not leave it.',
+        failure: '{actor} saw the empty pouch, and the guildhall seemed far.',
+      },
+    },
+    {
+      id: 'merchant.trace_the_robbery',
+      name: 'Trace The Robbery',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'asceticism_extravagance', toward: 'negative' },
+      effectLine: 'Let them see the pattern in how the caravan fell. A pattern argues for profit, not pity.',
+      bandProse: {
+        success: '{actor} saw the shape of the robbery, and its worth.',
+        failure: '{actor} looked for a pattern, and found only bad luck.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['social', 'insight'] },
 };
 
 const step1Intercede: ActionStep = {
@@ -84,7 +131,7 @@ const step1Intercede: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god set the agent in motion toward the guildhall with the quality of ' +
+    'The agent walked to the guildhall with the quality of ' +
     'presence that makes doors open before a hand reaches them. The guildmaster was in the ' +
     'middle of something — ledgers, a heated exchange about a border tariff — and he stopped ' +
     'when {title} entered, the way men stop when they have learned that certain interruptions ' +
@@ -113,7 +160,7 @@ const step1MarkRobbers: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god said nothing about the guildhall. The guildhall was a lobby of an argument ' +
+    'The agent said nothing about the guildhall. The guildhall was a lobby of an argument ' +
     'that would resolve itself when it was ready. What was useful was the description of ' +
     'the road, the point where the caravan had stopped, the pattern of a robbery ' +
     'that left drivers alive — and the agent filed all of this in the part of awareness ' +
@@ -131,9 +178,11 @@ const step1MarkRobbers: ActionStep = {
 
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  // THR-2159 — the mortal decides; the fallback is the positive pole.
+  decidedBy: { axis: 'asceticism_extravagance' },
   variants: {
-    intercede_personally: step1Intercede,
-    mark_the_robbers: step1MarkRobbers,
+    positive: step1Intercede,
+    negative: step1MarkRobbers,
   },
   fallback: { ...step1Intercede },
 };
@@ -478,7 +527,7 @@ export const THE_MERCHANTS_FAVOR_TEMPLATE: UnifiedActionTemplate = withEncounter
     won: 'got the robbed merchant before the guild committee',
     lost: 'got the guildmaster\'s ear but not his help',
     arms: {
-      mark_the_robbers: {
+      negative: {
         won: 'took down the robbers\' pattern and the driver\'s name',
         lost: 'sent the merchant off with nothing in hand',
       },
@@ -521,53 +570,11 @@ export const THE_MERCHANTS_FAVOR_TEMPLATE: UnifiedActionTemplate = withEncounter
   illustrationUrl: '/concept-art/encounters/the-merchants-favor.webp',
   illustrationAlt: 'Wide shot: a merchant on a counting-house floor, empty pouch upended on the boards before him, threadbare palette.',
 
-  authoredChoices: {
-    0: [
-      {
-        id: 'intercede_personally',
-        label: 'Walk to the guildhall and stake your reputation.',
-        intent:
-          'The god sets the agent in motion with the weight of the {title} behind them — ' +
-          'not a request, not a favor asked, but a presence that shifts what the guildmaster ' +
-          'is currently willing to hear. The merchant\'s name will be on the morning ledger.',
-        essenceCost: 1,
-        likelyBurden:
-          'The guildmaster\'s obligation is to the agent now, not the merchant. Whatever ' +
-          'the merchant does with the door that was opened becomes part of the agent\'s record.',
-        interventionType: 'supportive',
-        // THR-528: spending standing to lift someone up — the Gold virtue (Patron/Generous).
-        moralAxis: 'gold',
-        pole: 'virtue',
-        magnitude: 0.1,
-      },
-      {
-        id: 'mark_the_robbers',
-        label: 'Decline advocacy. Map the robbery\'s pattern instead.',
-        intent:
-          'The god does not open the guildhall door. Instead it maps the shape of the robbery — ' +
-          'pattern, road, method — and sends that shape quietly through channels the merchant ' +
-          'does not have access to. The merchant leaves without what he came for, but something ' +
-          'else moves in the space his visit created.',
-        essenceCost: 0,
-        likelyBurden:
-          'The merchant did not get his guildhall meeting. The patron reputation takes a small cost. ' +
-          'Something shadow-inclined moves instead.',
-        interventionType: 'withdrawn',
-        // THR-528: turning away from the plea to extract value for oneself — the Gold vice
-        // (Extractor/Greedy). Authored 'vice' deliberately overrides the heuristic, which would
-        // read 'withdrawn' as the virtue pole.
-        moralAxis: 'gold',
-        pole: 'vice',
-        magnitude: 0.1,
-      },
-    ],
-  },
-
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      intercede_personally: INTERCEDE_AFTERMATH,
-      mark_the_robbers: MARK_AFTERMATH,
+      positive: INTERCEDE_AFTERMATH,
+      negative: MARK_AFTERMATH,
     },
     fallback: { ...INTERCEDE_AFTERMATH },
   },

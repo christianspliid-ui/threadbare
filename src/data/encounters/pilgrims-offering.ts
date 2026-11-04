@@ -8,6 +8,20 @@
  *
  * The blocking (heart.negative) is enforced via encounterGates.blocks in the trait definition.
  * THR-32: First tranche of reputation-gated content.
+ *
+ * ─── The mortal decides (THR-2159, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was two cards whose ids were the
+ * aftermath keys, so the click picked the ending. Now the fork decides on
+ * `tradition_novelty`: an Archivist (+1) receives the offering in the shrine's old form, a Heretic (−1) breaks the form and turns the blessing back to the giver. The god argues with a composed hand — two
+ * pole-leaning specials plus a Repertoire fill — and the mortal answers.
+ *
+ * - Fork axis: `tradition_novelty`. `positive` = Accept Graciously,
+ *   `negative` = Bless Them Instead. Variants, aftermath and `stakes.arms` are keyed
+ *   to the pole, because pole mode writes the bare pole key
+ *   (`branchDecision.ts` → `recordDecidedChoice`).
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
+ * - The step-1 prose is re-voiced so the mortal does it, not the god.
  */
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
@@ -76,6 +90,39 @@ const step0ThePilgrim: ActionStep = {
     'which was all they said, and the word held more weight than most words of that length.',
   successAfterimage: 'The pilgrim looked up. Recognition. The offering still in their hands.',
   failureAfterimage: 'The pilgrim looked up, uncertain — as though the recognition they had hoped for was arriving at the wrong angle.',
+  successAtCostAfterimage: 'The pilgrim knelt on, and their hands had begun to shake.',
+  criticalSuccessAfterimage: 'Every year the pilgrim had carried showed in the bundle at once.',
+  criticalFailureAfterimage: 'The shrine blurred into dust and herb-smell, and the agent chose half-blind.',
+  purposeLine: 'Meet the pilgrim',
+  // THR-2159 — the fork's argument. Two specials, one per pole of
+  // `tradition_novelty`; the Repertoire fills the rest of the hand.
+  nudges: [
+    {
+      id: 'pilgrim.honor_the_rite',
+      name: 'Honor The Old Rite',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'tradition_novelty', toward: 'positive' },
+      effectLine: 'Show them the shrine\'s old form of receiving. A rite this old argues for keeping it.',
+      bandProse: {
+        success: '{actor} remembered the old form, and held out both hands.',
+        failure: '{actor} reached for the rite, and the words came out wrong.',
+      },
+    },
+    {
+      id: 'pilgrim.see_the_question',
+      name: 'See The Unasked Question',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'tradition_novelty', toward: 'negative' },
+      effectLine: 'Let them notice what the pilgrim came here to ask. An unspoken need argues for giving back.',
+      bandProse: {
+        success: '{actor} saw the question under the offering.',
+        failure: '{actor} looked for the question, and the pilgrim hid it.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['presence', 'lore'] },
 };
 
 const step1AcceptGraciously: ActionStep = {
@@ -98,11 +145,11 @@ const step1AcceptGraciously: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god lowered the agent toward the offering — not the gesture of someone receiving ' +
+    'The agent bent toward the offering — not the gesture of someone receiving ' +
     'tribute, but the gesture of someone who understands what the bundle in the pilgrim\'s ' +
     'hands has cost them. The herbs had been carried a long distance. The thread had been ' +
     'tied by someone who did not have easy access to nice thread. These were not observations. ' +
-    'They were weight, and the god knew how to let that weight arrive in the agent\'s bearing ' +
+    'They were weight, and the agent let that weight arrive in their own bearing ' +
     'without language.\n\n' +
     'The agent accepted the bundle with both hands — the correct form, the one that says: ' +
     'I am receiving what you are giving, which is not the herbs but the intention behind them. ' +
@@ -139,7 +186,7 @@ const step1BlessInstead: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god did something gentle: it redirected the offering back toward the giver, ' +
+    'The agent did something gentle: they turned the offering back toward the giver, ' +
     'not as refusal but as amplification. The agent\'s hands rested for a moment on the ' +
     'pilgrim\'s still-extended palms — not taking, but touching — and the bundle of herbs ' +
     'remained where it was while something else moved through the contact.\n\n' +
@@ -164,9 +211,11 @@ const step1BlessInstead: ActionStep = {
 
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  // THR-2159 — the mortal decides; the fallback is the positive pole.
+  decidedBy: { axis: 'tradition_novelty' },
   variants: {
-    accept_graciously: step1AcceptGraciously,
-    bless_them_instead: step1BlessInstead,
+    positive: step1AcceptGraciously,
+    negative: step1BlessInstead,
   },
   fallback: { ...step1AcceptGraciously },
 };
@@ -517,7 +566,7 @@ export const PILGRIMS_OFFERING_TEMPLATE: UnifiedActionTemplate = withEncounterCo
     lost: 'took the herbs in a moment that slipped',
     lostBadly: 'took the herbs and sent the pilgrim home doubting',
     arms: {
-      bless_them_instead: {
+      negative: {
         won: 'blessed the pilgrim and let them keep their herbs',
         lost: 'blessed the pilgrim, but it did not land',
         lostBadly: 'blessed the pilgrim and left them doubting the shrines',
@@ -564,44 +613,11 @@ export const PILGRIMS_OFFERING_TEMPLATE: UnifiedActionTemplate = withEncounterCo
   illustrationUrl: '/concept-art/encounters/pilgrims-offering.jpg',
   illustrationAlt: 'A roadside shrine: white stone cairn, faded cloth in branches. A kneeling pilgrim offers a bundle in cupped hands; the agent\'s shadow falls across the cairn.',
 
-  authoredChoices: {
-    0: [
-      {
-        id: 'accept_graciously',
-        label: 'Receive what is given.',
-        intent:
-          'The god settles the agent into everything the pilgrim has carried here — ' +
-          'not just the herbs but the years. The acceptance is real and its fullness is legible ' +
-          'to the pilgrim because the god makes it legible: not performance, not kindness as ' +
-          'a technique, but the actual act of receiving something that was meant to be received.',
-        essenceCost: 1,
-        likelyBurden:
-          'What is received is now carried. The pilgrim will hear, eventually, where the ' +
-          'offering ends up.',
-        interventionType: 'supportive',
-      },
-      {
-        id: 'bless_them_instead',
-        label: 'Give the blessing back to the one who brought it.',
-        intent:
-          'The god turns the offering around: instead of taking what the pilgrim has carried, ' +
-          'the agent becomes the channel through which something returns to them. The bundle ' +
-          'stays in the pilgrim\'s hands but it is no longer the same weight — it has been ' +
-          'touched by the answer to the question they carried it here to ask.',
-        essenceCost: 2,
-        likelyBurden:
-          'What is redirected becomes the pilgrim\'s to carry forward. The god has answered ' +
-          'a question that was not asked aloud, and the pilgrim will have to live with that answer.',
-        interventionType: 'supportive',
-      },
-    ],
-  },
-
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      accept_graciously: ACCEPT_AFTERMATH,
-      bless_them_instead: BLESS_AFTERMATH,
+      positive: ACCEPT_AFTERMATH,
+      negative: BLESS_AFTERMATH,
     },
     fallback: { ...ACCEPT_AFTERMATH },
   },

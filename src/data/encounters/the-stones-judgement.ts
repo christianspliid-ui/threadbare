@@ -7,6 +7,20 @@
  *          is a future enhancement (THR-32a onwards).
  *
  * THR-32: First tranche of reputation-gated content.
+ *
+ * ─── The mortal decides (THR-2159, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was two cards whose ids were the
+ * aftermath keys, so the click picked the ending. Now the fork decides on
+ * `preservation_transformation`: a Guardian (+1) rules for the older claim, a Shaper (−1) rules for the claim that is changing the settlement. The god argues with a composed hand — two
+ * pole-leaning specials plus a Repertoire fill — and the mortal answers.
+ *
+ * - Fork axis: `preservation_transformation`. `positive` = Rule for the Older Claim,
+ *   `negative` = Rule for the Transforming Claim. Variants, aftermath and `stakes.arms` are keyed
+ *   to the pole, because pole mode writes the bare pole key
+ *   (`branchDecision.ts` → `recordDecidedChoice`).
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
+ * - The step-1 prose is re-voiced so the mortal does it, not the god.
  */
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
@@ -80,6 +94,39 @@ const step0TheDispute: ActionStep = {
     'this without reopening.',
   successAfterimage: 'The square, the stone slab, the two parties held apart by the distance of twelve feet and a long season of grievance. The elder waited.',
   failureAfterimage: 'The parties watched the agent arrive — measuring, uncertain whether the Steadfast Builder\'s word would carry the weight this dispute required.',
+  successAtCostAfterimage: 'The square heard the dispute out, and both parties came away bitter.',
+  criticalSuccessAfterimage: 'Every claim in the square, and what each would cost, stood clear at once.',
+  criticalFailureAfterimage: 'The square blurred into shouting and ledgers, and the agent chose half-blind.',
+  purposeLine: 'Hear the dispute',
+  // THR-2159 — the fork's argument. Two specials, one per pole of
+  // `preservation_transformation`; the Repertoire fills the rest of the hand.
+  nudges: [
+    {
+      id: 'stone.read_the_first_deed',
+      name: 'Read The First Deed',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'preservation_transformation', toward: 'positive' },
+      effectLine: 'Lay the old deed before them, seal and all. A claim this old argues for holding it.',
+      bandProse: {
+        success: '{actor} read the first deed and felt its weight.',
+        failure: '{actor} read the deed, and the faded seal said little.',
+      },
+    },
+    {
+      id: 'stone.walk_the_new_wall',
+      name: 'Walk The New Wall',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'preservation_transformation', toward: 'negative' },
+      effectLine: 'Show them what the settlement has built since the deed. New stone argues for the changing claim.',
+      bandProse: {
+        success: '{actor} saw what the new wall had made possible.',
+        failure: '{actor} walked the new wall, and saw only rubble.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['lore', 'craft'] },
 };
 
 const step1RuleForOlderClaim: ActionStep = {
@@ -102,7 +149,7 @@ const step1RuleForOlderClaim: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god drew the agent\'s authority toward what the stone remembered: the first deed, ' +
+    'The agent turned their authority toward what the stone remembered: the first deed, ' +
     'the older claim, the weight of what had been there before. Not sentiment — a technical ' +
     'reckoning with time. The older claim had been honored by every iteration of this ' +
     'settlement. To dishonor it now would be to say that time itself could be bought out, ' +
@@ -145,7 +192,7 @@ const step1RuleForTransformingClaim: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god oriented the agent toward the grain of the world as it was now running — what ' +
+    'The agent read the grain of the world as it was now running — what ' +
     'the settlement had become in the two seasons since the dispute began, what it needed ' +
     'to become in the two seasons ahead. The deed from before the second wall was a document ' +
     'of what had once been true. The thing the newer party had built was a fact about what ' +
@@ -169,9 +216,11 @@ const step1RuleForTransformingClaim: ActionStep = {
 
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  // THR-2159 — the mortal decides; the fallback is the positive pole.
+  decidedBy: { axis: 'preservation_transformation' },
   variants: {
-    rule_for_older_claim: step1RuleForOlderClaim,
-    rule_for_transforming_claim: step1RuleForTransformingClaim,
+    positive: step1RuleForOlderClaim,
+    negative: step1RuleForTransformingClaim,
   },
   fallback: { ...step1RuleForOlderClaim },
 };
@@ -561,7 +610,7 @@ export const THE_STONES_JUDGEMENT_TEMPLATE: UnifiedActionTemplate = withEncounte
     won: 'upheld the older claim before the square',
     lost: 'gave a ruling one party picked apart on the spot',
     arms: {
-      rule_for_transforming_claim: {
+      negative: {
         won: 'upheld the newer claim and what was built on it',
         lost: 'ruled for the newer claim and left it weaker',
       },
@@ -606,45 +655,11 @@ export const THE_STONES_JUDGEMENT_TEMPLATE: UnifiedActionTemplate = withEncounte
   illustrationUrl: '/concept-art/encounters/the-stones-judgement.jpg',
   illustrationAlt: 'Open market square, a rough stone slab between two crowds. The agent stands on the slab, elder behind them, the two disputing parties flanking. Wind-whipped banners in the background.',
 
-  authoredChoices: {
-    0: [
-      {
-        id: 'rule_for_older_claim',
-        label: 'Settle the matter by what endures.',
-        intent:
-          'The god draws the agent\'s authority toward what the stone remembers — the first deed, ' +
-          'the older claim, the weight of every iteration of this settlement that honored it before. ' +
-          'The ruling will reinforce the Steadfast Builder\'s reputation as someone whose word does ' +
-          'not revise history for convenience.',
-        essenceCost: 1,
-        likelyBurden:
-          'The losing party will accept the ruling\'s legality and contest its justice. ' +
-          'The older claim carries a long shadow — something in the newer party\'s silence ' +
-          'will not fully settle.',
-        interventionType: 'supportive',
-      },
-      {
-        id: 'rule_for_transforming_claim',
-        label: 'Settle the matter by what must become.',
-        intent:
-          'The god orients the agent\'s attention to the world\'s grain as it is now running — ' +
-          'what the settlement has become, what it needs to continue becoming. The older deed is ' +
-          'real. The thing built on it is also real. The {title} chooses the fact over the document.',
-        essenceCost: 2,
-        likelyBurden:
-          'The Legendary standing earns the right to make this call. It does not erase the cost ' +
-          'of making it. The older party will seek redress through instruments the agent cannot ' +
-          'easily reach. This dispute has a long tail.',
-        interventionType: 'coercive',
-      },
-    ],
-  },
-
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      rule_for_older_claim: OLDER_CLAIM_AFTERMATH,
-      rule_for_transforming_claim: TRANSFORMING_CLAIM_AFTERMATH,
+      positive: OLDER_CLAIM_AFTERMATH,
+      negative: TRANSFORMING_CLAIM_AFTERMATH,
     },
     fallback: { ...OLDER_CLAIM_AFTERMATH },
   },
