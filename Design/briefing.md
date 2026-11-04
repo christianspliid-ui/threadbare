@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-04 12:00 local (11:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-04 12:56 local (11:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -18,19 +18,30 @@
 
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
+## Decided for you
+
+From the [design lane's 11:34 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-04a.md). Nobody builds it before 23:35 UTC tonight.
+
+- [Town encounters name the mortal and write their own stake line — round 2](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write) — when a town job fails, its closing line now says what this particular failure cost (the seed lost, the mill standing idle). It no longer repeats "the town sent for them, and they failed", which seventeen town jobs currently say in nearly the same words.
+- Same ticket — no two town jobs may share more than two sentences built the same way, so a player stops reading the same line on every job.
+- Same ticket — the line that tells you when and where a follow-up meeting happens ("on court day, in three days, with the steward there to answer") stays the same everywhere, the way the small result tags do, because it states a game fact.
+- Same ticket — the rewrites follow your six checks for compressed prose from 3 November: no packed phrases, rare word senses, vague references, filler, lists in place of character, or a mortal who just sits there.
+
+Say "veto <title>" to reverse any of these.
+
 ## This week's screens
 
 [Contact sheet — this week next to last week](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/ux-review/2026-11-02/contact-sheet.jpg) — better: all three of last week's faults are fixed, and for the first time the review reached a real mid-game, where one new overlap shows.
 
 ## Queue
 
-**Starved (0 ready).** The builder emptied the shelf this hour. Three more shipped and are live: [Legibility 4 — the god rail, the Ledger rail, lists and the hover card](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover) via [PR #2741](https://github.com/christianspliid-ui/threadbare/pull/2741), [reputation encounters, half two](https://linear.app/threadbare/issue/THR-2160) via [PR #2740](https://github.com/christianspliid-ui/threadbare/pull/2740), and the playtest rule fix via [PR #2739](https://github.com/christianspliid-ui/threadbare/pull/2739). Next up is [The last player picks go](https://linear.app/threadbare/issue/THR-2161/the-last-player-picks-go-the-three-mentorship-moments-and-the-two), still in Todo; the orchestrator (next about 11:28 UTC) promotes it once its blockers have closed, and the design lane runs at about 11:17 UTC to refill the shelf.
+**Starved (1 ready, held).** The design lane refilled the shelf with [town encounters, round 2](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write), but it sits in your veto window until 23:35 UTC, so the builder's short runs this hour are correct. [The last player picks go](https://linear.app/threadbare/issue/THR-2161/the-last-player-picks-go-the-three-mentorship-moments-and-the-two) is still in Todo, waiting on its blockers; the orchestrator promotes it when they close.
 
 Items for agents, not you:
-- **The returning-player playtest is unstuck.** [PR #2739](https://github.com/christianspliid-ui/threadbare/pull/2739) merged, so warm round 3 should run on tomorrow's daily fire. *— from [the playtest lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/warm-playtest-round-2-stale.md)*
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (15 days). It needs gate and CI edits that unattended runs are refused, so agents can un-park it only in an attended run.
+- **The returning-player playtest should run tomorrow.** Its rule fix merged ([PR #2739](https://github.com/christianspliid-ui/threadbare/pull/2739)). *— from [the playtest lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/warm-playtest-round-2-stale.md)*
 
 ## Health
 
-All green. The live site serves the latest main (2d88055e, which includes Legibility 4). Checks on main and the 3 scheduled background jobs pass. No PRs are waiting to merge. All 10 enabled scheduled tasks are on time. The builder is not stalled: its last two runs were short only because nothing is ready. Engine speed: 146 ms per tick, 8% below the weekly median. The home folder copy is 6 commits behind main; the mirror catches up on its own.
+All green. The live site serves the latest game build; commits since then touched only docs. Checks on main and the 3 scheduled background jobs pass. No PRs are waiting to merge. All 10 enabled scheduled tasks are on time. The builder is not stalled: its last three runs were short because the one ready ticket is inside its veto window. Engine speed: 141 ms per tick, 11% below the weekly median. The home folder copy is 8 commits behind main; the mirror catches up on its own.
