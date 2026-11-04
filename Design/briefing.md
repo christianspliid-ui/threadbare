@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-04 19:58 local (18:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-04 20:58 local (19:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -40,7 +40,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**2 tickets ready, both waiting out your veto windows.** [Town encounters, round 2](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write) opens at 23:35 UTC tonight; [the story-beats rewrite, slice B](https://linear.app/threadbare/issue/THR-2134/novel-prose-story-beats-slice-b-the-comet-at-the-turning-the-page) opens at 02:30 UTC tomorrow. The builder's short runs are expected: its 18:11, 18:31 and 18:52 UTC runs each found nothing it could take.
+**2 tickets ready, both waiting out your veto windows.** [Town encounters, round 2](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write) opens at 23:35 UTC tonight; [the story-beats rewrite, slice B](https://linear.app/threadbare/issue/THR-2134/novel-prose-story-beats-slice-b-the-comet-at-the-turning-the-page) opens at 02:30 UTC tomorrow. The builder's short runs are expected: its 19:11, 19:31 and 19:52 UTC runs each found nothing it could take.
 
 Items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -49,4 +49,4 @@ Items for agents, not you:
 
 ## Health
 
-All green. The live site is up to date; commits since the last build touched only docs. Checks on main and the 3 scheduled background jobs pass. No PRs are waiting to merge. All 10 enabled scheduled tasks are on time. The builder is not stalled: both ready tickets are inside veto windows. Engine speed: 126 ms per tick, 20% below the weekly median (156). The worktree cleaner last ran at 19:40 local. The home-folder copy of the repo is 10 commits behind main. It is the read-only mirror and catches up on its own.
+All green. The live site is up to date; commits since the last build touched only docs. Checks on main and the 3 scheduled background jobs pass. No PRs are waiting to merge. All 10 enabled scheduled tasks are on time. The builder is not stalled: both ready tickets are inside veto windows. Engine speed: 128 ms per tick, 18% below the weekly median (156). The worktree cleaner last ran at 20:52 local. The home-folder copy of the repo is 10 commits behind main. It is the read-only mirror and catches up on its own.
