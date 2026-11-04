@@ -36,6 +36,19 @@ export function MandateBlock({ mandate, onOpen }: MandateBlockProps) {
         {mandate.flavorLine}
       </div>
 
+      {/* THR-2154: what fills the goal — the god and the mortals bound to it. */}
+      {mandate.fillLine && (
+        <div
+          data-testid="mandate-fill-line"
+          style={{
+            fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)',
+            color: 'var(--text-secondary)', lineHeight: 1.4,
+          }}
+        >
+          {mandate.fillLine}
+        </div>
+      )}
+
       {/* Progress bar + trend */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <div className={styles.mandateFillBar}>
