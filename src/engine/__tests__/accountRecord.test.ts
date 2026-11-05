@@ -236,10 +236,12 @@ describe('THR-1813 — a world built from the record', () => {
     expect(next.echoDefinitions.map(d => d.id).sort()).toEqual(record.echoDefinitions.map(d => d.id).sort());
     expect(next.worldSoul.fundament.cycleCount).toBe(record.fundament.cycleCount);
     // The next world is run 2, so its harvest reads "Cycle 2 complete" (review-gate cycle 3).
-    expect(next.cycle).toBe(record.cycleCount + 1);
-    expect(newWorld().cycle).toBe(1);
+    // Read the shaping trace before the next world is built: one world's generation
+    // already fills most of the 2000-entry trace ring, so a second would evict it.
     const shaped = getTraces().find(t => t.category === 'account.world_shaped') as { echoesLoaded: number } | undefined;
     expect(shaped?.echoesLoaded).toBe(record.echoDefinitions.length);
+    expect(next.cycle).toBe(record.cycleCount + 1);
+    expect(newWorld().cycle).toBe(1);
 
     const entries = buildRepertoire({
       primary: DEV_ASCENDANT_IDENTITY.sphereAlignment.primary,
