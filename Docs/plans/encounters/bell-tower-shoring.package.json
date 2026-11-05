@@ -585,7 +585,7 @@
             ]
           },
           "critical_failure": {
-            "overview": "{location} counts the half fee it paid as thrown away. The lodge's failure looks small beside this one.",
+            "overview": "{location} must find another lodge and pay a second fee. The lodge's failure looks small beside this one.",
             "changes": [
               {
                 "id": "bell.broke.the_places_regard",

@@ -160,7 +160,7 @@ export const RETURNED_HEIR_DEFAULTED: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
-      overview: 'Nobody swore the finding on court day, and the uncle keeps the manor.',
+      overview: 'The finding was never sworn, and the uncle keeps the manor.',
       changes: [],
     },
   },

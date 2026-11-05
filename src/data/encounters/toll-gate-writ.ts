@@ -1135,8 +1135,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           },
           critical_failure: {
             overview: '{actor} let a forged writ through the gate, and the toll house found it out the same day. The '
-              + 'family is held for the town\'s court, and {cast:tollmaster} will not ask {actor} to read a '
-              + 'writ again.',
+              + 'family is held for the town\'s court, and the toll house has fined {actor} under the '
+              + 'charter.',
             changes: [
               {
                 id: 'writ.sent.critfail.standing',
