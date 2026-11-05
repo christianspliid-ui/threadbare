@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-05 05:58 local (04:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-05 06:59 local (05:59 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -7,7 +7,7 @@
 
 ## Also waiting (8)
 
-- **Your writing-checks conversation can start.** [The story-text audit](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-10-31-encounter-story-text-quality.md#the-writing-checks-against-these-examples-done-when-1b) is what [Writing evals — with Christian](https://linear.app/threadbare/issue/THR-2106) needs. *— from the design lane*
+- **Your writing-checks conversation can start.** [The story-text audit](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-10-31-encounter-story-text-quality.md#the-writing-checks-against-these-examples-done-when-1b) is what [Writing evals — with Christian](https://linear.app/threadbare/issue/THR-2106) needs. The next story-beat rewrite now waits on it too (see *Decided for you*). *— from the design lane*
 - **Thursday 29 to Friday 30 Oct:** the lanes were silent for 40 hours and no pause was recorded. Was the computer off or the app closed, or was this a pause?
 - **Wednesday night to Friday night (21–23 Oct):** the lanes were silent for 48 hours and no pause was recorded. Was the app closed or the computer off, or was this a pause?
 - **Sunday evening to Monday evening (18–19 Oct):** the lanes were silent for 23 hours and no pause was recorded. Was the app closed, or was this a pause?
@@ -28,6 +28,13 @@ From the design lane's [02:18 UTC run](https://github.com/christianspliid-ui/thr
 - Same ticket — the new tickets finish when their listed lines are fixed. A fresh critic reads only the rewritten lines; anything new it finds is posted, not chased. No third round.
 - Same ticket — Easter Reckoning's blurb stops stating as fact what the first step exists to find. The Pawnbroker's "He" becomes the cooper, because two men are on stage.
 
+From the design lane's [05:18 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-05b.md). Nothing gets built on these: the ticket is parked until your writing-checks conversation.
+
+- [The Comet, the Page and Apotheosis, the leftover rewrite](https://linear.app/threadbare/issue/THR-2164/novel-prose-story-beats-slice-b-residue-comet-page-and-apotheosis-held): the second cold read of the rewrite found problems in all three story beats, so all three keep their current text. There is no third rewrite round, as the 4 November report promised. The held work is kept for later.
+- Same ticket: the next rewrite waits for your [writing-checks conversation](https://linear.app/threadbare/issue/THR-2106). The two mistakes the critic kept finding need a machine check, because two hand-read rounds did not get rid of them. I added both mistakes to that ticket as check ideas. They are not decisions.
+- Same ticket, rule for the next rewrite: an ending's opening paragraph never repeats the step result shown just before it, not even in other words.
+- Same ticket, rule for the next rewrite: in the Comet and the Page, a mortal who stumbles at a step still wins at a price, because the game works that way. So those quests get no separate "failed" ending. Their win-at-a-price text must read true whether the mortal only scraped through or stumbled and pushed on.
+
 Say "veto <title>" to reverse any of these.
 
 ## This week's screens
@@ -36,15 +43,14 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy but paused: nothing in progress, two ready.** The two ready tickets, [the one-line records](https://linear.app/threadbare/issue/THR-2162/town-encounters-the-one-line-records-each-summary-line-names-the) and [the overviews and follow-up lines](https://linear.app/threadbare/issue/THR-2163/town-encounters-the-overviews-and-carryover-lines-name-the-mortal-say), wait out your veto window until 14:25 UTC. The builder's last three runs stood down for exactly that reason, which is correct.
-
-- **Flawed Steel and the five sphere story beats now let the mortal decide, and it is live** ([THR-2157](https://linear.app/threadbare/issue/THR-2157/the-mortal-decides-flawed-steel-and-the-five-sphere-story-beats-their), merged via [PR #2746](https://github.com/christianspliid-ui/threadbare/pull/2746)).
+**Healthy: one in progress, two ready.** The builder took [the last player picks go](https://linear.app/threadbare/issue/THR-2161/the-last-player-picks-go-the-three-mentorship-moments-and-the-two) at 05:42 UTC, right after the orchestrator promoted it. It is the fifth and final slice of the mortal-decides conversion. The two ready tickets, [the one-line records](https://linear.app/threadbare/issue/THR-2162/town-encounters-the-one-line-records-each-summary-line-names-the) and [the overviews and follow-up lines](https://linear.app/threadbare/issue/THR-2163/town-encounters-the-overviews-and-carryover-lines-name-the-mortal-say), wait out your veto window until 14:25 UTC.
 
 Items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (16 days; In Dev since 15 Oct). No local worktree and no pushed branch holds work for it (checked this run). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (16 days; In Dev since 15 Oct). No pushed branch and no local worktree holds work for it (checked this run). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 - **The returning-player playtest should run at today's 09:47 UTC fire.** *— from [the playtest lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/warm-playtest-round-2-stale.md)*
 
 ## Health
 
-All green. The live site serves the latest commit on main. Checks on main and the 3 scheduled background jobs pass, and no pull requests are waiting. All 10 enabled scheduled tasks are on time. Engine speed: 169 ms per tick, 8% above the weekly median (156). The worktree cleaner last ran at 05:40 local. The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 21 commits behind main. It is the read-only mirror and catches up on its own.
+- **Engine speed jumped:** tick cost 219 ms/tick steady, 40% above the 7-day median (156, 121 rows since 9c6fc808); top phase agent_decision, 628 agents. Name the merges between 9c6fc808 and 78921d88: git log --oneline --merges 9c6fc808..78921d88. Last hour read 169 ms. This run measured while the builder was working on the same machine, so part of the jump may be load; the executor checks it if the next reading stays high.
+- Everything else is green. The live site is current (the commits since its last publish touched only notes). Checks on main and the 3 scheduled background jobs pass, and no pull requests are waiting. All 10 enabled scheduled tasks are on time. The worktree cleaner last ran at 06:40 local. The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 23 commits behind main. It is the read-only mirror and catches up on its own.
