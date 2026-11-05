@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-05 21:54 local (20:54 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-05 22:59 local (21:59 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,7 +20,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-From the design lane's [20:40 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-05f.md) (new). Nobody builds on these before 08:45 UTC on 6 November.
+From the design lane's [20:40 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-05f.md). Nobody builds on these before 08:45 UTC on 6 November.
 
 - [The mid-game words still mean nothing](https://linear.app/threadbare/issue/THR-2175) — the left-hand rail's folded rows now say what they count. "Hooks · 11 on you" becomes "Hooks · 11 unfinished". "Signatures · 3 yours" becomes "Signatures · 3 settled". "Mandate · Holding" becomes "Mandate · Goal · Holding". "Reaches · Eye · Blinkered" becomes "Reaches · Main: Eye · Blinkered". Covenants reads "2 held · upkeep". Build ticket: [THR-2183](https://linear.app/threadbare/issue/THR-2183/the-rail-rows-say-what-they-are-plain-summaries-on-the-folded-god-rail).
 - Same ticket — opening one of those rows starts with one quiet sentence saying what it is for, taken from its hover. For Hooks that is *"Marks, clues and vows that tie you to something unfinished."* Mandate gets the hover it never had.
@@ -61,7 +61,7 @@ Say "veto <title>" to reverse any of these.
 - **Ready at 23:45 UTC:** ["Waits for you" / "Theirs alone" on each chapter](https://linear.app/threadbare/issue/THR-2178/say-which-chapters-wait-for-the-god-a-waits-for-you-theirs-alone-word) (THR-2178).
 - **Ready at 02:45 UTC on 6 Nov:** [room for the god-rail hand](https://linear.app/threadbare/issue/THR-2177/god-rail-the-pinned-essence-block-leaves-the-hand-no-room-eight-50-px) (THR-2177).
 - **Ready at 05:30 UTC on 6 Nov:** [a good-odds step that misses says so](https://linear.app/threadbare/issue/THR-2180/a-good-odds-step-that-misses-says-so-it-looked-fated-but-fate-rolled) (THR-2180).
-- **Ready at 08:45 UTC on 6 Nov (new):** [the rail rows say what they are](https://linear.app/threadbare/issue/THR-2183/the-rail-rows-say-what-they-are-plain-summaries-on-the-folded-god-rail) (THR-2183).
+- **Ready at 08:45 UTC on 6 Nov:** [the rail rows say what they are](https://linear.app/threadbare/issue/THR-2183/the-rail-rows-say-what-they-are-plain-summaries-on-the-folded-god-rail) (THR-2183).
 - Still with the design lane, not you: [rival gods you can see but not answer](https://linear.app/threadbare/issue/THR-2172) and [no recap when you come back](https://linear.app/threadbare/issue/THR-2173).
 
 Items for agents, not you:
@@ -70,5 +70,5 @@ Items for agents, not you:
 
 ## Health
 
-- All green. The live site is current (90221547; later commits were docs only). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. The scheduled tasks are on time, and the worktree cleaner ran at 21:53 local. The engine's speed is normal (148 ms per tick, 6% under the weekly median of 157).
+- All green. The live site is current (90221547; later commits were docs only). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. The scheduled tasks are on time, and the worktree cleaner ran at 22:40 local. The engine's speed is normal (126 ms per tick, 20% under the weekly median of 156).
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 79 commits behind main. It is the read-only mirror and catches up on its own.
