@@ -84,7 +84,7 @@ export function DivineReceiptModal({ open, receipt, onAcknowledge, onReaction, t
   const headingIcon = dialogHeadingIcon('receipt');
   const accent = bandAccentColor(receipt.outcomeBand, 'var(--accent-gold)');
   const art = getActionArt(receipt.templateId);
-  const framing = selectReceiptFrameLine(receipt.outcomeBand, receipt.actionId);
+  const framing = selectReceiptFrameLine(receipt.outcomeBand, receipt.actionId, receipt.tookNoHold);
   const word = outcomeBandWord(receipt.outcomeBand);
   const reactions = receipt.reactions ?? [];
 

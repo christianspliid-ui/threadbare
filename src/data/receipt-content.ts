@@ -100,8 +100,26 @@ export const RECEIPT_FRAME_LINE_FALLBACK = 'The world settled, and what you did 
  * Deterministic frame-line selection by action id (NFP #3). Pure string hash → index
  * into the band's pool. Same actionId + band always yields the same line.
  */
-export function selectReceiptFrameLine(band: OutcomeBand | string | undefined, actionId: string): string {
-  const pool = (band && RECEIPT_FRAME_LINES[band as OutcomeBand]) || undefined;
+/**
+ * THR-2168 — the frame lines for a cast that landed but found nothing to take hold
+ * of (a dream on a mortal already at 0 on the axis). The band is clean, but the
+ * band's own lines ("It went as you meant it to") would contradict the overview
+ * directly beneath them, so a no-hold receipt reads from this pool instead.
+ */
+export const RECEIPT_FRAME_LINES_NO_HOLD: readonly string[] = [
+  'The working went out whole, and found nothing to take hold of.',
+  'Your reach arrived where you sent it. There was nothing there for it to move.',
+];
+
+export function selectReceiptFrameLine(
+  band: OutcomeBand | string | undefined,
+  actionId: string,
+  /** THR-2168 — true when the cast landed but changed nothing (`found_nothing`). */
+  tookNoHold?: boolean,
+): string {
+  const pool = tookNoHold
+    ? RECEIPT_FRAME_LINES_NO_HOLD
+    : (band && RECEIPT_FRAME_LINES[band as OutcomeBand]) || undefined;
   if (!pool || pool.length === 0) return RECEIPT_FRAME_LINE_FALLBACK;
   let hash = 0;
   for (let i = 0; i < actionId.length; i++) {
