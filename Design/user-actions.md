@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-05 09:58 local (08:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-05 10:57 local (09:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,6 +46,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-05: a cast's result now says one thing, and it is live** ([THR-2168](https://linear.app/threadbare/issue/THR-2168/a-casts-result-contradicts-itself-a-dream-that-took-no-hold-says-it)). Merged via [#2752](https://github.com/christianspliid-ui/threadbare/pull/2752).
+- **2026-11-05: buttons hold still under the player's hand, and it is live** ([THR-2166](https://linear.app/threadbare/issue/THR-2166/buttons-move-just-as-the-player-clicks-them-continue-jumps-up-after-a)). Merged via [#2751](https://github.com/christianspliid-ui/threadbare/pull/2751).
 - **2026-11-05: the bonded mortal's name stays whole in the Threads rail, and it is live** ([THR-2165](https://linear.app/threadbare/issue/THR-2165)). Merged via [#2750](https://github.com/christianspliid-ui/threadbare/pull/2750); the first fix from this morning's returning-player playtest.
 - **2026-11-05: the last player picks go — the mentorship moments and the elite encounters now let the mortal decide, and it is live** ([THR-2161](https://linear.app/threadbare/issue/THR-2161/the-last-player-picks-go-the-three-mentorship-moments-and-the-two)). Merged via [#2748](https://github.com/christianspliid-ui/threadbare/pull/2748); this finishes the mortal-decides conversion.
 - **2026-11-05: Flawed Steel and the five sphere story beats now let the mortal decide, and it is live** ([THR-2157](https://linear.app/threadbare/issue/THR-2157/the-mortal-decides-flawed-steel-and-the-five-sphere-story-beats-their)). Merged via [#2746](https://github.com/christianspliid-ui/threadbare/pull/2746).
@@ -54,8 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-04: half one of the reputation encounters now lets the mortal decide, and it is live** ([THR-2159](https://linear.app/threadbare/issue/THR-2159)). Merged via [#2738](https://github.com/christianspliid-ui/threadbare/pull/2738).
 - **2026-11-04: the six seeded quests now let the mortal decide, and it is live** ([THR-2158](https://linear.app/threadbare/issue/THR-2158)). Merged via [#2737](https://github.com/christianspliid-ui/threadbare/pull/2737).
 - **2026-11-04: the path now pulls only scenes about the same thing, and it is live** ([THR-2156](https://linear.app/threadbare/issue/THR-2156)). Merged via [#2736](https://github.com/christianspliid-ui/threadbare/pull/2736).
-- **2026-11-04: the next follower has a path, and it is live** ([THR-2155](https://linear.app/threadbare/issue/THR-2155)). Merged via [#2735](https://github.com/christianspliid-ui/threadbare/pull/2735).
-- **2026-11-04: the Mandate row now leads with the hunger's own words and counts the mortals bound to you** ([THR-2154](https://linear.app/threadbare/issue/THR-2154/the-goal-says-what-fills-it-the-mandate-row-leads-with-the-hungers-own)). Merged via [#2734](https://github.com/christianspliid-ui/threadbare/pull/2734), and it is live.
 ---
 
 Older resolved items and every earlier revision of this file: `git log -p origin/ops -- Design/user-actions.md`.
