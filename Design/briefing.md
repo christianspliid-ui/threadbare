@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-05 23:57 local (22:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-06 00:59 local (23:59 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -19,6 +19,13 @@
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
 ## Decided for you
+
+From the design lane's [23:40 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-05g.md). Nobody builds on these before 11:40 UTC on 6 November.
+
+- [No recap when you come back](https://linear.app/threadbare/issue/THR-2173) — a returning god sees the mortal's story first, then the world as it touches them. When the warm-up ends, the "The world moves on" card stays up and becomes **"While you were away"**: at most five lines — what Kael finished (*"Kael won Bridge Toll, at a price."*), what Kael is in the middle of now, and which of your places slipped or grew (*"Iron Glade slipped from Held to Touched."*). Build ticket: [While you were away](https://linear.app/threadbare/issue/THR-2184/while-you-were-away-the-warm-up-card-ends-on-a-five-line-recap-led-by).
+- Same ticket — two buttons, **Begin** and **Read it in the Ledger**, which opens the Ledger at Kael's newest chapter. Above them, one quiet line says either *"The world is paused. Press play when you are ready."* or that a decision has waited for you.
+- Same ticket — the wait estimate stops sitting on "About 2 minutes left" for a whole minute. Below three minutes it steps every half minute.
+- Same ticket — the recap does not name the rival god behind a place that slipped; [rival gods you can see but not answer](https://linear.app/threadbare/issue/THR-2172) owns that. The recap appears only when a warm playtest arrives, because the game has no saved worlds yet.
 
 From the design lane's [20:40 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-05f.md). Nobody builds on these before 08:45 UTC on 6 November.
 
@@ -42,13 +49,6 @@ From the design lane's [14:44 UTC run](https://github.com/christianspliid-ui/thr
 - Same ticket — the hand always keeps room for three cards. Opening Reaches, Mandate, Signatures or Hooks no longer pushes the hand off the screen; that row scrolls inside its own box instead.
 - Same ticket — [the hand clips its only card](https://linear.app/threadbare/issue/THR-2176) has the same cause, so it gets built and closed with this one.
 
-From the design lane's [11:26 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-05c.md). Nobody builds on these before 23:45 UTC on 5 November — under an hour from now.
-
-- [The player can't tell which chapters wait for their cards](https://linear.app/threadbare/issue/THR-2174/the-player-cant-tell-which-chapters-wait-for-their-cards-the-gallows) — a chapter shows **"Waits for you"** or **"Theirs alone"** after its title, in the Ledger and on the Stage. Build ticket: [THR-2178](https://linear.app/threadbare/issue/THR-2178/say-which-chapters-wait-for-the-god-a-waits-for-you-theirs-alone-word).
-- Same ticket — a chapter your mortal played out alone opens its ending with one line, *"This chapter was Kael's alone. Nothing in it waited on your hand."*
-- Same ticket — the two words show only for a mortal set to "Asks you".
-- Same ticket — giving more chapters a hand is a separate plan that starts with a measurement (today 391 of 541 story chapters offer no move at any step). If the answer is "every chapter should ask you", that goes to you.
-
 Say "veto <title>" to reverse any of these.
 
 ## This week's screens
@@ -57,18 +57,19 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: four ready, all waiting out their veto windows.** The builder checked three times this hour and correctly took nothing; the first ticket opens at 23:45 UTC.
-- **Ready at 23:45 UTC:** ["Waits for you" / "Theirs alone" on each chapter](https://linear.app/threadbare/issue/THR-2178/say-which-chapters-wait-for-the-god-a-waits-for-you-theirs-alone-word) (THR-2178).
+**Healthy: four ready, all waiting out their veto windows; one in progress.** The first held ticket opened at 23:45 UTC and the builder took it straight away.
+- **Being built now:** ["Waits for you" / "Theirs alone" on each chapter](https://linear.app/threadbare/issue/THR-2178/say-which-chapters-wait-for-the-god-a-waits-for-you-theirs-alone-word) (THR-2178), claimed by the pickup run that started 23:51 UTC.
 - **Ready at 02:45 UTC on 6 Nov:** [room for the god-rail hand](https://linear.app/threadbare/issue/THR-2177/god-rail-the-pinned-essence-block-leaves-the-hand-no-room-eight-50-px) (THR-2177).
-- **Ready at 05:30 UTC on 6 Nov:** [a good-odds step that misses says so](https://linear.app/threadbare/issue/THR-2180/a-good-odds-step-that-misses-says-so-it-looked-fated-but-fate-rolled) (THR-2180).
-- **Ready at 08:45 UTC on 6 Nov:** [the rail rows say what they are](https://linear.app/threadbare/issue/THR-2183/the-rail-rows-say-what-they-are-plain-summaries-on-the-folded-god-rail) (THR-2183).
-- Still with the design lane, not you: [rival gods you can see but not answer](https://linear.app/threadbare/issue/THR-2172) and [no recap when you come back](https://linear.app/threadbare/issue/THR-2173).
+- **Ready at 05:30 UTC:** [a good-odds step that misses says so](https://linear.app/threadbare/issue/THR-2180/a-good-odds-step-that-misses-says-so-it-looked-fated-but-fate-rolled) (THR-2180).
+- **Ready at 08:45 UTC:** [the rail rows say what they are](https://linear.app/threadbare/issue/THR-2183/the-rail-rows-say-what-they-are-plain-summaries-on-the-folded-god-rail) (THR-2183).
+- **Ready at 11:40 UTC (new):** ["While you were away" recap](https://linear.app/threadbare/issue/THR-2184/while-you-were-away-the-warm-up-card-ends-on-a-five-line-recap-led-by) (THR-2184).
+- Still with the design lane, not you: [rival gods you can see but not answer](https://linear.app/threadbare/issue/THR-2172).
 
 Items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (16 days; In Dev since 15 Oct). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (17 days; In Dev since 15 Oct). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- All green. The live site is current (90221547; later commits were docs only). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. All 10 scheduled tasks are on time, and the worktree cleaner ran this hour. The engine's speed is normal (126 ms per tick, 19% under the weekly median of 156).
-- The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 79 commits behind main. It is the read-only mirror and catches up on its own.
+- All green. The live site is current (90221547; later commits were docs only). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. All 10 scheduled tasks are on time, and the worktree cleaner ran this hour. The engine's speed is normal (128 ms per tick, 18% under the weekly median of 156).
+- The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 82 commits behind main. It is the read-only mirror and catches up on its own.
