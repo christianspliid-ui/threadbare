@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-05 12:00 local (11:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-05 13:00 local (12:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,6 +20,13 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
+From the design lane's [11:18 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-05c.md). Nobody builds on these before 23:45 UTC on 5 November.
+
+- [The player can't tell which chapters wait for their cards](https://linear.app/threadbare/issue/THR-2174/the-player-cant-tell-which-chapters-wait-for-their-cards-the-gallows) — your mortal still lives most chapters on their own, and the game now says so. A chapter shows **"Waits for you"** or **"Theirs alone"** after its title, in the Ledger and on the Stage. Build ticket: [THR-2178](https://linear.app/threadbare/issue/THR-2178/say-which-chapters-wait-for-the-god-a-waits-for-you-theirs-alone-word).
+- Same ticket — a chapter your mortal played out alone opens its ending with one line, *"This chapter was Kael's alone. Nothing in it waited on your hand."* That line never shows on a chapter where you could have played a card.
+- Same ticket — the two words show only for a mortal set to "Asks you". A mortal set to "Lives on" already tells you nothing waits.
+- Same ticket — giving more chapters a hand is a separate plan, and it starts with a measurement. Today 391 of the game's 541 story chapters offer no move at any step. The plan first counts which ones a bonded mortal actually meets. If the answer is "every chapter should ask you", that goes to you, not to me.
+
 From the design lane's [02:18 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-05a.md). Nobody builds these before 14:25 UTC on 5 November.
 
 - [Encounter Factory habits, slice c](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write) — the town-encounter fixes the second critic still found go to two tickets, not seven: [the one-line records](https://linear.app/threadbare/issue/THR-2162/town-encounters-the-one-line-records-each-summary-line-names-the) and [the overviews and follow-up lines](https://linear.app/threadbare/issue/THR-2163/town-encounters-the-overviews-and-carryover-lines-name-the-mortal-say).
@@ -30,10 +37,10 @@ From the design lane's [02:18 UTC run](https://github.com/christianspliid-ui/thr
 
 From the design lane's [05:18 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-05b.md). Nothing gets built on these: the ticket is parked until your writing-checks conversation.
 
-- [The Comet, the Page and Apotheosis, the leftover rewrite](https://linear.app/threadbare/issue/THR-2164/novel-prose-story-beats-slice-b-residue-comet-page-and-apotheosis-held): the second cold read of the rewrite found problems in all three story beats, so all three keep their current text. There is no third rewrite round, as the 4 November report promised. The held work is kept for later.
-- Same ticket: the next rewrite waits for your [writing-checks conversation](https://linear.app/threadbare/issue/THR-2106). The two mistakes the critic kept finding need a machine check, because two hand-read rounds did not get rid of them. I added both mistakes to that ticket as check ideas. They are not decisions.
+- [The Comet, the Page and Apotheosis, the leftover rewrite](https://linear.app/threadbare/issue/THR-2164/novel-prose-story-beats-slice-b-residue-comet-page-and-apotheosis-held): the second cold read found problems in all three story beats, so all three keep their current text. There is no third rewrite round. The held work is kept for later.
+- Same ticket: the next rewrite waits for your [writing-checks conversation](https://linear.app/threadbare/issue/THR-2106). The two mistakes the critic kept finding need a machine check; both are added to that ticket as check ideas, not decisions.
 - Same ticket, rule for the next rewrite: an ending's opening paragraph never repeats the step result shown just before it, not even in other words.
-- Same ticket, rule for the next rewrite: in the Comet and the Page, a mortal who stumbles at a step still wins at a price, because the game works that way. So those quests get no separate "failed" ending. Their win-at-a-price text must read true whether the mortal only scraped through or stumbled and pushed on.
+- Same ticket, rule for the next rewrite: in the Comet and the Page, a mortal who stumbles at a step still wins at a price, so those quests get no separate "failed" ending. Their win-at-a-price text must read true whether the mortal scraped through or stumbled and pushed on.
 
 Say "veto <title>" to reverse any of these.
 
@@ -43,11 +50,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Thin: two ready, both held until 14:25 UTC; one being built.** The builder is finishing this morning's [returning-player playtest](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/warm-playtest-round-3.md) bugs. Two more shipped this hour:
-- **Shipped:** [the "Needs you" count and toasts that never expire](https://github.com/christianspliid-ui/threadbare/pull/2753) (THR-2169), merged 10:01 UTC, and [Escape and Space do the right thing](https://github.com/christianspliid-ui/threadbare/pull/2754) (THR-2167), merged 10:32 UTC. Both are live.
-- **Being built now:** [five small faults](https://linear.app/threadbare/issue/THR-2170/five-small-faults-from-warm-round-3-one-scholar-cast-twice-shiaru), on [branch `claude/thr-2170-warm-round3-faults`](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-2170-warm-round3-faults). This is the last of the playtest's screen bugs.
-- **Ready next:** the two town-encounter tickets ([THR-2162](https://linear.app/threadbare/issue/THR-2162/town-encounters-the-one-line-records-each-summary-line-names-the), [THR-2163](https://linear.app/threadbare/issue/THR-2163/town-encounters-the-overviews-and-carryover-lines-name-the-mortal-say)). They wait for your veto window to end at 14:25 UTC, so the builder may sit idle for a few hours after THR-2170. That is expected.
-- The playtest's three bigger problems go to the design lane, not you: [rival gods you can see but not answer](https://linear.app/threadbare/issue/THR-2172), [a "Fated" roll that failed with no reason given](https://linear.app/threadbare/issue/THR-2171), and [no recap when you come back](https://linear.app/threadbare/issue/THR-2173). *— from the playtest lane*
+**Thin: three ready, all held in veto windows; nothing being built.** The builder is idle on purpose. That is expected, not a stall: its last three runs each found nothing it was allowed to start.
+- **Shipped this hour:** [five small faults from the returning-player playtest](https://github.com/christianspliid-ui/threadbare/pull/2755) ([THR-2170](https://linear.app/threadbare/issue/THR-2170/five-small-faults-from-warm-round-3-one-scholar-cast-twice-shiaru)), merged 11:13 UTC and live. That was the last of [the playtest's](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/warm-playtest-round-3.md) screen bugs.
+- **Ready at 14:25 UTC:** the two town-encounter tickets ([THR-2162](https://linear.app/threadbare/issue/THR-2162/town-encounters-the-one-line-records-each-summary-line-names-the), [THR-2163](https://linear.app/threadbare/issue/THR-2163/town-encounters-the-overviews-and-carryover-lines-name-the-mortal-say)).
+- **Ready at 23:45 UTC:** ["Waits for you" / "Theirs alone" on each chapter](https://linear.app/threadbare/issue/THR-2178/say-which-chapters-wait-for-the-god-a-waits-for-you-theirs-alone-word) (THR-2178). New this hour, from the design lane.
+- The playtest's three bigger problems are with the design lane, not you: [rival gods you can see but not answer](https://linear.app/threadbare/issue/THR-2172), [a "Fated" roll that failed with no reason given](https://linear.app/threadbare/issue/THR-2171), and [no recap when you come back](https://linear.app/threadbare/issue/THR-2173).
 
 Items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -55,6 +62,6 @@ Items for agents, not you:
 
 ## Health
 
-- **Engine speed drifted (for an agent, not you):** tick cost 254 ms/tick steady, 61% above the 7-day median (157, 126 rows since 9c6fc808); top phase agent_decision, 628 agents. Name the merges between 9c6fc808 and 8a2ff3c6: `git log --oneline --merges 9c6fc808..8a2ff3c6`. The builder was building THR-2170 on the same machine during this measurement too, so the reading is likely inflated; of the last three hours, two read high (220, 254) and one normal (177).
-- Everything else is green. The live site serves the latest commit on main (8a2ff3c6). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting. All 10 enabled scheduled tasks are on time, and the worktree cleaner ran this hour.
-- The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 54 commits behind main. It is the read-only mirror and catches up on its own.
+- All green. The live site serves the latest commit on main (a57d0a18). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting. All enabled scheduled tasks are on time, and the worktree cleaner ran this hour.
+- Engine speed is back to normal: 134 ms per tick, 15% under the week's median (157). Last hour's high reading came while the builder shared the machine.
+- The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 61 commits behind main. It is the read-only mirror and catches up on its own.
