@@ -38,6 +38,7 @@ import {
   type ProseFieldClass,
 } from '../../content-eval/nudgeAuditDetectors';
 import { SETTING_CLASSES, validateSettingEnvelope } from '../../settingClasses';
+import { assertNoRetiredPlayerPickField } from '../../../testing/contentInvariants';
 
 /** The two keys pole mode writes, and the only two `variants` may carry. */
 const POLE_KEYS = ['negative', 'positive'] as const;
@@ -72,10 +73,10 @@ function effectsOf(step: ActionStep): readonly EncounterAftermathReactionEffect[
 }
 
 describe('The Apotheosis — the authored-choice fork is retired', () => {
-  it('carries no authoredChoices', () => {
+  it('carries no retired player-pick field', () => {
     // The whole point of the ticket. A template that kept them would still work,
     // which is exactly why this needs asserting rather than assuming.
-    expect(TEMPLATE.authoredChoices).toBeUndefined();
+    assertNoRetiredPlayerPickField(TEMPLATE);
   });
 
   it('decides the fork on the mortal, over the encounter’s own value axis', () => {

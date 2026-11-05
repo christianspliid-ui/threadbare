@@ -11,7 +11,7 @@
 
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { FactionEncounterMeta } from '../types/faction';
-import type { AuthoredChoiceCard, BranchAwareAftermathConfig, UnifiedActionTemplate } from '../types/unifiedAction';
+import type { ActionStep, BranchAwareAftermathConfig, UnifiedActionTemplate } from '../types/unifiedAction';
 
 // ─── Local Raw Type ───────────────────────────────────────────────
 
@@ -1351,77 +1351,55 @@ function buildAftermathConfig(templateId: string, templateName: string): BranchA
   };
 }
 
-const ELITE_AUTHORED_CHOICES: Readonly<Record<string, Readonly<Record<number, readonly AuthoredChoiceCard[]>>>> = {
+/**
+ * THR-2161 — the two elite quests' step-2 hands. These were the last cards on
+ * the retired player-pick path (`authoredChoices`), though they picked no
+ * ending: no variant keyed to their ids. They are now an ordinary nudge hand —
+ * two authored specials plus a Repertoire fill. The old "do nothing" card is
+ * gone; in the nudge model the god declines by not playing.
+ */
+const ELITE_STEP_HANDS: Readonly<Record<string, Readonly<Record<number, Pick<ActionStep, 'nudges' | 'deal'>>>>> = {
   'ag.elite.dragon_lair': {
-    2: [
-      {
-        id: 'supportive',
-        label: 'Steady the Line',
-        intent:
-          'Send a pulse of resolve through {name} and the nearby line-holders. The breath still burns, ' +
-          'but panic breaks before the formation does.',
-        targetLabel: '{name}',
-        essenceCost: 3,
-        likelyBurden: 'Intervention leaves a visible mythic signature in guild rumor.',
-        interventionType: 'supportive',
-      },
-      {
-        id: 'coercive',
-        label: 'Bind the Beast',
-        intent:
-          'Force the dragon into a narrow opening of movement, granting a lethal window at the price of raw fear. ' +
-          'Victory is possible, but the scene will not be gentle on anyone present.',
-        targetLabel: '{name}',
-        essenceCost: 5,
-        likelyBurden: 'Collateral panic may seed lingering terror in witnesses.',
-        interventionType: 'coercive',
-      },
-      {
-        id: 'withdrawn',
-        label: 'Let Mortals Decide',
-        intent:
-          'Withhold intervention and let courage, preparation, and luck decide the line between legend and obituary.',
-        targetLabel: '{name}',
-        essenceCost: 0,
-        likelyBurden: 'Failure can harden into a lasting scar against guild morale.',
-        interventionType: 'withdrawn',
-      },
-    ],
+    2: {
+      nudges: [
+        {
+          id: 'ag.elite.dragon_lair.steady_the_line',
+          name: 'Steady the Line',
+          essenceCost: 2,
+          forecastDelta: 0.08,
+          effectLine: 'Fill the line-holders with resolve. The fire still burns, but no one breaks and runs.',
+        },
+        {
+          id: 'ag.elite.dragon_lair.bind_the_beast',
+          name: 'Bind the Beast',
+          essenceCost: 3,
+          forecastDelta: 0.14,
+          effectLine: 'Pin the dragon in a narrow gap. It opens a killing chance, and everyone present will remember the terror.',
+        },
+      ],
+      deal: { count: 2, tags: ['might', 'peril'] },
+    },
   },
   'ag.elite.lost_city': {
-    2: [
-      {
-        id: 'supportive',
-        label: 'Illuminate the Way',
-        intent:
-          'Thread a clear line of perception through collapsed galleries and sealed courts so {name} can read danger ' +
-          'before danger reads {them}.',
-        targetLabel: '{name}',
-        essenceCost: 3,
-        likelyBurden: 'The city may answer with deeper wards once disturbed.',
-        interventionType: 'supportive',
-      },
-      {
-        id: 'coercive',
-        label: 'Break the Seal',
-        intent:
-          'Tear open the oldest chamber and force access to what the city has kept buried, prioritizing gains over caution.',
-        targetLabel: '{name}',
-        essenceCost: 5,
-        likelyBurden: 'Unsealed remnants can seed hostile follow-on encounters.',
-        interventionType: 'coercive',
-      },
-      {
-        id: 'withdrawn',
-        label: 'Watch the Expedition',
-        intent:
-          'Keep divine hands off the stone. Let the expedition earn or lose its own legacy in the dust.',
-        targetLabel: '{name}',
-        essenceCost: 0,
-        likelyBurden: 'The mission may stall, but the resulting intelligence stays mortal-authentic.',
-        interventionType: 'withdrawn',
-      },
-    ],
+    2: {
+      nudges: [
+        {
+          id: 'ag.elite.lost_city.illuminate_the_way',
+          name: 'Illuminate the Way',
+          essenceCost: 2,
+          forecastDelta: 0.08,
+          effectLine: 'Light a clear path through the fallen halls. The expedition sees each trap before it springs.',
+        },
+        {
+          id: 'ag.elite.lost_city.break_the_seal',
+          name: 'Break the Seal',
+          essenceCost: 3,
+          forecastDelta: 0.14,
+          effectLine: 'Tear open the oldest chamber. The prize is within reach, and so is whatever guarded it.',
+        },
+      ],
+      deal: { count: 2, tags: ['lore', 'insight'] },
+    },
   },
 };
 
@@ -1449,11 +1427,11 @@ function toUnifiedTemplate(template: FactionEntry): UnifiedActionTemplate {
         tierPromotionEligible: step.onFailure.tierPromotionEligible,
         reputationDelta: step.onFailure.reputationDelta,
       },
+      ...(ELITE_STEP_HANDS[template.id]?.[index] ?? {}),
     };
   });
 
   const lastStep = template.steps[template.steps.length - 1];
-  const authoredChoices = ELITE_AUTHORED_CHOICES[template.id];
 
   return {
     id: template.id,
@@ -1482,7 +1460,6 @@ function toUnifiedTemplate(template: FactionEntry): UnifiedActionTemplate {
       success: lastStep?.onSuccess.narrative ?? `${template.name} succeeds.`,
       failure: lastStep?.onFailure.narrative ?? `${template.name} fails.`,
     },
-    authoredChoices,
     aftermathConfig: buildAftermathConfig(template.id, template.name),
     // THR-1727: the allowlist drops what it does not name — stakes must be named.
     ...(template.stakes ? { stakes: template.stakes } : {}),

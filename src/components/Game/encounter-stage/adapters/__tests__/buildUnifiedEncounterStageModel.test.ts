@@ -644,10 +644,9 @@ describe('buildUnifiedEncounterStageModel', () => {
 
     /**
      * The converse, so the branch is a branch and not an unconditional switch:
-     * a step whose notification carries authored choices keeps the choice
-     * screen, and no nudge phase is invented over the top of it. The 30
-     * templates still on `authoredChoices` depend on this until WS5 converts
-     * them.
+     * a step whose notification carries choices keeps the choice screen, and
+     * no nudge phase is invented over the top of it. (The `authoredChoices`
+     * templates that once depended on this were converted; THR-2161.)
      */
     it('keeps the choice screen — no nudge phase — when the step has authored choices', () => {
       const model = buildUnifiedEncounterStageModel({
@@ -1411,47 +1410,6 @@ describe('buildUnifiedEncounterStageModel', () => {
       expect(detail).toContain('Serafina');
       expect(detail).toContain('Thornwall Keep');
       expect(detail).not.toMatch(/\{name\}|\{location\}/);
-    });
-
-    it('regression: authored choice label and intent are enriched', () => {
-      // Verifies enrichment of the authoredChoices path, which is separate from
-      // the notification fallback path.
-      const graph = buildRichGraph();
-      const templateWithChoices: UnifiedActionTemplate = {
-        ...PLACEHOLDER_TEMPLATE,
-        id: 'test.authored_choices',
-        authoredChoices: {
-          0: [
-            {
-              id: 'choice_a',
-              label: 'Draw {artifact:weapon} and stand firm',
-              intent: '{name} plants their feet at {location} and refuses to yield.',
-              likelyBurden: '{name} may exhaust {their} reserves.',
-              essenceCost: 1,
-              interventionType: 'supportive',
-            },
-          ],
-        },
-      };
-
-      const model = buildUnifiedEncounterStageModel({
-        template: templateWithChoices,
-        activeAction: { ...buildRichAction(), templateId: 'test.authored_choices' },
-        notification: buildRichNotification(),
-        agentName: 'Serafina',
-        threadTier: 'strong',
-        graph,
-        essence: 10,
-      });
-
-      expect(model.choices[0].label).toContain('The Ashen Blade');
-      expect(model.choices[0].label).not.toMatch(/\{artifact:weapon\}/);
-      expect(model.choices[0].intent).toContain('Serafina');
-      expect(model.choices[0].intent).toContain('Thornwall Keep');
-      expect(model.choices[0].intent).not.toMatch(/\{name\}|\{location\}/);
-      expect(model.choices[0].likelyBurden).toContain('Serafina');
-      expect(model.choices[0].likelyBurden).toContain('her');
-      expect(model.choices[0].likelyBurden).not.toMatch(/\{name\}|\{their\}/);
     });
 
     it('regression: no raw braces remain in any narrative surface after enrichment', () => {

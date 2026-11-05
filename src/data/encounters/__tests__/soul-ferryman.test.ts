@@ -16,6 +16,7 @@ import { isActionStepBranch } from '../../../types/unifiedAction';
 import type { ActionStepBranch } from '../../../types/unifiedAction';
 import type { EncounterChoiceMemory } from '../../../types/encounter';
 import { resolveStepDefinition } from '../../../engine/unifiedActionLifecycle';
+import { assertNoRetiredPlayerPickField } from '../../../testing/contentInvariants';
 
 // ─── Helpers ──────────────────────────────────────────────────────
 
@@ -264,8 +265,8 @@ describe('Soul Ferryman — support bundle', () => {
 // ─── The mortal decides (THR-2158) ────────────────────────────────
 
 describe('Soul Ferryman — the mortal decides the fork', () => {
-  it('authors no authoredChoices — the god never picks the ending', () => {
-    expect(template.authoredChoices).toBeUndefined();
+  it('carries no retired player-pick field — the god never picks the ending', () => {
+    assertNoRetiredPlayerPickField(template);
   });
 
   it('step 1 is decided by the mortal on sacrifice_survival', () => {

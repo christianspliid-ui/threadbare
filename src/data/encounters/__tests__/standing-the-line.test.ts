@@ -54,6 +54,7 @@ import {
   familiesWiredByEffects,
   drawnHandForTemplate,
 } from '../../content-eval/consequenceDraw';
+import { assertNoRetiredPlayerPickField } from '../../../testing/contentInvariants';
 
 const TEMPLATE = STANDING_THE_LINE_TEMPLATE;
 
@@ -199,8 +200,8 @@ describe('Standing the Line — shape: one plain step, two branches', () => {
     expect(step2Branch.fallback).toEqual(step2Branch.variants.positive);
   });
 
-  it('carries no authoredChoices — the fork is `decidedBy`, the mortal’s', () => {
-    expect(TEMPLATE.authoredChoices).toBeUndefined();
+  it('carries no retired player-pick field — the fork is `decidedBy`, the mortal’s', () => {
+    assertNoRetiredPlayerPickField(TEMPLATE);
   });
 });
 

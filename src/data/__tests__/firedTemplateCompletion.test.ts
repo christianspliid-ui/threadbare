@@ -69,14 +69,10 @@ describe('THR-1634 E3 — every listed fired template is complete', () => {
     });
 
     it('clause 2 — every runnable step offers the god a verb', () => {
-      // A hand (authored nudges or a deal declaration), or an authored choice at
-      // that position. The choice counts because the stage builds a hand *instead
-      // of* the choice screen once a step declares one, so dealing onto a fork's
-      // choice step would erase the fork (buildNudgePhaseModel, THR-775).
+      // A hand: authored nudges or a deal declaration. (An authored choice used
+      // to count too; THR-2161 retired `authoredChoices`.)
       const bare = sites
-        .filter((site) => !(site.step.nudges?.length
-          || site.step.deal
-          || (template.authoredChoices?.[site.index]?.length ?? 0) > 0))
+        .filter((site) => !(site.step.nudges?.length || site.step.deal))
         .map((site) => site.label);
       expect(bare).toEqual([]);
     });

@@ -15,6 +15,7 @@ import { isActionStepBranch, isRouteDecision } from '../../../types/unifiedActio
 import type { ActionStepBranch } from '../../../types/unifiedAction';
 import type { EncounterChoiceMemory } from '../../../types/encounter';
 import { resolveStepDefinition } from '../../../engine/unifiedActionLifecycle';
+import { assertNoRetiredPlayerPickField } from '../../../testing/contentInvariants';
 
 // ─── Helpers ──────────────────────────────────────────────────────
 
@@ -157,7 +158,7 @@ describe('Flawed Steel — branch resolution', () => {
 
 describe('Flawed Steel — the mortal decides the fork', () => {
   it('carries no authored choices — the player never picks the ending', () => {
-    expect(template.authoredChoices).toBeUndefined();
+    assertNoRetiredPlayerPickField(template);
   });
 
   it('forks on three routes, one per ending, each tied to a reach', () => {

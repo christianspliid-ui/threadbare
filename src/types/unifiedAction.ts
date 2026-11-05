@@ -3148,16 +3148,14 @@ export interface UnifiedActionTemplate {
    */
   readonly illustrationAlt?: string;
 
-  /**
-   * Authored choice cards per step. When present, these replace the generic
-   * "Tip the scales" / "Let it play out" choices with scene-specific
-   * approach cards that have prose bodies, cost justification, and risk text.
-   *
-   * Keys are step indices. Each step maps to an array of authored choices.
-   * The choice `id` must match the `ActionStepBranch` variant key so the
-   * branch resolution picks up the player's choice correctly.
+  /*
+   * `authoredChoices` is **gone** (THR-2161). It was the player-pick: authored
+   * cards whose ids were aftermath keys, so a click chose the ending. Christian,
+   * 2026-07-26: "the player must never pick an ending". Every template now forks
+   * through `ActionStepBranch.decidedBy` (the mortal decides, the god leans with
+   * a nudge hand). `assertNoRetiredPlayerPickField` in `contentInvariants.ts`
+   * fails the build if a shipped template carries the field again.
    */
-  readonly authoredChoices?: Readonly<Record<number, readonly AuthoredChoiceCard[]>>;
 
   /**
    * When present, triggers secret discovery aftermath on success.
@@ -3199,45 +3197,6 @@ export interface UnifiedActionTemplate {
    * Starter actions are always visible, even without explicit unlocks.
    */
   readonly starter?: boolean;
-}
-
-/**
- * An authored choice card with scene-specific prose, cost, target, and risk.
- * Replaces the generic intervention choices when present on a template.
- */
-export interface AuthoredChoiceCard {
-  /** Must match the ActionStepBranch variant key for branch resolution. */
-  readonly id: string;
-  /** Scene-specific label: "Forge the Truth" not "Help them". */
-  readonly label: string;
-  /** Full prose paragraph describing what the intervention feels like. */
-  readonly intent: string;
-  /** Which entity this choice targets: "Maren Ironhewn". */
-  readonly targetLabel?: string;
-  /** Essence cost for this choice. */
-  readonly essenceCost: number;
-  /** Narrative risk: "The guild may never trust her the same way again." */
-  readonly likelyBurden?: string;
-  /** Maps to interventionType for backend compatibility. */
-  readonly interventionType: 'supportive' | 'coercive' | 'withdrawn';
-
-  /**
-   * Authored moral-axis tilt (THR-528). Declares which canonical axis this choice
-   * pushes the actor along, toward which pole, and how hard — replacing the
-   * inferred `toEncounterArchetypePole` heuristic (interventionType → pole). When
-   * omitted, the contract/drift resolvers fall back to that heuristic so
-   * un-migrated cards keep working.
-   *
-   * - `moralAxis` — the Reach whose virtue/vice axis the choice tilts. Defaults to
-   *   the step/template reach when omitted.
-   * - `pole` — `'virtue'` tilts toward the reach's virtue pole, `'vice'` toward the
-   *   vice pole. (Canonical THR-524 vocabulary; mapped to the legacy `virtue|flaw`
-   *   drift sign at the commit boundary.)
-   * - `magnitude` — unsigned drift strength on the canonical 0.05–0.20 scale.
-   */
-  readonly moralAxis?: ReachDomain;
-  readonly pole?: 'virtue' | 'vice';
-  readonly magnitude?: number;
 }
 
 // Scale priority for tick resolution ordering (lower = resolves first)

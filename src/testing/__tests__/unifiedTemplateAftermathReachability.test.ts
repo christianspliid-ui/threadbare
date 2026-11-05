@@ -18,7 +18,7 @@ import {
   assertFightBlockRules,
 } from '../contentInvariants';
 import { FIGHT_LAIR_CONFRONT_ID } from '../../data/encounters/fight-lair-confront';
-import { isActionStepBranch, resolveAftermathVariant } from '../../types/unifiedAction';
+import { isActionStepBranch, isRouteDecision, resolveAftermathVariant } from '../../types/unifiedAction';
 import type {
   UnifiedActionOutcome,
   UnifiedActionTemplate,
@@ -119,8 +119,28 @@ describe('decided-fork aftermath reachability (catalog-wide)', () => {
  * that went unasked while 30 of the 34 templates carrying aftermath variants sat
  * unreachable behind a click handler that discarded the player's pick.
  */
+/**
+ * THR-2161 — a template whose every aftermath key is emitted by a `decidedBy`
+ * fork deciding on `aftermathConfig.branchOnStep`. Before THR-2161 the
+ * population this suite pinned was keyed on the player's pick
+ * (`authoredChoices`); that writer is retired, and the mortal's fork is the
+ * one left.
+ */
+function isForkKeyed(t: UnifiedActionTemplate): boolean {
+  const cfg = t.aftermathConfig;
+  const keys = Object.keys(cfg?.variants ?? {});
+  if (!cfg || keys.length === 0) return false;
+  const emitted = new Set<string>();
+  for (const step of t.steps) {
+    if (!isActionStepBranch(step) || !step.decidedBy || step.branchOnStep !== cfg.branchOnStep) continue;
+    if (isRouteDecision(step.decidedBy)) step.decidedBy.routes.forEach((r) => emitted.add(r.key));
+    else { emitted.add('positive'); emitted.add('negative'); }
+  }
+  return keys.every((k) => emitted.has(k));
+}
+
 describe('aftermath variant producibility (catalog-wide, THR-989)', () => {
-  it('every aftermath variant key is producible by a fork or an authored card', () => {
+  it('every aftermath variant key is producible by a fork', () => {
     for (const template of UNIFIED_ACTION_TEMPLATES) {
       assertAftermathVariantsProducible(template);
     }
@@ -128,26 +148,14 @@ describe('aftermath variant producibility (catalog-wide, THR-989)', () => {
 
   /**
    * Population guard. A sweep over an empty set passes vacuously — pin that the
-   * catalog really does contain templates keyed to `authoredChoices`, which is
-   * the path the defect lived on and the one a refactor is most likely to drop.
+   * catalog really does contain templates whose endings a mortal's fork decides.
    */
-  it('inspects a non-empty population keyed on authoredChoices', () => {
-    const authoredKeyed = UNIFIED_ACTION_TEMPLATES.filter((t) => {
-      const cfg = t.aftermathConfig;
-      const keys = Object.keys(cfg?.variants ?? {});
-      if (!cfg || keys.length === 0) return false;
-      const ids = new Set((t.authoredChoices?.[cfg.branchOnStep] ?? []).map((c) => c.id));
-      return keys.every((k) => ids.has(k));
-    });
-
-    // THR-2158 — this population shrinks by design as the THR-2135 slices move
-    // templates off authoredChoices (THR-2161 retires the field). The floor is
-    // non-empty; the enumerated ids hold the guard where they are asserted.
+  it('inspects a non-empty population keyed on a decidedBy fork', () => {
+    const authoredKeyed = UNIFIED_ACTION_TEMPLATES.filter(isForkKeyed);
     expect(authoredKeyed.length).toBeGreaterThan(0);
 
     // Enumerated, not counted (THR-688 rule A): the three mentorship templates
-    // are the set THR-989 was filed against under its literal predicate —
-    // aftermath variants, no fork of any kind.
+    // are the set THR-989 was filed against; THR-2161 gave them a mortal's fork.
     expect(authoredKeyed.map((t) => t.id)).toEqual(
       expect.arrayContaining([
         'mentorship.graduation',
@@ -162,13 +170,14 @@ describe('aftermath variant producibility (catalog-wide, THR-989)', () => {
    * exact shape that shipped (variants keyed to ids no producer emits) and
    * confirm the invariant rejects it.
    */
-  it('rejects a variant key no fork and no authored card can emit', () => {
+  it('rejects a variant key no fork can emit', () => {
     const real = UNIFIED_ACTION_TEMPLATES.find((t) => t.id === 'mentorship.the-offer');
     expect(real).toBeDefined();
 
+    // Collapse the fork to its fallback step: the shape THR-989 shipped.
     const orphaned: UnifiedActionTemplate = {
       ...real!,
-      authoredChoices: undefined,
+      steps: real!.steps.map((step) => (isActionStepBranch(step) ? step.fallback : step)),
     };
 
     expect(() => assertAftermathVariantsProducible(orphaned)).toThrow(
@@ -177,7 +186,7 @@ describe('aftermath variant producibility (catalog-wide, THR-989)', () => {
   });
 
   /** And passes the same template untouched, so the rejection is about the defect. */
-  it('accepts the same template with its authored hand intact', () => {
+  it('accepts the same template with its fork intact', () => {
     const real = UNIFIED_ACTION_TEMPLATES.find((t) => t.id === 'mentorship.the-offer');
     expect(() => assertAftermathVariantsProducible(real!)).not.toThrow();
   });
@@ -193,17 +202,7 @@ describe('aftermath variant producibility (catalog-wide, THR-989)', () => {
    * (`choiceHistory: [{ stepIndex: 0, choiceId: 'accept_trade', essenceSpent: 1 }]`).
    */
   it('resolves each authored pick to its own ending, not the fallback', () => {
-    const authoredKeyed = UNIFIED_ACTION_TEMPLATES.filter((t) => {
-      const cfg = t.aftermathConfig;
-      const keys = Object.keys(cfg?.variants ?? {});
-      if (!cfg || keys.length === 0) return false;
-      const ids = new Set((t.authoredChoices?.[cfg.branchOnStep] ?? []).map((c) => c.id));
-      return keys.every((k) => ids.has(k));
-    });
-
-    // THR-2158 — this population shrinks by design as the THR-2135 slices move
-    // templates off authoredChoices (THR-2161 retires the field). The floor is
-    // non-empty; the enumerated ids hold the guard where they are asserted.
+    const authoredKeyed = UNIFIED_ACTION_TEMPLATES.filter(isForkKeyed);
     expect(authoredKeyed.length).toBeGreaterThan(0);
 
     let distinctFromFallback = 0;

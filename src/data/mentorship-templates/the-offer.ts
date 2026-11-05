@@ -4,10 +4,15 @@
  * The mentor offers to take the apprentice on. A mortal stands at a threshold;
  * the god leans on that threshold, as one kind of presence or another.
  *
- * Three player choices (god actions, path-over-adjective):
- *   - Steady their nerve (supportive — raises acceptance odds, tilts Sworn)
- *   - Let them choose     (withdrawn — pure mortal agency, always-valid branch)
- *   - Whisper the cost    (coercive/cautionary — may tilt Renegade or refusal)
+ * ─── The mortal decides (THR-2161, THR-866 pattern) ──────────────────
+ *
+ * Step 1 used to carry three player cards whose ids were the aftermath keys.
+ * Now the **apprentice** answers on step 0, in route mode (THR-898), and the
+ * god leans with a hand. Route keys are the old variant keys:
+ *   - `steady_their_nerve` — Heart, `loyalty_ambition` +: they say yes, steadily.
+ *   - `let_them_choose`    — Stone, `courage_prudence` −: they ask for time and answer slowly.
+ *   - `whisper_the_cost`   — Eye, `revelation_discretion` +: they ask what it will cost first.
+ * `aftermathConfig.branchOnStep` is 0, the deciding step (THR-979).
  *
  * Refusal is a real outcome. Acceptance continues the chain; refusal sets
  * the mentors edge to estranged quietly.
@@ -19,7 +24,7 @@
  * @see Docs/plans/2026-05-15-thr-75-mentor-apprentice-relationship-chains.md §5.1
  */
 
-import type { UnifiedActionTemplate, ActionStep } from '../../types/unifiedAction';
+import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
 import {
   MENTORSHIP_STEADY_SENTIMENT,
   MENTORSHIP_STEADY_TRUST,
@@ -40,9 +45,39 @@ const step0Reckoning: ActionStep = {
     'agreed to or refused. The god feels the moment as a knot of possibility, ' +
     'tight in the throat — and the question that always precedes a god\'s breath: ' +
     'whose nerve, whose voice, whose hand will weigh on the scale now.',
+  purposeLine: 'Answer the offer',
+  // THR-2161 — one card per route, plus a Repertoire fill.
+  nudges: [
+    {
+      id: 'mentorship.offer.a_steady_breath',
+      name: 'A Steady Breath',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { route: 'steady_their_nerve' },
+      effectLine: 'Calm the apprentice\'s nerves. A steady heart argues for saying yes.',
+    },
+    {
+      id: 'mentorship.offer.a_long_pause',
+      name: 'A Long Pause',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { route: 'let_them_choose' },
+      effectLine: 'Let the silence stretch. Time to think argues for answering slowly.',
+    },
+    {
+      id: 'mentorship.offer.the_years_owed',
+      name: 'The Years Owed',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { route: 'whisper_the_cost' },
+      effectLine: 'Bring the years of service to mind. The price argues for asking about it first.',
+    },
+  ],
+  deal: { count: 2, tags: ['social', 'presence'] },
 };
 
-const step1Branch: ActionStep = {
+/** Route `steady_their_nerve` — the apprentice says yes. */
+const step1SayYes: ActionStep = {
   reach: 'heart',
   duration: { min: 1, max: 2 },
   difficulty: 0.3,
@@ -50,10 +85,58 @@ const step1Branch: ActionStep = {
   onFailure: [],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The apprentice gathers what they have — pride, fear, the shape of who they ' +
-    'might become — and lets one or the other answer first. Whether the bond holds ' +
-    'or breaks at this seam is now a thing the god has shaped, however lightly. ' +
-    'Either path is its own life.',
+    '{name} meets their teacher\'s eyes and says yes. Their voice does not shake. ' +
+    'Now they have to prove they meant it.',
+  purposeLine: 'Accept the offer',
+  deal: { count: 4, tags: ['social', 'presence'] },
+};
+
+/** Route `let_them_choose` — the apprentice takes their time. */
+const step1TakeTime: ActionStep = {
+  reach: 'stone',
+  duration: { min: 1, max: 2 },
+  difficulty: 0.3,
+  onSuccess: [],
+  onFailure: [],
+  failBehavior: 'continue_weakened',
+  narrativeTemplate:
+    '{name} asks for a night to think. Their teacher agrees, but does not look pleased. ' +
+    'In the morning, {name} gives their answer.',
+  purposeLine: 'Answer in their own time',
+  deal: { count: 4, tags: ['social', 'presence'] },
+};
+
+/** Route `whisper_the_cost` — the apprentice asks what it will cost. */
+const step1AskTheCost: ActionStep = {
+  reach: 'eye',
+  duration: { min: 1, max: 2 },
+  difficulty: 0.35,
+  onSuccess: [],
+  onFailure: [],
+  failBehavior: 'continue_weakened',
+  narrativeTemplate:
+    '{name} asks how many years they would owe, and what they would give up. ' +
+    'Their teacher answers honestly. The answer is more than {name} expected.',
+  purposeLine: 'Learn the price',
+  deal: { count: 4, tags: ['social', 'presence'] },
+};
+
+const step1Branch: ActionStepBranch = {
+  branchOnStep: 0,
+  // THR-2161 — the apprentice decides how to answer.
+  decidedBy: {
+    routes: [
+      { key: 'steady_their_nerve', reach: 'heart', axis: 'loyalty_ambition', toward: 'positive' },
+      { key: 'let_them_choose', reach: 'stone', axis: 'courage_prudence', toward: 'negative' },
+      { key: 'whisper_the_cost', reach: 'eye', axis: 'revelation_discretion', toward: 'positive' },
+    ],
+  },
+  variants: {
+    steady_their_nerve: step1SayYes,
+    let_them_choose: step1TakeTime,
+    whisper_the_cost: step1AskTheCost,
+  },
+  fallback: { ...step1SayYes },
 };
 
 export const MENTORSHIP_THE_OFFER_TEMPLATE: UnifiedActionTemplate = {
@@ -63,6 +146,16 @@ export const MENTORSHIP_THE_OFFER_TEMPLATE: UnifiedActionTemplate = {
     risk: 'let the offer slip and walk away unapprenticed',
     won: 'took up the apprenticeship under the teacher',
     lost: 'let the offer slip and walked away unapprenticed',
+    arms: {
+      let_them_choose: {
+        won: 'took a night and took up the apprenticeship',
+        lost: 'took a night, and the offer was gone by morning',
+      },
+      whisper_the_cost: {
+        won: 'learned the price and took up the apprenticeship anyway',
+        lost: 'learned the price and turned the offer down',
+      },
+    },
   },
   rarityTier: 2,
   intrinsicTier: 'shaping',
@@ -93,61 +186,13 @@ export const MENTORSHIP_THE_OFFER_TEMPLATE: UnifiedActionTemplate = {
 
   illustrationAlt: 'A small workshop or study at the moment of offered apprenticeship — two figures in conversation, one older and standing, one younger and seated.',
 
-  authoredChoices: {
-    1: [
-      {
-        id: 'steady_their_nerve',
-        label: 'Steady their nerve',
-        intent:
-          'A current of calm settles into the apprentice\'s chest — not certainty, but enough ' +
-          'composure to hear the offer clearly and answer in their own voice. The god\'s touch ' +
-          'is light: a breath held, a tremor smoothed. The teacher sees a steady gaze across ' +
-          'the threshold and reads it as readiness. The bond, if it forms, will form on solid ground.',
-        essenceCost: 1,
-        likelyBurden:
-          'Steady is not the same as honest. The apprentice may accept what their fear would have ' +
-          'refused — and the god will have to carry the weight of having steadied them past their warning.',
-        interventionType: 'supportive',
-      },
-      {
-        id: 'let_them_choose',
-        label: 'Let them choose',
-        intent:
-          'The god holds back. No nudge, no whisper — the offer hangs in the air, and the apprentice ' +
-          'meets it with whatever mixture of nerve and dread they have. The teacher waits. The room ' +
-          'waits. Whatever answer comes will be entirely theirs to own, for better or worse.',
-        targetLabel: 'the apprentice',
-        essenceCost: 0,
-        likelyBurden:
-          'The god keeps their strength but yields authorship of the moment. The apprentice may refuse ' +
-          'out of pride, or accept out of fear. Either outcome will be theirs — and so will whatever it costs.',
-        interventionType: 'withdrawn',
-      },
-      {
-        id: 'whisper_the_cost',
-        label: 'Whisper the cost',
-        intent:
-          'The god lets the weight of what an apprenticeship means settle into the apprentice\'s mind ' +
-          'before they speak — the years owed, the obedience asked, the smaller life the bond would ' +
-          'foreclose. It is not a lie. It is the truth made vivid at exactly the moment when a yes is easiest. ' +
-          'The apprentice hesitates, or refuses, or chooses anyway and chooses sharper.',
-        targetLabel: 'the apprentice',
-        essenceCost: 1,
-        likelyBurden:
-          'A god who whispers the cost has not lied — but they have weighed in. The apprentice may ' +
-          'refuse on the strength of that whisper, and the chance for the bond will not come again.',
-        interventionType: 'coercive',
-      },
-    ],
-  },
-
   aftermathConfig: {
-    branchOnStep: 1,
+    branchOnStep: 0,
     variants: {
       steady_their_nerve: {
         overview:
           'The apprentice met the teacher\'s offer with a steady gaze and accepted. The bond ' +
-          'begins on solid ground, with the god\'s steady hand quietly under it.',
+          'begins on solid ground.',
         changes: [
           {
             id: 'reputation_tally_steady',
@@ -176,14 +221,14 @@ export const MENTORSHIP_THE_OFFER_TEMPLATE: UnifiedActionTemplate = {
       },
       let_them_choose: {
         overview:
-          'The god watched. The apprentice answered on their own terms — yes or no, the decision ' +
+          '{name} took a night and answered on their own terms. Yes or no, the decision ' +
           'was theirs in full.',
         changes: [
           {
             id: 'reputation_tally_mortal',
             kind: 'reputation_tally',
             title: 'A mortal decision',
-            detail: 'The apprenticeship was settled without divine weight on the scale.',
+            detail: 'The apprenticeship was settled slowly, on the apprentice\'s own terms.',
             polarity: 'info',
           },
         ],
@@ -200,14 +245,14 @@ export const MENTORSHIP_THE_OFFER_TEMPLATE: UnifiedActionTemplate = {
       },
       whisper_the_cost: {
         overview:
-          'The god whispered the weight of years owed before the answer formed. Whatever the ' +
-          'apprentice chose, they chose with their eyes wider than they would have been.',
+          '{name} asked the price before answering. Whatever they chose, ' +
+          'they chose knowing what it would cost.',
         changes: [
           {
             id: 'reputation_tally_whisper',
             kind: 'reputation_tally',
             title: 'A choice made sharper',
-            detail: 'The cost was named; the answer carries the god\'s fingerprint on its edge.',
+            detail: 'The cost was named; the answer carries that knowledge on its edge.',
             polarity: 'mixed',
           },
         ],
@@ -218,8 +263,8 @@ export const MENTORSHIP_THE_OFFER_TEMPLATE: UnifiedActionTemplate = {
             intent: 'They answered with their eyes open, and the edge of it stays.',
             effects: [
               { kind: 'reputation_tally', key: MENTORSHIP_TALLY_KEY, delta: 1 },
-              // The whisper buys a truer answer at the price of some warmth —
-              // trust rises because the god did not lie, sentiment falls because
+              // Asking the price buys a truer answer at the cost of some warmth —
+              // trust rises because the teacher did not lie, sentiment falls because
               // nobody enjoys being told the bill before they order.
               {
                 kind: 'bond_change',
@@ -235,7 +280,7 @@ export const MENTORSHIP_THE_OFFER_TEMPLATE: UnifiedActionTemplate = {
     fallback: {
       overview:
         'The offer was made and answered. The shape of the apprentice\'s life turned one way ' +
-        'or the other and the god\'s breath was on the air.',
+        'or the other.',
       changes: [],
     },
   },

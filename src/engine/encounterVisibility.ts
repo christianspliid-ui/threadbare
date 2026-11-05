@@ -63,11 +63,9 @@ export function getVisibilityDepth(courtPosition: CourtPosition | null): Encount
  * encounter design. am I correct"* — confirmed correct, and this was the
  * producer.
  *
- * **Emptied rather than deleted.** `buildEncounterNotification` still calls it,
- * and `EncounterNotification.choices` is still the channel a template's
- * `authoredChoices` ride on — `phaseEncounterVisibility` overwrites `choices`
- * with the authored hand for steps that carry one. So the field stays live and
- * only the *generic* producer is gone. Returning `[]` is what makes a step with
+ * **Emptied rather than deleted.** `buildEncounterNotification` still calls it.
+ * The retired player-pick used to overwrite `choices` with an authored hand
+ * here; THR-2161 removed that, so `choices` is now empty on every unified step. Returning `[]` is what makes a step with
  * no authored content fall through to the nudge stage's fate-alone screen
  * (`buildUnifiedEncounterStageModel` branches on `choices.length === 0`), which
  * is the replacement pattern rather than an absence.
@@ -692,20 +690,6 @@ export function phaseEncounterVisibility(
     );
 
     if (notification) {
-      // Override with authored choices if the template defines them for this step
-      const authoredForStep = resolvedTemplate?.authoredChoices?.[stepIndex];
-      if (authoredForStep && authoredForStep.length > 0) {
-        notification.choices = authoredForStep.map(card => ({
-          id: card.id,
-          text: card.label,
-          // THR-1800 — an unpriced card is free, never NaN in the tracking sum.
-          essenceCost: Number.isFinite(card.essenceCost) ? card.essenceCost : 0,
-          probabilityBoost: 0,
-          interventionType: card.interventionType,
-          godVoice: card.likelyBurden,
-        }));
-      }
-
       // THR-2140 — a step with no player move is a record, not a beat: it is
       // posted resolved, so no hold is set on it, it never auto-opens, and it
       // never badges. The step plays out and its band reaches the next beat's

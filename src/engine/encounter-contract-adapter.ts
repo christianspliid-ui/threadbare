@@ -1,10 +1,9 @@
 import type { GraphOp } from '../types/graphOp';
 import type { ValuePair } from '../types/agent';
-import type { ActionStep, ActionStepOrBranch, AuthoredChoiceCard, UnifiedActionTemplate } from '../types/unifiedAction';
+import type { ActionStep, ActionStepOrBranch, UnifiedActionTemplate } from '../types/unifiedAction';
 import { isActionStepBranch } from '../types/unifiedAction';
 import type {
   EncounterArchetypePole,
-  EncounterChoiceContract,
   EncounterChoiceCost,
   EncounterChoiceReach,
   EncounterContract,
@@ -61,12 +60,6 @@ const CATEGORY_TO_SCALE: Record<EncounterCategory, UnifiedActionTemplate['scale'
   anomaly: 'regional',
   army: 'regional',
   branching: 'personal',
-};
-
-const COST_TO_INTERVENTION_TYPE: Record<EncounterChoiceCost, AuthoredChoiceCard['interventionType']> = {
-  small_breath: 'supportive',
-  fuller_breath: 'supportive',
-  deep_draught: 'coercive',
 };
 
 const EMPTY_GRAPH_OPS: readonly GraphOp[] = [];
@@ -133,22 +126,6 @@ function toConcreteStep(stepOrBranch: ActionStepOrBranch): ActionStep {
   return isActionStepBranch(stepOrBranch) ? stepOrBranch.fallback : stepOrBranch;
 }
 
-function makeChoiceId(beatIndex: number, choiceIndex: number): string {
-  return `choice-${beatIndex + 1}-${choiceIndex + 1}`;
-}
-
-function toAuthoredChoice(choice: EncounterChoiceContract, beatIndex: number, choiceIndex: number): AuthoredChoiceCard {
-  return {
-    id: makeChoiceId(beatIndex, choiceIndex),
-    label: choice.god_verb,
-    intent: choice.agent_reaction,
-    targetLabel: choice.tilts_toward,
-    essenceCost: COST_TO_ESSENCE_COST[choice.cost],
-    likelyBurden: choice.fail_forward,
-    interventionType: COST_TO_INTERVENTION_TYPE[choice.cost],
-  };
-}
-
 function toActionStep(beat: EncounterContractPayload['beats'][number]): ActionStep {
   const primaryChoice = beat.encounter_choices[0];
   return {
@@ -173,12 +150,6 @@ export function adaptEncounterContractToUnifiedActionTemplate(contract: Encounte
   const firstBeat = payload.beats[0];
   const firstChoice = firstBeat.encounter_choices[0];
   const steps = payload.beats.map((beat) => toActionStep(beat));
-  const authoredChoices = Object.fromEntries(
-    payload.beats.map((beat, beatIndex) => [
-      beatIndex,
-      beat.encounter_choices.map((choice, choiceIndex) => toAuthoredChoice(choice, beatIndex, choiceIndex)),
-    ]),
-  );
 
   const template: UnifiedActionTemplate = {
     id: payload.id,
@@ -200,7 +171,6 @@ export function adaptEncounterContractToUnifiedActionTemplate(contract: Encounte
       failure: firstChoice.fail_forward,
     },
     description: payload.protagonist_view.state_descriptor,
-    authoredChoices,
     illustrationUrl: payload.place.painting,
     illustrationAlt: encodeContractMetadata(parsed),
   };

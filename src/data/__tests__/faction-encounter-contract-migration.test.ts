@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseEncounterContract } from '../encounter-contract-validators';
-import {
-  ENCOUNTER_CONTRACT_METADATA_KEY,
-  toEncounterArchetypePole,
-  type EncounterAuthoredChoice,
-} from '../encounter-contract-builder';
+import { ENCOUNTER_CONTRACT_METADATA_KEY } from '../encounter-contract-builder';
 import {
   ARCANE_CIRCLE_ENCOUNTER_TEMPLATES,
   ARCANE_CIRCLE_SOCIAL_TEMPLATES,
@@ -90,22 +86,5 @@ describe('faction encounter contract migration', () => {
       const contract = decodeContractMetadata(template.illustrationAlt);
       expect(contract.encounter.id).toBe(template.id);
     }
-  });
-
-  it('uses heuristic pole mapping for coercive and non-coercive authored choices', () => {
-    const coerciveChoice = {
-      id: 'choice.coercive',
-      label: 'Force the issue',
-      interventionType: 'coercive',
-    } as EncounterAuthoredChoice;
-
-    const supportiveChoice = {
-      id: 'choice.supportive',
-      label: 'Support the effort',
-      interventionType: 'supportive',
-    } as EncounterAuthoredChoice;
-
-    expect(toEncounterArchetypePole('heart', coerciveChoice)).toBe('renegade');
-    expect(toEncounterArchetypePole('heart', supportiveChoice)).toBe('sworn');
   });
 });

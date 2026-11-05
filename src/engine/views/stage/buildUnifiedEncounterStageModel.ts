@@ -454,61 +454,15 @@ function buildChoices(
   args: BuildUnifiedEncounterStageModelArgs,
   ctx: NarrativeContext,
 ): EncounterStageChoiceModel[] {
-  const { template, activeAction, notification, essence } = args;
+  const { notification, essence } = args;
 
-  // Check for authored choices on the template for the current step
-  const authoredForStep = template.authoredChoices?.[activeAction.currentStep];
-
-  if (authoredForStep && authoredForStep.length > 0) {
-    // THR-1706 — an authored choice is billed to the god's primary sphere
-    // (`handleEncounterIntervene`), so it is priced against that pool and the
-    // row names it. Pricing it against all twelve pools summed let a choice
-    // read affordable and then floor the one pool it actually drew on.
-    // THR-1720 — the caller's paying sphere wins: it is the one the handler
-    // charges, and an identity-less run (archetype selection) has no identity.
-    const payingSphere = args.payingSphere ?? args.gameState?.ascendantIdentity?.sphereAlignment?.primary;
-    const payingEssence = payingSphere
-      ? (args.gameState?.essencePool?.[payingSphere] ?? 0)
-      : essence;
-    // Use authored choice cards with full prose bodies
-    //
-    // THR-1411 — the stance rides along. `AuthoredChoiceCard.interventionType`
-    // is a required field, so every authored card has always carried one; this
-    // branch simply never copied it onto the model, and three separate surface
-    // reads went dark at once: the stance word (`stanceLabel`), the card's glow
-    // colour (`TYPE_COLORS[interventionType]`), and the withdrawn card's `fate
-    // decides` meta label. The sibling `buildSimpleEncounterStageModel` never
-    // lost it because the authored hand reaches it through
-    // `notification.choices`, which `phaseEncounterVisibility` fills with
-    // `card.interventionType` — so the same template rendered its stance at
-    // `watched` tier and dropped it at attended, which is the asymmetry the
-    // THR-1133 pixel sweep caught on `crafting.quest.flawed_steel`.
-    return authoredForStep.map((card) => {
-      const essenceCost = choiceEssenceCost(card.essenceCost);
-      return {
-        id: card.id,
-        label: enrichProse(card.label, ctx),
-        intent: enrichProse(card.intent, ctx),
-        targetLabel: card.targetLabel,
-        essenceCost,
-        affordable: payingEssence + 1e-9 >= essenceCost,
-        ...(payingSphere ? { payingSphere } : {}),
-        costLabel: essenceCost > 0 ? formatEssenceLabel(essenceCost) : undefined,
-        likelyBurden: card.likelyBurden != null ? enrichProse(card.likelyBurden, ctx) : undefined,
-        interventionType: card.interventionType,
-        stanceLabel: interventionStanceWord(card.interventionType),
-      };
-    });
-  }
-
-  // Fall back to generic notification choices
-  //
+  // THR-2161 — the authored-card builder that lived here is gone with
+  // `authoredChoices`. The notification's own choices are the only source left.
   // THR-1048 — `intent` used to be `choice.interventionType`, so the card's
   // main italic line rendered the bare enum: not a dim stance tag but the
-  // sentence the player reads first. It is unreachable today (this branch runs
-  // only when the step has no `authoredChoices`, and that is the sole thing
-  // that ever fills `notification.choices` — see `phaseEncounterVisibility`),
-  // which is why the veil audit caught the tag and missed this. Unreachable is
+  // sentence the player reads first. It was unreachable then (the retired
+  // `authoredChoices` was the sole thing that ever filled `notification.choices`
+  // on a unified step), which is why the veil audit caught the tag and missed this. Unreachable is
   // one edit away from reachable, and the fix is the field the sibling adapter
   // already uses: `choice.text` is the choice's own display text.
   return notification.choices.map((choice) => {
@@ -1012,10 +966,8 @@ export function buildUnifiedEncounterStageModel(
     : undefined;
 
   // THR-775 — the nudge phase is present when the *current* step carries an
-  // authored hand. A template with `authoredChoices` and no hand gets
-  // `undefined` here and keeps the choice screen untouched, which is what makes
-  // the rollout per-template and reversible (remove the nudges, get the old
-  // screen back). Never built during aftermath: the hand is a pre-roll surface,
+  // authored hand. (THR-2161 retired the `authoredChoices` screen this used to
+  // fall back to.) Never built during aftermath: the hand is a pre-roll surface,
   // and offering it after the roll would be a lie.
   //
   // THR-1121 — it is *also* built, with an empty hand, when the step has no
@@ -1025,9 +977,7 @@ export function buildUnifiedEncounterStageModel(
   // the branch below would have rendered a screen with no move on it at all.
   // Fate-alone is the replacement: the stage still frames the moment (motive,
   // test, cast) and offers `Stay silent, let fate answer`. Note the check reads the built
-  // `choices`, not `template.authoredChoices` — the authored hand reaches the
-  // stage through `buildChoices`' own step resolution, and re-deriving the
-  // condition here is how the two would drift apart.
+  // `choices`, never re-derives the condition here, so the two cannot drift.
   const choices = buildChoices(args, ctx);
   const nudgePhase = isAftermath
     ? undefined
