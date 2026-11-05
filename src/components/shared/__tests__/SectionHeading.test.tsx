@@ -11,7 +11,7 @@ describe('SectionHeading', () => {
 
   it('renders with count', () => {
     render(<SectionHeading count={3}>Retinue</SectionHeading>);
-    expect(screen.getByText(/Retinue/)).toHaveTextContent('Retinue (3)');
+    expect(screen.getByText(/Retinue/)).toHaveTextContent('Retinue · 3');
   });
 
   it('renders as h3 by default', () => {
@@ -31,6 +31,6 @@ describe('SectionHeading', () => {
 
   it('renders count of 0', () => {
     render(<SectionHeading count={0}>Empty</SectionHeading>);
-    expect(screen.getByText(/Empty/)).toHaveTextContent('Empty (0)');
+    expect(screen.getByText(/Empty/)).toHaveTextContent('Empty · 0');
   });
 });

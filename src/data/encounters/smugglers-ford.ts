@@ -455,7 +455,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     initiation: 'A mule train of untaxed salt has to pass an excise post in the fog before the river rises. The '
       + 'carrier wants a guide who can move unseen.',
     success: 'The salt train is over the ford, and the post never saw it.',
-    failure: 'The salt train did not get over the ford, and the carrier knows who read the watch.',
+    failure: 'The salt train did not get over the ford, and {cast:carrier} goes home with the salt unsold.',
   },
   aftermathConfig: {
     branchOnStep: 0,
@@ -777,7 +777,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           },
           critical_failure: {
             overview: 'The salt stayed in the reeds past dawn, and the river took the ford. By noon all of {location} '
-              + 'knew who had refused the rope, and said the ford had turned against night crossings.',
+              + 'knew {cast:carrier} had lost the salt, and said the ford had turned against night crossings.',
             changes: [
               {
                 id: 'ford.decline.critfail.regard_falls',
@@ -813,12 +813,12 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           overview: 'The carrier has the watch\'s rounds, and a way over the ford before dawn.',
         },
         failure: {
-          overview: 'The salt train lost its night at the ford, and the carrier knows who read the watch. {location} '
+          overview: 'The salt train lost its night at the ford, and {cast:carrier} must buy back a mule from the excise. {location} '
             + 'says the ford has turned against night crossings.',
         },
         critical_failure: {
-          overview: 'The salt train\'s night went badly wrong, and the carrier said in {location} who had read the '
-            + 'watch. {location} says the ford has turned against night crossings.',
+          overview: 'The salt train\'s night went badly wrong, and the excise took two mules and their '
+            + 'salt. {location} says the ford has turned against night crossings.',
         },
       },
     },

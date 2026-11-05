@@ -10,6 +10,7 @@ import { Icon } from '../shared/Icon';
 import { sphereWord } from '../shared/formatEssence';
 import type { SphereName } from '../../types';
 import { sphereHasAscendantCard } from '../../engine/views/subjects/godSheet';
+import { MANDATE_RAISED_BY_LINE } from '../../data/ascendant-bar-content';
 
 interface MandateDetailProps {
   open: boolean;
@@ -170,7 +171,7 @@ function MetricTrack({
         {byGodHand
           ? sphere && !sphereHasAscendantCard(sphere)
             ? `${label} rises only slowly, through your bond with the land; none of your cards carries it yet.`
-            : 'Raised by your own hand'
+            : MANDATE_RAISED_BY_LINE
           : <>Baseline {formatMetricValue(baseline)} → Current {formatMetricValue(current)}</>}
       </div>
     </div>

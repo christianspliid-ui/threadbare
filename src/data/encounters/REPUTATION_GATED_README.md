@@ -37,8 +37,39 @@ The player needs to feel the reputation working. The `{title}` placeholder resol
 
 Use it in at least one of:
 - The opening beat (`narrativeTemplate` of step 0 or `narrativeTemplates.initiation`)
-- A choice card (`authoredChoices` intent text)
+- A step-1 arm's prose (what the mortal does once they have decided)
 - A success outcome prose line
+
+---
+
+## Rule 3a — The mortal decides; the god argues (THR-2135, THR-2159, THR-2160)
+
+The player never picks an ending (Christian, 2026-07-26). A reputation encounter does **not** offer step-0 cards whose ids are the aftermath variant keys — that is `authoredChoices`, and it is retired (THR-2161 deletes the field).
+
+- Step 1 is an `ActionStepBranch` with `decidedBy`, in the THR-866 pattern (`apotheosis-ascension.ts`, engine `src/engine/encounters/branchDecision.ts`):
+  - **Two endings → pole mode.** `decidedBy: { axis: '<ValuePair>' }`. Variants, `aftermathConfig.variants` and `stakes.arms` key `positive` / `negative`; the fallback (and the base stakes) is `positive`.
+  - **Three endings → route mode.** `decidedBy: { routes: [{ key, reach, axis?, toward? }, …] }`, one distinct reach per route. Route keys are free strings, so the old variant keys can stay.
+- Step 0 deals a composed hand: up to two `nudges` specials (each with a `poleLean` — an axis pole, or `{ route }` in route mode) plus `deal: { count, tags }`.
+- Step-1 prose is voiced as the mortal acting ("The agent chose…"), never the god choosing for them.
+- Record the axis (or routes) in the file header.
+
+| Template | Mode | Axis / routes |
+|---|---|---|
+| `warlords-tribute` | route | accept (Heart, loyalty +) · oath (Iron, mercy −) · withdraw (Stone, courage −) |
+| `shadow-court-audience` | pole | `honesty_cunning` — + present honestly · − veiled threat |
+| `pilgrims-offering` | pole | `tradition_novelty` — + accept graciously · − bless them instead |
+| `the-veiled-consultation` | route | plain (Eye, revelation +) · withhold (Shadow, honesty −) · refuse (Veil, revelation −) |
+| `the-stones-judgement` | pole | `preservation_transformation` — + older claim · − transforming claim |
+| `the-merchants-favor` | pole | `asceticism_extravagance` — + intercede · − mark the robbers |
+| `the-oracle-consulted` | pole | `revelation_discretion` — + read openly · − riddle |
+| `the-star-pilgrim` | pole | `sacrifice_survival` — + channel the radiance · − bless and send onward (THR-2160; fallback stays −, see header) |
+| `the-infiltrators-approach` | pole | `honesty_cunning` — + accept the deal · − reveal to the master |
+| `the-renowned-duel` | pole | `courage_prudence` — + grant the duel · − decline with dignity |
+| `the-executioners-commission` | pole | `mercy_ruthlessness` — + refuse and warn the condemned · − carry out the commission |
+| `the-unmarked-crossing` | pole | `asceticism_extravagance` — + take the manifests to their owner · − sign the papers |
+| `the-silent-chamber` | pole | `revelation_discretion` — + read the lore · − burn it unread |
+| `the-jury-of-the-ruined` | pole | `loyalty_ambition` — + the verdict the circle expects · − rule against the circle |
+| `the-blinded-oracle` | pole | `revelation_discretion` — + take the prophecy · − ask how she lost her sight |
 
 ---
 
@@ -94,7 +125,7 @@ Add the template to the fixture array in `src/engine/__tests__/reputation-gated-
 ## Pipeline Stages
 
 1. **Draft** — write the template using the encounter-pipeline skill. One template per pipeline run.
-2. **Editorial** — prose audit against Threadbare aesthetic: no reporter prose, god-framing choices, `{title}` present.
+2. **Editorial** — prose audit against Threadbare aesthetic: no reporter prose, the god argues and the mortal decides (Rule 3a), `{title}` present.
 3. **Systems audit** — verify all six rules above, check tally keys match reach, check seed delays.
 4. **Implementation** — generate concept art (image-generation skill), register template, run contract test.
 

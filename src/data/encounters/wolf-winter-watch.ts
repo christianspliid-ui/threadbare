@@ -638,7 +638,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         },
         critical_failure: {
           overview: '{cast:reeve} agrees to sell the flock to {cast:drover} for a handful of coin, before the pack '
-            + 'takes the rest. Every village in the valley hears whose command it was.',
+            + 'takes the rest. The shepherds have nothing left to drive to the spring fair.',
           changes: [
             {
               id: 'wolf.broke.the_villages_regard',

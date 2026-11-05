@@ -50,7 +50,7 @@ describe('HandSection', () => {
 
   it('headed "Your cards" with the count; Move and Investiture lead; every card in whole mode', () => {
     render(<HandSection hand={HAND} showInvestiture rest={null} />);
-    expect(screen.getByText('Your cards')).toBeTruthy();
+    expect(screen.getByText('Your cards · 3')).toBeTruthy();
     expect(screen.getByText('Move')).toBeTruthy();
     expect(screen.getByText('Investiture')).toBeTruthy();
     expect(screen.getAllByTestId('hand-card')).toHaveLength(3);

@@ -240,6 +240,8 @@ export const NUDGE_BLOCKED_REASONS: Readonly<Record<NudgeBlockedCode, string>> =
   sphere_locked: 'Sphere beyond your reach',
   unlock_missing: 'Not yet yours to give',
   trait_missing: 'They do not carry this',
+  // THR-2147 — withheld: the card would end a condition the mortal does not carry.
+  no_target: 'Nothing here for it to end',
 };
 
 /** Rider display names — designer view only; riders never announce themselves. */
@@ -275,6 +277,11 @@ export const NUDGE_COMMIT_LABEL_SILENT = 'Stay silent, let fate answer';
 
 /** Under the choice line: why nothing has answered yet. */
 export const CHAPTER_ANSWER_WAITS_LINE = 'The world must turn before this answers.';
+/**
+ * THR-2151 — the live card's waiting line, on a running clock: the world is
+ * already turning and the answer lands on this card (Laws 4, 42).
+ */
+export const CHAPTER_ANSWER_LIVE_WAITS_LINE = 'The world turns. The answer comes here.';
 /** The card's primary control: run the clock until this step answers, then stop. */
 export const CHAPTER_ANSWER_RUN_LABEL = 'Let the world turn';
 /** The card's secondary control: close, clock stays paused, the answer waits. */
@@ -338,8 +345,13 @@ export const CHAPTER_ANSWER_UNNAMED = 'this chapter';
 
 /** Ticks an answer run waits before giving up (two in-world days; the longest content step is 8). */
 export const CHAPTER_ANSWER_RUN_MAX_TICKS = 24;
-/** Show the answering card even when the clock was running. Off: a running clock answers in seconds. */
-export const CHAPTER_ANSWER_CARD_ON_RUNNING_CLOCK = false;
+/**
+ * THR-2151 — show the answering card when the clock was running too. On a running
+ * clock it is the *live* card: it stops no time (`EncounterVeilAnswering`, `stopsTime:
+ * false`), offers no *Let the world turn*, and the step's answer opens in its place.
+ * `false` is the kill switch: a running-clock commit closes onto the map, as before.
+ */
+export const CHAPTER_ANSWER_CARD_ON_RUNNING_CLOCK = true;
 /** How long the timeout / dropped toasts stay on screen. */
 export const CHAPTER_ANSWER_TOAST_MS = 8000;
 

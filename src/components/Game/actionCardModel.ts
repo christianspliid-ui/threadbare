@@ -39,7 +39,6 @@ import {
   actionBlockedReason,
   upkeepChannelLabel,
   verbTooltipId,
-  scaleTooltipId,
   upkeepTooltipId,
   type ActionCrudType,
 } from '../../data/action-card-display';
@@ -168,12 +167,18 @@ export function actionCardModel(slot: WheelSlot, opts: ActionCardModelOptions = 
       // rather than a person tile.
       kind: 'unknown',
     },
-    keyword: { label: verb.label, icon: verb.icon, tooltipId: verb.tooltipId },
-    ...(slot.scaleWord && slot.scale
-      ? { secondaryKeyword: { label: slot.scaleWord, tooltipId: scaleTooltipId(slot.scale) } }
-      : {}),
+    // THR-2147 (U3) — one kind chip. The scale word left the face; it opens the
+    // verb chip's hover instead (`ui.card.verb.<crud>.<scale>`). Out-of-range
+    // still reads as a blocked reason in words, the only time scale decides.
+    keyword: {
+      label: verb.label,
+      icon: verb.icon,
+      tooltipId: slot.scale ? `${verb.tooltipId}.${slot.scale}` : verb.tooltipId,
+    },
     ...(slot.reach ? { reach: slot.reach } : {}),
     ...(slot.sphere ? { sphere: slot.sphere } : {}),
+    // THR-2147 (U2) — the price names the pool that pays, as a nudge card's does.
+    ...(slot.sphere && slot.essenceCost > 0 ? { costSphere: slot.sphere } : {}),
     // THR-1586: the Premonition's sphere tint on any card that draws essence from
     // a named sphere — the same predicate as THR-1607's essence-row preview.
     ...(slot.sphere && slot.essenceCost > 0 ? { sphereTint: slot.sphere } : {}),

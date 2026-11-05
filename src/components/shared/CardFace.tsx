@@ -60,7 +60,6 @@ import type { ForecastTier } from '../../types/resolution';
 import type { EntityVisualDescriptor } from './entityVisualResolver';
 import { EntityVisual } from './EntityVisual';
 import { Tooltip } from './Tooltip';
-import { SphereIcon } from './SphereIcon';
 import { ReachIcon } from '../icons';
 import { CardKeywordChip } from './CardKeywordChip';
 import { Icon } from './Icon';
@@ -79,7 +78,6 @@ import { FORECAST_TIER_WORDS } from '../../data/nudge-stage-content';
 const GOLD = 'var(--veil-gold)';
 const TEXT_WARM = 'var(--veil-text-warm)';
 const TEXT_WHISPER = 'var(--veil-text-whisper)';
-const FONT_DISPLAY = "'Palatino Linotype', 'Book Antiqua', Palatino, serif";
 
 /**
  * Forecast tier → the colour the word carries. Tier classes, not new colours.
@@ -313,6 +311,12 @@ export interface CardFaceModel {
    */
   readonly leanLabel?: string;
   readonly odds: CardFaceOdds | null;
+  /**
+   * THR-2147 — what a card that does not move the odds does to the world
+   * ("Ends Elara's Wounded."), drawn where the pips would be. Ignored when
+   * {@link odds} is a delta: those pips are the card's answer.
+   */
+  readonly resultLine?: string;
   readonly rarityTier?: RarityTier;
   /** Zone 8. Rendered only when {@link dimmed}. */
   readonly blockedReason?: string;
@@ -348,6 +352,11 @@ export interface CardFaceModel {
  * snapshot pinned before the extraction, while the action card gets its Law 17
  * tooltips on the same zones. One face, two callers, one pin still valid.
  */
+/** THR-2147 — the reach's display word beside its mark ("Iron"). */
+function reachWord(reach: ReachDomain): string {
+  return reach.charAt(0).toUpperCase() + reach.slice(1);
+}
+
 function MaybeTooltip({ id, children }: { id?: string; children: React.ReactNode }) {
   if (!id) return <>{children}</>;
   // THR-1713 — `fit`: the wrapper is exactly the mark's height, so turning
@@ -475,31 +484,60 @@ export function CardFace({
           flexWrap: 'wrap',
           rowGap: CARD_CHIP_ROW_GAP_PX,
         }}>
-          {/* A card with a second chip needs a grouping span; a card with one
-              must NOT have it, because the nudge card's pinned DOM does not —
-              the extraction's whole claim is that the nudge face did not move. */}
-          {model.keyword && model.secondaryKeyword ? (
+          {/* A card with a second chip or a reach mark needs a grouping span; a
+              card with one chip must NOT have it, because the nudge card's pinned
+              DOM does not — the extraction's whole claim is that the nudge face
+              did not move. */}
+          {(model.keyword && model.secondaryKeyword) || model.reach ? (
             <span style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 0, flexWrap: 'wrap' }}>
-              <MaybeTooltip id={model.keyword.tooltipId}>
-                <CardKeywordChip
-                  keyword={model.keyword.label}
-                  icon={model.keyword.icon}
-                  iconName={model.keyword.iconName}
-                  muted={dimmed}
-                  data-testid={`${p}-keyword-${id}`}
-                />
-              </MaybeTooltip>
-              <MaybeTooltip id={model.secondaryKeyword.tooltipId}>
-                <CardKeywordChip
-                  keyword={model.secondaryKeyword.label}
-                  icon={model.secondaryKeyword.icon}
-                  iconName={model.secondaryKeyword.iconName}
-                  // The second chip is always muted: it is a refinement of the
-                  // first, and two chips at equal weight read as two kinds.
-                  muted
-                  data-testid={`${p}-scale-${id}`}
-                />
-              </MaybeTooltip>
+              {model.keyword && (
+                <MaybeTooltip id={model.keyword.tooltipId}>
+                  <CardKeywordChip
+                    keyword={model.keyword.label}
+                    icon={model.keyword.icon}
+                    iconName={model.keyword.iconName}
+                    muted={dimmed}
+                    data-testid={`${p}-keyword-${id}`}
+                  />
+                </MaybeTooltip>
+              )}
+              {model.secondaryKeyword && (
+                <MaybeTooltip id={model.secondaryKeyword.tooltipId}>
+                  <CardKeywordChip
+                    keyword={model.secondaryKeyword.label}
+                    icon={model.secondaryKeyword.icon}
+                    iconName={model.secondaryKeyword.iconName}
+                    // The second chip is always muted: it is a refinement of the
+                    // first, and two chips at equal weight read as two kinds.
+                    muted
+                    data-testid={`${p}-scale-${id}`}
+                  />
+                </MaybeTooltip>
+              )}
+              {/* THR-2147 (U2) — the reach mark sits with the card's kind, with
+                  its word, so no icon carries meaning alone (Laws 11, 12). */}
+              {model.reach && (
+                <MaybeTooltip id={model.markTooltips ? `reach.${model.reach}` : undefined}>
+                  <span
+                    data-testid={`${p}-reach-${id}`}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 3,
+                      // The label rule (THR-1833): Alegreya Sans 700 below 22 px.
+                      fontFamily: 'var(--font-body)',
+                      fontWeight: 700,
+                      fontSize: 'var(--text-xs)',
+                      letterSpacing: '0.04em',
+                      color: dimmed ? TEXT_WHISPER : TEXT_WARM,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    <ReachIcon reach={model.reach} size={CARD_REACH_ICON_PX} />
+                    {reachWord(model.reach)}
+                  </span>
+                </MaybeTooltip>
+              )}
             </span>
           ) : model.keyword ? (
             <MaybeTooltip id={model.keyword.tooltipId}>
@@ -532,16 +570,10 @@ export function CardFace({
             // single item packs to the start).
             marginLeft: 'auto',
           }}>
-            {model.reach && (
-              <MaybeTooltip id={model.markTooltips ? `reach.${model.reach}` : undefined}>
-                <ReachIcon reach={model.reach} size={CARD_REACH_ICON_PX} />
-              </MaybeTooltip>
-            )}
-            {model.sphere && (
-              <MaybeTooltip id={model.markTooltips ? `sphere.${model.sphere}` : undefined}>
-                <SphereIcon sphere={model.sphere} size={CARD_SPHERE_ICON_PX} />
-              </MaybeTooltip>
-            )}
+            {/* THR-2147 (U2) — the price row holds only the price: ✦ and the
+                paying pool's word. The sphere mark left it (the word names the
+                same sphere, and the tint carries it); the reach mark moved to the
+                kind group. */}
             {/* THR-1607: the price reads as cost, not tier or power — round-1
                 testers could not tell. Same opt-in as the marks beside it. */}
             {/* THR-1713 — the pip owns its hover now, so the raw `title` goes
@@ -602,8 +634,8 @@ export function CardFace({
         <span style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
           <span
             style={{
-              fontFamily: FONT_DISPLAY,
-              fontSize: 'var(--text-sm)',
+              fontFamily: 'var(--font-display)',
+              fontSize: 'var(--text-lg)',
               lineHeight: 1.25,
               color: model.selected ? GOLD : 'var(--veil-text-bright)',
             }}
@@ -659,7 +691,7 @@ export function CardFace({
                   {channel.label}
                   {/* Only a worsening delta earns penalty pips; relief is stated
                       in the label alone rather than drawn as a price. */}
-                  {channel.delta > 0 && <OddsPips value={-channel.delta} size={10} muted={dimmed} />}
+                  {channel.delta > 0 && <OddsPips value={-channel.delta} size={CARD_ODDS_PIP_PX} muted={dimmed} />}
                 </span>
               </MaybeTooltip>
             ))}
@@ -677,7 +709,7 @@ export function CardFace({
             data-testid={`${p}-provenance-${id}`}
             aria-label={model.provenance.text}
             style={{
-              fontSize: 'var(--text-2xs, 11px)',
+              fontSize: 'var(--text-xs)',
               lineHeight: 1.4,
               color: TEXT_WARM,
               opacity: 0.85,
@@ -716,7 +748,7 @@ export function CardFace({
             <span
               data-testid={`${p}-lean-${id}`}
               style={{
-                fontSize: 'var(--text-2xs, 11px)',
+                fontSize: 'var(--text-xs)',
                 lineHeight: 1.4,
                 color: TEXT_WARM,
                 fontStyle: 'italic',
@@ -735,6 +767,23 @@ export function CardFace({
               data-testid={`${p}-odds-${id}`}
             />
           )}
+          {/* THR-2147 (U1) — a card that does not move the odds says what it
+              does to the world, in the slot the pips would hold. Primary text,
+              not whisper: it carries information (Law 45). */}
+          {model.resultLine && model.odds?.kind !== 'delta' && (
+            <MaybeTooltip id={model.markTooltips ? 'ui.card.result' : undefined}>
+              <span
+                data-testid={`${p}-result-${id}`}
+                style={{
+                  fontSize: 'var(--text-xs)',
+                  lineHeight: 1.5,
+                  color: dimmed ? TEXT_WHISPER : 'var(--text-primary)',
+                }}
+              >
+                {model.resultLine}
+              </span>
+            </MaybeTooltip>
+          )}
           {model.odds?.kind === 'forecast' && (
             // Law 10: a card that *rolls* the odds reads them as a word. Pips
             // here would claim the card moves odds it only tests.
@@ -747,7 +796,7 @@ export function CardFace({
                 aria-label={`Forecast: ${FORECAST_TIER_WORDS[model.odds.tier] ?? model.odds.tier}`}
                 style={{
                   fontSize: 'var(--text-xs)',
-                  fontFamily: FONT_DISPLAY,
+                  fontFamily: 'var(--font-body)',
                   letterSpacing: '0.02em',
                   color: FORECAST_TIER_COLORS[model.odds.tier] ?? TEXT_WARM,
                   opacity: dimmed ? 0.7 : 1,
@@ -774,7 +823,7 @@ export function CardFace({
             Its own vocabulary (Law 9), seated in the footer so it annotates the
             card rather than competing with the kind chip. */}
         {model.rarityTier !== undefined && (
-          <span data-testid={`${p}-rarity-${id}`} style={{ fontSize: 'var(--text-2xs, 11px)' }}>
+          <span data-testid={`${p}-rarity-${id}`} style={{ fontSize: 'var(--text-xs)' }}>
             <RarityBadge tier={model.rarityTier} />
           </span>
         )}
@@ -787,7 +836,7 @@ export function CardFace({
             data-resolved-band={model.resolvedBand.word}
             style={{
               fontSize: 'var(--text-xs)',
-              fontFamily: FONT_DISPLAY,
+              fontFamily: 'var(--font-body)',
               color: model.resolvedBand.color,
             }}
           >

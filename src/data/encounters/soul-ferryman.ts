@@ -7,6 +7,22 @@
  * or steady a courier through it.
  *
  * Design doc: Docs/plans/encounters/soul-ferryman-opus-final.md
+ *
+ * ─── The mortal decides (THR-2158, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was two cards whose ids were the
+ * aftermath keys, so the click picked the ending. Now the fork decides on
+ * `sacrifice_survival`: a Martyr (+1) pays the soul toll so the letters cross
+ * on time, a Survivor (−1) refuses the price and breaks the bargain. The god
+ * argues with a composed hand — two pole-leaning specials plus a Repertoire
+ * fill — and the mortal answers.
+ *
+ * - Fork axis: `sacrifice_survival`. `positive` = Steady the Courier,
+ *   `negative` = Break the Bargain. Variants, aftermath and `stakes.arms` are
+ *   keyed to the pole, because pole mode writes the bare pole key.
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
+ * - Step 1's old approach cards picked nothing; each arm now deals an ordinary
+ *   hand from the god's Repertoire.
  */
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
@@ -82,6 +98,40 @@ const step0TheCrossing: ActionStep = {
     'The fog sat on the river like a hand pressed over a mouth. It did not move. It did not thin toward the banks or gather in the hollows between the limestone ridges the way honest fog does; it simply occupied the crossing, grey-white and absolute, as if the air itself had opinions about who should pass. The punt was visible only as a shape -- flat-bottomed, dark-planked, riding low in the current with the stillness of something that had been waiting longer than wood should last. The man standing on it held a pole that was taller than he was, its end wrapped in river-weed that he had not cleaned because the weed was part of it now, part of him, part of the arrangement. He was thin in the way that fog-country people are thin, as if the damp had found its way into his joints and eaten whatever softness had once lived there. His name was {cast:vesik}. He had been the ferryman for thirty-one years, and in that time he had never once asked for coin. On the near bank, a young man in a courier\'s dustcoat stood beside a horse that would not stop pulling at its tether. The horse could smell the fog. The courier could smell it too -- river-silt and something older, something that made the teeth ache -- but he had letters to deliver and the ford was four days south, and so he stood at the waterline and listened to the ferryman explain, in a voice as flat and careful as a man reading terms he did not write, exactly what the crossing would cost.',
   successAfterimage: 'The god perceived the crossing and the weight of the bargain that holds it.',
   failureAfterimage: 'The god perceived the crossing but could not hold the fog long enough to act.',
+  successAtCostAfterimage: 'The god held the fog apart, and the cold of the river crept into the courier.',
+  criticalSuccessAfterimage: 'The fog thinned to a veil, and the whole bargain lay open to see.',
+  criticalFailureAfterimage: 'The fog closed over everything, and the answer was given in the dark.',
+  purposeLine: 'Weigh the toll',
+  // THR-2158 — the fork's argument. Two specials, one per pole of
+  // `sacrifice_survival`; the Repertoire fills the rest of the hand.
+  nudges: [
+    {
+      id: 'ferryman.recall_the_letters',
+      name: 'Recall The Letters',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'sacrifice_survival', toward: 'positive' },
+      effectLine: 'Remind them of the sealed letters and who waits on them. A duty argues for paying the toll.',
+      bandProse: {
+        success: '{actor} felt the letters against their chest, and the weight of them.',
+        failure: '{actor} thought of the letters, and the fog thought louder.',
+      },
+    },
+    {
+      id: 'ferryman.name_the_price',
+      name: 'Name The Price',
+      sphere: 'spirit',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'sacrifice_survival', toward: 'negative' },
+      effectLine: 'Make plain what the ferryman takes from every soul he carries. A clear price argues for refusing it.',
+      bandProse: {
+        success: '{actor} saw the price plainly, and would not pay it.',
+        failure: '{actor} heard the price named, and the fog swallowed the words.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['journey', 'insight'] },
 };
 
 /**
@@ -111,6 +161,8 @@ const step1BreakTheBargain: ActionStep = {
     },
   ],
   failBehavior: 'fail_action',
+  purposeLine: 'Cut the river contract',
+  deal: { count: 4, tags: ['lore', 'peril'] },
   narrativeTemplate:
     'The god reached into the fog the way a hand reaches into still water -- slowly, and with the knowledge that whatever lives below will feel the disturbance. The contract was not visible. It was not a scroll or a chain or a mark on {cast:vesik}\'s skin. It was a pressure, a tautness in the space between the ferryman and the river, as if the current held one end of a rope and the man held the other and both had been pulling for so long that neither remembered a time before the tension. The god found the rope. The god cut it. {cast:vesik} made a sound that was not a word. He dropped the pole. It floated for a moment, trailing its river-weed like hair, and then the current took it and it was gone. The punt rocked. On the near bank, {cast:diehl} stepped back from the waterline, because the fog had moved for the first time in his memory -- not thinning, exactly, but shifting, as if the thing that held it in place had lost its grip. {cast:vesik} sat down heavily on the punt\'s wet planks and pressed his hands against his face, and when he lowered them his eyes were different. They were the eyes of a man who had just woken from a dream that lasted thirty-one years, and who could not yet tell whether waking was mercy or punishment.',
   successAfterimage: 'The contract broke. {cast:vesik} woke from thirty-one years. The crossing is closed.',
@@ -144,6 +196,8 @@ const step1SteadyTheCourier: ActionStep = {
     },
   ],
   failBehavior: 'fail_action',
+  purposeLine: 'Board the punt',
+  deal: { count: 4, tags: ['presence', 'journey'] },
   narrativeTemplate:
     'The god leaned into the courier\'s fear the way wind leans into a candle -- not enough to extinguish, just enough to steady. {cast:diehl} felt it. He did not know what it was. He thought perhaps it was the memory of his father telling him that a man who stops walking has already decided to fail, or perhaps it was nothing more than the quality of light that sometimes breaks through fog and makes the world seem briefly navigable. He stepped onto the punt. The planks were wet and the wood was cold, and the punt sank a quarter-inch under his weight in a way that made him think of something settling into place. {cast:vesik} looked at him. The ferryman\'s fog-pale eyes moved across the courier\'s face the way a needle moves across cloth -- finding the weave, testing the tension -- and whatever he found there he accepted without expression. "Your certainty," {cast:vesik} said, "that you are doing the right thing." He said it the way a shopkeeper names a price -- without apology, without explanation, as a statement of what the transaction requires. {cast:diehl} opened his mouth to ask what that meant, and then closed it, because he already knew. He could feel it: the weight of conviction that had carried him through the last six days on the road, the private assurance that the letters mattered, that his errand was worth the saddle-ache and the cold mornings and the long miles. {cast:vesik} held out his hand. {cast:diehl} took it. And the ferryman poled them out into the fog, and the current took them, and the near bank disappeared behind them like a sentence left unfinished.',
   successAfterimage: '{cast:diehl} crossed. The toll was paid. The letters will reach the garrison.',
@@ -151,13 +205,15 @@ const step1SteadyTheCourier: ActionStep = {
 };
 
 /**
- * Step 1: Branch point. Resolves based on the choice made at Step 0.
+ * Step 1: Branch point. The mortal decides on `sacrifice_survival` at step 0
+ * (THR-2158); the fallback breaks the bargain, as it always did.
  */
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  decidedBy: { axis: 'sacrifice_survival' },
   variants: {
-    break_the_bargain: step1BreakTheBargain,
-    steady_the_courier: step1SteadyTheCourier,
+    positive: step1SteadyTheCourier,
+    negative: step1BreakTheBargain,
   },
   fallback: { ...step1BreakTheBargain },
 };
@@ -421,7 +477,7 @@ export const SOUL_FERRYMAN_TEMPLATE: UnifiedActionTemplate = withEncounterContra
     won: 'broke the ferryman\'s contract with the river',
     lost: 'left the ferryman bound to the river',
     arms: {
-      steady_the_courier: {
+      positive: {
         won: 'crossed and paid the toll, letters still on time',
         lost: 'turned south for the ford, four days late',
       },
@@ -460,83 +516,11 @@ export const SOUL_FERRYMAN_TEMPLATE: UnifiedActionTemplate = withEncounterContra
   illustrationUrl: '/concept-art/encounters/soul-ferryman.jpg',
   illustrationAlt: 'A gaunt ferryman stands on a dark punt in thick fog, pole in hand, while a courier hesitates at the waterline',
 
-  authoredChoices: {
-    1: [
-      {
-        id: 'thread_the_fog_gently',
-        label: 'Thread the Fog Gently',
-        intent:
-          'The god acts with precision and restraint. Whether severing the contract or steadying ' +
-          'the courier, the touch is light — barely a breath of divine will. The fog may resist ' +
-          'less, but the intervention carries less certainty.',
-        essenceCost: 1,
-        likelyBurden:
-          'A gentle touch may not be enough. The river has held this contract for thirty-one years, ' +
-          'and the courier\'s fear has had an hour to take root.',
-        interventionType: 'supportive',
-      },
-      {
-        id: 'press_through_the_current',
-        label: 'Press Through the Current',
-        intent:
-          'The god reaches through the fog with full divine authority. The intervention is forceful, ' +
-          'undeniable. {cast:vesik} will feel it. The river will feel it. What was subtle becomes a ' +
-          'statement — and the Silt does not forget gods who announce themselves.',
-        essenceCost: 3,
-        likelyBurden:
-          'Force draws attention. The river remembers interference. {cast:vesik} may react to the weight ' +
-          'of the god\'s hand rather than the intent behind it.',
-        interventionType: 'coercive',
-      },
-    ],
-    0: [
-      {
-        id: 'break_the_bargain',
-        label: 'Break the Bargain',
-        intent:
-          'Reach into the fog and find the contract — not a scroll, not a mark, but a tautness ' +
-          'between the man and the river that has held for thirty-one years. Cut it. The god is ' +
-          'not rescuing anyone from an evil; the ferryman is not a thief. The god is deciding ' +
-          'whether this transaction should continue. Severing the contract frees {cast:vesik} from a ' +
-          'bargain he made when he was drowning and young, but it closes the only crossing for ' +
-          'twenty miles. Siltside loses its trade route. The bonesetter who navigates by memory ' +
-          'alone will still find her way, but the grain-trader and the dozen families who have ' +
-          'built their lives around the toll will feel this cut for years.',
-        targetLabel: '{cast:vesik}',
-        essenceCost: 3,
-        likelyBurden:
-          'The crossing closes. The ford is four days south. Siltside loses its trade artery, ' +
-          'and {cast:diehl} walks to the garrison on foot. The river does not make refunds.',
-        interventionType: 'coercive',
-      },
-      {
-        id: 'steady_the_courier',
-        label: 'Steady the Courier',
-        intent:
-          'Lean into {cast:diehl}\'s fear — not enough to break it, just enough to move him. He has been ' +
-          'standing at the waterline for an hour. He has the letters. He has the will, somewhere ' +
-          'beneath the smell of the fog and the horse that won\'t board. The god offers the quality ' +
-          'of light that sometimes breaks through fog and makes the world seem briefly navigable. ' +
-          '{cast:diehl} steps onto the punt. {cast:vesik} names his price. The crossing continues. This is not ' +
-          'rescue — it is a nudge that keeps the wound open and the community around it intact. ' +
-          'The god’s weight falls on the crossing, not the courier, and the courier loses something he ' +
-          'didn\'t know he was carrying.',
-        targetLabel: '{cast:diehl}',
-        essenceCost: 1,
-        likelyBurden:
-          '{cast:diehl} will reach the garrison and deliver the letters. He will continue being {cast:diehl} ' +
-          'in every way that can be observed. But the private engine that drove him will be quiet, ' +
-          'and in its place will be a space that is not empty but is no longer warm.',
-        interventionType: 'supportive',
-      },
-    ],
-  },
-
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      break_the_bargain: BREAK_BARGAIN_AFTERMATH,
-      steady_the_courier: STEADY_COURIER_AFTERMATH,
+      positive: STEADY_COURIER_AFTERMATH,
+      negative: BREAK_BARGAIN_AFTERMATH,
     },
     fallback: { ...BREAK_BARGAIN_AFTERMATH },
   },

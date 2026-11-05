@@ -80,7 +80,44 @@ export type NudgeBlockedCode =
   | 'essence_unavailable'
   | 'sphere_locked'
   | 'unlock_missing'
-  | 'trait_missing';
+  | 'trait_missing'
+  /**
+   * THR-2147 — a card whose only work is ending a condition the mortal does not
+   * carry (The Balm on an unhurt mortal). Paying for it changes nothing, so the
+   * stage withholds it like a card the god cannot play.
+   */
+  | 'no_target';
+
+/** Sentinel a nudge grant uses to name the acting mortal. */
+const ACTOR_SENTINEL = '$actor';
+
+/**
+ * THR-2147 — does this card have nothing to act on?
+ *
+ * True only for a card whose whole purchase is `remove_condition` on the acting
+ * mortal and none of those conditions is held: no other grant, no odds, no rider,
+ * no cost channel or drift. A card that also moves the odds is still worth playing.
+ *
+ * Reads the same `has_trait` set the remover reads (`collectHeldTraitIds` →
+ * `encounterAftermath`'s `remove_condition`), so the hand and the write cannot
+ * disagree. Fail-soft: a removal aimed at anyone but the actor is unresolvable
+ * here, so the card is never blocked on it.
+ */
+export function nudgeHasNoTarget(
+  nudge: Pick<StepNudge, 'grants' | 'forecastDelta' | 'rider' | 'costs' | 'valueDrift'>,
+  heldTraits: ReadonlySet<string>,
+): boolean {
+  const grants = nudge.grants;
+  if (!grants || grants.length === 0) return false;
+  if (nudge.forecastDelta > 0 || nudge.rider || nudge.costs || nudge.valueDrift) return false;
+  for (const grant of grants) {
+    if (grant.kind !== 'remove_condition') return false;
+    const target = grant.targetAgentId ?? ACTOR_SENTINEL;
+    if (target !== ACTOR_SENTINEL) return false;
+    if (heldTraits.has(grant.conditionTraitId)) return false;
+  }
+  return true;
+}
 
 export interface NudgeHandEntry {
   readonly nudge: StepNudge;
@@ -285,6 +322,13 @@ export function buildNudgeHand(
       && !context.repertoireCardIds.has(nudge.libraryCardId)
     ) {
       dimmed.push({ nudge, blocked: 'sphere_locked' });
+      continue;
+    }
+
+    // THR-2147 — before the price check: a card with nothing to act on is
+    // withheld, not shown dimmed as merely too dear.
+    if (nudgeHasNoTarget(nudge, context.heldTraits)) {
+      dimmed.push({ nudge, blocked: 'no_target' });
       continue;
     }
 

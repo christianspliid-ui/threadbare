@@ -104,6 +104,7 @@ import { RefRouterProvider } from '../../contexts/RefRouterContext';
 import { DetailPageOpenerProvider } from '../../contexts/DetailPageOpenerContext';
 import { useDetailNodeRefOpener, worldRefForNodeId } from '../../hooks/useDetailNodeRefOpener';
 import { HoverCard } from '../shared/HoverCard';
+import { buildSubjectPage } from '../../engine/views/subjects/subjectPage';
 import { useNotificationPreferences } from './hooks/useNotificationPreferences';
 import { IdentityChip } from './IdentityChip';
 import { GodRail } from './frame/GodRail';
@@ -414,6 +415,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const interruptHoldRef = useRef<InterruptAutoPauseHandle | null>(null);
   /** THR-1812 — the chapter answer run; declared after the auto-pause hook it reads, reached here by ref. */
   const chapterAnswerRef = useRef<ChapterAnswerRunHandle | null>(null);
+  /**
+   * THR-2151 — a live answer is pending: a step committed on a running clock is on
+   * the Stage as the live card. Mirrored from the hook's record (declared far below,
+   * after the auto-pause it reads) so the auto-open scan and the interrupt registry
+   * above it can read it. View state only.
+   */
+  const [liveAnswerPending, setLiveAnswerPending] = useState(false);
   const handleToggleRunningRespectingHold = useCallback(() => {
     if (interruptHoldRef.current?.toggleIfHeld()) return;
     handleToggleRunning();
@@ -1161,6 +1169,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // it, and a pick can never leak onto the next encounter.
   const openEncounterKey = tieredEncounterState
     ? `${tieredEncounterState.agentId}::${tieredEncounterState.notification?.id ?? tieredEncounterState.template.id}`
+    : null;
+  /**
+   * THR-2151 D2 — the Stage's key: one per *chapter* (agent and action), not per beat.
+   * When a step's answer opens in the live card's place, the next beat or the Aftermath
+   * swaps into the Stage that is already up, so the Stage never re-enters and the map
+   * never shows in between. A legacy encounter with no action keys on its beat as before.
+   */
+  const openEncounterStageKey = tieredEncounterState
+    ? `${tieredEncounterState.agentId}::${tieredEncounterState.notification?.actionId ?? tieredEncounterState.notification?.id ?? tieredEncounterState.template.id}`
     : null;
   // THR-1777 — why the last aftermath pick did not land, in player words, or
   // null. Same lifetime as the taken id: it describes the open encounter only.
@@ -2704,16 +2721,21 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   ): boolean => {
     if (!tieredEncounterState) return false;
     const wasRunning = interruptHoldRef.current?.getWasRunningBeforeInterrupt() ?? null;
-    if (wasRunning !== false && !CHAPTER_ANSWER_CARD_ON_RUNNING_CLOCK) return false;
+    const clockRuns = wasRunning !== false;
+    if (clockRuns && !CHAPTER_ANSWER_CARD_ON_RUNNING_CLOCK) return false;
     const answer = chapterAnswerRef.current;
     if (!answer) return false;
-    answer.showCard({
+    const target = {
       actionId,
       stepIndex,
       notificationId: tieredEncounterState.notification.id,
       chapterName: encounterVeilModel?.header.title || null,
       choiceLine: chapterAnswerChoiceLine(choiceNames),
-    });
+    };
+    // THR-2151 — on a running clock the card is the live one: it stops no time, the
+    // world turns under it, and the step's answer opens in its place.
+    if (clockRuns) answer.showLiveCard(target);
+    else answer.showCard(target);
     return true;
   }, [tieredEncounterState, encounterVeilModel]);
 
@@ -2943,6 +2965,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // `isEncounterAutoOpenSuppressed` for the full mechanism.
   useEffect(() => {
     heldEncounterRef.current = null;
+    // THR-2151 D3 — while a live answer waits on the Stage, the chapter's own answer
+    // opens first, through the answer run (`open_answer`), with no quiet window. Other
+    // chapters' beats wait until it has opened (or the card has yielded).
+    if (liveAnswerPending) return;
     if (isEncounterAutoOpenSuppressed(interruptsSuppressed, running)) return;
     // Don't auto-open tiered encounters while a premonition modal is active —
     // compulsion handles encounter selection for that agent
@@ -2993,7 +3019,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       suppressedEncounterNotificationId.current,
       handleOpenEncounterFromNotification,
     );
-  }, [gameState.encounterNotifications, handleOpenEncounterFromNotification, interruptsSuppressed, running, activePremonition, encounterHoldRecheck, canOpenEncounterNotification]);
+  }, [gameState.encounterNotifications, handleOpenEncounterFromNotification, interruptsSuppressed, running, activePremonition, encounterHoldRecheck, canOpenEncounterNotification, liveAnswerPending]);
 
   // THR-1724 (review gate) — a minimised step the world resolved without the
   // player must not leave a badge that opens nothing. Since THR-1730 a
@@ -3164,6 +3190,17 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     // eslint-disable-next-line react-hooks/exhaustive-deps -- the graph mutates in place; the hovered ref is the rebuild signal
     [hoverRef, gameState.familiarityMap, gameState.tiles],
   );
+  // THR-2125 (R4.4, decision 6) — the hover card's Now line is the subject's Inspector
+  // headline (R5), which resolves only with the state in context; the hover page is
+  // graph-only. Built once per hovered ref; fail-soft to no Now line.
+  const hoverComposedBody = useMemo(() => {
+    if (!hoverRef) return null;
+    try {
+      return buildSubjectPage(_gameStateRef.current, hoverRef).body;
+    } catch {
+      return null;
+    }
+  }, [hoverRef]);
 
   // THR-1851 — the links inside a detail card (faction allegiances, threads, prose
   // terms). Until this was mounted every one of them rendered as plain text in the game.
@@ -3568,6 +3605,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const stageVMByKind: Partial<Record<StageHomedKind, StageVM | null>> = {
     'story-beat': storyBeatStageVM,
     encounter: encounterStageVM,
+    'encounter-answering': encounterStageVM,
     'journey-vignette': vignetteStageVM,
     'undertaking-moment': momentStageVM,
     premonition: premonitionStageVM,
@@ -3638,6 +3676,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const interruptResolution = resolveInterrupts({
     interruptsSuppressed,
     encounterOpen: tieredEncounterState !== null,
+    // THR-2151 — the open veil is the live answering card: it renders, stopping no time.
+    encounterAnsweringLive: liveAnswerPending,
     meetingPending: meetingState !== null,
     hasAscendantIdentity: !!ascendantIdentity,
     threadingRitePending: pendingRite !== null && !isRiteAgentMissing(gameState.graph, pendingRite),
@@ -3741,9 +3781,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // under the cursor while the player aims. `useCardArming` is declared further down
   // (it needs the cast wiring), so it reports into this state from there.
   const [cardArmedHold, setCardArmedHold] = useState(false);
+  const clockHeldBySurface = clockHoldOpen({ interruptOpen: interruptResolution.anyOpen, inspectorFullOpen, cardArmed: cardArmedHold });
   const interruptAutoPause = useInterruptAutoPause({
     // THR-1911: the Inspector's Full view holds the clock while it is open (§ D2).
-    interruptOpen: clockHoldOpen({ interruptOpen: interruptResolution.anyOpen, inspectorFullOpen, cardArmed: cardArmedHold }),
+    interruptOpen: clockHeldBySurface,
     running,
     setRunning,
   });
@@ -3765,6 +3806,20 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     });
   }, [handlePushToast, gameState.tick]);
   const setRunningPlain = useCallback((next: boolean) => setRunning(next), [setRunning]);
+  /**
+   * THR-2151 D2 — open the step's answer beat in the live card's place. The veil
+   * stays up: the answer is for the same mortal and chapter, so the Stage swaps
+   * content and never shows the map.
+   */
+  const handleOpenChapterAnswer = useCallback((notificationId: string): boolean => {
+    const beat = (gameState.encounterNotifications ?? []).find(n => n.id === notificationId);
+    return beat ? handleOpenEncounterFromNotification(beat) : false;
+  }, [gameState.encounterNotifications, handleOpenEncounterFromNotification]);
+  /** THR-2151 — the live card ends with nothing to open: close it as a commit closes. */
+  const handleCloseChapterAnswerCard = useCallback(() => {
+    setInterruptSuppressedUntilTick(gameState.tick + 1);
+    setTieredEncounterState(null);
+  }, [gameState.tick]);
   const chapterAnswer = useChapterAnswerRun({
     unifiedActions: gameState.unifiedActions ?? EMPTY_UNIFIED_ACTIONS,
     encounterNotifications: gameState.encounterNotifications ?? EMPTY_ENCOUNTER_NOTIFICATIONS,
@@ -3775,8 +3830,18 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     hold: interruptAutoPause,
     setRunning: setRunningPlain,
     pushToast: pushChapterAnswerToast,
+    openAnswer: handleOpenChapterAnswer,
+    closeVeil: handleCloseChapterAnswerCard,
+    // THR-2151 — something other than the live card holds the clock. Read only once the
+    // registry sees the card (the mirror has caught up); before that, the hold is the
+    // veil's own, from the render that committed the step.
+    heldElsewhere: liveAnswerPending && clockHeldBySurface,
   });
   chapterAnswerRef.current = chapterAnswer;
+  const chapterAnswerLive = chapterAnswer.record?.phase === 'answering_live';
+  useEffect(() => {
+    setLiveAnswerPending(chapterAnswerLive);
+  }, [chapterAnswerLive]);
 
   // ── First-run Play prompt (THR-1716 U3) ──
   // While the clock has never run and nothing holds it, the Play control asks for
@@ -4385,6 +4450,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           foldedGroups: r?.foldedGroups ?? [],
           hiddenForWidth: r?.hiddenForWidth ?? [],
           dressing: r?.dressing ?? null,
+          fold: r?.fold ?? null,
           actCards,
           rowCounts,
           trayOpen: trayEl?.dataset.rowTray ?? null,
@@ -4501,7 +4567,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           handleScryWithMutex={handleScryWithMutex}
           openCodexEntry={openCodexSheet}
           // THR-1894: the hand rests while a moment is on screen (not while one only waits its turn); an encounter deals its own hand.
-          handRest={interruptResolution.open.length > 0 ? (interruptResolution.open.includes('EncounterVeil') ? 'encounter' : 'moment') : null}
+          // THR-2151 — the live answering card stops no time, but it is the chapter veil:
+          // the hand rests under it as under any veil (review gate, round 2).
+          handRest={interruptResolution.open.length > 0
+            ? (interruptResolution.open.includes('EncounterVeil') ? 'encounter' : 'moment')
+            : interruptResolution.rendering.includes('encounter-answering') ? 'encounter' : null}
         />
         </HandPressProvider>
 
@@ -4763,7 +4833,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         tieredEncounterState={tieredEncounterState}
         encounterVeilModel={encounterVeilModel}
         encounterStageVM={encounterStageVM}
-        openEncounterKey={openEncounterKey}
+        openEncounterKey={openEncounterStageKey}
         describeFollowFor={describeFollowFor}
         handleToggleFollow={handleToggleFollow}
         encounterPayingEssence={encounterPayingEssence}
@@ -4805,7 +4875,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       />
 
       {refRouter.hoverCard && (
-        <HoverCard page={refRouter.hoverCard.page} anchorEl={refRouter.hoverCard.anchorEl} visual={hoverVisual} />
+        <HoverCard page={refRouter.hoverCard.page} anchorEl={refRouter.hoverCard.anchorEl} visual={hoverVisual} composedBody={hoverComposedBody} />
       )}
     </div>
       </GameScreenStateProvider>

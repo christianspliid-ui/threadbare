@@ -117,7 +117,7 @@ export const MILL_LEASE_FORFEIT: UnifiedActionTemplate = {
   // Seed-only: the mill lease auction's appointment (missed branch) is its only planter (THR-1526).
   drawable: false,
   name: 'The Lease Forfeit',
-  description: "Nobody from the winning bid was at the mill on quarter day, and the abbey's cellarer has come looking.",
+  description: "{name} was not at the mill on quarter day to seal the winning bid, and the abbey's cellarer has come looking.",
   rarityTier: 2,
   intrinsicTier: 'background',
   reach: 'heart',
@@ -155,15 +155,15 @@ export const MILL_LEASE_FORFEIT: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'The lease was not sealed after nobody from the bid came to the mill on quarter day, and the cellarer has come looking.',
+    initiation: 'The lease was not sealed after {name} missed quarter day at the mill, and the cellarer has come looking.',
     success: "The cellarer sealed the lease on {name}'s word.",
-    failure: 'The cellarer let the mill to the merchant.',
+    failure: 'The mill went to the merchant for the year.',
   },
   aftermathConfig: {
     branchOnStep: 0,
     variants: {},
     fallback: {
-      overview: 'Nobody from the winning bid was at the mill on quarter day, and the lease was not sealed then.',
+      overview: 'The lease is still unsealed, and the fellowship buys its flour from the merchant until it is.',
       changes: [],
     },
   },

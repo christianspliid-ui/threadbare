@@ -23,6 +23,8 @@ import { HOVER_CARD_MAX_SECTIONS } from '../../types/detailPage';
 import { Section } from './Section';
 import { TEXT_TOKENS_REM, remToPx } from './layoutContract';
 import { RowPicture } from './RowPicture';
+import { Icon } from './Icon';
+import type { IconName } from '../../data/icons/iconRegistry';
 import type { EntityVisualDescriptor } from '../../engine/views/entityVisualResolver';
 
 /** Gap between the anchor and the card, px. */
@@ -57,7 +59,50 @@ export function hoverCardPosition(
   return { top, left };
 }
 
-export function HoverCard({ page, anchorEl, visual }: {
+type HoverSection = DetailPage['sections'][number];
+
+/**
+ * THR-2125 R4.4 (decision 6) — the hover card's Now line: the `headline` of the first
+ * section carrying a `highlight` (art-led R5; at most one per page). A headline equal to
+ * the page's own name (a faction's) is skipped, so the name is said once. `null` = no Now
+ * line, nothing drawn in its place.
+ */
+export function hoverNow(
+  page: DetailPage,
+  composedBody?: readonly unknown[] | null,
+): { headline: string; icon: IconName; index: number } | null {
+  const own = hoverNowFrom(page.sections ?? [], page.displayName);
+  if (own) return own;
+  // The hover page is the graph-only legacy page; a mortal's want resolves only with the
+  // game state in context. GameView passes the Inspector's composed body for the same
+  // subject, so the Now line is the very headline its Inspector page draws (index -1:
+  // not one of the card's own sections, so nothing in the body is stripped).
+  const composed = composedBody ? hoverNowFrom(composedBody, page.displayName) : null;
+  return composed ? { ...composed, index: -1 } : null;
+}
+
+function hoverNowFrom(
+  sections: readonly unknown[],
+  displayName: string | undefined,
+): { headline: string; icon: IconName; index: number } | null {
+  const index = sections.findIndex((s) => !!(s as { highlight?: unknown } | null)?.highlight);
+  if (index < 0) return null;
+  const hl = (sections[index] as { highlight?: { headline: string; icon: IconName } }).highlight;
+  const headline = hl?.headline?.trim();
+  if (!hl || !headline) return null;
+  if (headline.toLowerCase() === (displayName ?? '').trim().toLowerCase()) return null;
+  return { headline, icon: hl.icon, index };
+}
+
+/** R4.5 — the body section without the headline the Now line promoted. */
+function withoutHighlight(section: HoverSection): HoverSection {
+  if (!(section as { highlight?: unknown }).highlight) return section;
+  const { highlight: _drop, ...rest } = section as HoverSection & { highlight?: unknown };
+  void _drop;
+  return rest as HoverSection;
+}
+
+export function HoverCard({ page, anchorEl, visual, composedBody }: {
   page: DetailPage;
   anchorEl: HTMLElement;
   /**
@@ -65,6 +110,8 @@ export function HoverCard({ page, anchorEl, visual }: {
    * the host (knowledge-gated, Law 8). Absent or null ⇒ the header draws as before.
    */
   visual?: EntityVisualDescriptor | null;
+  /** THR-2125 R4.4 — the subject's Inspector body (state-composed), where its Now headline lives. */
+  composedBody?: readonly unknown[] | null;
 }) {
   const rect = anchorEl.getBoundingClientRect();
   const { top, left } = hoverCardPosition(rect, {
@@ -73,6 +120,8 @@ export function HoverCard({ page, anchorEl, visual }: {
   });
 
   const sphereVar = `var(--sphere-${page.sphere}-bright, var(--accent-gold))`;
+  const subtitle = page.subtitle?.trim() ?? '';
+  const now = hoverNow(page, composedBody);
 
   const style: CSSProperties = {
     position: 'fixed',
@@ -99,42 +148,56 @@ export function HoverCard({ page, anchorEl, visual }: {
       >
         <RowPicture visual={visual} testId="hover-card-visual" />
         <div style={{ minWidth: 0, flex: '1 1 auto' }}>
+        {/* THR-2125 R4.3 — the sub-kind joins the kind label (Panel anatomy § 5). */}
         <div
+          data-hover-kind=""
           style={{
             fontFamily: 'var(--font-body)',
             fontWeight: 700,
             fontSize: 'var(--text-xs)',
             color: sphereVar,
-            marginBottom: '3px',
+            marginBottom: 'var(--space-1)',
           }}
         >
           {page.kindLabel}
+          {subtitle && <span style={{ color: 'var(--text-tertiary)' }}>{` · ${subtitle}`}</span>}
         </div>
         <div
+          data-row-name=""
           style={{
             fontFamily: 'var(--font-body)',
             fontWeight: 700,
-            fontSize: '1.05rem',
+            fontSize: 'var(--text-sm)',
             color: 'var(--text-primary)',
           }}
         >
           {page.displayName}
         </div>
-        <div
-          style={{
-            fontFamily: 'var(--font-body)',
-            fontWeight: 700,
-            fontSize: 'var(--text-xs)',
-            color: 'var(--text-tertiary)',
-          }}
-        >
-          {page.subtitle}
-        </div>
+        {/* THR-2125 R4.4 / decision 6 — the second line is Now: the page's one highlighted line. */}
+        {now && (
+          <div
+            data-hover-now=""
+            style={{
+              display: 'flex', alignItems: 'center', gap: 'var(--space-1)',
+              fontFamily: 'var(--font-body)',
+              fontWeight: 400,
+              fontSize: 'var(--text-sm)',
+              color: 'var(--text-secondary)',
+            }}
+          >
+            <Icon name={now.icon} size="floor" decorative />
+            {now.headline}
+          </div>
+        )}
         </div>
       </div>
       <div style={{ padding: '10px 14px', overflow: 'hidden' }}>
         {page.sections.slice(0, HOVER_CARD_MAX_SECTIONS).map((section, index) => (
-          <Section key={`${section.typeId}-${index}`} section={section} />
+          <Section
+            key={`${section.typeId}-${index}`}
+            // R4.5 — a promoted headline is not said twice.
+            section={now && now.index === index ? withoutHighlight(section) : section}
+          />
         ))}
       </div>
     </div>,

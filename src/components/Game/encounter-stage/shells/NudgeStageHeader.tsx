@@ -82,7 +82,6 @@ const FACTOR_PIP_GAP = 6;
  */
 export const REACH_ICON_PX = 34;
 
-const FONT_DISPLAY = "'Palatino Linotype', 'Book Antiqua', Palatino, serif";
 
 /** Forecast tier → its `--forecast-*-rgb` channel token (THR-1724). */
 const FORECAST_PILL_CHANNELS: Record<string, string> = {
@@ -198,7 +197,7 @@ export function NudgeReadingMarks({
             data-testid="nudge-forecast-moved"
             style={{
               fontFamily: FONT_PROSE,
-              fontSize: 'var(--text-2xs)',
+              fontSize: 'var(--text-xs)',
               color: TEXT_WHISPER,
               fontStyle: 'italic',
               whiteSpace: 'nowrap',
@@ -336,8 +335,8 @@ export function ForecastPill({
         border: `1px solid ${channel ? `rgb(var(${channel}) / ${FORECAST_PILL_EDGE_ALPHA})` : GOLD_DIM}`,
         background: channel ? `rgb(var(${channel}) / ${FORECAST_PILL_WASH_ALPHA})` : 'transparent',
         color: ink,
-        fontFamily: FONT_DISPLAY,
-        fontSize: compact ? 'var(--text-2xs)' : 'var(--text-xs)',
+        fontFamily: 'var(--font-body)',
+        fontSize: 'var(--text-xs)',
         letterSpacing: '0.12em',
         textTransform: 'uppercase',
         whiteSpace: 'nowrap',
@@ -473,8 +472,8 @@ export function NudgeBalance({ testPanel, onOpenEntity }: NudgeBalanceProps) {
                     data-testid={`nudge-factor-kind-${factor.id}`}
                     data-factor-kind={factor.polarity}
                     style={{
-                      fontFamily: 'var(--font-display)',
-                      fontSize: 'var(--text-2xs)',
+                      fontFamily: 'var(--font-body)',
+                      fontSize: 'var(--text-xs)',
                       letterSpacing: '0.12em',
                       textTransform: 'uppercase',
                       whiteSpace: 'nowrap',
@@ -519,7 +518,7 @@ export function NudgeBalance({ testPanel, onOpenEntity }: NudgeBalanceProps) {
             flexWrap: 'wrap',
             gap: 12,
             marginTop: 10,
-            fontSize: 'var(--text-2xs)',
+            fontSize: 'var(--text-xs)',
             letterSpacing: '0.1em',
             color: TEXT_WHISPER,
           }}

@@ -301,7 +301,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         + 'not stay lit in it. {cast:miner} and the three others are too weak to climb. They must be '
         + 'carried out through the narrow passage the diggers made, under a roof that will not hold much '
         + 'longer.\n\n'
-        + 'The Builders Fellowship holds this mine. It takes in whoever brings its people out.',
+        + 'The Builders Fellowship holds this mine. Its miners will speak for {actor} to the Fellowship if they come out alive.',
       criticalSuccessAfterimage: '{actor} got all four out on their feet, and the props held behind the last of them. {cast:miner} '
         + 'walked down to the village unhelped.',
       successAfterimage: '{actor} sent the weakest out first. All four miners came out into the daylight alive.',

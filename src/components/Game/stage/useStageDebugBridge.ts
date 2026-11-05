@@ -100,6 +100,52 @@ function dialogDressing(panel: Element): NonNullable<DebugOpenHomedSurfaceResult
     face: tier === 'art' ? 'art' : tier === 'fallback' ? 'fallback' : 'none',
     headingIcons: [...panel.querySelectorAll('[data-dialog-heading-icon]')].map(el => el.getAttribute('data-dialog-heading-icon') ?? '').filter(Boolean),
     quietSlots: panel.querySelectorAll('[data-quiet-slot]').length,
+    // THR-2124 — the one dialog title, and where it sits.
+    titles: panel.querySelectorAll('[data-dialog-title]').length,
+    titleAlign: (() => {
+      const title = panel.querySelector('[data-dialog-title]');
+      return title ? getComputedStyle(title).textAlign : '';
+    })(),
+  };
+}
+
+/** THR-2124 — the computed font size of an element in px; 0 when absent or unreadable. */
+function fontPx(el: Element | null): number {
+  if (!el) return 0;
+  return parseFloat(getComputedStyle(el).fontSize) || 0;
+}
+
+/**
+ * THR-2124 — the Stage's reading order, off its DOM (Panel anatomy § 2, § 4): the title's
+ * size, whether it is the largest text in the header, and whether each anatomy element's
+ * top edge lies inside the panel's visible rect (`null` when the element is absent).
+ */
+function stageAnatomy(panel: Element | null): DebugStageState['anatomy'] {
+  const none = { title: false, now: null, firstSceneLine: null, firstHandRow: null, commit: null };
+  if (!panel) return { titleSizePx: 0, titleIsLargestHeaderText: false, fold: none };
+  const box = panel.getBoundingClientRect();
+  const visibleBottom = Math.min(box.bottom, window.innerHeight);
+  const inFold = (el: Element | null): boolean | null => {
+    if (!el) return null;
+    const top = el.getBoundingClientRect().top;
+    return top >= box.top && top < visibleBottom;
+  };
+  const title = panel.querySelector('[data-stage-title]');
+  const now = panel.querySelector('[data-stage-now]');
+  const titleSizePx = fontPx(title);
+  const context = panel.querySelector('[data-testid="encounter-context-block"]');
+  const contextSizes = context ? [...context.querySelectorAll('*')].map(fontPx) : [];
+  const others = [fontPx(now), ...contextSizes];
+  return {
+    titleSizePx,
+    titleIsLargestHeaderText: titleSizePx > 0 && others.every(px => px < titleSizePx),
+    fold: {
+      title: inFold(title) ?? false,
+      now: inFold(now),
+      firstSceneLine: inFold(panel.querySelector('[data-stage-scene-line]')),
+      firstHandRow: inFold(panel.querySelector('[data-testid="nudge-card-row"]')),
+      commit: inFold(panel.querySelector('[data-testid="nudge-commit"], [data-testid="stage-commit"]')),
+    },
   };
 }
 
@@ -185,6 +231,7 @@ export function useStageDebugBridge(args: {
         // THR-1942 — the count the hand bar's "more cards below" line reads, off its DOM.
         handCardsBelowBar: Number(document.querySelector('[data-testid="nudge-hand-bar"]')?.getAttribute('data-cards-below') ?? 0) || 0,
         dressing: stageDressing(open ? document.querySelector('[data-stage-panel]') : null),
+        anatomy: stageAnatomy(open ? document.querySelector('[data-stage-panel]') : null),
       };
     };
 

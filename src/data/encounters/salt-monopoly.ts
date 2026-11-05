@@ -457,7 +457,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         success: {
-          overview: 'The salt of the region is the town\'s for ten years, and the council knows who won it.',
+          overview: 'The salt of the region is the town\'s for ten years, and the salt-carts will unload in its market from the spring.',
           changes: [
             {
               id: 'salt.s.seal_case',
@@ -672,8 +672,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         failure: {
-          overview: 'The council sent {actor} by name to win the salt, and the salt has gone to the rival town for '
-            + 'ten years.',
+          overview: 'The salt has gone to the rival town for ten years, and {location} must pay that town\'s price '
+            + 'for every barrel.',
           changes: [
             {
               id: 'salt.f.town',
@@ -701,7 +701,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         },
         critical_failure: {
           overview: 'The salt has gone to the rival town for ten years, and the whole council saw the town\'s purse '
-            + 'fall short. The council had put that purse in {actor}\'s hands.',
+            + 'fall short. The council must tax the market to repay what its backers pledged.',
           changes: [
             {
               id: 'salt.cf.town',

@@ -46,10 +46,49 @@ export const ESSENCE_UPKEEP_TAG = 'pays your upkeep';
 export const ESSENCE_REFILL_TAG_SEPARATOR = ' · ';
 
 /**
- * The first sentence of the deepest sphere's row hover — the reason its row can
- * read one band slower than the pour screen said. `{word}` is the row word.
+ * The deepest sphere's refill sentence — the reason its row can read one band
+ * slower than the pour screen said, and why a full pool sits one short of its
+ * limit (upkeep is taken after the clamp). `{word}` is the row word.
+ *
+ * THR-2148 (plan `2026-11-02-thr-2143-the-sheet-says-what-grew.md` § Content):
+ * says *when* and *why*, never an amount — the THR-1426 per-tick-rates ruling
+ * keeps rates off player surfaces. The payers are counted in words. `one` takes
+ * a single payer ("thread" / "place of power"), `many` a counted phrase.
  */
-export const ESSENCE_REFILL_UPKEEP_HOVER = '{word}: your threads’ upkeep is paid from this pool.';
+export const ESSENCE_REFILL_UPKEEP_HOVER = {
+  one: '{word}. Your {payer} draws its upkeep from this pool, a little all day. So when it is full, it sits just under its limit.',
+  many: '{word}. Your {payers} draw their upkeep from this pool, a little all day. So when it is full, it sits just under its limit.',
+  /** Fail-soft: the payer walk could not be read. */
+  unknown: '{word}. Your upkeep is drawn from this pool, a little all day. So when it is full, it sits just under its limit.',
+} as const;
+
+/** The payer nouns, singular and plural, for {@link ESSENCE_REFILL_UPKEEP_HOVER}. */
+export const ESSENCE_UPKEEP_PAYER_NOUNS = {
+  thread: { one: 'thread', many: 'threads' },
+  source: { one: 'place of power', many: 'places of power' },
+} as const;
+
+/**
+ * THR-2148 — the essence row hover's first sentence: the pool's limit and what it
+ * is made of. Figures are whole numbers from `BASE_MAX_ESSENCE` and
+ * `MAX_ESSENCE_PER_THREAD` (never literals), so retuning the economy retunes the
+ * words. The `many` form is Christian's (chat, 2026-11-02, options (b) + (c));
+ * the `none` and `one` forms are the design lane's.
+ */
+export const ESSENCE_CAP_HOVER = {
+  none: 'Holds up to {cap}. Each mortal you thread lets every pool hold {perThread} more.',
+  one: 'Holds up to {cap}: {base}, and {perThread} more for the mortal you have threaded.',
+  many: 'Holds up to {cap}: {base}, and {perThread} more for each mortal you have threaded.',
+} as const;
+
+/**
+ * THR-2148 — the row's balance with its limit ("53 / 55"). The Law 13 amendment
+ * of 2026-11-02 widens the pool-balance exception to the pool's limit.
+ */
+export const ESSENCE_ROW_BALANCE = '{balance} / {cap}';
+
+/** The balance's accessible name, e.g. "53 of 55". */
+export const ESSENCE_ROW_BALANCE_ARIA = '{balance} of {cap}';
 
 /**
  * The key under the essence rows (Law 12): the rail's rows are too narrow for the

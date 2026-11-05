@@ -660,8 +660,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         failure: {
-          overview: 'At the ring\'s price the shepherds cannot pay their rents. The guild had sent {actor} by name to '
-            + 'break the ring.',
+          overview: 'At the ring\'s price the shepherds cannot pay their rents, and some will '
+            + 'lose their flocks to the abbey by Michaelmas.',
           changes: [
             {
               id: 'wool.f.town',
@@ -688,7 +688,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         },
         critical_failure: {
           overview: 'Half the town\'s clip went back to the sheds unsold, and the shepherds cannot pay their rents. '
-            + 'The guild had sent {actor} by name.',
+            + 'The guild\'s warehouse is full of wool that no one will buy.',
           changes: [
             {
               id: 'wool.cf.town',

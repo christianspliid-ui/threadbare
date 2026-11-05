@@ -893,7 +893,7 @@ describe('buildUnifiedEncounterStageModel', () => {
           {
             stepIndex: 0,
             stepId: 'step-0',
-            choiceId: 'accept_trade',
+            choiceId: 'negative', // THR-2158 — the mortal's decided pole: accept
             choiceText: 'Accept the trade',
             interventionType: 'coercive',
             essenceSpent: 2,
@@ -931,7 +931,7 @@ describe('buildUnifiedEncounterStageModel', () => {
           {
             stepIndex: 0,
             stepId: 'step-0',
-            choiceId: 'refuse_trade',
+            choiceId: 'positive', // THR-2158 — the mortal's decided pole: refuse
             choiceText: 'Refuse the trade',
             interventionType: 'supportive',
             essenceSpent: 1,

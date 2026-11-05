@@ -139,6 +139,38 @@ export const MANDATE_TREND_ARROW: Record<string, string> = {
   failing: '↓',
 };
 
+// ─── Mandate fill line — what fills the goal (THR-2154) ──────────────────────
+
+/**
+ * THR-2154: the Mandate already counts a threaded mortal's scenes (THR-2081
+ * Decision 2), but nothing on screen said so. The rail's fill line names who
+ * raises it: the god and the mortals bound to it, in the hunger's two spheres.
+ * `countWord` is the caller's spelled-out count ("three"), never a numeral (Laws 13/14).
+ */
+export const MANDATE_FILL_LINE = {
+  none: 'Filled by what you raise in {spheres}.',
+  one: 'Filled by what you and the one mortal bound to you raise in {spheres}.',
+  many: 'Filled by what you and the {count} mortals bound to you raise in {spheres}.',
+} as const;
+
+/** The Mandate detail's line under a sphere bar the god's cards can raise (THR-2154). */
+export const MANDATE_RAISED_BY_LINE = 'Raised by your hand and the deeds of the mortals bound to you';
+
+/** Join the hunger's sphere words: "Life and Spirit", "Life", or "your spheres". */
+function mandateSpherePhrase(words: readonly string[]): string {
+  if (words.length === 0) return 'your spheres';
+  if (words.length === 1) return words[0];
+  return `${words[0]} and ${words[1]}`;
+}
+
+export function mandateFillLine(boundCount: number, countWord: string, sphereWords: readonly string[]): string {
+  const spheres = mandateSpherePhrase(sphereWords);
+  const template = boundCount <= 0 ? MANDATE_FILL_LINE.none
+    : boundCount === 1 ? MANDATE_FILL_LINE.one
+    : MANDATE_FILL_LINE.many;
+  return template.replace('{count}', countWord).replace('{spheres}', spheres);
+}
+
 // ─── Reach copy — the two permanent domains (THR-613 §5.D) ────────────────────
 
 /**

@@ -300,6 +300,15 @@ export interface SparkVision {
   requiredPrimaryReach?: ReachDomain;
   /** Which secondary reach this vision pairs with (optional filter). */
   requiredSecondaryReach?: ReachDomain;
+  /**
+   * THR-2156 — the two things this path is *about*, as motivation axes with no
+   * pole (THR-1525: a motivation names what a scene is about; never pin a pole
+   * from a title). The path pulls a scene only when its Reach is one of the
+   * path's two **and** its motivations name one of these. Every catalog vision
+   * carries two distinct axes (completeness test); optional so an old save or a
+   * fixture without it keeps the reach-only pull.
+   */
+  themeAxes?: readonly [ValuePair, ValuePair];
 }
 
 /**

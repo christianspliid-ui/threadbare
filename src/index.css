@@ -107,6 +107,8 @@
     --text-2xl: 2rem;       /* 32px — screen titles */
     /* Story-column reading measure (THR-1833 § 4): 680px at 20px prose. */
     --measure-prose: 34em;
+    /* UI text that wraps to 3+ lines (THR-2118 § 3.4): ~70 characters of Alegreya Sans. */
+    --measure-ui: 26em;
 
     /* ── Colors ───────────────────────────────────────────────── */
     /* Background layers — deep to surface */

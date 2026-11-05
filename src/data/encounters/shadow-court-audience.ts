@@ -6,6 +6,20 @@
  * The blocking is enforced via encounterGates.blocks in the shadow.negative trait definition.
  *
  * THR-32: First tranche of reputation-gated content.
+ *
+ * ─── The mortal decides (THR-2159, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was two cards whose ids were the
+ * aftermath keys, so the click picked the ending. Now the fork decides on
+ * `honesty_cunning`: a Confessor (+1) presents plainly, a Puppeteer (−1) lets an unspoken threat do the work. The god argues with a composed hand — two
+ * pole-leaning specials plus a Repertoire fill — and the mortal answers.
+ *
+ * - Fork axis: `honesty_cunning`. `positive` = Present Honestly,
+ *   `negative` = Drop a Veiled Threat. Variants, aftermath and `stakes.arms` are keyed
+ *   to the pole, because pole mode writes the bare pole key
+ *   (`branchDecision.ts` → `recordDecidedChoice`).
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
+ * - The step-1 prose is re-voiced so the mortal does it, not the god.
  */
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
@@ -75,6 +89,39 @@ const step0TheReception: ActionStep = {
     'strangers. They offered attention, which was more valuable, and harder to extend.',
   successAfterimage: 'The court received the agent with cautious openness. The door was ajar.',
   failureAfterimage: 'The court\'s welcome felt conditional, as though the opening had been hedged.',
+  successAtCostAfterimage: 'The court received the agent, and one courtier smiled too long.',
+  criticalSuccessAfterimage: 'Every courtier in the chamber, and what each one feared, stood plain at once.',
+  criticalFailureAfterimage: 'The chamber blurred into silk and murmurs, and the agent chose half-blind.',
+  purposeLine: 'Read the court',
+  // THR-2159 — the fork's argument. Two specials, one per pole of
+  // `honesty_cunning`; the Repertoire fills the rest of the hand.
+  nudges: [
+    {
+      id: 'court.meet_the_eyes',
+      name: 'Meet The Courtier\'s Eyes',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'honesty_cunning', toward: 'positive' },
+      effectLine: 'Let them see the courtier is testing for candor. A plain test argues for a plain answer.',
+      bandProse: {
+        success: '{actor} met the courtier\'s gaze and chose plain words.',
+        failure: '{actor} tried for candor, and the court heard only nerves.',
+      },
+    },
+    {
+      id: 'court.recall_the_secret',
+      name: 'Recall What They Know',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'honesty_cunning', toward: 'negative' },
+      effectLine: 'Bring to mind the secret this court would pay to keep. Held knowledge argues for a quiet threat.',
+      bandProse: {
+        success: '{actor} remembered what the court would rather stayed buried.',
+        failure: '{actor} reached for the secret, and could not recall it whole.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['social', 'shadow'] },
 };
 
 const step1PresentHonestly: ActionStep = {
@@ -98,7 +145,7 @@ const step1PresentHonestly: ActionStep = {
   ],
   failBehavior: 'fail_action',
   narrativeTemplate:
-    'The god\'s touch was the simplest possible one: a settling of the agent into their own ' +
+    'The agent chose the simplest course there was: to settle into their own ' +
     'honesty. Not a revelation, not a confession — the court was not a confessional — but ' +
     'the alignment of saying what one means without excess and meaning what one ' +
     'says without apology. The courtier watched with professional attention as the agent ' +
@@ -138,7 +185,7 @@ const step1VeiledThreat: ActionStep = {
   ],
   failBehavior: 'fail_action',
   narrativeTemplate:
-    'The god folded something underneath the agent\'s words — not a threat in the way that ' +
+    'The agent folded something underneath their own words — not a threat in the way that ' +
     'courts recognize threats, with raised voices and explicit stakes, but the kind of ' +
     'pressure that professionals apply through implication. The weight of: I know more than ' +
     'I have said. The implication of: I have not yet decided what to do with what I know. ' +
@@ -161,9 +208,11 @@ const step1VeiledThreat: ActionStep = {
 
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  // THR-2159 — the mortal decides; the fallback is the positive pole.
+  decidedBy: { axis: 'honesty_cunning' },
   variants: {
-    present_honestly: step1PresentHonestly,
-    drop_a_veiled_threat: step1VeiledThreat,
+    positive: step1PresentHonestly,
+    negative: step1VeiledThreat,
   },
   fallback: { ...step1PresentHonestly },
 };
@@ -527,7 +576,7 @@ export const SHADOW_COURT_AUDIENCE_TEMPLATE: UnifiedActionTemplate = withEncount
     won: 'won the senior courtier\'s ear with plain talk',
     lost: 'stumbled on the court\'s sharpest question',
     arms: {
-      drop_a_veiled_threat: {
+      negative: {
         won: 'pressed a favor out of the court without a word',
         lost: 'was seen through and shown the closed door',
       },
@@ -570,53 +619,11 @@ export const SHADOW_COURT_AUDIENCE_TEMPLATE: UnifiedActionTemplate = withEncount
   illustrationUrl: '/concept-art/encounters/shadow-court-audience.jpg',
   illustrationAlt: 'A marble audience chamber, narrow cold windows. Two figures face each other across a low table — a courtier seated, the agent standing, equal in frame.',
 
-  authoredChoices: {
-    0: [
-      {
-        id: 'present_honestly',
-        label: 'Let them see what is actually there.',
-        intent:
-          'The god steadies the agent into their own honest register — not vulnerability, ' +
-          'but the alignment of saying what one means. In a court where everyone ' +
-          'performs, someone who is genuinely not performing is a rarity worth paying attention to.',
-        essenceCost: 1,
-        likelyBurden:
-          'Honest reception is not automatic. The court will probe what it is given, and ' +
-          'honest answers to good questions carry their own weight.',
-        interventionType: 'supportive',
-        // THR-528: dealing straight in a room built on performance — the Shadow virtue (Broker/Fair).
-        moralAxis: 'shadow',
-        pole: 'virtue',
-        magnitude: 0.1,
-      },
-      {
-        id: 'drop_a_veiled_threat',
-        label: 'Let the implication do the work.',
-        intent:
-          'The god loads the space beneath the agent\'s words with the pressure ' +
-          'of: I know things I have not said. Not a declaration, not a demand — just the ' +
-          'professional register of someone who is choosing, in this moment, to be polite. ' +
-          'Courts understand this language. Whether they appreciate it depends on the day and ' +
-          'the courtier.',
-        essenceCost: 2,
-        likelyBurden:
-          'The courtier is a professional. Leverage that is recognized is leverage that ' +
-          'has a cost, and she will set the cost herself, at the number that settles the account ' +
-          'and no higher.',
-        interventionType: 'coercive',
-        // THR-528: leverage by implication, leaving the threat unspoken — the Shadow vice (Manipulator/Scheming).
-        moralAxis: 'shadow',
-        pole: 'vice',
-        magnitude: 0.1,
-      },
-    ],
-  },
-
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      present_honestly: HONEST_AFTERMATH,
-      drop_a_veiled_threat: THREAT_AFTERMATH,
+      positive: HONEST_AFTERMATH,
+      negative: THREAT_AFTERMATH,
     },
     fallback: { ...HONEST_AFTERMATH },
   },

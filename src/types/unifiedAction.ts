@@ -3479,6 +3479,21 @@ export interface UnifiedAction {
    */
   readonly stepCasts?: Readonly<Record<number, StepCastRecord>>;
   /**
+   * THR-2147 — what the god's played cards wrote to the world, one entry per
+   * grant that changed something. Written once by `dispatchNudgeCommitments` in
+   * `autonomous_aftermath`, read only by `buildNudgeWriteChanges` for the
+   * Aftermath chips (the `stepCasts.writes` precedent, Law 56). A grant that
+   * found nothing to change records nothing. Absent on every action whose cards
+   * wrote nothing, and on actions from before this field. Additive/optional.
+   */
+  readonly nudgeWrites?: readonly NudgeWriteRecord[];
+  /**
+   * THR-2147 — the committed cards' grants and costs have been dispatched
+   * (`autonomous_aftermath`). Set once, so a card never pays out twice. Absent on
+   * actions from before this field.
+   */
+  readonly nudgeGrantsDispatched?: boolean;
+  /**
    * THR-636: per-resolved-step replay records — the enriched prose the player
    * saw at each step's resolution, frozen so the encounter step-navigator can
    * replay a past step without re-enriching against a moved-on world. Additive/
@@ -3534,6 +3549,31 @@ export interface StepCastWrite {
   readonly channel?: 'cast_condition';
   /** THR-1683 — the channel bearing leaves the caster worse off (a loss chip). */
   readonly harmful?: boolean;
+}
+
+/**
+ * THR-2147 — one world write a played card made (`UnifiedAction.nudgeWrites`).
+ * `hidden_mark` never records: the Long Game is hidden by design.
+ */
+export interface NudgeWriteRecord {
+  /** The played card's step-level nudge id. */
+  readonly cardId: string;
+  readonly kind:
+    | 'remove_condition'
+    | 'spawn_artifact'
+    | 'assign_ambition'
+    | 'plant_compulsion'
+    | 'emit_omen'
+    | 'favor_creation'
+    | 'spell_grant';
+  /** Whose state changed — the mortal the grant named. */
+  readonly targetId: string;
+  /**
+   * What changed: the condition, artifact or spell node id, the ambition template
+   * id, the encounter kind an urge leans toward, or the favour's creditor.
+   * Absent for an omen, which names nothing but itself.
+   */
+  readonly refId?: string;
 }
 
 /**

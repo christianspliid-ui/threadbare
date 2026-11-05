@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import type { NarrativeCandidate } from '../../types/meetingEncounter';
-import { SENSING_CHOOSE_HINT } from '../../data/meeting-narrative-prose';
+import { SENSING_CHOOSE_HINT, sensingPassedOverLine } from '../../data/meeting-narrative-prose';
 
 interface SensingBeatProps {
   candidates: NarrativeCandidate[];
@@ -68,6 +68,7 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
   const [focusedIdx, setFocusedIdx] = useState<number | null>(null);
   const [confirmedIdx, setConfirmedIdx] = useState<number | null>(null);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  const passedOverLine = sensingPassedOverLine(candidates.length);
   // THR-1987 — only a Tab moves the look. Focus alone is not intent: a mouse press
   // focuses the button before its click fires (onFocus would look closer and the
   // same click would then choose — one click, not two, Law 48), and the shell
@@ -202,6 +203,25 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
       >
         {SENSING_CHOOSE_HINT}
       </p>
+      {/* THR-2155 — the pick is final; the two passed over leave. Under the hint,
+          not under the cluster, for the same fold reason (Law 33). It stays up while
+          a portrait is focused — that is the moment of choosing — and goes on confirm. */}
+      {passedOverLine && <p
+        data-testid="sensing-passed-over"
+        className="absolute left-0 right-0 text-center transition-opacity duration-700"
+        style={{
+          top: 'calc(7vh + 4.4rem)',
+          color: 'rgb(var(--meeting-caption-rgb) / 0.65)',
+          fontFamily: 'var(--font-body)',
+          fontSize: 'var(--text-xs)',
+          letterSpacing: '0.04em',
+          opacity: confirmedIdx === null ? 1 : 0,
+          zIndex: 20,
+          pointerEvents: 'none',
+        }}
+      >
+        {passedOverLine}
+      </p>}
 
       {/* Floating candidate images */}
       {candidates.map((candidate, idx) => {

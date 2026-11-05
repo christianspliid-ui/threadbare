@@ -52,7 +52,6 @@ const GOLD = 'var(--veil-gold)';
 const TEXT_WARM = 'var(--veil-text-warm)';
 const TEXT_WHISPER = 'var(--veil-text-whisper)';
 const FONT_PROSE = 'var(--font-prose)';
-const FONT_DISPLAY = "'Palatino Linotype', 'Book Antiqua', Palatino, serif";
 
 // ── The reading moved out (THR-1478) ───────────────────────────────
 // The reach chip, the difficulty unit, the forecast and the factor lines now
@@ -61,13 +60,6 @@ const FONT_DISPLAY = "'Palatino Linotype', 'Book Antiqua', Palatino, serif";
 // subtree from inside itself. The tokens and constants they used went with
 // them. The standalone path below draws the same two components, so there is
 // one implementation of the reading and two placements of it.
-
-// ── Legend glyph size ──────────────────────────────────────────────
-// The card's own glyph sizes moved to `shared/CardFace` with the zones that
-// used them (THR-1002); the legend is the shell's, not the card's.
-
-/** Legend glyphs on the hand's chrome row. */
-const LEGEND_GLYPH_PX = 12;
 
 /**
  * THR-1724 — the hand wraps into rows of at most this many cards (Law 33,
@@ -379,8 +371,11 @@ export function NudgeCard({
         name: card.name,
         effectLine: card.effectLine,
         ...(card.leanLabel ? { leanLabel: card.leanLabel } : {}),
-        // A nudge *moves* the odds, so it reads them as pips (Law 10).
-        odds: { kind: 'delta', value: card.forecastDelta },
+        // A nudge *moves* the odds, so it reads them as pips (Law 10). THR-2147 —
+        // one that does not says what it does instead, in the same slot.
+        ...(card.resultLine
+          ? { odds: null, resultLine: card.resultLine }
+          : { odds: { kind: 'delta' as const, value: card.forecastDelta } }),
         ...(card.blockedReason ? { blockedReason: card.blockedReason } : {}),
         selected: card.selected,
         dimmed,
@@ -702,7 +697,7 @@ export function NudgePhaseShell({
               border: `1px solid ${GOLD}`,
               background: 'rgb(var(--veil-gold-rgb) / 0.1)',
               color: GOLD,
-              fontFamily: FONT_DISPLAY,
+              fontFamily: 'var(--font-body)',
               fontSize: 'var(--text-base)',
               letterSpacing: '0.06em',
               cursor: 'pointer',
@@ -753,7 +748,7 @@ export function NudgePhaseShell({
                       style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 'var(--text-xs)', color: TEXT_WHISPER, whiteSpace: 'nowrap' }}
                     >
                       {/* The odds entry stays on one line. */}
-                      <span aria-hidden="true" style={{ fontSize: LEGEND_GLYPH_PX, lineHeight: 1, whiteSpace: 'nowrap' }}>
+                      <span aria-hidden="true" style={{ fontSize: 'var(--text-xs)', lineHeight: 1, whiteSpace: 'nowrap' }}>
                         {entry.glyph}
                       </span>
                       {entry.label}

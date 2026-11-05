@@ -571,12 +571,14 @@ export const Tooltip = React.memo(function Tooltip({
           position: 'relative',
         }}
       >
+        {/* THR-2125 R4.1 / decision 4 — the plain face at 700; no display face below --text-lg. */}
         <div
+          data-tooltip-heading=""
           style={{
             fontSize: 'var(--text-xs)',
-            fontWeight: '600',
+            fontWeight: 700,
             color: TOOLTIP_LABEL_COLOR,
-            fontFamily: 'var(--font-display)',
+            fontFamily: 'var(--font-body)',
             marginBottom: finalDesc ? '0.25rem' : 0,
           }}
         >

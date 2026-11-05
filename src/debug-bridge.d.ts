@@ -286,6 +286,17 @@ export interface DebugStageState {
    * chip's carved shape, and the relic paintings on chips. Reports what was drawn, not why.
    */
   dressing: { face: 'art' | 'fallback' | 'none'; labelIcons: string[]; consequenceIcons: string[]; relicTiles: number };
+  /**
+   * THR-2124 — the Stage's reading order, read off its DOM: the title's computed size, whether
+   * it is larger than every other text in the header (the context strip and the stakes line),
+   * and per anatomy element whether its top edge lies inside `[data-stage-panel]`'s visible
+   * rect. A fold value is `null` when that element is absent (no stakes line, no hand).
+   */
+  anatomy: {
+    titleSizePx: number;
+    titleIsLargestHeaderText: boolean;
+    fold: { title: boolean; now: boolean | null; firstSceneLine: boolean | null; firstHandRow: boolean | null; commit: boolean | null };
+  };
 }
 
 /** `openHomedSurface(kind)` (THR-1892) — whether the lever opened the moment, and why not. */
@@ -302,6 +313,13 @@ export interface DebugListDressing {
   subjectRowsBare: number;
   /** Every heading shape drawn on the surface. */
   headingIcons: string[];
+  /**
+   * THR-2125 R5 — the surface's first `[data-row-name]`: computed face, size, weight, and
+   * whether it is cut (`scrollWidth > clientWidth`). `null` when the surface draws none.
+   */
+  rowName: { family: string; sizePx: number; weight: number; clipped: boolean } | null;
+  /** THR-2125 R5 — bordered boxes from that row up to the surface root (row included); 0 with no row. */
+  frameDepth: number;
 }
 
 export interface DebugCeremonyDressing {
@@ -326,9 +344,11 @@ export interface DebugOpenHomedSurfaceResult {
   /**
    * THR-2101 — what an opened dialog drew (chapter-ledger, divine-court, choice-set,
    * ascendant-beat), read off its DOM: the first face's tier (`data-dialog-face`), every
-   * heading shape (`data-dialog-heading-icon`) and the quiet slots.
+   * heading shape (`data-dialog-heading-icon`) and the quiet slots. THR-2124: `titles` counts
+   * `[data-dialog-title]` (one per dialog) and `titleAlign` is the first title's computed
+   * `text-align` (`''` when there is none).
    */
-  dressing?: { face: 'art' | 'fallback' | 'none'; headingIcons: string[]; quietSlots: number };
+  dressing?: { face: 'art' | 'fallback' | 'none'; headingIcons: string[]; quietSlots: number; titles: number; titleAlign: string };
 }
 
 /** `getInterruptState()` (THR-1608) — the Stellaris clock's registry, as data. */
@@ -414,12 +434,13 @@ export interface DebugGiftDelivery {
  * turning the clock, or an answer waiting on a paused clock.
  */
 export interface DebugChapterAnswer {
-  state: 'none' | 'answering_card' | 'running' | 'waiting';
+  /** `answering_live` (THR-2151): the live card on a running clock, stopping no time. */
+  state: 'none' | 'answering_card' | 'answering_live' | 'running' | 'waiting';
   actionId: string | null;
   stepIndex: number | null;
   /** The chapter's display name; `null` when it did not resolve. */
   chapterName: string | null;
-  /** Ticks since *Let the world turn*; 0 outside a run. */
+  /** Ticks since *Let the world turn* (or since the live card showed); 0 otherwise. */
   ticksRun: number;
 }
 
@@ -570,6 +591,19 @@ export interface DebugInspectorLabCell {
   leaks: string[];
   /** THR-2097 — what the art-led dressing drew in this cell. */
   dressing: DebugInspectorDressing;
+  /** THR-2123 — which reading slots end above the fold; null before the cell reported. */
+  fold: DebugInspectorFold | null;
+}
+
+/**
+ * THR-2123 (U4) — whether each reading slot ends inside the page's scroll box
+ * (panel anatomy § 4). `null` = the slot is absent on this page.
+ */
+export interface DebugInspectorFold {
+  who: boolean;
+  now: boolean | null;
+  act: boolean | null;
+  tabs: boolean | null;
 }
 
 /** THR-2097 — the art-led dressing a page drew (plan 2026-10-31-art-led-ui-pass § Debug inspection). */
@@ -584,6 +618,8 @@ export interface DebugInspectorDressing {
   galleryTiles: number;
   /** Section typeIds whose icon drew the fallback mark. */
   iconFallbacks: string[];
+  /** THR-2123 — the section drawn in the Now slot (its typeId); null = the slot is empty. */
+  nowSection: string | null;
 }
 
 /** Result of `getInspectorState()` (THR-1911). Null before a game is running. */
@@ -604,6 +640,8 @@ export interface DebugInspectorState {
   hiddenForWidth: string[];
   /** THR-2097 — what the art-led dressing drew; null when nothing is open. */
   dressing: DebugInspectorDressing | null;
+  /** THR-2123 — which reading slots end above the fold; null when nothing is open. */
+  fold: DebugInspectorFold | null;
   /** The Act row's card ids, as the page shows them. */
   actCards: string[];
   /** THR-1913 — every rendered row's card count (`row` is `kind:id`); rows with no card are absent. */
@@ -2163,9 +2201,13 @@ export interface DebugBridge {
           import('./types').SphereName,
           import('./engine/views/essenceRefill').EssenceRefillSphere & {
             direction: import('./engine/views/essenceRefill').EssenceDirection;
+            /** THR-2148 — the pool's limit (`computeMaxEssence`), where the row's bar ends. */
+            cap: number;
           }
         >>;
         upkeepSphere: import('./types').SphereName | null;
+        /** THR-2148 — who pays the upkeep: maintained threads and charged sources (counts). */
+        upkeepPayers: { threads: number; sources: number };
       })
     | { error: string }
   >;

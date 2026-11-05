@@ -67,6 +67,10 @@ export const HOMED_SURFACES = [
   { kind: 'meet-the-first', surfaceId: 'MeetTheFirstFlow', home: 'ceremony', stopsTime: true, holderName: 'meeting The First', heldLine: 'Meeting your First' },
   { kind: 'threading-rite', surfaceId: 'ThreadingRite', home: 'ceremony', stopsTime: true, waitsTurn: 'dialogs', holderName: 'the threading rite', heldLine: 'The threading rite with {subject}' },
   { kind: 'encounter', surfaceId: 'EncounterVeil', home: 'stage', stopsTime: true, palette: 'encounter', holderName: 'an encounter', heldLine: '{title}, with {subject}' },
+  // THR-2151 — the encounter veil as the live answering card: a step committed on a
+  // running clock waits on the Stage for its answer while the world turns underneath,
+  // so it stops no time. The `encounter` slot renders it (same veil, no remount).
+  { kind: 'encounter-answering', surfaceId: 'EncounterVeilAnswering', home: 'stage', stopsTime: false, palette: 'encounter', heldLine: '{title}, with {subject}' },
   { kind: 'premonition', surfaceId: 'PremonitionModal', home: 'stage', stopsTime: true, arrival: true, palette: 'divine', holderName: 'a premonition', heldLine: 'A premonition about {subject}' },
   { kind: 'journey-vignette', surfaceId: 'JourneyVignetteModal', home: 'stage', stopsTime: true, arrival: true, palette: 'story', holderName: 'a vision', heldLine: "A vision on {subject}'s road" },
   { kind: 'story-beat', surfaceId: 'StoryBeatModal', home: 'stage', stopsTime: true, arrival: true, palette: 'story', holderName: 'a story beat', heldLine: "A turn in {subject}'s story" },

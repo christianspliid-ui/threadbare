@@ -7,6 +7,26 @@
  *          Arcane Sage and Oracle. Neither reputation alone is sufficient.
  *
  * THR-32: First tranche of reputation-gated content.
+ *
+ * ─── The mortal decides (THR-2159, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was three cards whose ids were the
+ * aftermath keys, so the click picked the ending. Now the fork is a three-way
+ * route decision (`decidedBy.routes`, THR-898): the reader takes the course
+ * they are good at and inclined to, and the god argues with a composed hand.
+ *
+ * - Fork: route mode, three courses with the sealed text.
+ *   - `interpret_plainly` — Eye, `revelation_discretion` +: read both layers out.
+ *   - `withhold_half_as_leverage` — Shadow, `honesty_cunning` −: give the
+ *     structure, keep the consequence.
+ *   - `refuse_the_reading` — Veil, `revelation_discretion` −: keep the text shut.
+ * - One special argues `revelation_discretion` +, which pulls toward the plain
+ *   reading and away from the refusal at once; the other names the withholding
+ *   route directly.
+ * - Route keys are the old variant keys, so aftermath and `stakes.arms` keep
+ *   their keys; only the choosing moved.
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
+ * - The step-1 prose is re-voiced so the reader does it, not the god.
  */
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
@@ -78,6 +98,39 @@ const step0TheApproach: ActionStep = {
     'that made them appear, briefly, to be moving on their own. "{title}. Please sit."',
   successAfterimage: 'The sage\'s careful arrangement found its audience. The text waited between them.',
   failureAfterimage: 'The sage had prepared for this meeting and the preparation showed — which meant the gap between preparation and reality showed too.',
+  successAtCostAfterimage: 'The text waited between them, and the sage watched the agent too closely.',
+  criticalSuccessAfterimage: 'Both layers of the parchment stood clear before the agent sat down.',
+  criticalFailureAfterimage: 'The traceries swam in the lamplight, and the agent chose without seeing them.',
+  purposeLine: 'Read the sealed text',
+  // THR-2159 — the fork's argument. One special argues `revelation_discretion` +
+  // (toward the plain reading, away from refusal); one names the withholding route.
+  nudges: [
+    {
+      id: 'consultation.trace_the_third_line',
+      name: 'Trace The Third Line',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'revelation_discretion', toward: 'positive' },
+      effectLine: 'Draw their eye along the tracery the sage cannot see. A hidden meaning argues for saying it.',
+      bandProse: {
+        success: '{actor} followed the third tracery, and wanted to speak it.',
+        failure: '{actor} traced the line, and it faded under the lamp.',
+      },
+    },
+    {
+      id: 'consultation.count_the_leverage',
+      name: 'Count The Leverage',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { route: 'withhold_half_as_leverage' },
+      effectLine: 'Let them see what the sage would owe for the second half. A debt argues for keeping it.',
+      bandProse: {
+        success: '{actor} saw what the unspoken half was worth.',
+        failure: '{actor} weighed the leverage, and the sage was watching.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['lore', 'insight'] },
 };
 
 const step1InterpretPlainly: ActionStep = {
@@ -100,7 +153,7 @@ const step1InterpretPlainly: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god steadied the agent\'s perception toward the text and let the two kinds of ' +
+    'The agent turned their whole perception on the text and let the two kinds of ' +
     'knowing open simultaneously — the structural (what the words declared) and the living ' +
     '(what the words would produce if the declaration were acted upon). Most people can hold ' +
     'one kind. Very few can hold both at once without the second kind overwriting the first, ' +
@@ -143,8 +196,8 @@ const step1WithholdHalf: ActionStep = {
   ],
   failBehavior: 'fail_action',
   narrativeTemplate:
-    'The god introduced a selective pressure into the agent\'s perception — not falsifying ' +
-    'the reading, but choosing which of the two kinds of knowing to make visible. The ' +
+    'The agent chose what to say — not falsifying the reading, but choosing which of ' +
+    'the two kinds of knowing to make visible. The ' +
     'structural interpretation was offered in full. The living consequence was offered ' +
     'in half. Not a lie: a strategic partial truth, the kind that is technically complete ' +
     'and practically incomplete in the specific places where incompleteness creates leverage.\n\n' +
@@ -152,7 +205,7 @@ const step1WithholdHalf: ActionStep = {
     'quality of attention that involves checking internal notes as you go — running the ' +
     'stated interpretation against what you already know, watching for the places where ' +
     'the surface smooths over something that should have a texture. They found the place ' +
-    'where the living consequence had been withheld. The god watched them find it.\n\n' +
+    'where the living consequence had been withheld. The agent watched them find it.\n\n' +
     'The sage did not say anything about what they had found. They were too careful for that. ' +
     'But their posture changed slightly — the careful professional recalibration of someone ' +
     'who has just understood that the person across the table from them is not giving everything ' +
@@ -184,7 +237,7 @@ const step1RefuseReading: ActionStep = {
   ],
   failBehavior: 'fail_action',
   narrativeTemplate:
-    'The god held the agent back from the text entirely — not from incapacity but from ' +
+    'The agent held back from the text entirely — not from incapacity but from ' +
     'refusal. The two kinds of knowing were present and available; the agent simply did ' +
     'not open them toward what was being asked. The sage waited. The silence in the room ' +
     'became the kind that requires interpretation.\n\n' +
@@ -204,8 +257,20 @@ const step1RefuseReading: ActionStep = {
   failureAfterimage: 'The refusal landed badly. The sage felt dismissed rather than redirected, and the distinction was not academic.',
 };
 
+/**
+ * The fork. Route mode (THR-898): three courses with the sealed text. Fallback
+ * reads it plainly, the course the encounter's base stakes describe.
+ */
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  // THR-2159 — the reader decides which course to take.
+  decidedBy: {
+    routes: [
+      { key: 'interpret_plainly', reach: 'eye', axis: 'revelation_discretion', toward: 'positive' },
+      { key: 'withhold_half_as_leverage', reach: 'shadow', axis: 'honesty_cunning', toward: 'negative' },
+      { key: 'refuse_the_reading', reach: 'veil', axis: 'revelation_discretion', toward: 'negative' },
+    ],
+  },
   variants: {
     interpret_plainly: step1InterpretPlainly,
     withhold_half_as_leverage: step1WithholdHalf,
@@ -701,53 +766,6 @@ export const VEILED_CONSULTATION_TEMPLATE: UnifiedActionTemplate = withEncounter
 
   illustrationUrl: '/concept-art/encounters/the-veiled-consultation.jpg',
   illustrationAlt: 'A narrow lamp-lit room. An elder sage unrolls a parchment across a low table; the agent\'s hand rests at the scroll\'s edge. Ink traceries glow faintly. Deep indigo, lamp-amber, scroll-cream.',
-
-  authoredChoices: {
-    0: [
-      {
-        id: 'interpret_plainly',
-        label: 'Read it fully — both kinds at once.',
-        intent:
-          'The god opens both kinds of knowing simultaneously and lets the agent hold what ' +
-          'few people can hold: the formal structure of the text and the living consequence ' +
-          'of acting on it, at the same time. The reading will cost something to deliver and ' +
-          'something to receive. The sage will receive it completely.',
-        essenceCost: 2,
-        likelyBurden:
-          'Full reading of both layers means the consequence is now out and moving. Whatever ' +
-          'the text held, it is no longer sealed. The sage will act on what they received.',
-        interventionType: 'supportive',
-      },
-      {
-        id: 'withhold_half_as_leverage',
-        label: 'Give the structure, keep the consequence.',
-        intent:
-          'The god shapes the agent\'s disclosure: the formal interpretation fully delivered, ' +
-          'the living consequence strategically withheld. The sage will receive a complete ' +
-          'structural reading and an incomplete living one. The gap will be perceptible to ' +
-          'a professional. That perceptibility is the point.',
-        essenceCost: 2,
-        likelyBurden:
-          'The sage will identify the gap. A professional who identifies a gap and does not ' +
-          'say so has filed it. The relationship will carry that filing.',
-        interventionType: 'coercive',
-      },
-      {
-        id: 'refuse_the_reading',
-        label: 'Refuse entirely.',
-        intent:
-          'The god holds the agent back from both kinds of knowing. The text sits unopened. ' +
-          'The refusal is complete and the reason for it is not given. The sage will interpret ' +
-          'the silence as they will — as a restriction, an instruction, or a cost they have not ' +
-          'yet paid. The word will travel. Its meaning will be assigned.',
-        essenceCost: 0,
-        likelyBurden:
-          'The Oracle who refuses shapes what people believe the Oracle knows. The word is ' +
-          'already becoming a story. The story\'s shape is now out of the god\'s direct control.',
-        interventionType: 'withdrawn',
-      },
-    ],
-  },
 
   aftermathConfig: {
     branchOnStep: 0,

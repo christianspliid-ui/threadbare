@@ -229,7 +229,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             + 'face.',
           bandProse: {
             critical_success: 'The square roared {actor}\'s name, and {cast:champion} looked at the crowd instead of the blade.',
-            success: 'The crowd shouted for the family\'s champion, and {actor} fought into the noise.',
+            success: 'The crowd shouted {actor}\'s name, and {actor} fought into the noise.',
             near_miss: 'The crowd shouted for {actor}, then fell quiet when the champion pressed.',
             failure: 'The crowd roared for {actor}, and {cast:champion} paid it no attention.',
           },
@@ -788,7 +788,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   },
   description:
     'A fighting order claims a family\'s farm under a false sale, and the court has set a trial by '
-    + 'combat in the market square. The family\'s champion faces a fighting style they have never '
+    + 'combat in the market square. Someone has to fight for the family against a style they have never '
     + 'seen.',
   locationSubtypes: expandSettings(['urban']),
   consequenceDraw: ['thread', 'place'],

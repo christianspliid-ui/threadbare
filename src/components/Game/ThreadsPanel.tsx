@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { FirstUseCaption, FirstUseCaptionZone } from '../shared/FirstUseCaption';
+import { dismissFirstUseCaption } from '../shared/firstUseCaptionStore';
 import type { ThreadedNode, ThreadCategory, SustainedControlNode, SustainedControlCategory } from '../../engine/retinue';
 import { groupThreadedNodes, SUSTAIN_BAR_MIN_VISIBLE_FRACTION, SUSTAIN_LAPSE_RISK_TIGHTENING_TICKS } from '../../engine/retinue';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
@@ -7,7 +8,7 @@ import type { BalanceEvent } from '../../types/balanceEval';
 import type { ActiveEncounterDisplay } from './encounterNotificationRuntime';
 import { SectionHeading } from '../shared/SectionHeading';
 import { RowPicture, rowDressingAttrs } from '../shared/RowPicture';
-import { ListHeadingIcon } from '../shared/ListHeadingIcon';
+import { RailTitle } from './frame/RailTitle';
 import { listHeadingIcon, type ListHeadingId } from '../../data/view-content';
 import type { EntityVisualDescriptor } from '../../engine/views/entityVisualResolver';
 import { Icon } from '../shared/Icon';
@@ -42,6 +43,23 @@ import { STRATEGIC_BADGE_BG_OPACITY } from '../../engine/strategicPresentation';
 import { THREAD_PIP_LABEL } from '../../data/frame-content';
 
 /**
+ * THR-2125 R2.3 — a thread row's name: Text 700 at `--text-sm`, sentence case, for every
+ * category. It wraps (decision 5) and is never the part that truncates; the marks after it
+ * keep `flexShrink: 0`.
+ */
+const ROW_NAME_STYLE: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 'var(--text-sm)',
+  fontWeight: 700,
+  flex: '1 1 auto',
+  minWidth: 0,
+  overflowWrap: 'anywhere',
+};
+
+/** Used only if the three-line kill criterion fires (plan § Kill criteria). */
+export const THREAD_NAME_MAX_LINES = 2;
+
+/**
  * THR-1893 — the "A chapter waits" pip's predicate: an agent row with a pending
  * encounter. The Ledger strip's Threads count reads this too, so the strip and the
  * rows never disagree.
@@ -51,6 +69,30 @@ export function threadHasWaitingChapter(
   activeEncounters: ReadonlyMap<string, unknown> | undefined,
 ): boolean {
   return node.category === 'agent' && !!activeEncounters?.has(node.id);
+}
+
+/**
+ * THR-2155 — the mortal rows the panel lists. A relic or a place the god threads
+ * (Beat 2 threads a relic) is not a mortal, so it does not count. A dead mortal's
+ * row does count: holding two mortal rows means the player has bound a second,
+ * which is what the "bind another" caption teaches.
+ */
+export function countMortalThreads(nodes: ReadonlyArray<{ category: string }>): number {
+  return nodes.filter(n => n.category === 'agent').length;
+}
+
+/**
+ * THR-2155 — whether the "bind another" caption is owed: exactly one mortal
+ * thread. Its `{name}` is The First's (the one row at `the_first`, else the one
+ * mortal held).
+ */
+export function nextThreadCaption(
+  nodes: ReadonlyArray<{ category: string; name: string; courtPosition: string | null }>,
+): { show: boolean; firstName: string | undefined } {
+  const mortals = nodes.filter(n => n.category === 'agent');
+  if (mortals.length !== 1) return { show: false, firstName: undefined };
+  const first = mortals.find(n => n.courtPosition === 'the_first') ?? mortals[0];
+  return { show: true, firstName: first.name || undefined };
 }
 
 // ─── Section config ───────────────────────────────────────────────
@@ -545,17 +587,12 @@ function CompactThreadRow({
                 />
               </Tooltip>
             )}
+            {/* THR-2125 R2.3 — the row's name is its whole job: Text 700, wraps, never cut. */}
             <span
-              className="truncate"
+              data-row-name=""
               style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: node.category === 'agent' ? 17 : 'var(--text-xs)',
-                fontWeight: 600,
+                ...ROW_NAME_STYLE,
                 color: isSelected ? 'var(--accent-gold)' : 'var(--text-primary)',
-                letterSpacing: node.category === 'agent' ? '0.04em' : undefined,
-                textTransform: node.category === 'agent' ? 'uppercase' : undefined,
-                flex: 1,
-                minWidth: 0,
               }}
             >
               {node.name}
@@ -684,8 +721,7 @@ function CompactThreadRow({
                   padding: '1px 6px',
                   border: '1px solid var(--accent-gold)',
                   borderRadius: 999,
-                  fontSize: 11, fontFamily: 'var(--font-body)',
-                  fontStyle: 'italic', letterSpacing: '0.04em',
+                  fontSize: 'var(--text-xs)', fontFamily: 'var(--font-body)', // THR-2125 R2.4
                   color: 'var(--accent-gold)',
                   backgroundColor: 'transparent',
                   cursor: onChampionChipClick ? 'pointer' : 'default',
@@ -708,8 +744,7 @@ function CompactThreadRow({
                     padding: '1px 6px',
                     border: '1px solid var(--sphere-star-bright, var(--accent-gold))',
                     borderRadius: 999,
-                    fontSize: 11, fontFamily: 'var(--font-body)',
-                    fontStyle: 'italic', letterSpacing: '0.04em',
+                    fontSize: 'var(--text-xs)', fontFamily: 'var(--font-body)', // THR-2125 R2.4
                     color: 'var(--sphere-star-bright, var(--accent-gold))',
                     backgroundColor: 'transparent',
                   }}
@@ -983,17 +1018,7 @@ function SustainedControlRow({ node, onCenterOnHex }: SustainedControlRowProps) 
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
-            <span
-              className="truncate"
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 15,
-                fontWeight: 500,
-                color: 'var(--text-primary)',
-                flex: 1,
-                minWidth: 0,
-              }}
-            >
+            <span data-row-name="" style={{ ...ROW_NAME_STYLE, color: 'var(--text-primary)' }}>
               {node.displayName}
             </span>
             <button
@@ -1119,6 +1144,13 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
 
   const groups = groupThreadedNodes(threadedNodes);
 
+  // THR-2155 — the "bind another" caption. Binding a second mortal is the use
+  // that retires it for good (Law 51), as a hover or a press retires the others.
+  const nextThread = nextThreadCaption(threadedNodes);
+  const mortalThreads = countMortalThreads(threadedNodes);  useEffect(() => {
+    if (mortalThreads >= 2) dismissFirstUseCaption('threads_next');
+  }, [mortalThreads]);
+
   const toggleSection = (category: ThreadSectionKey) => {
     setExpandedSections(prev => ({ ...prev, [category]: !prev[category] }));
   };
@@ -1127,18 +1159,8 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
   const totalCount = threadedNodes.length + sustainedCount;
   if (totalCount === 0) {
     return (
-      <div className="panel" style={{ padding: 'var(--space-3)' }}>
-        <div
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 'var(--text-lg)',
-            fontWeight: 700,
-            color: 'var(--text-primary)',
-            paddingBottom: 'var(--space-2)',
-          }}
-        >
-          Threads
-        </div>
+      <div data-testid="threads-panel-empty">
+        <RailTitle>Threads</RailTitle>
         <div
           className="italic text-center animate-breathe"
           style={{
@@ -1156,25 +1178,13 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
 
   return (
     <FirstUseCaptionZone id="threads">
-      <div className="panel" data-testid="threads-panel" style={{ padding: 'var(--space-3)' }}>
-        {/* Panel title */}
-        <div
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 'var(--text-lg)',
-            fontWeight: 700,
-            color: 'var(--text-primary)',
-            paddingBottom: 'var(--space-2)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-          }}
-        >
-          <ListHeadingIcon id="threadsTitle" />
-          Threads
-        </div>
+      {/* THR-2125 R2.2 — no frame: the rail pads, the Title and the gap group (THR-2120 § 3). */}
+      <div data-testid="threads-panel">
+        <RailTitle icon="threadsTitle">Threads</RailTitle>
         {/* THR-1986 — what the panel holds, until the player uses it once. */}
         <FirstUseCaption id="threads" />
+        {/* THR-2155 — how to bind a second mortal, only while the god holds one. */}
+        {nextThread.show && <FirstUseCaption id="threads_next" name={nextThread.firstName} />}
 
         {/* Sections */}
         {SECTION_ORDER.map((category) => {

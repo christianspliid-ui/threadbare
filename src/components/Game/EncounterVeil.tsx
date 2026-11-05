@@ -54,6 +54,7 @@ import {
   CHAPTER_ANSWER_BACK_LABEL,
   CHAPTER_ANSWER_RUN_LABEL,
   CHAPTER_ANSWER_WAITS_LINE,
+  CHAPTER_ANSWER_LIVE_WAITS_LINE,
   NUDGE_BLOCKED_REASONS,
   NUDGE_COMMIT_LABEL,
   lastStepAnswer,
@@ -157,7 +158,7 @@ export interface EncounterVeilProps {
    * and *Back to the map*. Escape is *Back to the map*; the run button takes
    * focus, so Enter is *Let the world turn*.
    */
-  answering?: { choiceLine: string };
+  answering?: { choiceLine: string; live?: boolean };
   /** THR-1812 — run the clock until this step answers, then pause again. */
   onLetWorldTurn?: () => void;
   /** THR-1812 — close; the clock stays paused and the answer waits. */
@@ -245,7 +246,8 @@ function VeilLeftColumn({
   return (
     <div
       data-testid="veil-left-column"
-      style={{ display: 'flex', flexDirection: 'column', gap: 16, minHeight: 0, flex: 1, overflowY: 'auto', background: 'var(--veil-void)' }}
+      // THR-2124 — paints no surface: its host (the Stage panel, or the in-place frame) does.
+      style={{ display: 'flex', flexDirection: 'column', gap: 16, minHeight: 0, flex: 1, overflowY: 'auto' }}
     >
       {illustration && (
         <figure style={{ margin: 0, flexShrink: 0, overflow: 'hidden' }}>
@@ -314,7 +316,7 @@ const CONSEQUENCE_TAG_MIN_PX = 74;
  * The value is 210 rather than the 240 the ticket proposed, because the sentence
  * beside the tag is `flex: 1` inside a 540px container: every pixel the tag
  * gains is a pixel the prose loses. Measured over the four Grateful Kin bands
- * and the six widest authored tags in the corpus (Palatino 16px / 0.16em, the
+ * and the six widest authored tags in the corpus (the then display face at 16px / 0.16em, the
  * real row geometry):
  *
  * | maxWidth | tag lines | sentence column | row height | tag↔sentence gap |
@@ -393,7 +395,6 @@ function consequenceReach(domain: string | undefined): ReachDomain | undefined {
 
 const VOID = 'var(--veil-void)';
 const FONT_PROSE = 'var(--font-prose)';
-const FONT_DISPLAY = "'Palatino Linotype', 'Book Antiqua', Palatino, serif";
 const GOLD = 'var(--veil-gold)';
 const GOLD_DIM = 'var(--veil-gold-dim)';
 // Law 45: these three carry subtitles, prompts and step prose, so all three sit
@@ -403,6 +404,8 @@ const GOLD_DIM = 'var(--veil-gold-dim)';
 const TEXT_WARM = 'var(--veil-text-warm)';
 const TEXT_WHISPER = 'var(--veil-text-whisper)';
 const TEXT_GHOST = 'var(--veil-text-ghost)';
+/** THR-2124 — the Stage's primary text (9.5:1): the title and the stakes line. */
+const TEXT_BRIGHT = 'var(--veil-text-bright)';
 
 /** Art opacity per thread tier */
 const ART_OPACITY: Record<ThreadTier, number> = {
@@ -499,6 +502,17 @@ export function forwardVeilWheel(
  * are gone with it (plan THR-1877 § D4).
  */
 const PROSE_MEASURE = 'var(--measure-prose)';
+
+/**
+ * THR-2124 — the Stage's Now slot: the stakes line (or the subtitle fallback),
+ * upright Text in the Stage's primary colour, one between-block gap above the scene.
+ */
+const STAGE_NOW_STYLE: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 'var(--text-sm)',
+  color: TEXT_BRIGHT,
+  marginBottom: 'var(--space-6)',
+};
 
 /**
  * THR-1895 — the aftermath's exit. Was "Return to the world"; on the Stage the world
@@ -953,7 +967,6 @@ export function EncounterVeil({
             display: 'flex',
             flexDirection: 'column',
             padding: VEIL_COLUMN_PADDING,
-            background: VOID,
             // The column's only scroll box, the whole height of the panel (Law 57).
             overflowY: 'auto',
           }}
@@ -984,12 +997,12 @@ export function EncounterVeil({
           {/* Encounter title — what encounter this was */}
           <div
             data-testid="aftermath-encounter-title"
+            data-stage-title=""
             style={{
-              fontFamily: FONT_DISPLAY,
-              fontSize: 'var(--text-xs)',
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              color: TEXT_GHOST,
+              fontFamily: 'var(--font-display)',
+              fontSize: 'var(--text-xl)',
+              lineHeight: 1.15,
+              color: TEXT_BRIGHT,
               marginBottom: 6,
               ...aftermathEntrance(0.6, 0.8),
             }}
@@ -1042,7 +1055,7 @@ export function EncounterVeil({
           <div
             data-testid="aftermath-section-label"
             style={{
-              fontFamily: FONT_DISPLAY,
+              fontFamily: 'var(--font-body)',
               fontSize: 'var(--text-xs)',
               letterSpacing: '0.18em',
               textTransform: 'uppercase',
@@ -1074,7 +1087,7 @@ export function EncounterVeil({
               >
                 <span
                   style={{
-                    fontFamily: FONT_DISPLAY,
+                    fontFamily: 'var(--font-display)',
                     fontSize: '3.4em',
                     float: 'left',
                     lineHeight: 0.75,
@@ -1123,7 +1136,7 @@ export function EncounterVeil({
                   <div>
                     <div
                       style={{
-                        fontFamily: FONT_DISPLAY,
+                        fontFamily: 'var(--font-body)',
                         fontSize: 'var(--text-xs)',
                         letterSpacing: '0.06em',
                         color: TEXT_WARM,
@@ -1254,7 +1267,7 @@ export function EncounterVeil({
                   <span
                     data-testid={`consequence-chip-tag-${chip.category}`}
                     style={{
-                      fontFamily: FONT_DISPLAY,
+                      fontFamily: 'var(--font-body)',
                       fontSize: 'var(--text-xs)',
                       letterSpacing: '0.16em',
                       color: consequenceToneColor(chip.tone),
@@ -1410,8 +1423,8 @@ export function EncounterVeil({
                     gap: 14,
                     paddingLeft: 14,
                     marginTop: 2,
-                    fontFamily: FONT_DISPLAY,
-                    fontSize: 'var(--text-2xs)',
+                    fontFamily: 'var(--font-body)',
+                    fontSize: 'var(--text-xs)',
                     letterSpacing: '0.12em',
                     color: TEXT_WHISPER,
                   }}
@@ -1515,7 +1528,7 @@ export function EncounterVeil({
                 >
                   <div
                     style={{
-                      fontFamily: FONT_DISPLAY,
+                      fontFamily: 'var(--font-body)',
                       fontSize: 'var(--text-xs)',
                       letterSpacing: '0.05em',
                       color: TEXT_WARM,
@@ -1807,7 +1820,6 @@ export function EncounterVeil({
           position: 'relative',
           flex: 1,
           minHeight: 0,
-          background: VOID,
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
@@ -1829,7 +1841,7 @@ export function EncounterVeil({
         >
           <div
             style={{
-              fontFamily: FONT_DISPLAY,
+              fontFamily: 'var(--font-body)',
               fontSize: 'var(--text-xs)',
               letterSpacing: '0.18em',
               textTransform: 'uppercase',
@@ -1914,7 +1926,7 @@ export function EncounterVeil({
             {/* Diamond icon */}
             <div
               style={{
-                fontFamily: FONT_DISPLAY,
+                fontFamily: 'var(--font-display)',
                 fontSize: '1.8rem',
                 color: GOLD,
                 opacity: 0.35,
@@ -2239,7 +2251,7 @@ export function EncounterVeil({
         position: 'relative',
         flex: 1,
         minHeight: 0,
-        background: VOID,
+        // THR-2124 — one surface: the host paints the void, the column paints nothing.
         overflow: 'hidden',
       }}
     >
@@ -2345,12 +2357,13 @@ export function EncounterVeil({
         >
           <div
             data-testid="veil-title"
+            data-stage-title=""
             style={{
-              fontFamily: FONT_DISPLAY,
-              fontSize: 'var(--text-xs)',
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              color: TEXT_GHOST,
+              // THR-2124 — the title is the header's strongest text (Who first).
+              fontFamily: 'var(--font-display)',
+              fontSize: 'var(--text-xl)',
+              lineHeight: 1.15,
+              color: TEXT_BRIGHT,
             }}
           >
             <StageLabelIcon label="encounterTitle" />
@@ -2427,24 +2440,10 @@ export function EncounterVeil({
             line={model.header.stakesLine}
             onSelectAgent={onSelectAgent}
             onSelectLocation={onSelectEntity ? (id) => onSelectEntity(id, 'location') : undefined}
-            style={{
-              fontFamily: FONT_PROSE,
-              fontStyle: 'italic',
-              fontSize: 'var(--text-xs)',
-              color: TEXT_WHISPER,
-              marginBottom: 20,
-            }}
+            style={STAGE_NOW_STYLE}
           />
         ) : model.header.subtitle && (
-          <div
-            style={{
-              fontFamily: FONT_PROSE,
-              fontStyle: 'italic',
-              fontSize: 'var(--text-xs)',
-              color: TEXT_WHISPER,
-              marginBottom: 20,
-            }}
-          >
+          <div data-stage-now="" style={STAGE_NOW_STYLE}>
             {model.header.subtitle}
           </div>
         )}
@@ -2496,10 +2495,7 @@ export function EncounterVeil({
                 {answer.prose && (
                   <p
                     style={{
-                      fontFamily: FONT_PROSE,
-                      fontStyle: 'italic',
-                      fontSize: 'var(--text-xs)',
-                      lineHeight: 1.7,
+                      font: 'var(--type-flavor)',
                       color: TEXT_WHISPER,
                       margin: 0,
                     }}
@@ -2517,13 +2513,12 @@ export function EncounterVeil({
             return (
               <p
                 key={para.id}
+                data-stage-scene-line={isFirst ? '' : undefined}
                 style={{
-                  fontFamily: FONT_PROSE,
-                  fontStyle: 'italic',
-                  fontSize: 'var(--text-xs)',
-                  lineHeight: 1.85,
+                  // THR-2124 — story text reads at the Story size, upright.
+                  font: 'var(--type-body-prose)',
                   color: TEXT_WARM,
-                  marginBottom: 16,
+                  marginBottom: 'var(--space-3)',
                   maxWidth: PROSE_MEASURE,
                 }}
               >
@@ -2531,7 +2526,7 @@ export function EncounterVeil({
                   <>
                     <span
                       style={{
-                        fontFamily: FONT_DISPLAY,
+                        fontFamily: 'var(--font-display)',
                         fontSize: '3.4em',
                         float: 'left',
                         lineHeight: 0.75,
@@ -2637,6 +2632,7 @@ export function EncounterVeil({
           {answering ? (
             <ChapterAnsweringCard
               choiceLine={answering.choiceLine}
+              live={answering.live === true}
               onLetWorldTurn={onLetWorldTurn}
               onBackToMap={onBackToMap ?? leaveVeil}
             />
@@ -2780,55 +2776,82 @@ export function EncounterVeil({
  */
 function ChapterAnsweringCard({
   choiceLine,
+  live = false,
   onLetWorldTurn,
   onBackToMap,
 }: {
   choiceLine: string;
+  /**
+   * THR-2151 — the clock is running: the world is already turning, so there is no
+   * *Let the world turn*. The waiting line sits over the sanctioned breathing
+   * placeholder (Law 54) and the answer opens in this card's place. Content-light by
+   * design (the card stops no time): the choice line and the waiting line only.
+   */
+  live?: boolean;
   onLetWorldTurn?: () => void;
   onBackToMap: () => void;
 }) {
   return (
-    <div data-testid="chapter-answering-card" role="status" aria-live="polite">
+    <div data-testid="chapter-answering-card" data-live={live ? 'true' : undefined} role="status" aria-live="polite">
       <p
         data-testid="chapter-answering-choice"
         style={{ fontFamily: FONT_PROSE, fontStyle: 'italic', fontSize: 'var(--text-sm)', color: TEXT_WARM, margin: 0 }}
       >
         {choiceLine}
       </p>
+      {live && (
+        <div
+          data-testid="chapter-answering-live-wait"
+          className="animate-breathe"
+          aria-hidden="true"
+          style={{ marginTop: 16, height: 3, width: 160, borderRadius: 2, background: 'rgb(var(--veil-gold-rgb) / 0.35)' }}
+        />
+      )}
       <p
         data-testid="chapter-answering-waits"
-        style={{ fontFamily: FONT_PROSE, fontSize: 'var(--text-xs)', color: TEXT_WHISPER, margin: '8px 0 0' }}
+        // THR-2151 — the live line carries information (where the answer lands), so
+        // secondary text, not whisper (Law 45).
+        style={{
+          fontFamily: FONT_PROSE,
+          fontSize: 'var(--text-xs)',
+          color: live ? 'var(--text-secondary)' : TEXT_WHISPER,
+          margin: live ? '10px 0 0' : '8px 0 0',
+        }}
       >
-        {CHAPTER_ANSWER_WAITS_LINE}
+        {live ? CHAPTER_ANSWER_LIVE_WAITS_LINE : CHAPTER_ANSWER_WAITS_LINE}
       </p>
       <div style={{ marginTop: 24, display: 'flex', alignItems: 'center', gap: 20 }}>
-        <button
-          type="button"
-          className="focus-ring"
-          data-testid="chapter-answer-run"
-          // Focus lands here so Enter lets the world turn.
-          autoFocus
-          onClick={onLetWorldTurn}
-          disabled={!onLetWorldTurn}
-          style={{
-            padding: '10px 22px',
-            borderRadius: 8,
-            border: `1px solid ${GOLD}`,
-            background: 'rgb(var(--veil-gold-rgb) / 0.1)',
-            color: GOLD,
-            fontFamily: FONT_DISPLAY,
-            fontSize: 'var(--text-base)',
-            letterSpacing: '0.06em',
-            cursor: onLetWorldTurn ? 'pointer' : 'default',
-            opacity: onLetWorldTurn ? 1 : 0.4,
-          }}
-        >
-          {CHAPTER_ANSWER_RUN_LABEL}
-        </button>
+        {!live && (
+          <button
+            type="button"
+            className="focus-ring"
+            data-testid="chapter-answer-run"
+            // Focus lands here so Enter lets the world turn.
+            autoFocus
+            onClick={onLetWorldTurn}
+            disabled={!onLetWorldTurn}
+            style={{
+              padding: '10px 22px',
+              borderRadius: 8,
+              border: `1px solid ${GOLD}`,
+              background: 'rgb(var(--veil-gold-rgb) / 0.1)',
+              color: GOLD,
+              fontFamily: 'var(--font-body)',
+              fontSize: 'var(--text-base)',
+              letterSpacing: '0.06em',
+              cursor: onLetWorldTurn ? 'pointer' : 'default',
+              opacity: onLetWorldTurn ? 1 : 0.4,
+            }}
+          >
+            {CHAPTER_ANSWER_RUN_LABEL}
+          </button>
+        )}
         <button
           type="button"
           className="focus-ring"
           data-testid="chapter-answer-back"
+          // On the live card this is the one way out (D4), so focus lands on it.
+          autoFocus={live}
           onClick={onBackToMap}
           style={{
             background: 'none',
@@ -2917,7 +2940,7 @@ function ResolutionReadoutBlock({
     >
       <div
         style={{
-          fontFamily: FONT_DISPLAY,
+          fontFamily: 'var(--font-body)',
           fontSize: 'var(--text-xs)',
           letterSpacing: '0.16em',
           textTransform: 'uppercase',
@@ -2956,7 +2979,7 @@ function ResolutionCheckCard({ entry }: { entry: EncounterStageResolutionCheckMo
       >
         <div
           style={{
-            fontFamily: FONT_DISPLAY,
+            fontFamily: 'var(--font-body)',
             fontSize: 'var(--text-xs)',
             letterSpacing: '0.08em',
             color: TEXT_WARM,
@@ -3042,7 +3065,7 @@ function StageCommit({
           border: `1px solid ${GOLD}`,
           background: 'rgb(var(--veil-gold-rgb) / 0.1)',
           color: GOLD,
-          fontFamily: FONT_DISPLAY,
+          fontFamily: 'var(--font-body)',
           fontSize: 'var(--text-base)',
           letterSpacing: '0.06em',
           opacity: disabled ? 0.4 : 1,
@@ -3243,7 +3266,7 @@ function ChoiceBlock({ choice, selected, onClick }: ChoiceBlockProps) {
       {choice.godVoice && (
         <div
           style={{
-            fontFamily: FONT_DISPLAY,
+            fontFamily: 'var(--font-body)',
             fontStyle: 'italic',
             fontSize: 'var(--text-xs)',
             color: GOLD,
@@ -3381,7 +3404,7 @@ function CastStrip({
               <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                 <span
                   style={{
-                    fontFamily: FONT_DISPLAY,
+                    fontFamily: 'var(--font-body)',
                     fontSize: 'var(--text-xs)',
                     letterSpacing: '0.06em',
                     color: TEXT_WARM,
@@ -3434,7 +3457,7 @@ function FalloutPreview({ fallout }: { fallout: EncounterStageFalloutModel[] }) 
     >
       <span
         style={{
-          fontFamily: FONT_DISPLAY,
+          fontFamily: 'var(--font-body)',
           fontSize: 'var(--text-xs)',
           letterSpacing: '0.16em',
           textTransform: 'uppercase',
@@ -3579,7 +3602,7 @@ function ContextStrip({
           />}
           <span
             style={{
-              fontFamily: FONT_DISPLAY,
+              fontFamily: 'var(--font-body)',
               fontSize: 'var(--text-xs)',
               letterSpacing: '0.06em',
               color: TEXT_WARM,
@@ -4002,7 +4025,7 @@ function StepReplayView({
       >
         <span
           style={{
-            fontFamily: FONT_DISPLAY,
+            fontFamily: 'var(--font-body)',
             fontSize: 'var(--text-xs)',
             letterSpacing: '0.14em',
             textTransform: 'uppercase',
@@ -4080,7 +4103,7 @@ function StepReplayView({
       {entry.choiceText && (
         <div
           style={{
-            fontFamily: FONT_DISPLAY,
+            fontFamily: 'var(--font-body)',
             fontStyle: 'italic',
             fontSize: 'var(--text-xs)',
             color: GOLD,

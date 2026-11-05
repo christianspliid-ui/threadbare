@@ -8,6 +8,22 @@
  * backing, delivered as an attachment that changes what the agent can do.
  *
  * Seeds: Letters of Introduction (tomes_scrolls), which auto-grants Patron's Backing.
+ *
+ * ─── The mortal decides (THR-2158, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was two cards whose ids were the
+ * aftermath keys, so the click picked the ending. Now the fork decides on
+ * `honesty_cunning`: a Confessor (+1) petitions openly through the civic hall,
+ * a Puppeteer (−1) works an old favor behind the door. The god argues with a
+ * composed hand — two pole-leaning specials plus a Repertoire fill — and the
+ * mortal answers.
+ *
+ * - Fork axis: `honesty_cunning`. `positive` = Work the Formal Channel,
+ *   `negative` = Work the Social Bridge. Variants, aftermath and `stakes.arms`
+ *   are keyed to the pole, because pole mode writes the bare pole key.
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
+ * - Step 1's old approach cards picked nothing; each arm now deals an ordinary
+ *   hand from the god's Repertoire.
  */
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
@@ -97,6 +113,40 @@ const step0SecuringTheIntroduction: ActionStep = {
     '{cast:patron} was not difficult to find. Her position in the council structure was public information, her schedule was published on the board outside the civic hall on the first day of every month, and her gatekeeper — a man named {cast:gatekeeper} who had held the role for nine years — was known in the surrounding settlements as efficient, courteous, and genuinely impenetrable to approaches that did not meet the established standard for what constituted a legitimate request for audience. This was not an accident of {cast:gatekeeper}\'s personality. It was a feature that {cast:patron} had cultivated carefully: a gatekeeper who could not be socially manipulated ensured that her time was spent on matters that had met a threshold of institutional credibility rather than merely persuasive energy.\n\nThe threshold was specific. {cast:patron} took audiences from parties who had standing in her institutional context (the council, the guild network, the trade routes she administered), parties who had been explicitly referred by someone who already had her confidence, or parties who had produced a formal petition through the civic hall\'s intake process, which took a minimum of three weeks and required supporting documentation. There were no exceptions to these categories. {cast:gatekeeper}\'s job was to determine which category a presented party fit and to turn away all parties that fit none of them without wasting {cast:patron}\'s time on the determination.\n\nThe god observed {cast:gatekeeper} from across the hall with the attention of someone identifying a mechanism rather than a person. {cast:gatekeeper} was not hostile and he was not susceptible to pressure; he was institutional, which meant he was a system rather than an individual, and systems have different leverage points than individuals. The question the god was considering was which of those leverage points was most efficient: the formal channel (which was real but slow and required documentation that did not yet exist), or the social bridge (which required finding someone in {cast:patron}\'s confidence network who was willing to make the introduction and whose willingness could be arrived at more quickly than three weeks of petition review).\n\n{cast:reference_contact} was in the hall. She was there for unrelated reasons. She was in {cast:patron}\'s confidence network in the specific way that a merchant who has successfully delivered on three consecutive contracts occupies a particular tier of institutional trust — not close, not intimate, but present and verified. She was also, in this specific morning at this specific table with her ledger, accessible in a way she would not be for the next fourteen days, which was how long her current route would keep her moving between settlements. The god calculated the timing and found it instructive.',
   successAfterimage: 'The god identified the mechanism and the access point. The choice of path would determine how the introduction was secured.',
   failureAfterimage: 'The god read the mechanism but arrived at the moment without sufficient clarity to act on it.',
+  successAtCostAfterimage: 'The god found the way in, and the hall clerk noticed someone asking.',
+  criticalSuccessAfterimage: 'Both doors to the patron stood plain, and who held the keys to each.',
+  criticalFailureAfterimage: 'The hall turned to noise and paperwork, and the mortal chose in a fog.',
+  purposeLine: 'Find the way in',
+  // THR-2158 — the fork's argument. Two specials, one per pole of
+  // `honesty_cunning`; the Repertoire fills the rest of the hand.
+  nudges: [
+    {
+      id: 'letters.show_the_register',
+      name: 'Show The Register',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'honesty_cunning', toward: 'positive' },
+      effectLine: 'Point them to the hall\'s open petition register. A fair queue argues for asking openly.',
+      bandProse: {
+        success: '{actor} found their name could go in the register like anyone\'s.',
+        failure: '{actor} looked at the register, and the queue in it was long.',
+      },
+    },
+    {
+      id: 'letters.recall_the_favor',
+      name: 'Recall The Old Favor',
+      sphere: 'mind',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'honesty_cunning', toward: 'negative' },
+      effectLine: 'Bring back the favor someone near the patron still owes. A debt argues for the side door.',
+      bandProse: {
+        success: '{actor} remembered who owed them, and how much.',
+        failure: '{actor} recalled the favor, and could not remember the face.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['social', 'insight'] },
 };
 
 /**
@@ -131,6 +181,8 @@ const step1WorkTheFormalChannel: ActionStep = {
       tagFilters: ['#patronage'],
     },
   },
+  purposeLine: 'Pass the review',
+  deal: { count: 4, tags: ['social', 'lore'] },
   narrativeTemplate:
     'The formal channel moved the way formal channels move when a god is paying attention to the friction in them: not faster, exactly, but with fewer of the small delays that accumulate between a submitted request and an acknowledged one. {cast:gatekeeper} received the documentation — properly formatted, referencing the correct institutional codes, submitted through the civic hall intake as the procedure required — and found it difficult to identify a reason to return it for revision. He was the kind of gatekeeper who returned documents for revision on technical grounds when the substance of the request was borderline, and the documents before him had no technical grounds to return them on. He forwarded them to {cast:patron}\'s scheduling desk. Her scheduling desk found an opening in the calendar that was technically a maintenance window but was technically a window.\n\nThe god\'s work was in the technically. Institutions run on precedent and technical interpretation, and technical interpretations have a narrow field of legitimate discretion that can be influenced without being forced. The god had not forged the documents or invented the standing they referenced; it had ensured that the legitimate elements of the case were presented in the order and framing that gave {cast:gatekeeper} the least institutional cover for refusal. The result was an appointment: a specific day and time, written in ink, placed on the calendar with {cast:gatekeeper}\'s notation that the request had met the threshold for formal audience.\n\nThe meeting itself was brief and formal and conducted at the level of surface courtesies that serve as a first-contact protocol between parties who do not yet know whether they are going to be useful to each other. {cast:patron} asked precise questions. The answers were sufficient. At the end of the meeting she produced from her desk drawer three sheets of paper bearing her seal — folded, not formally bound, which was how she produced letters of introduction when she was satisfied with the first meeting but not yet certain — and set them on the table between the parties. They were not yet signed. She would sign them if the follow-up documentation met the standard of the initial presentation. The god could feel, in the economy of that gesture, that the follow-up documentation would meet the standard.',
   successAfterimage: 'The formal channel held. {cast:patron} placed three unsealed sheets on the table — introduction pending final review.',
@@ -169,6 +221,8 @@ const step1WorkTheSocialBridge: ActionStep = {
       tagFilters: ['#patronage'],
     },
   },
+  purposeLine: 'Call in the favor',
+  deal: { count: 4, tags: ['social', 'presence'] },
   narrativeTemplate:
     '{cast:reference_contact} had not come to the hall to make introductions. She had come to close a routine ledger reconciliation that should have taken forty minutes and had taken, due to a discrepancy in one column that neither she nor the hall\'s accountant could trace, closer to two hours. She was tired, slightly frustrated, and in possession of a piece of information that was relevant to the current moment: she owed {cast:patron} a favor that had been sitting unresolved for eight months, and she had been looking for a suitable vehicle for its resolution without wanting to appear to be looking, which was the specific social difficulty of favors owed to people who are more powerful than you and who have not asked for repayment.\n\nThe god\'s touch was light in the way that Heart-reach influence is light when it is working correctly: not a push but a clarification. The relevance of the favor and the relevance of the party in the hall who needed an introduction to {cast:patron} became visible to {cast:reference_contact} in the same moment, the way two unrelated facts sometimes align in a single moment of recognition and produce a third fact that was implicit in the original two. She looked up from her reconciled ledger. She looked across the hall. The god held the alignment steady for the moment it needed to be held.\n\n{cast:reference_contact} made the introduction herself. She walked to {cast:gatekeeper}\'s desk and named the favor she was owed — not calling it in formally, because the social register of favors between people at different institutional levels does not use formal language, but making it present as a context — and said that she was personally vouching for the party who had requested audience with {cast:patron}. {cast:gatekeeper} heard the name of the party and the name of {cast:reference_contact} and the register of the favor and wrote an immediate appointment in the morning schedule. {cast:patron} received the letter vouching for the introduction from {cast:reference_contact}\'s hand and produced, in response, three folded sheets bearing her seal and a note that the follow-up meeting was already scheduled.\n\n{cast:reference_contact} walked out of the hall with her ledger under her arm and the satisfaction of someone who has found a vehicle for a favor that had been sitting awkwardly for eight months. She did not attribute the alignment to anything other than good timing, which was an accurate description of the timing and an incomplete description of why the timing had been good.',
   successAfterimage: '{cast:reference_contact} made the introduction. The favor resolved itself into {cast:patron}\'s calendar and three folded sheets.',
@@ -180,9 +234,11 @@ const step1WorkTheSocialBridge: ActionStep = {
  */
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  // THR-2158 — the mortal decides; the fallback takes the formal channel.
+  decidedBy: { axis: 'honesty_cunning' },
   variants: {
-    work_the_formal_channel: step1WorkTheFormalChannel,
-    work_the_social_bridge: step1WorkTheSocialBridge,
+    positive: step1WorkTheFormalChannel,
+    negative: step1WorkTheSocialBridge,
   },
   fallback: { ...step1WorkTheFormalChannel },
 };
@@ -532,7 +588,7 @@ export const LETTERS_OF_INTRODUCTION_TEMPLATE: UnifiedActionTemplate = withEncou
     won: 'secured the sealed letters through the civic hall',
     lost: 'saw the request deferred on a revision',
     arms: {
-      work_the_social_bridge: {
+      negative: {
         won: 'secured the letters through an old favor',
         lost: 'lost the favor before it could open the door',
       },
@@ -571,60 +627,11 @@ export const LETTERS_OF_INTRODUCTION_TEMPLATE: UnifiedActionTemplate = withEncou
 
   illustrationAlt: 'A civic hall interior, morning light through tall windows — a gatekeeper at a desk reviewing documents, a merchant pausing mid-step with a ledger under her arm, and across the hall a closed door bearing the seal of a council patron',
 
-  authoredChoices: {
-    0: [
-      {
-        id: 'work_the_formal_channel',
-        label: 'Work the Formal Channel',
-        intent:
-          'The god moves through the institution rather than around it. The civic intake process has a three-week floor, but the floor rests on the assumption of documentation that is incomplete or improperly assembled. Gold-reach attention flows into the preparation of the case: the right codes, the right formatting, the right order of the legitimate elements. {cast:gatekeeper} receives a submission that has no technical grounds for return. The scheduling desk finds a window that is technically a window. The god does not counterfeit institutional standing — it ensures that the actual standing is presented in the form that institutions can recognize.',
-        targetLabel: '{cast:gatekeeper}',
-        essenceCost: 1,
-        likelyBurden:
-          'Institutional channels are slower than alternatives even with divine attention reducing friction. If the documentation has a substantive gap rather than a presentational one, Gold-reach influence on format cannot fill it.',
-        interventionType: 'supportive',
-      },
-      {
-        id: 'work_the_social_bridge',
-        label: 'Work the Social Bridge',
-        intent:
-          'The god identifies {cast:reference_contact} in the hall: a merchant in {cast:patron}\'s confidence network, present at a moment when her unresolved favor to the patron has been sitting for eight months. Heart-reach attention flows into the alignment between two unrelated facts — the favor and the introduction request — making their connection visible to {cast:reference_contact} as natural recognition rather than divine prompting. She sees the option. She decides whether to use it. The god holds the alignment for exactly as long as it needs to be held. What {cast:reference_contact} does with the clarity is her own.',
-        targetLabel: '{cast:reference_contact}',
-        essenceCost: 1,
-        likelyBurden:
-          'The social bridge rests on {cast:reference_contact} choosing to act on the alignment. If she calculates that using her favor this way is not worth it, or if the timing shifts before she acts, the bridge was readable and went unused.',
-        interventionType: 'supportive',
-      },
-    ],
-    1: [
-      {
-        id: 'clear_the_last_friction',
-        label: 'Clear the Last Friction',
-        intent:
-          'The approach is in motion. The god works on the remaining small frictions — the ambiguity in the follow-up appointment, the question about one piece of documentation, the moment when {cast:patron} decides whether the first meeting was worth a second. Gold or Heart attention flows into exactly those points, clarifying without forcing, ensuring that each small decision that could go either way goes the right way. The introduction becomes nearly certain without any single point of the process feeling improbable.',
-        essenceCost: 0,
-        likelyBurden:
-          'Light work on multiple small frictions is efficient if there are no structural problems. If the case itself has a substantive gap — something that {cast:patron} will actually object to rather than merely note — the small-friction approach does not address it.',
-        interventionType: 'supportive',
-      },
-      {
-        id: 'make_the_case_land',
-        label: 'Make the Case Land',
-        intent:
-          'The god invests fully in the moment of the meeting itself: the words that land versus the words that inform, the hesitation that reads as honesty versus the hesitation that reads as evasion, the specific framing that makes {cast:patron}\'s decision obvious to her rather than a calculation she performs. Gold and Heart attention, combined at the meeting\'s pivot, ensure that the case is received the way it needs to be received. Three sealed sheets follow as the natural conclusion of a meeting that was always going to end this way.',
-        essenceCost: 2,
-        likelyBurden:
-          'Full investment in the meeting\'s reception leaves a mark on how the backing is constituted. A patron who feels that their decision was obvious is sometimes one who later wonders why it felt so obvious. {cast:patron} is perceptive.',
-        interventionType: 'coercive',
-      },
-    ],
-  },
-
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      work_the_formal_channel: FORMAL_CHANNEL_AFTERMATH,
-      work_the_social_bridge: SOCIAL_BRIDGE_AFTERMATH,
+      positive: FORMAL_CHANNEL_AFTERMATH,
+      negative: SOCIAL_BRIDGE_AFTERMATH,
     },
     fallback: { ...FORMAL_CHANNEL_AFTERMATH },
   },

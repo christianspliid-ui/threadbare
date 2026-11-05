@@ -79,7 +79,8 @@ export const COMPULSION_CANDIDATE_COUNT = 4;
 export const COMPULSION_MIN_STORY_OPTIONS = 2;
 
 /** THR-2068 — the chosen path's lean on The First's scenes whose main Reach is one of
- * the path's two Reaches: ×(1 + FIRST_PATH_PULL) on the live board and `finalScore`.
+ * the path's two Reaches (THR-2156: and whose motivations name one of the path's two
+ * `themeAxes`): ×(1 + FIRST_PATH_PULL) on the live board and `finalScore`.
  * Below the trade's lean plus arrival commitment, far below a paid whisper.
  * @range 0.2–1.0 */
 export const FIRST_PATH_PULL = 0.5;

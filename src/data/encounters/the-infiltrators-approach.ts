@@ -5,6 +5,21 @@
  * Pattern: required-positive — Shadow+ (first tranche only used Shadow as a block, not a gate).
  *
  * THR-146: Middle tranche of reputation-gated content.
+ *
+ * ─── The mortal decides (THR-2160, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was two cards whose ids were the
+ * aftermath keys, so the click picked the ending. Now the fork decides on
+ * `honesty_cunning`: a Confessor (+1) keeps the bargain as offered and shelters
+ * the stranger, a Puppeteer (−1) takes the names and sells the stranger back to
+ * their master through cut-outs. The god argues with a composed hand — two
+ * pole-leaning specials plus a Repertoire fill — and the mortal answers.
+ *
+ * - Fork axis: `honesty_cunning`. `positive` = Accept the Deal, `negative` =
+ *   Reveal to Master. Variants, aftermath and `stakes.arms` are keyed to the
+ *   pole (`branchDecision.ts` → `recordDecidedChoice`).
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
+ * - The step-1 prose is re-voiced so the mortal does it, not the god.
  */
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
@@ -70,6 +85,39 @@ const step0TheProposal: ActionStep = {
     'represents. That was the tell that mattered most.',
   successAfterimage: 'The hood stayed up. The names were specific. The tell was in the research.',
   failureAfterimage: 'The stranger laid out the proposal, but something in the room did not settle into the shape they had expected.',
+  successAtCostAfterimage: 'The names were laid out, and someone at the bar had seen the booth.',
+  criticalSuccessAfterimage: 'The stranger, the master and every name between them stood clear at once.',
+  criticalFailureAfterimage: 'The booth blurred into lamp-smoke and whispers, and the agent chose half-blind.',
+  purposeLine: 'Hear the proposal',
+  // THR-2160 — the fork's argument. Two specials, one per pole of
+  // `honesty_cunning`; the Repertoire fills the rest of the hand.
+  nudges: [
+    {
+      id: 'infiltrator.read_the_fear',
+      name: 'Read The Fear',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'honesty_cunning', toward: 'positive' },
+      effectLine: 'Show them how much the stranger is risking to sit here. Fear this plain argues for keeping faith.',
+      bandProse: {
+        success: '{actor} saw the stranger\'s fear, and laid a flat hand on the table.',
+        failure: '{actor} looked for the fear, and the hood hid it.',
+      },
+    },
+    {
+      id: 'infiltrator.trace_the_cut_outs',
+      name: 'Trace The Cut-Outs',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'honesty_cunning', toward: 'negative' },
+      effectLine: 'Lay out the three hands a message could pass through tonight. A clean chain argues for selling the seller.',
+      bandProse: {
+        success: '{actor} saw the chain run clean to the master, and smiled.',
+        failure: '{actor} traced the cut-outs, and one link looked weak.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['social', 'shadow'] },
 };
 
 const step1AcceptDeal: ActionStep = {
@@ -85,7 +133,7 @@ const step1AcceptDeal: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god said yes — not out loud, because the right answer in this kind of room ' +
+    'The agent said yes — not out loud, because the right answer in this kind of room ' +
     'is a gesture, not a word. A hand placed flat on the table for a moment, then ' +
     'lifted. The intelligence would come first; shelter would follow when it arrived ' +
     'and was verified as what the stranger said it was.\n\n' +
@@ -114,12 +162,12 @@ const step1RevealToMaster: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god did not take the deal. It took the information — which is a different thing. ' +
+    'The agent did not take the deal. They took the information — which is a different thing. ' +
     'The stranger was offering betrayal. The {title} accepted the betrayal and then ran it ' +
     'one layer deeper: through three cut-outs, before the stranger had left the building, ' +
     'word went to the rival master that their operative was in this room, had come to this ' +
     'table, had offered exactly this.\n\n' +
-    'The stranger did not know. They finished speaking, received the god\'s considered ' +
+    'The stranger did not know. They finished speaking, received the agent\'s considered ' +
     'silence, and left the way they came in. They had told themselves the meeting had ' +
     'gone well. The rival master would have a different opinion by morning, and the ' +
     'operative would have to resolve the gap between those two versions of events.',
@@ -131,9 +179,11 @@ const step1RevealToMaster: ActionStep = {
 
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  // THR-2160 — the mortal decides; the fallback is the positive pole.
+  decidedBy: { axis: 'honesty_cunning' },
   variants: {
-    accept_the_deal: step1AcceptDeal,
-    reveal_to_master: step1RevealToMaster,
+    positive: step1AcceptDeal,
+    negative: step1RevealToMaster,
   },
   fallback: { ...step1AcceptDeal },
 };
@@ -467,7 +517,7 @@ export const THE_INFILTRATORS_APPROACH_TEMPLATE: UnifiedActionTemplate = withEnc
     won: 'took the stranger\'s deal and their list of names',
     lost: 'took a list whose names did not match the promise',
     arms: {
-      reveal_to_master: {
+      negative: {
         won: 'sold the stranger out to their master unseen',
         lost: 'sold the stranger out through a chain that may trace back',
       },
@@ -513,44 +563,11 @@ export const THE_INFILTRATORS_APPROACH_TEMPLATE: UnifiedActionTemplate = withEnc
   illustrationUrl: '/concept-art/encounters/the-infiltrators-approach.webp',
   illustrationAlt: 'Wide shot: two figures across a tavern table, single lamp, deep shadow, Threadbare palette.',
 
-  authoredChoices: {
-    0: [
-      {
-        id: 'accept_the_deal',
-        label: 'Accept. Take the intelligence, extend shelter.',
-        intent:
-          'The god places the flat hand on the table — the gesture of agreement in this ' +
-          'kind of room. The stranger will deliver the list in pieces, verifying the shelter ' +
-          'is real as they go. The intelligence on the rival master\'s network is the price; ' +
-          'the stranger\'s continued existence inside the {title}\'s reach is the payment.',
-        essenceCost: 1,
-        likelyBurden:
-          'A sheltered informant is a structural commitment. The rival master will eventually ' +
-          'discover where their operative went, and the discovery will have a shape.',
-        interventionType: 'supportive',
-      },
-      {
-        id: 'reveal_to_master',
-        label: 'Take the intelligence, then send it back to the master — through cut-outs.',
-        intent:
-          'The god does not shelter the stranger. It accepts the betrayal and then runs it ' +
-          'one layer deeper: word goes to the rival master through three intermediaries before ' +
-          'the stranger reaches the street. The stranger leaves the meeting thinking it went well. ' +
-          'The master will have a different understanding by morning.',
-        essenceCost: 1,
-        likelyBurden:
-          'The stranger will be recalled. The manner of the recall will not be friendly. ' +
-          'The faction is now in the early stages of something that looks like a purge.',
-        interventionType: 'coercive',
-      },
-    ],
-  },
-
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      accept_the_deal: ACCEPT_AFTERMATH,
-      reveal_to_master: REVEAL_AFTERMATH,
+      positive: ACCEPT_AFTERMATH,
+      negative: REVEAL_AFTERMATH,
     },
     fallback: { ...ACCEPT_AFTERMATH },
   },

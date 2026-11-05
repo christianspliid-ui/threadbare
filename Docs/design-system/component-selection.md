@@ -39,6 +39,9 @@ The Inspector (`inspector/InspectorHost.tsx` + `InspectorPage`) is the one detai
 (`DETAIL_PAGE_REGISTRY`), never a new panel. `IdentityChip` (inline reference) is not a
 detail surface and is unaffected.
 
+A page is built from the seven blocks (`primitives.md` § Blocks): Header, Now line, Act row,
+Section, Section heading, Link group, Empty. Sections use one of the five body shapes.
+
 `AgentDetailPanel` and `NpcDetailView` were deleted in THR-1492 — they had no production
 mount, and a doc row for a component nothing renders reads as an instruction to use it.
 
@@ -254,6 +257,7 @@ These live in `src/components/shared/` and are the building blocks. **Always che
 - **Don't create a new modal component** when `Modal` (shared) with custom body content would work. Custom modals are only for fundamentally different interaction patterns (encounter branching, full-screen vignettes).
 - **Don't put content directly in the hex map zone** — everything on the map goes through HexMapV2's render pipeline (Three.js). HTML overlays above the canvas use `HexTooltip`, `LocationLabelOverlay`, etc.
 - **Don't nest `Card` inside `Card`** — use `SectionHeading` to divide content within a single Card instead.
+- **Don't draw a box around a section** — sections, facts blocks, chip rows and lists group by space and their heading (`layout.md` § Frames). A frame is only for a thing you press as a whole (THR-2120 § 3).
 - **Don't use `ProgressBar` for discrete steps** — use `StepDots` for step-based progress (encounters, multi-phase flows).
 
 ---

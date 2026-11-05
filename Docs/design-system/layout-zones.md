@@ -64,6 +64,12 @@ Overlay layers (centered, above everything):
 | Border | `1px solid var(--border-gold)` left edge | `GameView.tsx:2831` |
 | Contents | `ThreadsPanel`, `ChroniclePanel` (World-Soul line; Now · Years · Ledger), `LedgerStrip` when folded | `frame/LedgerRail.tsx` |
 | Behavior | Always rendered. Internal vertical scroll. A subject opens in the Inspector, never in this rail. | |
+| Sections | **One rail Title per section, no section box** (THR-2125): Threads and the Chronicle each open on `RailTitle` (Cinzel `--text-lg` 700, its carved shape first) and neither sits in a frame; the Title and `--space-6` between the sections group them (THR-2120 § 3). Group heads inside a section ("Before you woke", the Threads groups) are Labels, never gold. Entry cards keep their own border: each is one thing you press. | `frame/RailTitle.tsx`, `frame/LedgerRail.tsx` |
+| Rows | **A row's name wraps and is never truncated** (THR-2125 decision 5): Text 700 at `--text-sm`, sentence case; the marks after it keep their size. `__DEBUG.getListDressing()` reports `rowName` (`clipped` must be false) and `frameDepth` (≤ 2). | `ThreadsPanel.tsx`, `shared/ListRow.tsx` |
+
+### God rail (left)
+
+The god rail uses the docked Inspector's density for every block it shares (THR-2125, THR-2120 § 4): `--space-6` between sections (`.bar` gap), Legibility 1's `SectionLabel` as each section heading, and no "Label: value" strips (Law 16): the First reads "Your First is …", the primary sphere "Your primary sphere is Mind." on its own line under the Essence heading. The essence balances are Text 600 at `--text-sm`, tabular and right-aligned, a step above the captions around them so the spendable pools read first.
 
 ### Inspector
 
@@ -74,6 +80,13 @@ Overlay layers (centered, above everything):
 | Z-index | In flow at docked and wide; Full sits at `Z_BAND.drawer` (40) and holds the clock | `InspectorHost.tsx` |
 | Contents | One subject's page (`InspectorPage`): header, Act row, the page-layout table's sections as tabs, Connections | `inspector/InspectorPage.tsx` |
 | Behavior | Every open goes through `useRefRouter` (card → the registry row's `opensAt`, sheet → wide). History, trail, pin, Follow; Escape steps Full down, then closes. The page's Act row casts (the Action Drawer retired, THR-1912). | plan THR-1876 § D1–D4, D9 |
+
+**Page order — Who → Now → Act → Detail → Out (THR-2123, panel anatomy § 1).** Docked, one column: header → Now → *In this land* (land only) → Act → the tabs → More when widened → Connections. Wide and Full: the aside reads header → Now → *In this land* → Act → aside sections; the main column starts with the tab row; Full keeps Connections in its own aside.
+
+- **The Now slot holds one line**: the first section shown at this size that carries the R5 highlight (a person's leading ambition, the god's mandate). Failing that, the first carrying the R4 bond strip. The bond strip, when it does not take Now, stays first in Overview. The Now section is drawn once — never again in its tab (`nowSectionOf` in `InspectorPage.tsx`).
+- **An empty Now draws nothing**: no placeholder, and no chip promoted into it (Law 25).
+- **Slots sit `--space-6` apart**, the between-section distance; the tab row to its first section is `--space-2`.
+- **Fold check**: `getInspectorLab()` and `getInspectorState()` carry `fold: { who, now, act, tabs }` — each true when the slot ends inside the page's scroll box, null when absent. At 1920×1080 docked, Who, Act and the tab row must not be `false` (anatomy § 4).
 
 ### The Stage
 
@@ -88,7 +101,8 @@ A mortal's moment plays on one panel over the dimmed map, beside the god rail, w
 | Window | The open map right of the panel, measured from the DOM (`data-stage-window`), never computed: 280 / 520 wide (full), 692 / 1144.5 (compact). The place tag names the lit hex at its top | `Stage.tsx` |
 | Frame while open | The Ledger rail steps aside (`hidden`), the Inspector folds and keeps its subject, the top bar's guard covers the moment, the lens is suppressed (the bar keeps its lens pressed), the map's corner controls, keys and HTML overlays hide | `ledgerFold.ts`, `InspectorHost.tsx`, `GameMap.tsx` |
 | Inspector over the Stage | A name or the lit hex clicked on the Stage opens its page docked at the right edge, at `Z_BAND.modal` (60), below the top bar, no backdrop. Escape or its close folds it back to the moment | `InspectorHost.tsx` |
-| Debug | `await window.__DEBUG.getStage()` — panel and window rects, `litHexInWindow`, camera, map dim, folds | `stage/useStageDebugBridge.ts` |
+| Debug | `await window.__DEBUG.getStage()` — panel and window rects, `litHexInWindow`, camera, map dim, folds, `anatomy` (title size, title-is-largest, the fold of title / Now / first scene line / first hand row / commit; THR-2124) | `stage/useStageDebugBridge.ts` |
+| Reading order | Who (the title, Cinzel `--text-xl`) → Now (the stakes line) → the scene → the test → the hand → fate (Panel anatomy § 2, Law 38). The title row stays the fixed chrome across steps (Law 37). One surface: the Stage panel paints `--veil-void` (StageHost's `ground`), and the veil's columns paint nothing (THR-2124) | `EncounterVeil.tsx`, `StageHost.tsx` |
 
 ### Modal Layer
 
@@ -99,6 +113,7 @@ A mortal's moment plays on one panel over the dimmed map, beside the god rail, w
 | Max height | `var(--modal-max-h)` = 85vh — the one dialog cap (Law 33) | `Modal.tsx`, `index.css` |
 | Animation | `anim-fade-up` default | `Modal.tsx:23` |
 | Behavior | An `Overlay` (backdrop, band, Escape stack, focus) with a floating `page` `Panel` (THR-1884). Escape closes it when it is the topmost surface. Backdrop click to close. | `Overlay.tsx` |
+| Title | **`Modal.Header` is the one dialog title** (THR-2124): Cinzel `--text-xl` at the left edge, marked `data-dialog-title`. Its optional `kind` draws the label rule above the title (what sort of thing this is); a kind that repeats the title is not drawn. The order is Who → Now (the question or news as one line, `data-dialog-now`) → Detail → act last. Settings and the Divine Court use it; the receipt keeps its art band and draws its own title line at the same size | `Modal.tsx` |
 
 **Two modals at equal z resolve by DOM order** — which the JSX author never sees, and which changes whenever the render order in `GameView` is edited. `MODAL_Z_ABOVE_INTERRUPT` (65) is the one sanctioned step up, for a dialog opened *from* a modal-tier interrupt that renders later in `GameView` (THR-1139 introduced it for the character sheet over `PremonitionModal`; the sheet retired in THR-1912 and the band stays for the next such dialog). It deliberately stops below 70 — a dialog contains tooltips, and `Tooltip` sits at `70 + depth`, so raising a sheet into that band would bury its own hovers. A third band is a design decision against this table, not an implementation choice (Law 35).
 

@@ -16,14 +16,16 @@
 
 import type { SphereName } from '../../../types';
 import { INITIAL_ESSENCE_PER_SPHERE } from '../../../engine/influence';
+import { formatEssencePool } from '../../../data/essence-format';
+import { ESSENCE_ROW_BALANCE, ESSENCE_ROW_BALANCE_ARIA } from '../../../data/essence-refill-content';
 
 // ─── Tunables (NFP #1) ─────────────────────────────────────────────────────
 
 /**
- * What a full essence bar means. Bound to the starting pool rather than a
- * literal, so the bar always reads "as full as you began" at the start of a run
- * and a spend visibly takes a bite out of it. A pool above the ceiling clamps
- * the fill at 100% while the numeral keeps the true balance.
+ * The bar's end when the pool's limit cannot be read (THR-2148: the fallback
+ * only — a row with a `cap` ends its bar at the cap, so a full bar means a full
+ * pool). Bound to the starting pool rather than a literal. A pool above the
+ * ceiling clamps the fill at 100% while the numeral keeps the true balance.
  */
 export const ESSENCE_BAR_CEILING = INITIAL_ESSENCE_PER_SPHERE;
 
@@ -66,6 +68,20 @@ export function writeElderHeaderLatch(): void {
 export function essenceFillPct(level: number, ceiling: number = ESSENCE_BAR_CEILING): number {
   if (!Number.isFinite(level) || level <= 0 || !(ceiling > 0)) return 0;
   return Math.min(100, (level / ceiling) * 100);
+}
+
+/**
+ * THR-2148 (U2) — the row's balance, with its limit when it can be read: "53 / 55",
+ * whole numbers (Law 13, 2026-11-02 amendment), and its accessible name "53 of 55".
+ */
+export function essenceBalanceText(level: number, cap?: number): { text: string; aria: string } {
+  const balance = formatEssencePool(level);
+  if (cap === undefined || !Number.isFinite(cap) || cap <= 0) return { text: balance, aria: balance };
+  const limit = formatEssencePool(cap);
+  return {
+    text: ESSENCE_ROW_BALANCE.replace('{balance}', balance).replace('{cap}', limit),
+    aria: ESSENCE_ROW_BALANCE_ARIA.replace('{balance}', balance).replace('{cap}', limit),
+  };
 }
 
 // ─── Card-hover preview ────────────────────────────────────────────────────

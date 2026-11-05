@@ -162,8 +162,8 @@ describe('ThreadsPanel', () => {
         onCenterOnHex={noop}
       />
     );
-    // SectionHeading renders "Agents (2)"
-    expect(screen.getByText('Agents (2)')).toBeTruthy();
+    // SectionHeading renders "Agents · 2" (THR-2122)
+    expect(screen.getByText('Agents · 2')).toBeTruthy();
   });
 
   it('renders compact rows with agent name and secondary info', () => {
@@ -326,7 +326,7 @@ describe('ThreadsPanel', () => {
       />
     );
     // Section header renders but rows are hidden (collapsed)
-    expect(screen.getByText('Locations (1)')).toBeTruthy();
+    expect(screen.getByText('Locations · 1')).toBeTruthy();
     expect(screen.queryByTestId('thread-entry')).toBeNull();
   });
 
@@ -384,7 +384,7 @@ describe('ThreadsPanel', () => {
       />
     );
     // Expand factions section first
-    fireEvent.click(screen.getByText('Factions (1)'));
+    fireEvent.click(screen.getByText('Factions · 1'));
     const row = screen.getByTestId('thread-entry');
     // Secondary info should start with sphere alignment
     expect(row.textContent).toContain('flesh sphere');
@@ -400,9 +400,9 @@ describe('ThreadsPanel', () => {
         onCenterOnHex={noop}
       />
     );
-    expect(screen.getByText('Agents (1)')).toBeTruthy();
-    expect(screen.getByText('Factions (1)')).toBeTruthy();
-    expect(screen.getByText('Artifacts (1)')).toBeTruthy();
+    expect(screen.getByText('Agents · 1')).toBeTruthy();
+    expect(screen.getByText('Factions · 1')).toBeTruthy();
+    expect(screen.getByText('Artifacts · 1')).toBeTruthy();
   });
 
   it('clicking section header toggles collapse/expand', () => {
@@ -418,11 +418,11 @@ describe('ThreadsPanel', () => {
     expect(screen.queryByTestId('thread-entry')).toBeNull();
 
     // Click to expand
-    fireEvent.click(screen.getByText('Locations (1)'));
+    fireEvent.click(screen.getByText('Locations · 1'));
     expect(screen.getByTestId('thread-entry')).toBeTruthy();
 
     // Click to collapse again
-    fireEvent.click(screen.getByText('Locations (1)'));
+    fireEvent.click(screen.getByText('Locations · 1'));
     expect(screen.queryByTestId('thread-entry')).toBeNull();
   });
 });
@@ -485,7 +485,7 @@ describe('ThreadsPanel sustained controls (THR-418)', () => {
       />
     );
     expect(screen.getByTestId('threads-section-header-hex')).toBeTruthy();
-    expect(screen.getByText('Hexes (1)')).toBeTruthy();
+    expect(screen.getByText('Hexes · 1')).toBeTruthy();
   });
 
   it('renders Sources section when sustainedControls includes a source row', () => {
@@ -631,7 +631,7 @@ describe('ThreadsPanel sustained controls (THR-418)', () => {
       />
     );
     expect(screen.queryByText('No Threads')).toBeNull();
-    expect(screen.getByText('Hexes (1)')).toBeTruthy();
+    expect(screen.getByText('Hexes · 1')).toBeTruthy();
   });
 
   // ─── THR-1008: UI Laws 13/16/17 on the sustained-control row ───────────────
@@ -661,7 +661,7 @@ describe('ThreadsPanel sustained controls (THR-418)', () => {
     );
     const row = container.querySelector('[data-testid="sustained-control-row"]')!;
     expect(row).toBeTruthy();
-    // The section header legitimately carries its count ("Hexes (1)"), so this
+    // The section header legitimately carries its count ("Hexes · 1"), so this
     // asserts on the row itself rather than the panel.
     expect(row.textContent).not.toMatch(/\d/);
   });
@@ -752,7 +752,7 @@ describe('ThreadsPanel — faction notice badges (THR-667)', () => {
         onOpenNoticeBadge={noop}
       />
     );
-    fireEvent.click(screen.getByText('Factions (1)'));
+    fireEvent.click(screen.getByText('Factions · 1'));
     expect(screen.getByTestId('thread-entity-notice-badge')).toBeTruthy();
   });
 
@@ -768,7 +768,7 @@ describe('ThreadsPanel — faction notice badges (THR-667)', () => {
         onOpenNoticeBadge={onOpenNoticeBadge}
       />
     );
-    fireEvent.click(screen.getByText('Factions (1)'));
+    fireEvent.click(screen.getByText('Factions · 1'));
     fireEvent.click(screen.getByTestId('thread-entity-notice-badge'));
     expect(onOpenNoticeBadge).toHaveBeenCalledTimes(1);
     expect(onOpenNoticeBadge.mock.calls[0][0]).toMatchObject({
@@ -812,7 +812,7 @@ describe('ThreadsPanel — faction notice badges (THR-667)', () => {
         onOpenNoticeBadge={noop}
       />
     );
-    fireEvent.click(screen.getByText('Artifacts (1)'));
+    fireEvent.click(screen.getByText('Artifacts · 1'));
     expect(screen.queryByTestId('thread-entity-notice-badge')).toBeNull();
   });
 });

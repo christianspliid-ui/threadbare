@@ -34,6 +34,7 @@ import type { SectionResolver, SectionResolverContext } from '../../detailPageRe
 import {
   getAgentFullProfile,
   getAgentInfoCard,
+  meetingLeans,
   summarizeActiveUndertakings,
   type AgentFullProfileData,
   type AgentInfoCardData,
@@ -55,6 +56,7 @@ import { getWealthTier } from '../../wealth';
 import { pastLineText } from '../../worldPastWords';
 import { durationLabel, elapsedLabel, humanizeKeySegment, outcomePhrase, reachDisplayName } from '../../aftermathWords';
 import { getChapterTemplateName, isEncounterAction, isRoutineChapter } from '../../chapterArchive';
+import { recentReachGrowth, SHEET_GAIN_MARK_WINDOW_TICKS, type ReachGrowthMark } from '../reachGrowthMarks';
 import { isRoutineTemplate } from '../../attentionCadence';
 import { getReputationWord } from '../../../data/domain-words';
 import { stepOutcomeWord } from '../../../data/outcome-band-content';
@@ -80,6 +82,10 @@ import {
   DISPOSITION_LABEL_MAP,
   LOCKED_STRATUM_TEXT,
   NATURE_LEAD,
+  NATURE_LEAN_CHIP,
+  SHEET_GAIN_MARK_HEADING,
+  SHEET_GAIN_MARK_HOVER,
+  SHEET_GAIN_MARK_HOVER_NO_BAND,
   PERSON_COUNTED_LABEL,
   PERSON_EMPTY_LINES,
   WHO_THEY_ARE_CLAUSES,
@@ -590,9 +596,18 @@ const nature: SectionResolver = (ctx) => {
     return prose('nature', PERSON_ROW_LABELS.nature, [personLine(PERSON_EMPTY_LINES.natureHidden, { name: s.card.name })]);
   }
   // THR-2097 (rule R7): a trait list is chips; the first leads — "Loyal above all".
-  return chips('nature', PERSON_ROW_LABELS.nature, values.map((v, i) => (
+  const list: ChipDescriptor[] = values.map((v, i) => (
     i === 0 ? { label: personLine(NATURE_LEAD, { word: v.word }), lead: true } : { label: v.word }
-  )));
+  ));
+  // THR-2149: a lean the threading meeting wrote shows as its own chip, never the lead,
+  // and only when its pole word is not already one of the chips ("Deeply Fair" holds "Fair").
+  const shown = values.map(v => v.word.replace(/^(Deeply|Somewhat) /, ''));
+  for (const lean of meetingLeans(s.state.graph, ctx.nodeId)) {
+    if (shown.includes(lean.word)) continue;
+    shown.push(lean.word);
+    list.push({ label: personLine(NATURE_LEAN_CHIP, { word: lean.word }), dataKey: { attribute: 'lean', value: lean.word } });
+  }
+  return chips('nature', PERSON_ROW_LABELS.nature, list);
 };
 
 const core: SectionResolver = (ctx) => {
@@ -675,13 +690,26 @@ const domains: SectionResolver = (ctx) => {
   const s = sheetOf(ctx);
   if (!s) return null;
   const revealedDomain = (domain: string) => s.knowledge?.revealedDomains.has(domain) === true || atLeast(s, 'recognised');
+  // THR-2149: a gain the Aftermath reported in the last three days marks its tile.
+  const growth = recentReachGrowth(s.state.chapterArchive, ctx.nodeId, s.state.tick, SHEET_GAIN_MARK_WINDOW_TICKS);
   // The rank word per Reach; the magnitude dots go (Law 10: pips mean odds only).
-  return cards('domains', PERSON_ROW_LABELS.domains, (s.card.domains ?? []).filter(d => revealedDomain(d.domain)).map(d => ({
-    title: reachDisplayName(d.domain),
-    kindWord: PERSON_FACT_WORDS.reach,
-    lines: [d.word],
-  })));
+  return cards('domains', PERSON_ROW_LABELS.domains, (s.card.domains ?? []).filter(d => revealedDomain(d.domain)).map(d => {
+    const mark = growth.get(d.domain as ReachGrowthMark['reach']);
+    return {
+      title: reachDisplayName(d.domain),
+      kindWord: PERSON_FACT_WORDS.reach,
+      lines: [d.word],
+      ...(mark ? { mark: { steps: mark.steps, heading: personLine(SHEET_GAIN_MARK_HEADING, { reach: reachDisplayName(d.domain) }), label: gainMarkLabel(mark, s.state.tick) } } : {}),
+    };
+  }));
 };
+
+/** The reach tile mark's hover: when, how much, where, and why the word can hold. */
+export function gainMarkLabel(mark: ReachGrowthMark, now: number): string {
+  const elapsed = elapsedLabel(Math.max(0, now - mark.resolvedTick));
+  const template = mark.band ? SHEET_GAIN_MARK_HOVER : SHEET_GAIN_MARK_HOVER_NO_BAND;
+  return personLine(template, { band: mark.band, elapsed, chapter: mark.chapterTitle });
+}
 
 const HARM_SUBCATEGORIES = new Set(['wound', 'injury', 'disease', 'poison']);
 

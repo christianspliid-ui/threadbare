@@ -146,7 +146,7 @@ export const DeltaCluster = memo(function DeltaCluster({
           data-testid="delta-cluster-word"
           style={{
             marginLeft: 4,
-            fontSize: 'var(--text-2xs)',
+            fontSize: 'var(--text-xs)',
             letterSpacing: '0.08em',
             fontStyle: 'italic',
           }}

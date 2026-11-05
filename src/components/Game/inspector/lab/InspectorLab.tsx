@@ -203,7 +203,8 @@ export default function InspectorLab() {
           hiddenForWidth: entry.report?.hiddenForWidth ?? [],
           overflowX,
           leaks: el ? leaksIn(el.innerText ?? el.textContent ?? '') : [],
-          dressing: entry.report?.dressing ?? { asideSections: [], bondStrip: false, firstBadge: false, galleryTiles: 0, iconFallbacks: [] },
+          dressing: entry.report?.dressing ?? { asideSections: [], bondStrip: false, firstBadge: false, galleryTiles: 0, iconFallbacks: [], nowSection: null },
+          fold: entry.report?.fold ?? null,
         });
       }
       return { tier, cells };

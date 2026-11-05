@@ -33,7 +33,6 @@ import type {
 } from './adapters/buildOpponentHeaderModel';
 
 const FONT_PROSE = 'var(--font-prose)';
-const FONT_DISPLAY = "'Palatino Linotype', 'Book Antiqua', Palatino, serif";
 const TEXT_WARM = 'var(--veil-text-warm)';
 const TEXT_WHISPER = 'var(--veil-text-whisper)';
 const TEXT_GHOST = 'var(--veil-text-ghost)';
@@ -141,7 +140,7 @@ export function OpponentHeader({ model, onSelectOpponent, compact, hideArt }: Op
       <span
         data-testid="opponent-step-label"
         style={{
-          fontFamily: FONT_DISPLAY,
+          fontFamily: 'var(--font-body)',
           fontSize: 'var(--text-xs)',
           letterSpacing: '0.14em',
           textTransform: 'uppercase',
@@ -162,7 +161,7 @@ export function OpponentHeader({ model, onSelectOpponent, compact, hideArt }: Op
             border: 'none',
             padding: 0,
             cursor: 'pointer',
-            fontFamily: FONT_DISPLAY,
+            fontFamily: 'var(--font-body)',
             fontSize: 'var(--text-sm)',
             letterSpacing: '0.04em',
             color: TEXT_WARM,
@@ -176,7 +175,7 @@ export function OpponentHeader({ model, onSelectOpponent, compact, hideArt }: Op
         <span
           data-testid="opponent-name"
           style={{
-            fontFamily: FONT_DISPLAY,
+            fontFamily: 'var(--font-body)',
             fontSize: 'var(--text-sm)',
             letterSpacing: '0.04em',
             color: TEXT_WARM,

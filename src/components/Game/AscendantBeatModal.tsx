@@ -27,7 +27,6 @@ import { Modal } from '../shared/Modal';
 import { BEAT_MODAL_M_MIN_CARDS, type DialogSize } from '../shared/dialogSize';
 import { useRefRouterContext } from '../../contexts/RefRouterContext';
 import type { WorldRef } from '../../types/worldRef';
-import { RevealCard } from '../shared/RevealCard';
 import { ActionCard } from './ActionCard';
 import { CARD_WIDTH_PX } from '../shared/CardFace';
 import type { WheelSlot } from '../../engine/wheel';
@@ -343,8 +342,8 @@ function UnlockCardRow({
 
 // ─── Styles ─────────────────────────────────────────────────────────
 
-// EYEBROW_STYLE was retired in THR-799 — `RevealCard.Title` now carries the
-// category line, including its letterspaced display caps and flanking rules.
+// EYEBROW_STYLE was retired in THR-799; since THR-2124 the eyebrow is
+// `Modal.Header`'s kind line.
 
 const PRIMARY_BUTTON_STYLE: React.CSSProperties = {
   background: 'var(--accent-gold)',
@@ -499,11 +498,10 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
   const size = beatModalSize(isOffering ? offered.length : grants.length);
 
   return (
-    // THR-799: this surface adopts the ceremonial *zone layout* via RevealCard.Frame,
-    // not a second RevealCard modal — it is already a Modal, and nesting one would
-    // double-portal and stack two backdrops. `.frame-ceremonial` rides on the panel
-    // through Modal's panelClassName, so the double frame comes from the same place
-    // a standalone RevealCard gets it.
+    // THR-2124 (decision 6): a dialog, read in the panel order — Who (`Modal.Header`,
+    // the eyebrow as its kind line, drawn only when it is not the title again), Now
+    // (the beat's prose as unframed Story), then the cards. `.frame-ceremonial` still
+    // rides on the panel through Modal's panelClassName; the ceremonies keep RevealCard.
     <Modal
       open={open}
       onClose={handleClose}
@@ -512,15 +510,27 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
       context="story"
       panelClassName="frame-ceremonial"
     >
+      <Modal.Header kind={presentation.eyebrow}>{title}</Modal.Header>
       {/* Zones scroll; the resolve button is pinned below so a tall card row can
           never push it past the panel edge. */}
       <div style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
-        <RevealCard.Frame>
-          <RevealCard.Title>{presentation.eyebrow}</RevealCard.Title>
-          <RevealCard.Banner>{title}</RevealCard.Banner>
-
+        <div
+          data-testid="beat-dialog-body"
+          style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-ceremonial)', padding: 'var(--space-ceremonial)' }}
+        >
           {/* Narrative before mechanics — the beat's prose leads, the cards follow. */}
-          <RevealCard.Quote>{prose}</RevealCard.Quote>
+          <p
+            data-dialog-now=""
+            style={{
+              font: 'var(--type-flavor)',
+              color: 'var(--text-secondary)',
+              maxWidth: 'var(--measure-prose)',
+              textAlign: 'left',
+              margin: 0,
+            }}
+          >
+            {prose}
+          </p>
 
           {isOffering ? (
             <OfferingRow cards={offered} onTakeUp={id => onResolve(id)} />
@@ -531,7 +541,7 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
             // Non-selection beat: real focused cards as a pure reveal; the button resolves.
             grants.length > 0 && <UnlockCardRow actionIds={grants} interactive={false} />
           )}
-        </RevealCard.Frame>
+        </div>
       </div>
       {isOffering && (
         <div

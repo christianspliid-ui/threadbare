@@ -107,12 +107,14 @@ describe('essence rows (D1, D2)', () => {
     }
   });
 
-  it('never puts a numeral in the hover (Law 13 — the balance is the only number)', () => {
+  it('puts no numeral in the hover but the limit (Law 13 — the balance and, since 2026-11-02, the limit)', () => {
     let rec = recordEssenceMovement(undefined, pool(), pool({ mind: 57.25 }), 'income', 1);
     rec = recordEssenceMovement(rec, pool(), pool({ mind: 41 }), 'spend_nudge', 2);
     rec = recordEssenceMovement(rec, pool(), pool({ mind: 46 }), 'other', 3);
     for (const row of selectEssenceRows(makeState(100, { essenceMovement: rec }), ARCHETYPE)) {
-      expect(row.hoverDesc, row.sphere).not.toMatch(/\d/);
+      // THR-2148 — the cap sentence is the one sanctioned numeral; nothing else carries a digit.
+      const rest = (row.hoverDesc ?? '').replace(/^Holds up to \d+[^.]*\.(?: Each mortal you thread lets every pool hold \d+ more\.)?/, '');
+      expect(rest, row.sphere).not.toMatch(/\d/);
     }
   });
 
@@ -158,12 +160,14 @@ const CARD: NudgeHandCard = {
 };
 
 describe('nudge-card marks (D4)', () => {
-  it('cost, odds, sphere and keyword each carry a registry id, and no raw title remains', () => {
+  it('cost, odds and keyword each carry a registry id, and no raw title remains', () => {
     const { container } = render(<NudgeCard card={CARD} designerView={false} onToggle={() => {}} />);
     const ids = [...container.querySelectorAll('[data-tooltip-id]')].map((el) => el.getAttribute('data-tooltip-id'));
     expect(ids).toEqual(expect.arrayContaining([
-      'ui.card.cost', 'ui.card.odds.fated', 'sphere.force', 'ui.card.keyword.boost',
+      'ui.card.cost', 'ui.card.odds.fated', 'ui.card.keyword.boost',
     ]));
+    // THR-2147 (D3) — the sphere mark left the price row; the pool word names the sphere.
+    expect(ids.some((id) => id?.startsWith('sphere.'))).toBe(false);
     for (const id of ids) expect(resolveTooltip(id!), id!).not.toBeNull();
     expect(screen.getByTestId(`nudge-card-cost-${CARD.id}`).hasAttribute('title')).toBe(false);
     expect(screen.getByTestId(`nudge-card-odds-${CARD.id}`).hasAttribute('title')).toBe(false);
@@ -187,6 +191,15 @@ describe('nudge-card marks (D4)', () => {
     for (const tier of [...PIP_ODDS_TIERS, PIP_PENALTY_TIER]) {
       expect(resolveTooltip(`ui.card.odds.${tier.id}`), tier.id).not.toBeNull();
     }
+    // THR-2147 (U3) — the verb chip's composed hover, one per verb × scale, within Law 18.
+    for (const verb of ['create', 'read', 'update', 'delete', 'sustained']) {
+      for (const scale of ['personal', 'local', 'regional', 'cosmic']) {
+        const entry = resolveTooltip(`ui.card.verb.${verb}.${scale}`);
+        expect(entry, `${verb}.${scale}`).not.toBeNull();
+        expect(entry!.desc.length, `${verb}.${scale}`).toBeLessThanOrEqual(200);
+      }
+    }
+    expect(resolveTooltip('ui.card.result')).not.toBeNull();
   });
 });
 
@@ -224,7 +237,7 @@ describe('forecast words (D5)', () => {
     for (const tier of FORECAST_TIERS) {
       const desc = resolveTooltip(`ui.forecast.${tier}`)?.desc ?? '';
       // THR-1985 — Fated opens by naming its rung, so grey never reads as the worst.
-      expect(desc, tier).toMatch(tier === 'fated' ? /^The best word on the ladder. As things stand/ : /^As things stand/);
+      expect(desc, tier).toMatch(tier === 'fated' ? /^The best word on the ladder: a sure thing needs no god\. As things stand/ : /^As things stand/);
       expect(desc, tier).toContain('{{ui.nudge_forecast}}');
     }
   });

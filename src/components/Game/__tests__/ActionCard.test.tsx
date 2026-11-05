@@ -76,10 +76,25 @@ describe('ActionCard — what the card says', () => {
     expect(text).not.toContain('artifactPower');
   });
 
-  it('prints the verb as a word, and the scale beside it', () => {
+  it('prints the verb as a word, and the reach word beside it', () => {
     const text = cardText();
     expect(text).toContain('Change');   // crudType 'update' → the player's word
-    expect(text).toContain('Local');
+    expect(text).toContain('Iron');     // THR-2147 (U2) — the reach mark carries its word
+  });
+
+  it('THR-2147 — wears one kind chip; the scale opens the verb chip hover instead', () => {
+    const { container } = render(<ActionCard slot={baseSlot} onClick={vi.fn()} />);
+    expect(container.querySelector('[data-testid^="action-card-scale-"]')).toBeNull();
+    expect(container.textContent).not.toContain('Local');
+    const verb = container.querySelector('[data-tooltip-id="ui.card.verb.update.local"]');
+    expect(verb).toBeTruthy();
+  });
+
+  it('THR-2147 — the price row names the pool that pays, and draws no sphere mark', () => {
+    const { container } = render(<ActionCard slot={baseSlot} onClick={vi.fn()} />);
+    const pool = container.querySelector('[data-testid^="action-card-cost-sphere-"]');
+    expect(pool?.textContent).toBe('Mind');
+    expect(container.querySelector('[data-tooltip-id="sphere.mind"]')).toBeNull();
   });
 
   it('files a sustained action under Control, whatever it changes', () => {
@@ -322,15 +337,19 @@ describe('ActionCard — THR-1464: the chip row wraps instead of overlapping', (
     return el;
   }
 
-  /** The two-chip card is the failing shape: it is the only one with a grouping span. */
+  /**
+   * The grouped card is the failing shape: it is the only one with a grouping span.
+   * THR-2147 — the scale chip left the face; the reach word now shares the group,
+   * so a keyword + reach card is the shape that can still overflow.
+   */
   const twoChipSlot = slot({ scale: 'cosmic', scaleWord: 'Cosmic', essenceCost: 10 });
 
-  it('renders the failing shape — two chips and an overflowing price', () => {
-    // Falsification guard: if the fixture ever stops producing both chips, every
+  it('renders the failing shape — a grouped kind and an overflowing price', () => {
+    // Falsification guard: if the fixture ever stops producing the group, every
     // assertion below would pass vacuously against a row that cannot overflow.
     const { container } = render(<ActionCard slot={twoChipSlot} onClick={vi.fn()} />);
     expect(container.querySelector('[data-testid^="action-card-keyword-"]')).toBeTruthy();
-    expect(container.querySelector('[data-testid^="action-card-scale-"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid^="action-card-reach-"]')).toBeTruthy();
     const cost = container.querySelector('[data-testid^="action-card-cost-"]') as HTMLElement;
     // The price is shown IN FULL — six pips plus the overflow glyph, never ellipsised
     // away. Wrapping is what buys the room for it (the ticket's explicit choice).

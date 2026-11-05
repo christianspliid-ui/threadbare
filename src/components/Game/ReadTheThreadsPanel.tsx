@@ -36,7 +36,7 @@ import {
 import type { EntityVisualDescriptor } from '../../engine/views/entityVisualResolver';
 import { RowPicture, rowDressingAttrs } from '../shared/RowPicture';
 import { ListHeadingIcon } from '../shared/ListHeadingIcon';
-import { listHeadingIcon, type ListHeadingId } from '../../data/view-content';
+import { listHeadingIcon, READ_THREADS_UNTOUCHED_LIVES_LABEL, type ListHeadingId } from '../../data/view-content';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -81,6 +81,11 @@ interface ReadTheThreadsPanelProps {
    * (`DialogHost`) and knowledge-gated (Law 8). Absent ⇒ the rows draw as text.
    */
   digestVisuals?: Readonly<Record<string, EntityVisualDescriptor | null>>;
+  /**
+   * THR-2155 — whether the god may name a mortal (the seen floor, `createSeenFloor`).
+   * Filters the Untouched lives list. Absent ⇒ every entry shows.
+   */
+  canNameAgent?: (agentId: string) => boolean;
 }
 
 /** THR-2103 — the host's faces, read by every digest row without threading a prop through each group. */
@@ -299,11 +304,12 @@ function PreReadState({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+      {/* THR-2124 — the question this dialog asks is its Now line: upright, primary. */}
       <p
+        data-dialog-now=""
         style={{
           fontSize: 'var(--text-sm)',
-          color: 'var(--text-secondary)',
-          fontStyle: 'italic',
+          color: 'var(--text-primary)',
           lineHeight: 1.6,
           margin: 0,
         }}
@@ -385,13 +391,30 @@ function PreReadState({
 
 // ─── Post-read state ──────────────────────────────────────────────────────────
 
-function PostReadState({ entries, fidelity }: { entries: DigestEntry[]; fidelity: Fidelity }) {
+/**
+ * THR-2155 — the Untouched lives list: one entry per unthreaded mortal, kept only
+ * when the seen floor can name them. No predicate (a test, a host without state)
+ * keeps every entry, as before.
+ */
+export function untouchedLives(
+  entries: readonly DigestEntry[],
+  canNameAgent?: (agentId: string) => boolean,
+): DigestEntry[] {
+  const dormant = oneEntryPerAgent(entries.filter(e => e.isDormantAgent && !e.wasCuratedOut));
+  return canNameAgent ? dormant.filter(e => canNameAgent(e.agentId)) : dormant;
+}
+
+function PostReadState({ entries, fidelity, canNameAgent }: {
+  entries: DigestEntry[];
+  fidelity: Fidelity;
+  canNameAgent?: (agentId: string) => boolean;
+}) {
   // Partition entries
   const notable = entries.filter(e => e.isNotable && !e.wasCuratedOut);
   // THR-2055: a candidate demoted on several ticks is one missed chapter, and
   // a dormant mortal is named once however many entries they filed.
   const curatedOut = [...new Map(entries.filter(e => e.wasCuratedOut).map(e => [`${e.agentId}|${e.encounterId}`, e])).values()];
-  const dormant = oneEntryPerAgent(entries.filter(e => e.isDormantAgent && !e.wasCuratedOut));
+  const dormant = untouchedLives(entries, canNameAgent);
   const locationEntries = entries.filter(e => e.sourceType === 'location' && !e.wasCuratedOut && !e.isDormantAgent);
 
   // Group active agent entries by reach
@@ -494,10 +517,10 @@ function PostReadState({ entries, fidelity }: { entries: DigestEntry[]; fidelity
         </div>
       )}
 
-      {/* Dormant court — vaguest */}
+      {/* Untouched lives — vaguest. Seen mortals with no thread (THR-2155). */}
       {dormant.length > 0 && (
         <div style={{ marginBottom: 'var(--space-2)' }}>
-          <SectionLabel>Dormant court</SectionLabel>
+          <SectionLabel>{READ_THREADS_UNTOUCHED_LIVES_LABEL}</SectionLabel>
           {dormant.map((e, i) => (
             <NamedDigestLine key={`dormant-${i}`} entry={e}>
               <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
@@ -525,6 +548,7 @@ export function ReadTheThreadsPanel({
   attentionPool,
   attentionCapacity,
   digestVisuals,
+  canNameAgent,
 }: ReadTheThreadsPanelProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [readEntries, setReadEntries] = useState<DigestEntry[] | null>(null);
@@ -585,7 +609,7 @@ export function ReadTheThreadsPanel({
             cooldownTicksRemaining={cooldownTicksRemaining}
           />
         ) : (
-          <PostReadState entries={readEntries} fidelity={readFidelity} />
+          <PostReadState entries={readEntries} fidelity={readFidelity} canNameAgent={canNameAgent} />
         )}
         </DigestVisualsContext.Provider>
       </Modal.Body>

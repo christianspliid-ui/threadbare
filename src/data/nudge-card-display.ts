@@ -22,6 +22,8 @@ import {
   type NudgeCardTypeId,
 } from './nudge-card-library';
 import type { IconName } from './icons/iconRegistry';
+import type { ArtifactCategory } from '../types/unifiedAction';
+import type { EncounterType } from '../types/encounter';
 import { PIP_ODDS_TIERS, oddsPips } from './nudge-pip-vocabulary';
 
 /** One essence pip. Cost is drawn, never counted out in digits. */
@@ -174,6 +176,115 @@ export function nudgeGlyphLegendForHand(forecastDeltas: readonly number[]): Nudg
     ? [PRICE_ENTRY, { id: 'odds', glyph, label: NUDGE_ODDS_LEGEND_LABEL }, SETBACK_ENTRY]
     : [PRICE_ENTRY, SETBACK_ENTRY];
 }
+
+// ─── Result line (THR-2147) ──────────────────────────────────────────
+
+/**
+ * The grant kinds a card that does not move the odds can carry, each with a
+ * result line. Library cards also grant `quintessence_shift` and `intelligence`,
+ * but only on cards that move the odds, whose pips are their answer.
+ * A kind added here without a {@link NUDGE_GRANT_RESULT_LINES} row is a type error.
+ */
+export type ResultLineGrantKind =
+  | 'remove_condition'
+  | 'spawn_artifact'
+  | 'assign_ambition'
+  | 'plant_compulsion'
+  | 'emit_omen'
+  | 'favor_creation'
+  | 'hidden_mark'
+  | 'spell_grant';
+
+export interface NudgeGrantResultLine {
+  /** `{name}` is the mortal, `{thing}` the noun the grant names. */
+  readonly line: string;
+  /** Used when `{thing}` cannot be resolved (Law 14: honest, never a blank). */
+  readonly fallback: string;
+}
+
+/**
+ * What a card that does not move the odds does, said on its face where the pips
+ * would be (plan THR-2146 D1). Exact effect, the named mortal, core vocabulary,
+ * no number. Ambition and urge lines say what the god does, never what the
+ * mortal chooses.
+ */
+export const NUDGE_GRANT_RESULT_LINES: Readonly<Record<ResultLineGrantKind, NudgeGrantResultLine>> = {
+  remove_condition: { line: 'Ends {name}’s {thing}.', fallback: 'Ends one of {name}’s conditions.' },
+  spawn_artifact: { line: 'Leaves {thing} for {name} to find.', fallback: 'Leaves an item for {name} to find.' },
+  assign_ambition: { line: 'Wakes an ambition in {name}: {thing}.', fallback: 'Wakes a new ambition in {name}.' },
+  plant_compulsion: { line: 'Plants an urge in {name} toward {thing}.', fallback: 'Plants a new urge in {name}.' },
+  emit_omen: {
+    line: 'Plants an omen: what {name} meets next bends toward it.',
+    fallback: 'Plants an omen: what {name} meets next bends toward it.',
+  },
+  favor_creation: { line: '{name} owes you a favour.', fallback: '{name} owes you a favour.' },
+  hidden_mark: { line: 'Leaves a hidden mark on {name}.', fallback: 'Leaves a hidden mark on {name}.' },
+  spell_grant: { line: '{name} learns {thing}.', fallback: '{name} learns a working.' },
+};
+
+const RESULT_LINE_GRANT_KINDS: ReadonlySet<string> = new Set(Object.keys(NUDGE_GRANT_RESULT_LINES));
+
+export function isResultLineGrantKind(kind: string): kind is ResultLineGrantKind {
+  return RESULT_LINE_GRANT_KINDS.has(kind);
+}
+
+/** The item a `spawn_artifact` grant leaves, by category, as the result line names it. */
+export const ARTIFACT_CATEGORY_RESULT_NOUNS: Readonly<Record<ArtifactCategory, string>> = {
+  weapon: 'a weapon',
+  talisman: 'a talisman',
+  relic: 'a relic',
+  tome: 'a book',
+  vessel: 'a vessel',
+  key: 'a key',
+  mundane: 'something useful',
+};
+
+/** Where a planted urge points, by the encounter kind it leans toward. */
+export const COMPULSION_URGE_NOUNS: Readonly<Record<EncounterType, string>> = {
+  explore: 'the open road',
+  acquire: 'gain',
+  create: 'making something',
+  hire: 'gathering help',
+  duel: 'a fight',
+  steal: 'taking what is not theirs',
+  trade: 'trade',
+  assist: 'helping others',
+  build: 'building',
+  lead: 'leading',
+};
+
+/**
+ * Fill a result line. `thing` absent ⇒ the kind's fallback sentence. Pure; the
+ * caller resolves both words from the world.
+ */
+export function formatNudgeResultLine(kind: ResultLineGrantKind, name: string, thing?: string): string {
+  const row = NUDGE_GRANT_RESULT_LINES[kind];
+  const template = thing ? row.line : row.fallback;
+  const filled = template.replaceAll('{name}', name).replaceAll('{thing}', thing ?? '');
+  return filled.charAt(0).toUpperCase() + filled.slice(1);
+}
+
+/**
+ * THR-2147 — the Aftermath chip a played card's write draws (`nudgeWrites`).
+ * `{name}` is the mortal, `{thing}` the changed state's name. The chip's tag
+ * reads `CATEGORY · {title}`.
+ */
+export interface NudgeWriteChipCopy {
+  readonly title: string;
+  readonly sentence: string;
+  readonly category: 'boon' | 'path' | 'bond';
+  readonly direction: 'gain' | 'opens';
+}
+
+export const NUDGE_WRITE_CHIP_COPY: Readonly<Record<Exclude<ResultLineGrantKind, 'hidden_mark'>, NudgeWriteChipCopy>> = {
+  remove_condition: { title: '{thing}', sentence: '{name} is no longer {thing}.', category: 'boon', direction: 'gain' },
+  spawn_artifact: { title: '{thing}', sentence: '{name} finds {thing}.', category: 'boon', direction: 'gain' },
+  spell_grant: { title: '{thing}', sentence: '{name} learns {thing}.', category: 'boon', direction: 'gain' },
+  assign_ambition: { title: '{thing}', sentence: 'A new ambition wakes in {name}: {thing}.', category: 'path', direction: 'opens' },
+  plant_compulsion: { title: 'An urge', sentence: 'An urge toward {thing} takes root in {name}.', category: 'path', direction: 'opens' },
+  emit_omen: { title: 'An omen', sentence: 'An omen bends what {name} meets next.', category: 'path', direction: 'opens' },
+  favor_creation: { title: 'A favour', sentence: '{name} owes a favour.', category: 'bond', direction: 'gain' },
+};
 
 /** Cost channels beyond essence — the keys of `NudgeCostChannels`. */
 export type NudgeCostChannelId = 'detection' | 'doom';

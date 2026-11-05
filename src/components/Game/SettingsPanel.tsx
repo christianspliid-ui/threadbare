@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { IconButton } from '../shared/IconButton';
 import { Modal } from '../shared/Modal';
 import { Button } from '../shared/Button';
 import { Icon } from '../shared/Icon';
@@ -113,21 +112,6 @@ export function SettingsPanel({
     window.location.href = url.toString();
   };
 
-  const headerStyle: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '12px 16px',
-    borderBottom: '1px solid rgba(212, 175, 55, 0.2)',
-    flexShrink: 0,
-  };
-
-  const headerTitleStyle: React.CSSProperties = {
-    fontSize: 'var(--text-sm)',
-    fontWeight: 600,
-    color: 'var(--text-primary)',
-  };
-
   // M tier (THR-1820 § 7): the sections sit side by side, so every section shows
   // without scrolling (Law 57). Each column is at least SETTINGS_SECTION_MIN_W wide.
   const contentStyle: React.CSSProperties = {
@@ -220,25 +204,9 @@ export function SettingsPanel({
 
   return (
     <Modal open={open} onClose={onClose} size="m" aria-label="Settings">
-      {/* Header */}
-      <div style={headerStyle}>
-        {/* THR-2101 (decision 8): the title draws `settings`; the section headings draw none (Law 30). */}
-        <h2 style={{ ...headerTitleStyle, display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-          {settingsIcon && (
-            <span data-dialog-heading-icon={settingsIcon} style={{ display: 'inline-flex' }}>
-              <Icon name={settingsIcon} size="chip" decorative />
-            </span>
-          )}
-          Settings
-        </h2>
-        <IconButton
-          icon={<span>×</span>}
-          variant="close"
-          size="sm"
-          onClick={onClose}
-          aria-label="Close settings"
-        />
-      </div>
+      {/* THR-2101 (decision 8): the title draws `settings`; the section headings draw none (Law 30).
+          THR-2124: the title is the shared dialog title, like every other dialog. */}
+      <Modal.Header onClose={onClose} icon={settingsIcon}>Settings</Modal.Header>
 
       {/* Content */}
       <div style={contentStyle}>

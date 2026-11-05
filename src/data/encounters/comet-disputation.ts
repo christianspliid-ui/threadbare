@@ -146,7 +146,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         + 'fair. It has named {actor} a false reader for saying otherwise. At dawn {actor} must argue the '
         + 'comet\'s meaning before the council, against {cast:champion}, the college\'s first reader. '
         + 'Tonight, through haze, {actor} charts the comet\'s course. The council will follow the winner, '
-        + 'and the loser\'s name as a star-reader will suffer.',
+        + 'and if the gates shut, {location} loses its spring fair.',
       criticalSuccessAfterimage: 'By midnight the chart was done: the comet runs east, away from {location}.',
       successAfterimage: 'The chart was done before morning. The comet is moving east, away from {location}.',
       successAtCostAfterimage: 'The chart was done, but {actor} had no sleep before the disputation.',

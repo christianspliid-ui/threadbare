@@ -25,6 +25,7 @@
 import type { WorldGraph } from './graph';
 import type { GameState } from '../types/gameState';
 import type { ReachDomain } from '../types/traits';
+import type { ValuePair } from '../types/agent';
 import type { MeetingChoiceRecord } from '../types/meetingEncounter';
 import type { UnifiedAction } from '../types/unifiedAction';
 import { SPARK_VISION_CATALOG } from '../data/spark-vision-catalog';
@@ -47,6 +48,11 @@ export interface FirstPath {
    * names none.
    */
   readonly requiredReach: ReachDomain;
+  /**
+   * THR-2156 — what the path is about: two motivation axes, no pole. Absent on a
+   * vision without them (old save, fixture), which keeps the reach-only pull.
+   */
+  readonly themeAxes?: readonly ValuePair[];
 }
 
 /** The god's `the_first` thread edge, or undefined before the bond. */
@@ -66,6 +72,7 @@ export function firstPathFromRecord(record: MeetingChoiceRecord | null | undefin
     title: vision.title,
     reach: vision.reachInvestment,
     requiredReach: vision.requiredPrimaryReach ?? vision.reachInvestment,
+    ...(vision.themeAxes && vision.themeAxes.length > 0 ? { themeAxes: [...vision.themeAxes] } : {}),
   };
 }
 
@@ -184,10 +191,21 @@ export function firstPathRecallFor(
 
 // ─── The path leans (THR-2068) ───────────────────────────────────
 
-/** ×(1 + FIRST_PATH_PULL) when the scene's main Reach is one of the path's two; else 1. Pure. */
-export function firstPathPullFor(path: FirstPath | null, entryReach: ReachDomain | undefined): number {
+/**
+ * ×(1 + FIRST_PATH_PULL) when the scene's main Reach is one of the path's two and
+ * (THR-2156) its motivations name at least one of the path's `themeAxes`; else 1.
+ * A path without `themeAxes` keeps the THR-2068 reach-only rule (fail-soft). Pure.
+ */
+export function firstPathPullFor(
+  path: FirstPath | null,
+  entryReach: ReachDomain | undefined,
+  motivations?: readonly ValuePair[],
+): number {
   if (!path || !entryReach) return 1;
-  return entryReach === path.reach || entryReach === path.requiredReach ? 1 + FIRST_PATH_PULL : 1;
+  if (entryReach !== path.reach && entryReach !== path.requiredReach) return 1;
+  const axes = path.themeAxes;
+  if (axes && axes.length > 0 && !(motivations ?? []).some(m => axes.includes(m))) return 1;
+  return 1 + FIRST_PATH_PULL;
 }
 
 /** "Fits the unseen blade." — the God's Will option line for a scene that fits the path. */
@@ -195,8 +213,34 @@ export function formatFirstPathFitLine(title: string): string {
   return FIRST_PATH_FIT_LINE.replace('{path}', () => firstPathInLine(title));
 }
 
+/**
+ * THR-2156 — the fit line for The First's chapter on its opening step ("Fits the
+ * reader of secrets."), when the path pulls the chapter's scene; else null. The
+ * pinned first chapter keeps its recall line and gets no fit line. Same rule as
+ * the board's pull, so the Stage and God's Will agree. Read-only; never throws.
+ */
+export function firstPathFitFor(
+  graph: WorldGraph,
+  ascendantId: string | undefined,
+  action: Pick<UnifiedAction, 'actionId' | 'actorId' | 'currentStep' | 'resolved'>,
+  scene: { readonly reach?: ReachDomain; readonly motivations?: readonly ValuePair[] },
+): string | null {
+  try {
+    if (!ascendantId || action.resolved || action.currentStep !== 0) return null;
+    const thread = firstThread(graph, ascendantId);
+    if (!thread || thread.target !== action.actorId) return null;
+    if (thread.properties.firstPathRecalledActionId === action.actionId) return null;
+    const path = firstPathFromRecord(thread.properties.meetingChoiceRecord as MeetingChoiceRecord | undefined);
+    if (!path) return null;
+    if (firstPathPullFor(path, scene.reach, scene.motivations) <= 1) return null;
+    return formatFirstPathFitLine(path.title);
+  } catch {
+    return null;
+  }
+}
+
 interface PathPullCandidate {
-  readonly entry: { readonly reachPrimary: ReachDomain };
+  readonly entry: { readonly reachPrimary: ReachDomain; readonly motivations?: readonly ValuePair[] };
   finalScore: number;
   firstPathPull?: number;
 }
@@ -223,7 +267,7 @@ export function applyFirstPathPull<C extends PathPullCandidate>(
   if (!path) return 0;
   let pulled = 0;
   const reweigh = (c: C): C => {
-    const pull = firstPathPullFor(path, c.entry.reachPrimary);
+    const pull = firstPathPullFor(path, c.entry.reachPrimary, c.entry.motivations);
     if (pull <= 1) return c;
     pulled++;
     return { ...c, finalScore: c.finalScore * pull, firstPathPull: pull };

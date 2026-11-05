@@ -1,7 +1,7 @@
 ---
 name: cold-playtest
 description: Run one cold playtest round of Threadbearer — three no-knowledge testers (fresh `claude -p` processes outside the repo, browser tools only) play the deployed build from its real front door — or, in `--warm` mode, arrive a few seasons into a world with The First already bonded, to reach the mid-game (factions, undertakings, ambitions). Then verify every finding against source, file the verified ones into a round milestone, track earlier rounds' findings as fixed-confirmed / not-exercised / recurred, and publish the round report and scorecard to `ops`. Run by the daily `tb-cold-playtest` lane (gated) or by hand. Triggers on "cold playtest", "/cold-playtest", "run a playtest round", "cold tester", "new-player playtest", "warm playtest", "/cold-playtest --warm", "mid-game playtest".
-last_validated_against: 2026-10-20
+last_validated_against: 2026-11-04
 invocation: /cold-playtest [--warm] [--dry-run] [--lane]
 audience: claude-code
 ---
@@ -59,7 +59,7 @@ Artifacts are written to `%USERPROFILE%\.threadbare\cold-playtest\round-N\<perso
 
 The four gates (plan § *When the next round runs*; constants in `config.json`):
 
-1. **Current round closed.** List the milestones of project **Onboarding & First-Run Experience** (`list_milestones`) matching `Cold playtest · round <k>`. Take the highest *k*, then `list_issues(project, milestone)` including Done/Canceled. Every issue must be Done or Canceled.
+1. **Current round closed.** List the milestones of project **Onboarding & First-Run Experience** (`list_milestones`) matching `Cold playtest · round <k>`. Take the highest *k*, then `list_issues(project, milestone)` including Done/Canceled. Every issue must be Done or Canceled, with one exception. A `Game Design` finding counts as closed once every build ticket it filed into this milestone is Done, even if the finding itself stays open. The design lane keeps such a finding open until the next round checks its "Fixed when" line, so gate 1 cannot also wait for it, or the series locks (impediment #1246: warm round 2, 2026-10-21 → 2026-11-04). Its build tickets are named in its decision comment. The next round then sets its status in step 6.
 2. **Deployed.** `npm run check:deploy` reports `deployed` (or `skipped`) for `main`, and the newest `completedAt` in the milestone is at least `deploySettleMinutes` old.
 3. **Spacing.** At least `minDaysBetweenRounds` days since round *k* ran (its `round.json` `startedAt`, else the milestone's creation date).
 4. **Auth.** `claude -p "reply ok" --model haiku` run **from a temp directory outside the repo** exits 0 and says ok. The tester uses the standalone CLI's own login, not the desktop app's, and that token expires on its own.

@@ -1719,8 +1719,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   },
   description:
     'An abbey\'s new vault is swelling in its frame, and the winter rains are coming. Strike the '
-    + 'centering now, or keep the frame sound and the church shut until spring. The abbot has made '
-    + 'the vault one person\'s charge.',
+    + 'centering now, or keep the frame sound and the church shut until spring. Someone has to '
+    + 'decide, and the abbot will hold them answerable for the vault.',
   locationSubtypes: expandSettings(['rural', 'urban']),
   consequenceDraw: ['relationship', 'place'],
 };

@@ -40,9 +40,9 @@ export const EASTER_RECKONING_HEARD: UnifiedActionTemplate = {
   id: EASTER_RECKONING_HEARD_ID,
   stakes: {
     goal: 'hold the reckoning against the dean before the synod',
-    risk: 'see the synod put off its ruling on the feast',
+    risk: 'leave the feast on the day the old tables give',
     won: 'held the reckoning, and the synod moved the feast',
-    lost: 'saw the synod put off its ruling on the feast',
+    lost: 'left the feast on the day the old tables give',
   },
   // Seed-only: the feast reckoning's appointment (kept branch) is its only planter (THR-1526).
   drawable: false,
@@ -71,7 +71,7 @@ export const EASTER_RECKONING_HEARD: UnifiedActionTemplate = {
         'If the reckoning holds against the dean, the synod moves the spring feast to its true day.',
       successAfterimage:
         'The dean could not fault the reckoning. The synod moved the spring feast to its true day, and every parish in the diocese will keep it there.',
-      failureAfterimage: 'The dean questioned the reckoning line by line until the synod put off its ruling, and the feast stays where the tables put it.',
+      failureAfterimage: 'The dean questioned the reckoning line by line until the synod sent it back for a second hearing, and the feast stays where the tables put it.',
       successMetadata: {
         // `$here` is lawful here: the kept branch fires only with the mortal standing in the town.
         effects: [
@@ -88,7 +88,7 @@ export const EASTER_RECKONING_HEARD: UnifiedActionTemplate = {
   narrativeTemplates: {
     initiation: '{name} is in the chapter house on synod day, where the synod hears the reckoning.',
     success: 'The synod moved the spring feast to its true day.',
-    failure: 'The synod put off its ruling.',
+    failure: 'The feast stays on the day the old tables give.',
   },
   aftermathConfig: {
     branchOnStep: 0,
@@ -104,9 +104,9 @@ export const EASTER_RECKONING_DEFAULTED: UnifiedActionTemplate = {
   id: EASTER_RECKONING_DEFAULTED_ID,
   stakes: {
     goal: 'refuse to sign the reckoning away as a mistake',
-    risk: "be shamed at the bishop's table for staying away",
+    risk: "see the reckoning struck from the chapter's books",
     won: 'refused to sign the reckoning away as a mistake',
-    lost: "was shamed at the bishop's table for staying away",
+    lost: "saw the reckoning struck from the chapter's books",
   },
   // Seed-only: the feast reckoning's appointment (missed branch) is its only planter (THR-1526).
   drawable: false,
@@ -128,7 +128,7 @@ export const EASTER_RECKONING_DEFAULTED: UnifiedActionTemplate = {
       failBehavior: 'fail_action',
       onSuccess: [],
       onFailure: [],
-      purposeLine: 'Answer the dean',
+      purposeLine: 'Keep the reckoning standing',
       // Names no place: the missed branch fires wherever the mortal stands.
       narrativeTemplate:
         '{name} was not in the chapter house on synod day, and the reckoning was never read. ' +

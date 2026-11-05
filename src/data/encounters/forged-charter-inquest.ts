@@ -478,7 +478,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         failure: {
-          overview: 'The council has no answer for the count\'s lawyers, though it sent for {actor} to find one.',
+          overview: 'The council has no answer for the count\'s lawyers. Unless the charter is proved, the market tolls go to the count.',
           changes: [
             {
               id: 'charter.lost.the_towns_regard',

@@ -1993,6 +1993,17 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/engine/playerReceipts.ts', 'src/data/receipt-content.ts'],
   },
   {
+    id: 'nudge-writes-reach-aftermath',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A card the god played and paid for answers in the ending (THR-2147, plan THR-2146 E3). `dispatchNudgeCommitments` applies each committed card\'s grants as its own reaction, probes the mortal before and after, and returns one `NudgeWriteRecord` per grant that changed something (a condition ended, an item left, an ambition woken, an urge or omen planted, a favour owed, a spell taught). `autonomous_aftermath` stores them on `UnifiedAction.nudgeWrites`; `buildNudgeWriteChanges` turns each into an ordinary Aftermath chip, merged beside the fight\'s and the cast\'s (the `stepCasts.writes` precedent). A removal that found nothing records nothing (Law 56), and `hidden_mark` never records — the Long Game is hidden by design.',
+    ulTerms: ['Aftermath', 'Nudge'],
+    mechanism: { kind: 'node-prop', symbols: ['nudgeWrites', 'buildNudgeWriteChanges'], module: 'src/engine/views/stage/buildNudgeWriteChanges.ts' },
+    writeSites: ['src/engine/encounters/nudgeDispatch.ts', 'src/engine/phases/phaseAutonomousAftermath.ts'],
+    readSites: ['src/engine/views/stage/buildUnifiedEncounterStageModel.ts', 'src/engine/views/stage/buildNudgeWriteChanges.ts'],
+  },
+  {
     id: 'cast-target-changes-reach-receipt',
     producerSystem: ENCOUNTERS,
     consumerSystem: NARRATIVE,
@@ -2120,6 +2131,28 @@ export const CONTRACTS: readonly Contract[] = [
     mechanism: { kind: 'node-prop', symbols: ['compelledByGod'] },
     writeSites: ['src/engine/phaseAgentDecision.ts'],
     readSites: ['src/engine/chapterArchive.ts'],
+  },
+  {
+    id: 'chapter-growth-marks-reach-tile',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      'The sheet says what grew (THR-2149). The person sheet\'s reach tiles read the chapter archive\'s `aftermathSummary` growth changes through `recentReachGrowth` (`engine/views/reachGrowthMarks.ts`): the newest growth per reach inside `SHEET_GAIN_MARK_WINDOW_TICKS` draws the Aftermath\'s ▲ cluster beside the reach word, and its hover names the chapter. A ▲▲ gain usually leaves the 0.2-wide tier word unchanged, so before this the Aftermath and the sheet disagreed. Read only; nothing is written.',
+    ulTerms: ['Agent', 'Encounter'],
+    mechanism: { kind: 'node-prop', symbols: ['aftermathSummary'] },
+    writeSites: ['src/engine/chapterArchive.ts'],
+    readSites: ['src/engine/views/reachGrowthMarks.ts'],
+  },
+  {
+    id: 'meeting-leans-on-nature',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: TRAITS,
+    intent:
+      'A meeting lean shows on Nature (THR-2149). `meetingLeans` (`engine/agentDetail.ts`) reads the thread edge\'s `meetingChoiceRecord.formativeOutcomes` and returns the pole each formative test wrote, in the axis registry\'s word; the person sheet\'s Nature row adds a "leaning {word}" chip when that word is not already shown. The fate line says "leans {x} now", so the promise and the sheet agree. Read only.',
+    ulTerms: ['Agent', 'Encounter'],
+    mechanism: { kind: 'edge-prop', symbols: ['formativeOutcomes'] },
+    writeSites: ['src/engine/meetingEncounter.ts'],
+    readSites: ['src/engine/agentDetail.ts'],
   },
   {
     id: 'player-action-receipts-queue',
@@ -7156,11 +7189,11 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: NARRATIVE,
     consumerSystem: ENCOUNTERS,
     intent:
-      'The path chosen on "What will they become?" comes back in The First\'s first chapter after the bond. The tick path pins that one chapter on her thread once; the encounter stage only reads the pin, so a re-render never repeats the line and a later chapter never gets it.',
+      'The path chosen on "What will they become?" comes back in The First\'s first chapter after the bond. The tick path pins that one chapter on her thread once; the encounter stage only reads the pin, so a re-render never repeats the line and a later chapter never gets it. THR-2156: every other chapter of hers the path pulls (Reach one of the path\'s two and a motivation naming one of its themeAxes) opens with the fit line instead ("Fits the reader of secrets."); firstPathFitFor reads the same pin so the recall chapter never shows both.',
     ulTerms: ['Chapter'],
     mechanism: {
       kind: 'edge-prop',
-      symbols: ['firstPathRecalledActionId', 'noteFirstPathRecall', 'firstPathRecallFor'],
+      symbols: ['firstPathRecalledActionId', 'noteFirstPathRecall', 'firstPathRecallFor', 'firstPathFitFor'],
       module: 'src/engine/firstPath.ts',
     },
     writeSites: ['src/engine/firstPath.ts', 'src/engine/orchestrator.ts'],

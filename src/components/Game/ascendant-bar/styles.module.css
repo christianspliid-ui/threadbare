@@ -12,7 +12,7 @@
   padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-6); /* THR-2125 R1 — Modules § 2, docked density */
   /* THR-1894: the rail never scrolls as a page; the hand region and the open rows scroll inside their own limits (Laws 33, 57). */
   overflow: hidden;
 }
@@ -196,12 +196,47 @@
   background: var(--bg-hover);
 }
 
+/* THR-2148 — the row's middle: the word and "53 / 55" over the bar and rung. */
+.essenceRowBody {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+.essenceRowLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+  line-height: 1.25;
+}
+/* THR-2153 — holds the bar and, during a spend flash, the ▼ mark over it.
+   The mark is out of flow, so the sphere word and the bar keep their width. */
+.essenceFillSlot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  align-self: stretch;
+  min-height: 8px;
+}
 .essenceFillBar {
   height: 3px;
   border-radius: 2px;
   background: var(--bg-raised);
   overflow: hidden;
   flex: 1;
+}
+.essenceSpendMark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  line-height: 1;
+  pointer-events: none;
 }
 /* ── Seat line (THR-1792) ──────────────────────────────────────── */
 .seatLine {

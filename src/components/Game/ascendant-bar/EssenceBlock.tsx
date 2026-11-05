@@ -23,7 +23,6 @@ import React, { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { SphereIcon } from '../../shared/SphereIcon';
 import { Tooltip } from '../../shared/Tooltip';
 import { DeltaCluster } from '../../shared/DeltaCluster';
-import { formatEssencePool } from '../../shared/formatEssence';
 import { getSphereColor } from '../../../data/sphereIcons';
 import { SPHERE_COPY, ESSENCE_ELDER_FOLD_LABEL, ESSENCE_TREND_WORDS } from '../../../data/ascendant-bar-content';
 import { sphereDeltaReading } from '../../../engine/aftermathWords';
@@ -45,6 +44,7 @@ import {
   readElderHeaderLatch,
   writeElderHeaderLatch,
   essenceFillPct,
+  essenceBalanceText,
   getEssencePreviewSphere,
   subscribeEssencePreview,
 } from './essenceDisplay';
@@ -148,7 +148,9 @@ function EssenceRow({ row, previewed }: EssenceRowProps) {
   const label = sphereCopy?.label ?? row.sphere;
   const trendColor = TREND_COLOR[row.trend];
   const arrow = TREND_ARROW[row.trend];
-  const fillPct = essenceFillPct(row.level);
+  // THR-2148 (U1) — the bar ends at the pool's limit; the starting 50 is the fallback.
+  const fillPct = essenceFillPct(row.level, row.cap ?? ESSENCE_BAR_CEILING);
+  const balance = essenceBalanceText(row.level, row.cap);
   const spent = useSpendFlash(row.movement);
   const spendReading = spent > 0 ? sphereDeltaReading(-spent / ESSENCE_BAR_CEILING, label) : null;
 
@@ -172,73 +174,86 @@ function EssenceRow({ row, previewed }: EssenceRowProps) {
         } : undefined}
       >
         <SphereIcon sphere={row.sphere} size={16} />
-        <span style={{
-          fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)',
-          color: row.isPrimary ? 'var(--text-primary)' : row.isSecondary ? 'var(--text-secondary)' : 'var(--text-muted)',
-          minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-        }}>
-          {label}
-        </span>
-        <div className={styles.essenceFillBar}>
-          <div
-            data-testid={`essence-fill-${row.sphere}`}
-            data-fill-pct={Math.round(fillPct)}
-            style={{
-              height: '100%', width: `${fillPct}%`,
-              background: color,
-              opacity: row.isPrimary ? 1 : row.isSecondary ? 0.75 : 0.5,
-              transition: 'width 0.4s ease-out',
-            }}
-          />
-        </div>
-        {spendReading && (
-          <span data-testid={`essence-spend-${row.sphere}`} style={{ lineHeight: 1 }}>
-            <DeltaCluster
-              direction={spendReading.direction}
-              count={spendReading.count}
-              label={spendReading.label}
-              size={10}
-            />
+        {/* THR-2148 — two lines: the sphere word and "53 / 55" above, the bar and
+            the refill rung below. On one line the limit took the bar's width
+            (5px at 1920 in the 142px rail); stacked, the bar keeps most of it. */}
+        <span className={styles.essenceRowBody}>
+          <span className={styles.essenceRowLine}>
+            <span style={{
+              fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)',
+              color: row.isPrimary ? 'var(--text-primary)' : row.isSecondary ? 'var(--text-secondary)' : 'var(--text-muted)',
+              minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}>
+              {label}
+            </span>
+            <span
+              data-testid={`essence-balance-${row.sphere}`}
+              data-cap={row.cap}
+              aria-label={balance.aria}
+              style={{
+                fontFamily: 'var(--font-body)', fontSize: 'var(--text-sm)', fontWeight: 600, // THR-2125 R1 — the spendable pools read first
+                color: row.isPrimary || row.isSecondary ? 'var(--text-primary)' : 'var(--text-secondary)',
+                flexShrink: 0, textAlign: 'right',
+                fontVariantNumeric: 'tabular-nums',
+                whiteSpace: 'nowrap',
+                cursor: 'help',
+              }}
+            >
+              {balance.text}
+            </span>
           </span>
-        )}
-        {/* THR-1985 — how fast this pool refills: a rung under the balance, so it
-            takes no width from the label or the bar; the word is the rung's
-            accessible name and the row hover's first sentence (Law 13: a word,
-            never a rate). */}
-        <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2, flexShrink: 0 }}>
-        <span
-            data-testid={`essence-balance-${row.sphere}`}
-            style={{
-              fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)', fontWeight: 600,
-              color: row.isPrimary || row.isSecondary ? 'var(--text-primary)' : 'var(--text-secondary)',
-              minWidth: 22, textAlign: 'right',
-              fontVariantNumeric: 'tabular-nums',
-              cursor: 'help',
-            }}
-          >
-            {formatEssencePool(row.level)}
+          <span className={styles.essenceRowLine}>
+            {/* THR-2153 — the spend mark floats over the bar, out of flow: in flow
+                it took its width from the sphere word ("M…") and the bar (0px). */}
+            <span className={styles.essenceFillSlot}>
+              <div className={styles.essenceFillBar}>
+                <div
+                  data-testid={`essence-fill-${row.sphere}`}
+                  data-fill-pct={Math.round(fillPct)}
+                  style={{
+                    height: '100%', width: `${fillPct}%`,
+                    background: color,
+                    opacity: row.isPrimary ? 1 : row.isSecondary ? 0.75 : 0.5,
+                    transition: 'width 0.4s ease-out',
+                  }}
+                />
+              </div>
+              {spendReading && (
+                <span data-testid={`essence-spend-${row.sphere}`} className={styles.essenceSpendMark}>
+                  <DeltaCluster
+                    direction={spendReading.direction}
+                    count={spendReading.count}
+                    label={spendReading.label}
+                  />
+                </span>
+              )}
+            </span>
+            {/* THR-1985 — how fast this pool refills: a rung at the bar's end, so it
+                takes no width from the label; the word is the rung's accessible
+                name and the row hover's refill sentence (Law 13: a word, never a rate). */}
+            {row.refill && refillWords && (
+              <RefillRung
+                testId={`essence-refill-${row.sphere}`}
+                band={row.refill.band}
+                filled={refillWords.rung}
+                upkeep={row.refill.upkeep}
+                label={
+                  row.refill.upkeep
+                    ? `${essenceRefillAriaLabel(row.refill.band)}${ESSENCE_REFILL_TAG_SEPARATOR}${ESSENCE_UPKEEP_TAG}`
+                    : essenceRefillAriaLabel(row.refill.band)
+                }
+              />
+            )}
+            {/* THR-2148 — the arrow ends the bar line, so the sphere word keeps the width. */}
+            <span
+              data-testid={`essence-trend-${row.sphere}`}
+              data-trend={row.trend}
+              aria-label={ESSENCE_TREND_WORDS[row.trend]}
+              style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)', color: trendColor, minWidth: 12, lineHeight: 1, textAlign: 'center' }}
+            >
+              {arrow}
+            </span>
           </span>
-          {row.refill && refillWords && (
-            <RefillRung
-              testId={`essence-refill-${row.sphere}`}
-              band={row.refill.band}
-              filled={refillWords.rung}
-              upkeep={row.refill.upkeep}
-              label={
-                row.refill.upkeep
-                  ? `${essenceRefillAriaLabel(row.refill.band)}${ESSENCE_REFILL_TAG_SEPARATOR}${ESSENCE_UPKEEP_TAG}`
-                  : essenceRefillAriaLabel(row.refill.band)
-              }
-            />
-          )}
-        </span>
-        <span
-          data-testid={`essence-trend-${row.sphere}`}
-          data-trend={row.trend}
-          aria-label={ESSENCE_TREND_WORDS[row.trend]}
-          style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)', color: trendColor, minWidth: 12 }}
-        >
-          {arrow}
         </span>
       </div>
       </Tooltip>

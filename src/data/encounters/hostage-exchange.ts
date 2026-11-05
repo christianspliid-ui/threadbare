@@ -754,8 +754,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         critical_failure: {
-          overview: 'The peace between the two houses is broken, and both heirs are still hostages. Both houses sent '
-            + 'for {actor}, and both now blame {actor} for it.',
+          overview: 'The peace between the two houses is broken, and both heirs are still hostages. The two houses '
+            + 'will meet next with drawn steel, not a ransom.',
           changes: [
             {
               id: 'hostage.critfail.town_regard',
