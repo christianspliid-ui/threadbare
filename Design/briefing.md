@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-05 17:58 local (16:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-05 18:57 local (17:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -7,7 +7,7 @@
 
 ## Also waiting (8)
 
-- **Your writing-checks conversation can start.** [The story-text audit](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-10-31-encounter-story-text-quality.md#the-writing-checks-against-these-examples-done-when-1b) is what [Writing evals — with Christian](https://linear.app/threadbare/issue/THR-2106) needs. The next story-beat rewrite now waits on it too (see *Decided for you*). *— from the design lane*
+- **Your writing-checks conversation can start.** [The story-text audit](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-10-31-encounter-story-text-quality.md#the-writing-checks-against-these-examples-done-when-1b) is what [Writing evals — with Christian](https://linear.app/threadbare/issue/THR-2106) needs. The next story-beat rewrite waits on it too. *— from the design lane*
 - **Thursday 29 to Friday 30 Oct:** the lanes were silent for 40 hours and no pause was recorded. Was the computer off or the app closed, or was this a pause?
 - **Wednesday night to Friday night (21–23 Oct):** the lanes were silent for 48 hours and no pause was recorded. Was the app closed or the computer off, or was this a pause?
 - **Sunday evening to Monday evening (18–19 Oct):** the lanes were silent for 23 hours and no pause was recorded. Was the app closed, or was this a pause?
@@ -19,6 +19,13 @@
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
 ## Decided for you
+
+From the design lane's [17:20 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-05e.md). Nobody builds on these before 05:30 UTC on 6 November.
+
+- ["Fated" fails and nothing says why](https://linear.app/threadbare/issue/THR-2171/fated-fails-and-nothing-says-why-the-top-odds-word-reads-as-certain-a) — "Fated" keeps its name and its odds, and now and then a Fated step still misses. When a step you saw as Fated or Favorable misses, the result says so once: *"It looked Fated, but fate rolled against it."* Build ticket: [THR-2180](https://linear.app/threadbare/issue/THR-2180/a-good-odds-step-that-misses-says-so-it-looked-fated-but-fate-rolled).
+- Same ticket — the odds legend now ends *"Even Fated can miss."* The Fated hover says "nearly sure, never certain" instead of "all but cannot fail".
+- Same ticket — a chapter won with one failed step reads *"One step went wrong. The work on Heart failed, and your cards could not save that step."* Before, "could not save it" read as the whole chapter lost.
+- Same ticket — no number is shown, and Fated's colour is not touched. Grey or gold is still your open question.
 
 From the design lane's [14:18 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-05d.md). Nobody builds on these before 02:45 UTC on 6 November.
 
@@ -34,13 +41,6 @@ From the design lane's [11:18 UTC run](https://github.com/christianspliid-ui/thr
 - Same ticket — the two words show only for a mortal set to "Asks you". A mortal set to "Lives on" already tells you nothing waits.
 - Same ticket — giving more chapters a hand is a separate plan, and it starts with a measurement. Today 391 of the game's 541 story chapters offer no move at any step. The plan first counts which ones a bonded mortal actually meets. If the answer is "every chapter should ask you", that goes to you, not to me.
 
-From the design lane's [05:18 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-05b.md). Nothing gets built on these: the ticket is parked until your writing-checks conversation. Last hour to veto these.
-
-- [The Comet, the Page and Apotheosis, the leftover rewrite](https://linear.app/threadbare/issue/THR-2164/novel-prose-story-beats-slice-b-residue-comet-page-and-apotheosis-held): the second cold read found problems in all three story beats, so all three keep their current text. There is no third rewrite round. The held work is kept for later.
-- Same ticket: the next rewrite waits for your [writing-checks conversation](https://linear.app/threadbare/issue/THR-2106). The two mistakes the critic kept finding need a machine check; both are added to that ticket as check ideas, not decisions.
-- Same ticket, rule for the next rewrite: an ending's opening paragraph never repeats the step result shown just before it, not even in other words.
-- Same ticket, rule for the next rewrite: in the Comet and the Page, a mortal who stumbles at a step still wins at a price, so those quests get no separate "failed" ending. Their win-at-a-price text must read true whether the mortal scraped through or stumbled and pushed on.
-
 Say "veto <title>" to reverse any of these.
 
 ## This week's screens
@@ -49,16 +49,17 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: two ready, both waiting out their veto windows.** The builder checked three times this hour and correctly took nothing; nothing new shipped since the two town-encounter tickets at 15:02 and 15:51 UTC.
+**Healthy: three ready, all waiting out their veto windows.** The builder checked three times this hour and correctly took nothing; nothing new shipped since the town-encounter ticket at 15:51 UTC.
 - **Ready at 23:45 UTC:** ["Waits for you" / "Theirs alone" on each chapter](https://linear.app/threadbare/issue/THR-2178/say-which-chapters-wait-for-the-god-a-waits-for-you-theirs-alone-word) (THR-2178).
 - **Ready at 02:45 UTC on 6 Nov:** [room for the god-rail hand](https://linear.app/threadbare/issue/THR-2177/god-rail-the-pinned-essence-block-leaves-the-hand-no-room-eight-50-px) (THR-2177), with [the one-card clip](https://linear.app/threadbare/issue/THR-2176) folded into it.
-- The playtest's three bigger problems are with the design lane, not you: [rival gods you can see but not answer](https://linear.app/threadbare/issue/THR-2172), [a "Fated" roll that failed with no reason given](https://linear.app/threadbare/issue/THR-2171), and [no recap when you come back](https://linear.app/threadbare/issue/THR-2173).
+- **Ready at 05:30 UTC on 6 Nov (new):** [a good-odds step that misses says so](https://linear.app/threadbare/issue/THR-2180/a-good-odds-step-that-misses-says-so-it-looked-fated-but-fate-rolled) (THR-2180). It must not be built at the same time as THR-2178: both change an ending's first lines.
+- Still with the design lane, not you: [rival gods you can see but not answer](https://linear.app/threadbare/issue/THR-2172) and [no recap when you come back](https://linear.app/threadbare/issue/THR-2173).
 
 Items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (16 days; In Dev since 15 Oct). No pushed branch names it and no local worktree holds work for it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (16 days; In Dev since 15 Oct). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- All green. The live site serves the latest commit on main (90221547). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. All 10 enabled scheduled tasks are on time, and the worktree cleaner ran at 17:40 local. The engine's speed is normal (128 ms per tick, 19% under the weekly median of 158).
+- All green. The live site serves the latest commit on main (90221547). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. All 10 enabled scheduled tasks are on time, and the worktree cleaner ran at 18:46 local. The engine's speed is normal (127 ms per tick, 19% under the weekly median of 157).
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 77 commits behind main. It is the read-only mirror and catches up on its own.
