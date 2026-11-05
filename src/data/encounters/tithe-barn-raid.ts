@@ -860,7 +860,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           critical_failure: {
-            overview: 'The reeve told every house in {location} that the best sneak in the country had robbed the lord. '
+            overview: 'The reeve told every house in {location} that {actor} had robbed the lord\'s barn. '
               + 'The village calls the passage under the barn a sign of bad luck.',
             changes: [
               {
@@ -1471,7 +1471,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         critical_failure: {
-          overview: 'The reeve told every house in {location} that the best sneak in the country had robbed the lord. '
+          overview: 'The reeve told every house in {location} that {actor} had robbed the lord\'s barn. '
             + 'The village calls the passage under the barn a sign of bad luck.',
           changes: [
             {
@@ -1542,7 +1542,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   },
   description:
     'A cartload of the lord\'s tithe grain has left the barn with no lock broken, and the reeve has '
-    + 'named a newcomer the thief. The road out stays shut until the grain is found.',
+    + 'already named the thief. The road out stays shut until the grain is found.',
   locationSubtypes: expandSettings(['rural']),
   consequenceDraw: ['thread', 'omen'],
 };

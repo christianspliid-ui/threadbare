@@ -146,7 +146,7 @@ export const BOUNDS_STONE_UPROOTED: UnifiedActionTemplate = {
       // Names no place: the missed branch fires wherever the mortal stands.
       narrativeTemplate:
         '{name} was not at the beating of the bounds. ' +
-        'The new stone went in with nobody there to swear to it, and it was pulled up in the night. ' +
+        'The new stone went in without {name} there to swear to it, and it was pulled up in the night. ' +
         "{cast:steward} has come looking for {name}, and says the lord will not seal the survey without {name}'s word.",
       successAfterimage: "{cast:steward} took {name}'s word for the line, and sealed the survey without the stone.",
       failureAfterimage: '{cast:steward} left without agreeing to set the stone again, and the common stays where the moved stones put it.',
@@ -163,7 +163,7 @@ export const BOUNDS_STONE_UPROOTED: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'The new stone was pulled up after nobody from the survey came to the beating of the bounds, and the steward has come looking.',
+    initiation: 'The new stone was pulled up after {name} missed the beating of the bounds, and the steward has come looking.',
     success: 'The steward took the sworn line and sealed the survey.',
     failure: 'The steward left without agreeing to set the stone again.',
   },
@@ -171,7 +171,7 @@ export const BOUNDS_STONE_UPROOTED: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
-      overview: 'Nobody from the survey was at the beating of the bounds, and the new stone did not stay in the ground.',
+      overview: 'The new stone lies in the ditch, and the lord\'s cattle are back on the common.',
       changes: [],
     },
   },

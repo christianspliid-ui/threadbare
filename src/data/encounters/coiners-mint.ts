@@ -501,7 +501,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         },
         failure: {
           overview: 'The assayer found light coin in the mint\'s chests. The mint is shut, and {cast:mintmaster} is '
-            + 'held for the crown\'s court. {location} had sent for {actor} to stop it.',
+            + 'held for the crown\'s court. The market will not take {location}\'s coin at its face until a new mint-master is sworn.',
           changes: [
             {
               id: 'coin.fail.distrusted',
@@ -558,8 +558,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         critical_failure: {
-          overview: 'The assayer found light coin, and the mint is shut. {location} sent for {actor} as a master, and '
-            + 'now calls them the coiner.',
+          overview: 'The assayer found light coin, and the mint is shut. The traders in the square say {actor} struck it, and '
+            + 'call {actor} the coiner.',
           changes: [
             {
               id: 'coin.critfail.called_the_coiner',

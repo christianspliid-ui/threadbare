@@ -490,8 +490,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         critical_failure: {
-          overview: '{cast:factor} paid nothing for an empty page. A copyist seen at the press is no use to a house '
-            + 'that buys secrets.',
+          overview: '{cast:factor} paid nothing for an empty page. {actor} was seen at the press, '
+            + 'so the house can never use {actor} for this work again.',
           changes: [
             {
               id: 'ledger.caught.under_watch',

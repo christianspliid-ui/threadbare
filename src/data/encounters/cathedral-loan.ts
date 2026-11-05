@@ -189,7 +189,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       narrativeTemplate: '{cast:factor}, the lenders\' factor, comes to the chapter house and sits across the table from '
         + '{actor}. The factor wants the whole debt, and the plate is the surest way to get it. {actor} has '
         + 'to make the chapter\'s tithes worth more to the lenders than the silver. If the factor says no, '
-        + 'the plate goes to the melting pot, and every lender in town will hear who failed to stop it.',
+        + 'the plate goes to the melting pot, and the cathedral loses the silver its founders gave it.',
       criticalSuccessAfterimage: 'The factor took the tithes for the whole debt and gave back every piece of plate.',
       successAfterimage: 'The factor took the tithes in place of the plate, and the plate went back inside.',
       successAtCostAfterimage: 'The factor took the tithes only when {actor} agreed to a harder rate.',
@@ -711,8 +711,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         critical_failure: {
-          overview: 'The plate is gone to be melted down, and the whole chapter watched it go. {cast:dean} had sent '
-            + 'for {actor} to save it.',
+          overview: 'The plate is gone to be melted down, and the whole chapter watched it go. The chapter will say '
+            + 'mass with pewter cups until the debt is paid.',
           changes: [
             {
               id: 'cathedral.cf.plate',

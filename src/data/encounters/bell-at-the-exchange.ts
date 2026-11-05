@@ -138,7 +138,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       narrativeTemplate: 'Few cargoes came in this season, and almost nothing has sold all week. One lot is left on the '
         + 'block. The merchant houses treat the exchange as their own. {cast:buyer} bids for one of them '
         + 'and knows every regular bidder. Whoever holds the last bid when the bell rings takes the lot, '
-        + 'and a house outbid on its own floor remembers who did it.',
+        + 'and a house that pays too much for it will be short of coin until the spring cargoes.',
       successAfterimage: 'They worked out what the lot is worth and where they would stop.',
       failureAfterimage: 'They could not put a figure on the lot and went into the bidding without one.',
       successAtCostAfterimage: 'They priced the lot, and {cast:buyer} saw the figure they settled on.',

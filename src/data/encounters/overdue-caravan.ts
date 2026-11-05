@@ -171,8 +171,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       failBehavior: 'continue_weakened',
       narrativeTemplate: '{cast:steward} rides out with {actor} to where the old road leaves the north road. The old road '
         + 'is older than any town on it. Its marker stones are cut with star signs that nobody reads now, '
-        + 'and the rumour in town is that the road goes wrong after dark. The steward says the house will '
-        + 'remember who helped and who did not.',
+        + 'and the rumour in town is that the road goes wrong after dark. The steward says the house '
+        + 'cannot pay its drivers if the wagons are lost.',
       successAfterimage: 'They read the markers and knew which way the old road bends.',
       failureAfterimage: 'The markers stayed a row of worn signs, and the party guessed at every fork.',
       successAtCostAfterimage: 'They read the markers by riding all day without a stop, and the horses are spent.',
@@ -387,8 +387,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     initiation: 'A merchant house\'s caravan is overdue on the old road, and the house\'s steward wants someone '
       + 'who can read a road to find it.',
     success: 'The caravan was found on the old road and brought out. The house has its season back.',
-    failure: 'The search turned back without the caravan. The house carries the loss, and remembers who read '
-      + 'the road.',
+    failure: 'The search turned back without the caravan. The house carries the loss, and '
+      + 'sells its last wagon to pay its debts.',
   },
   aftermathConfig: {
     branchOnStep: 0,

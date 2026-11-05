@@ -73,8 +73,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       narrativeTemplate: 'The barley is nearly ripe. The stars say it needs a few more days to fill, but a storm is '
         + 'building in the west and may not give them.\n\n'
         + '{cast:elder}, the village elder, asks {actor} to read the sky and name the day the harvest '
-        + 'starts. Every household cuts on that one word. Villages all down the valley remember who '
-        + 'gets that call right.',
+        + 'starts. Every household cuts on that one word, and a wrong day leaves the barley in the storm '
+        + 'or the ears half empty.',
       criticalSuccessAfterimage: '{actor} judged the storm would not wait, and named the next morning.',
       successAfterimage: '{actor} weighed the stars against the storm, and named a day early enough.',
       successAtCostAfterimage: '{actor} named a day, then brought it forward at the last hour.',

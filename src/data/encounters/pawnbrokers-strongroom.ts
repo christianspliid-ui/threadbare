@@ -154,7 +154,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       onFailure: [],
       failBehavior: 'fail_action',
       narrativeTemplate: 'Their candle will not last long. The box is on the top shelf. The pawnbroker says the cooper '
-        + 'missed a payment, which frees him from his word. {cast:rival} is forcing the coal hatch at the '
+        + 'missed a payment, so the pawnbroker owes the cooper nothing now. {cast:rival} is forcing the coal hatch at the '
         + 'far end of the cellar. Whoever gets the box out of the house first keeps it.',
       criticalSuccessAfterimage: 'They carried the box up the stair and out while {cast:rival} was still at the coal hatch.',
       successAfterimage: 'They were out of the back door with the box before {cast:rival} reached the shelf.',

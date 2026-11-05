@@ -127,7 +127,7 @@ export const BELL_TOWER_CRACKED: UnifiedActionTemplate = {
   // Seed-only: the bell tower shoring's appointment (missed branch) is its only planter (THR-1526).
   drawable: false,
   name: 'The Crack Reopened',
-  description: 'The bell was rung on market day with nobody from the work at the tower, and the tower cracked again.',
+  description: 'The bell was rung on market day while {name} was away from the tower, and the tower cracked again.',
   rarityTier: 2,
   intrinsicTier: 'background',
   reach: 'heart',
@@ -144,10 +144,10 @@ export const BELL_TOWER_CRACKED: UnifiedActionTemplate = {
       failBehavior: 'fail_action',
       onSuccess: [],
       onFailure: [],
-      purposeLine: 'Talk the fee out',
+      purposeLine: 'Explain the new crack',
       narrativeTemplate:
         '{name} was not at the bell tower when the bell rang on market day. ' +
-        'A new crack opened above the new courses as the bell swung, and nobody from the work was there to see it. ' +
+        'A new crack opened above the new courses as the bell swung. ' +
         '{cast:councillor} has come looking for {name}, and holds back the rest of the fee.',
       successAfterimage: '{cast:councillor} paid part of the fee on {name}\'s word about the new crack.',
       failureAfterimage: '{cast:councillor} kept the rest of the fee, and tells the council that {name} left before the bell rang.',
@@ -170,7 +170,7 @@ export const BELL_TOWER_CRACKED: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'The bell tower cracked again with nobody from the work there, and the councillor has come looking.',
+    initiation: 'The bell tower cracked again while {name} was away, and the councillor has come looking.',
     success: 'The councillor paid part of the fee on a promise to point the new crack.',
     failure: 'The councillor kept the rest of the fee.',
   },
@@ -178,7 +178,7 @@ export const BELL_TOWER_CRACKED: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
-      overview: 'The tower cracked again while nobody from the work was there, and the councillor held the fee back.',
+      overview: 'The tower cracked again on market day, and the councillor held the fee back from {name}.',
       changes: [],
     },
   },

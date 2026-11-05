@@ -743,7 +743,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           },
           failure: {
             overview: 'Without the maker, the town\'s court would not hold the family, and let them go. The toll house '
-              + 'asked a trained eye to settle the writ, and {actor} left it unsettled.',
+              + 'keeps the writ on its table, and the maker is still selling forgeries on the road.',
             changes: [
               {
                 id: 'writ.seek.fail.standing',
@@ -1107,7 +1107,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           },
           failure: {
             overview: 'The toll house read the writ again and found it false. The family was brought back from the road '
-              + 'and held for the town\'s court. A trained eye passed that forgery, and under the charter it is '
+              + 'and held for the town\'s court. {actor} passed the writ, and under the charter that forgery is '
               + '{actor}\'s to answer for.',
             changes: [
               {
@@ -1135,8 +1135,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           },
           critical_failure: {
             overview: '{actor} let a forged writ through the gate, and the toll house found it out the same day. The '
-              + 'family is held for the town\'s court, and every carter at the gate knows whose word passed the '
-              + 'writ.',
+              + 'family is held for the town\'s court, and {cast:tollmaster} will not ask {actor} to read a '
+              + 'writ again.',
             changes: [
               {
                 id: 'writ.sent.critfail.standing',
@@ -1447,7 +1447,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         },
         failure: {
           overview: 'Without the maker, the town\'s court would not hold the family, and let them go. The toll house '
-            + 'asked a trained eye to settle the writ, and {actor} left it unsettled.',
+            + 'keeps the writ on its table, and the maker is still selling forgeries on the road.',
           changes: [
             {
               id: 'writ.fallback.fail.standing',

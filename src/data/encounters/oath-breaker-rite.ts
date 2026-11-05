@@ -65,7 +65,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         + 'the weaver\'s workshop has burned. The shrine lamp goes out whenever the weaver walks in.\n\n'
         + '{cast:oathbreaker} is sure of a curse and asks {actor}, who has a name for reading oaths, whether it is real. A '
         + 'frightened hedge-priest has already taken the weaver\'s coin for a rite at midnight. A wrong '
-        + 'answer will cost {actor} their name in town.',
+        + 'answer sends the weaver to pay for a rite against the wrong thing.',
       criticalSuccessAfterimage: 'They read the stone plainly. The oath was a promise to repay a neighbour\'s loan by midsummer, '
         + 'and it still holds; that is why the lamp goes out. No curse follows the weaver. The fire was the '
         + 'weaver\'s own lamp, left burning.',
@@ -260,8 +260,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           failBehavior: 'fail_action',
           narrativeTemplate: '{actor} refuses to hold any rite and tells the weaver to keep the oath instead. {cast:priest}, '
             + 'the hedge-priest, holds the midnight rite in the square anyway. The priest blames the strangers '
-            + 'camped outside the gate. The crowd is afraid, and it would rather believe a priest than a '
-            + 'doubter. {actor} must prove to the whole square that the priest\'s rite calls on no power.',
+            + 'camped outside the gate. The crowd is afraid, and it would rather believe a priest than '
+            + '{actor}. {actor} must prove to the whole square that the priest\'s rite calls on no power.',
           criticalSuccessAfterimage: 'They took the priest\'s rite apart in front of the square, step by step.',
           successAfterimage: 'They showed the crowd that the priest\'s rite called on no power at all.',
           successAtCostAfterimage: 'They turned the crowd, and lost the weaver.',
@@ -338,8 +338,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         failBehavior: 'fail_action',
         narrativeTemplate: '{actor} refuses to hold any rite and tells the weaver to keep the oath instead. {cast:priest}, '
           + 'the hedge-priest, holds the midnight rite in the square anyway. The priest blames the strangers '
-          + 'camped outside the gate. The crowd is afraid, and it would rather believe a priest than a '
-          + 'doubter. {actor} must prove to the whole square that the priest\'s rite calls on no power.',
+          + 'camped outside the gate. The crowd is afraid, and it would rather believe a priest than '
+          + '{actor}. {actor} must prove to the whole square that the priest\'s rite calls on no power.',
         criticalSuccessAfterimage: 'They took the priest\'s rite apart in front of the square, step by step.',
         successAfterimage: 'They showed the crowd that the priest\'s rite called on no power at all.',
         successAtCostAfterimage: 'They turned the crowd, and lost the weaver.',

@@ -336,7 +336,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'Fire has taken the tanners\' quarter, and the watch has sent for someone to stop it spreading.',
+    initiation: 'Fire has taken the tanners\' quarter, and the watch needs {actor} to stop it spreading.',
     success: '{actor} held the bucket lines and cut a firebreak, and the fire stopped at the edge of the '
       + 'quarter.',
     failure: 'The fire spread out of the tanners\' quarter, and {actor} could not stop it.',
@@ -653,7 +653,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         },
         failure: {
           overview: 'By morning the fire was out, two streets past the sheds. The tanning pits burst in the heat and '
-            + 'fouled the river. The watch had sent for {actor} to stop exactly this.',
+            + 'fouled the river. The tanners have no pits to work, and the mills downstream stand idle until the water runs clean.',
           changes: [
             {
               id: 'tannery.f.plague',
@@ -751,7 +751,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         },
         critical_failure: {
           overview: 'The fire spread past the tanners\' quarter and did not stop until the wind turned at dawn. '
-            + 'The watch had put its bucket lines in {actor}\'s hands.',
+            + 'Three streets of houses are ash, and their people sleep in the church.',
           changes: [
             {
               id: 'tannery.cf.regard',

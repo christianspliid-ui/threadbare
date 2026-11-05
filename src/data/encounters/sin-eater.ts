@@ -1503,8 +1503,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   },
   description: 'A rich merchant lies dead, and his household has paid for his sins to be eaten before the '
-    + 'burial at dawn. The sins have to be eaten whole, before the household, or the eater is not paid '
-    + 'to eat again.',
+    + 'burial at dawn. Someone has to eat the sins whole, before the household, or no house in the parish '
+    + 'will pay them to do it again.',
   locationSubtypes: expandSettings(['urban', 'rural']),
   consequenceDraw: ['drive', 'place'],
 };

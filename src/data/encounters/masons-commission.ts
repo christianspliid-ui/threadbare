@@ -296,8 +296,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   narrativeTemplates: {
     initiation: 'A cracked pier is to be rebuilt, and the inspector of works lets it today to one of two masons. '
       + 'The ground under it is worse than anyone said.',
-    success: 'The commission was let to the mason whose footing held, and the works office will know their '
-      + 'name when the next work is let.',
+    success: 'The commission was let to {actor}, whose footing held. The pier is theirs to build, and the fee '
+      + 'comes with it.',
     failure: 'The commission went to the rival mason, and the fee went with it.',
   },
   aftermathConfig: {

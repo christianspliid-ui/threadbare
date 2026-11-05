@@ -101,15 +101,15 @@ export const WELL_FIRST_WATER: UnifiedActionTemplate = {
 export const WELL_GONE_FOUL: UnifiedActionTemplate = {
   id: WELL_GONE_FOUL_ID,
   stakes: {
-    goal: 'talk the reeve into paying for the foul well',
-    risk: 'lose the rest of the fee and the town\'s good word',
-    won: 'talked the reeve into paying part of the fee',
-    lost: 'lost the rest of the fee and the town\'s good word',
+    goal: 'get the reeve to pay for the well though it went foul',
+    risk: 'go unpaid for the well, and have the reeve warn the next village',
+    won: 'got the reeve to pay part of the fee though the well went foul',
+    lost: 'went unpaid for the well, and the reeve warned the next village',
   },
   // Seed-only: the well sinking's appointment (missed branch) is its only planter (THR-1526).
   drawable: false,
   name: 'The Well Gone Foul',
-  description: 'The new well ran clear with nobody from the work there, and it went foul.',
+  description: 'The new well ran clear while {name} was away, and it went foul.',
   rarityTier: 2,
   intrinsicTier: 'background',
   reach: 'heart',
@@ -126,9 +126,9 @@ export const WELL_GONE_FOUL: UnifiedActionTemplate = {
       failBehavior: 'fail_action',
       onSuccess: [],
       onFailure: [],
-      purposeLine: 'Talk the fee out',
+      purposeLine: 'Answer for the foul water',
       narrativeTemplate:
-        'Nobody from the work was at the new well when its water ran clear. ' +
+        '{name} was not at the new well when its water ran clear. ' +
         'An untended new well silts up and sours, and this one went foul. ' +
         '{cast:reeve} has found {name} with the second half of the fee held back, and wants the well cleared before any of it is paid.',
       successAfterimage: '{cast:reeve} paid part of the fee and took {name}\'s word that the well will be cleared.',
@@ -146,7 +146,7 @@ export const WELL_GONE_FOUL: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'The new well went foul with nobody from the work there, and the reeve has come looking.',
+    initiation: 'The new well went foul while {name} was away, and the reeve has come looking.',
     success: 'The reeve paid part of the fee on a promise to clear the well.',
     failure: 'The reeve kept the rest of the fee.',
   },
@@ -154,7 +154,7 @@ export const WELL_GONE_FOUL: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
-      overview: 'The well went foul while nobody from the work was there, and the reeve held the fee back.',
+      overview: 'The village is drawing from the old well again, and the reeve has kept back what was owed to {name}.',
       changes: [],
     },
   },

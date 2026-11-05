@@ -215,7 +215,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           narrativeTemplate: '{actor} calls the arbitration. The house\'s elders sit in its hall and read every claim against '
             + 'its books. {cast:claimant}, the noble, argues that the largest claim must be paid first, out of '
             + 'the deed. {actor} must prove their own bill ranks ahead. The ruling cannot be appealed, and '
-            + 'every counting house in town will hear who lost.',
+            + 'the losing bill is worth nothing after it.',
           criticalSuccessAfterimage: 'They proved their bill first in line, and the elders set the noble\'s claim last of all.',
           successAfterimage: 'They proved their bill first in line, to be paid out of the deed.',
           successAtCostAfterimage: 'They proved their bill first in line, and the elders charged the costs of the arbitration to '
@@ -796,7 +796,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           critical_failure: {
             overview: '{actor}\'s bill is worthless now. The books showed that {cast:claimant}\'s household had '
               + 'borrowed most of the house\'s money, and the deed still went to the noble. Every counting house '
-              + 'in town knows who called the arbitration and lost.',
+              + 'in town has turned {actor}\'s other bills away.',
             changes: [
               {
                 id: 'debt.pos.critfail.rep',

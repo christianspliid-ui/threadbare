@@ -797,8 +797,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         critical_failure: {
-          overview: 'The abbey has lost most of its seed for the spring. Both sides asked {actor} to settle this, and '
-            + 'both have lost by it.',
+          overview: 'The abbey has lost most of its seed for the spring. The abbey fields will '
+            + 'lie half sown, and bread will be dearer next winter.',
           changes: [
             {
               id: 'granary.critfail.town_regard',

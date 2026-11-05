@@ -40,9 +40,9 @@ export const RETURNED_HEIR_SWORN: UnifiedActionTemplate = {
   id: RETURNED_HEIR_SWORN_ID,
   stakes: {
     goal: 'swear the finding before the manor court',
-    risk: 'see the court put off its ruling on the claim',
+    risk: 'leave the uncle in the manor for another year',
     won: 'swore the finding, and the court named the son',
-    lost: 'saw the court put off its ruling on the claim',
+    lost: 'left the uncle in the manor for another year',
   },
   // Seed-only: the returned heir's appointment (kept branch) is its only planter (THR-1526).
   drawable: false,
@@ -72,7 +72,7 @@ export const RETURNED_HEIR_SWORN: UnifiedActionTemplate = {
       successAfterimage:
         "The uncle's side could not shake the finding. The court named {cast:claimant} the lord's son, and the manor passes to the son.",
       failureAfterimage:
-        "The uncle's side questioned the finding until the court put off its ruling, and the uncle keeps the manor for now.",
+        "The uncle's side questioned the finding until the court would not rule on it, and the uncle keeps the manor for now.",
       successMetadata: {
         // `$here` is lawful here: the kept branch fires only with the mortal standing in the town.
         effects: [
@@ -89,7 +89,7 @@ export const RETURNED_HEIR_SWORN: UnifiedActionTemplate = {
   narrativeTemplates: {
     initiation: '{name} is at the manor court on court day, where the finding is sworn.',
     success: "The court named the man the lord's son.",
-    failure: 'The court put off its ruling.',
+    failure: 'The uncle keeps the manor until the next court.',
   },
   aftermathConfig: {
     branchOnStep: 0,
@@ -112,7 +112,7 @@ export const RETURNED_HEIR_DEFAULTED: UnifiedActionTemplate = {
   // Seed-only: the returned heir's appointment (missed branch) is its only planter (THR-1526).
   drawable: false,
   name: 'The Finding Unsworn',
-  description: 'The finding on the returned heir was never sworn, and the man it would have named has come looking for whoever left it unsworn.',
+  description: 'The finding on the returned heir was never sworn, and the man it would have named has come looking for {name}, who left it unsworn.',
   rarityTier: 2,
   intrinsicTier: 'background',
   reach: 'heart',

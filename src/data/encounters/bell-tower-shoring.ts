@@ -590,7 +590,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         critical_failure: {
-          overview: '{location} counts the half fee it paid as thrown away. The lodge\'s failure looks small beside '
+          overview: '{location} must find another lodge and pay a second fee. The lodge\'s failure looks small beside '
             + 'this one.',
           changes: [
             {
