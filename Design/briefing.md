@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-05 19:58 local (18:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-05 20:57 local (19:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -61,5 +61,5 @@ Items for agents, not you:
 
 ## Health
 
-- All green. The live site serves the latest commit on main (90221547). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. All 10 enabled scheduled tasks are on time, and the worktree cleaner ran at 19:40 local. The engine's speed is normal (128 ms per tick, 19% under the weekly median of 157).
+- All green. The live site serves the latest commit on main (90221547). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. The scheduled tasks are on time, and the worktree cleaner ran at 20:40 local. The engine's speed is normal (132 ms per tick, 16% under the weekly median of 157).
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 77 commits behind main. It is the read-only mirror and catches up on its own.
