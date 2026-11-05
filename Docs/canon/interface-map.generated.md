@@ -1981,10 +1981,10 @@ exit
 
 - **Intent:** A spend visibly moves the pool it drew from (THR-1607, Law 47). `commitPlayerCast` deducts a cast's price from `GameState.essencePool[sphere]`; `selectEssenceRows` reads the pool in a fixed order (identity spheres, then canonical — never by level, so a spend never reorders the list) and `EssenceBlock` draws each row against `ESSENCE_BAR_CEILING` (the starting pool) with its whole-number balance and a delta-cluster flash after a spend. Before this the bar filled against `/10` while pools start at fifty, so no spend ever moved it.
 - **Producer → Consumer:** Encounters & Dilemmas → Essence & Divine Economy
-- **Production hits:** 54 total — 1 write, 1 read, 52 unclassified
+- **Production hits:** 53 total — 1 write, 1 read, 51 unclassified
 - **Write sites:** `src/engine/playerCastDispatch.ts`
 - **Read sites:** `src/engine/views/godRail.ts`
-- **Other hits:** `src/components/Game/ascendant-bar/EssenceBlock.tsx`, `src/components/Game/contexts/ScryContext.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +47 more
+- **Other hits:** `src/components/Game/ascendant-bar/EssenceBlock.tsx`, `src/components/Game/contexts/ScryContext.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +46 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `explored-hexes-draw-minimap` — 🔵 UNVERIFIED-OK
@@ -4144,10 +4144,10 @@ exit
 - **Intent:** A held town On the edge turns to a better lord (THR-1957 S2). Once a day the unrest phase weighs every faction that holds a settlement within DEFECTION_RADIUS_HEXES 8 (protection from the crown's offer term over this town, standing, fed, solvent); when the best beats the holder by DEFECTION_MARGIN 0.4 the holder's controls edges are retargeted to it with via defection and takenFrom, the old holder's relates_to toward it drops past the enemy line (DEFECTION_GRUDGE_SENTIMENT −0.35, defectionTick) and it adopts a revenge ambition whose grievanceSourceId / targetNodeId name the lord and the town. The crown's holding_lost reads takenFrom; war aims' isEnemyFaction reads the grudge.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Settlement*, *Unrest*, *Faction*, *Ambition*
-- **Production hits:** 264 total — 2 write, 2 read, 260 unclassified
+- **Production hits:** 263 total — 2 write, 2 read, 259 unclassified
 - **Write sites:** `src/engine/factionAmbitions.ts`, `src/engine/unrestPressure/defection.ts`
 - **Read sites:** `src/engine/crown.ts`, `src/engine/warAims/enemy.ts`
-- **Other hits:** `src/components/CMS/types.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +255 more
+- **Other hits:** `src/components/CMS/types.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +254 more
 - **Verdict:** Verified 2026-10-20: THR-1957. src/engine/__tests__/unrestPressureS2.test.ts: a fed, solvent neighbour with a hall in the town beats a broke holder and the town defects on the next daily pass — controls moves (via defection, takenFrom), the grudge reads as enemies under isEnemyFaction, and the holder pursues revenge naming the town; a holder that feeds and pays keeps it; the cooldown holds.
 
 ### `trace-ring-to-incident-bundle` — 🟢 LIVE
@@ -4488,10 +4488,10 @@ exit
 - **Intent:** Every named hero starts with a kin, a friend and a rival among their neighbours (`seedLivingWorld.seedTies`, both directions, stamped `origin: worldgen`), and the systems that read ties by basis see them: ambition selection scores `bondModifiers` through one alias table (`src/data/bond-basis.ts` — `lineage`, `heir` and `exile_kin` read as `kin`, `enemy` as `rivalry`), a dead hero’s grievance passes to the strongest tie (kin at 0.8), grief routes to bonds, and the binder casts tied mortals in each other’s scenes.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 92 total — 1 write, 3 read, 88 unclassified
+- **Production hits:** 91 total — 1 write, 3 read, 87 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/engine/ambitionTick.ts`, `src/engine/grievance/grievanceLifecycle.ts`, `src/engine/grievance/undertakingOutcomeNode.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/KnowledgeComparisonTab.tsx`, `src/components/Game/debug/RelationshipGraph.tsx` +83 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/KnowledgeComparisonTab.tsx`, `src/components/Game/debug/RelationshipGraph.tsx` +82 more
 - **Verdict:** Verified 2026-09-28: THR-1630. `Docs/audits/2026-09-25-living-world-data/readers/ties.ts` on medium, seed 42 · 99: person-to-person `relates_to` at t0 21 · 37 → 104 · 128, every seeded tie mutual and stamped (was 0 mutual, 0 between co-residents); kin 14 · 17 (was 0). Over 200 ticks, ambition re-evaluations scoring a seeded bond 3 · 3 (the new `bondsMatched` field on the assignment trace). `seededTies-generatedWorld.test.ts` (heavy) pins the kin → `protect_the_home` bond modifier and the kin heir on a generated world.
 
 ### `yield-is-a-verb` — 🟢 LIVE

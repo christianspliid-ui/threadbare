@@ -64,8 +64,10 @@ more, else the first). That is a proxy for authorial grouping, not a curated tax
 | `encounter.company` | 4 | 20 | push 4, rider 0, sphere 16, trait 0, free 0 |
 | `encounter.realm` | 5 | 14 | push 0, rider 0, sphere 14, trait 0, free 0 |
 | `cg.quest` | 1 | 9 | push 6, rider 0, sphere 0, trait 0, free 3 |
+| `mentorship` | 3 | 9 | push 9, rider 0, sphere 0, trait 0, free 0 |
 | `encounter.apotheosis` | 1 | 7 | push 1, rider 1, sphere 5, trait 0, free 0 |
 | `enc` | 3 | 6 | push 3, rider 0, sphere 3, trait 0, free 0 |
+| `ag.elite` | 2 | 4 | push 4, rider 0, sphere 0, trait 0, free 0 |
 | `liminal.quest` | 2 | 4 | push 2, rider 0, sphere 2, trait 0, free 0 |
 | `reputation.iron` | 2 | 4 | push 4, rider 0, sphere 0, trait 0, free 0 |
 | `reputation.shadow` | 2 | 4 | push 4, rider 0, sphere 0, trait 0, free 0 |
@@ -94,3 +96,4 @@ more, else the first). That is a proxy for authorial grouping, not a curated tax
 - `encounter.border` — 66% `sphere` across 53 cards
 - `encounter.company` — 80% `sphere` across 20 cards
 - `encounter.realm` — 100% `sphere` across 14 cards
+- `mentorship` — 100% `push` across 9 cards
