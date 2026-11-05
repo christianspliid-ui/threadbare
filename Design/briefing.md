@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-05 22:59 local (21:59 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-05 23:57 local (22:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -42,7 +42,7 @@ From the design lane's [14:44 UTC run](https://github.com/christianspliid-ui/thr
 - Same ticket — the hand always keeps room for three cards. Opening Reaches, Mandate, Signatures or Hooks no longer pushes the hand off the screen; that row scrolls inside its own box instead.
 - Same ticket — [the hand clips its only card](https://linear.app/threadbare/issue/THR-2176) has the same cause, so it gets built and closed with this one.
 
-From the design lane's [11:26 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-05c.md). Nobody builds on these before 23:45 UTC on 5 November.
+From the design lane's [11:26 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-05c.md). Nobody builds on these before 23:45 UTC on 5 November — under an hour from now.
 
 - [The player can't tell which chapters wait for their cards](https://linear.app/threadbare/issue/THR-2174/the-player-cant-tell-which-chapters-wait-for-their-cards-the-gallows) — a chapter shows **"Waits for you"** or **"Theirs alone"** after its title, in the Ledger and on the Stage. Build ticket: [THR-2178](https://linear.app/threadbare/issue/THR-2178/say-which-chapters-wait-for-the-god-a-waits-for-you-theirs-alone-word).
 - Same ticket — a chapter your mortal played out alone opens its ending with one line, *"This chapter was Kael's alone. Nothing in it waited on your hand."*
@@ -57,7 +57,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: four ready, all waiting out their veto windows.** The builder checked three times this hour and correctly took nothing. Nothing has shipped to the game since the town-encounter ticket at 15:51 UTC; the rail-rows plan merged at 20:39 UTC.
+**Healthy: four ready, all waiting out their veto windows.** The builder checked three times this hour and correctly took nothing; the first ticket opens at 23:45 UTC.
 - **Ready at 23:45 UTC:** ["Waits for you" / "Theirs alone" on each chapter](https://linear.app/threadbare/issue/THR-2178/say-which-chapters-wait-for-the-god-a-waits-for-you-theirs-alone-word) (THR-2178).
 - **Ready at 02:45 UTC on 6 Nov:** [room for the god-rail hand](https://linear.app/threadbare/issue/THR-2177/god-rail-the-pinned-essence-block-leaves-the-hand-no-room-eight-50-px) (THR-2177).
 - **Ready at 05:30 UTC on 6 Nov:** [a good-odds step that misses says so](https://linear.app/threadbare/issue/THR-2180/a-good-odds-step-that-misses-says-so-it-looked-fated-but-fate-rolled) (THR-2180).
@@ -70,5 +70,5 @@ Items for agents, not you:
 
 ## Health
 
-- All green. The live site is current (90221547; later commits were docs only). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. The scheduled tasks are on time, and the worktree cleaner ran at 22:40 local. The engine's speed is normal (126 ms per tick, 20% under the weekly median of 156).
+- All green. The live site is current (90221547; later commits were docs only). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. All 10 scheduled tasks are on time, and the worktree cleaner ran this hour. The engine's speed is normal (126 ms per tick, 19% under the weekly median of 156).
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 79 commits behind main. It is the read-only mirror and catches up on its own.
