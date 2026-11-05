@@ -46,15 +46,23 @@ import { THREAD_PIP_LABEL } from '../../data/frame-content';
  * THR-2125 R2.3 — a thread row's name: Text 700 at `--text-sm`, sentence case, for every
  * category. It wraps (decision 5) and is never the part that truncates; the marks after it
  * keep `flexShrink: 0`.
+ *
+ * THR-2165 — the name never breaks mid-word. Its floor is its longest word: `minWidth`
+ * stays at the flex default (`auto` = min-content) and `overflowWrap: 'break-word'`
+ * (unlike `anywhere`) does not lower that min-content. The row it sits in sets
+ * `flexWrap: 'wrap'` (`ROW_HEAD_WRAP`), so a busy row (four `9+` badges on a warm
+ * world) moves its marks to a second line instead of squeezing the name to one glyph.
  */
 const ROW_NAME_STYLE: React.CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 'var(--text-sm)',
   fontWeight: 700,
   flex: '1 1 auto',
-  minWidth: 0,
-  overflowWrap: 'anywhere',
+  overflowWrap: 'break-word',
 };
+
+/** THR-2165 — the head row of a thread row: its marks wrap below the name when they do not fit. */
+const ROW_HEAD_WRAP: React.CSSProperties = { flexWrap: 'wrap', rowGap: 4 };
 
 /** Used only if the three-line kill criterion fires (plan § Kill criteria). */
 export const THREAD_NAME_MAX_LINES = 2;
@@ -567,7 +575,7 @@ function CompactThreadRow({
         {/* Content column */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, minWidth: 0 }}>
           {/* Row 1: name · strategic glyph · activity icon · zoom · sphere icon */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, ...ROW_HEAD_WRAP }}>
             {/* Priority pip — visible when this thread has a pending encounter (THR-340 §5.8) */}
             {threadHasWaitingChapter(node, activeEncounters) && agentEncounter && (
               <Tooltip id="ui.thread_priority_pip">
@@ -1017,7 +1025,7 @@ function SustainedControlRow({ node, onCenterOnHex }: SustainedControlRowProps) 
           <ActivityIcon kind={SUSTAINED_CATEGORY_ICON[node.category]} size={16} color="var(--text-secondary)" />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, ...ROW_HEAD_WRAP }}>
             <span data-row-name="" style={{ ...ROW_NAME_STYLE, color: 'var(--text-primary)' }}>
               {node.displayName}
             </span>
