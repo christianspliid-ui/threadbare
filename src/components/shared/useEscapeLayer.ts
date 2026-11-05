@@ -25,9 +25,32 @@ export const ESCAPE_LAYER_Z_PANEL = Z_BAND.mapOverlay;
 /** The label a layer reports when its caller named none. */
 export const ESCAPE_LAYER_UNLABELLED = 'unlabelled';
 
+/**
+ * How a layer takes part in the Escape stack (THR-2167).
+ *
+ * - `transient` — a pointer-born popup (a tooltip, a hover card). Escape closes every
+ *   transient layer above the topmost solid one, and by default stops there (Law 23 —
+ *   a tooltip over a dialog closes alone; the dialog waits for the next Escape).
+ * - `throughTransient` — a mode the player is *in* whose surface advertises Esc (the
+ *   armed card's banner). A tooltip that happens to be showing must not eat the Escape
+ *   meant for it, so one Escape closes the popups above it *and* runs this layer.
+ */
+export interface EscapeLayerOptions {
+  transient?: boolean;
+  throughTransient?: boolean;
+}
+
+/** Options for a pointer-born popup (tooltip, hover card). Stable identity for hook deps. */
+export const TRANSIENT_ESCAPE_LAYER: EscapeLayerOptions = Object.freeze({ transient: true });
+
+/** Options for a mode whose Escape reaches through any popup above it (the armed card). */
+export const THROUGH_TRANSIENT_ESCAPE_LAYER: EscapeLayerOptions = Object.freeze({ throughTransient: true });
+
 interface EscapeLayer {
   id: number;
   zIndex: number;
+  transient: boolean;
+  throughTransient: boolean;
   /** Read at report time, so a caller may rename its layer without moving it. */
   label: () => string;
   handler: () => void;
@@ -45,25 +68,50 @@ const layers: EscapeLayer[] = [];
 let nextId = 1;
 let listening = false;
 
-function topLayer(): EscapeLayer | undefined {
-  let top: EscapeLayer | undefined;
-  for (const layer of layers) {
-    // `>=` — later registration wins a tie, since `layers` is in registration order.
-    if (!top || layer.zIndex >= top.zIndex) top = layer;
+/** Every open layer, topmost first: band first, then later registration within a band. */
+function layersTopmostFirst(): EscapeLayer[] {
+  return layers
+    .map((layer, order) => ({ layer, order }))
+    .sort((a, b) => b.layer.zIndex - a.layer.zIndex || b.order - a.order)
+    .map(({ layer }) => layer);
+}
+
+/**
+ * The layers one Escape runs, topmost first (THR-2167): every transient layer down to
+ * the first solid one, then that solid layer if nothing transient stood above it, or if
+ * it is `throughTransient`.
+ */
+export function layersForOneEscape(): EscapeLayerReading[] {
+  return pickLayersForOneEscape().map(readLayer);
+}
+
+function pickLayersForOneEscape(): EscapeLayer[] {
+  const run: EscapeLayer[] = [];
+  for (const layer of layersTopmostFirst()) {
+    if (layer.transient) {
+      run.push(layer);
+      continue;
+    }
+    if (run.length === 0 || layer.throughTransient) run.push(layer);
+    break;
   }
-  return top;
+  return run;
+}
+
+function readLayer(layer: EscapeLayer): EscapeLayerReading {
+  return { label: layer.label() || ESCAPE_LAYER_UNLABELLED, band: layer.zIndex };
 }
 
 function onKeyDown(e: KeyboardEvent): void {
   if (e.key !== 'Escape' || e.defaultPrevented) return;
-  const top = topLayer();
-  if (!top) return;
-  try {
-    top.handler();
-  } catch (err) {
-    // Fail-soft: a throwing close handler must not leave Escape dead for every
-    // surface after it.
-    console.error('[escape-layer] handler threw', err);
+  for (const layer of pickLayersForOneEscape()) {
+    try {
+      layer.handler();
+    } catch (err) {
+      // Fail-soft: a throwing close handler must not leave Escape dead for every
+      // surface after it.
+      console.error('[escape-layer] handler threw', err);
+    }
   }
 }
 
@@ -83,9 +131,17 @@ export function pushEscapeLayer(
   zIndex: number,
   handler: () => void,
   label: string | (() => string) = ESCAPE_LAYER_UNLABELLED,
+  options: EscapeLayerOptions = {},
 ): () => void {
   const readLabel = typeof label === 'function' ? label : () => label;
-  const layer: EscapeLayer = { id: nextId++, zIndex, label: readLabel, handler };
+  const layer: EscapeLayer = {
+    id: nextId++,
+    zIndex,
+    transient: options.transient === true,
+    throughTransient: options.throughTransient === true,
+    label: readLabel,
+    handler,
+  };
   layers.push(layer);
   syncListener();
   return () => {
@@ -106,10 +162,7 @@ export function getEscapeLayerCount(): number {
  * later registration within a band, matching `topLayer()`.
  */
 export function getEscapeLayers(): EscapeLayerReading[] {
-  return layers
-    .map((layer, order) => ({ layer, order }))
-    .sort((a, b) => b.layer.zIndex - a.layer.zIndex || b.order - a.order)
-    .map(({ layer }) => ({ label: layer.label() || ESCAPE_LAYER_UNLABELLED, band: layer.zIndex }));
+  return layersTopmostFirst().map(readLayer);
 }
 
 /**
@@ -123,7 +176,10 @@ export function useEscapeLayer(
   onEscape: () => void,
   zIndex: number,
   label: string = ESCAPE_LAYER_UNLABELLED,
+  options: EscapeLayerOptions = {},
 ): void {
+  const transient = options.transient === true;
+  const throughTransient = options.throughTransient === true;
   const handlerRef = useRef(onEscape);
   const labelRef = useRef(label);
   useEffect(() => {
@@ -133,6 +189,6 @@ export function useEscapeLayer(
 
   useEffect(() => {
     if (!active) return;
-    return pushEscapeLayer(zIndex, () => handlerRef.current(), () => labelRef.current);
-  }, [active, zIndex]);
+    return pushEscapeLayer(zIndex, () => handlerRef.current(), () => labelRef.current, { transient, throughTransient });
+  }, [active, zIndex, transient, throughTransient]);
 }

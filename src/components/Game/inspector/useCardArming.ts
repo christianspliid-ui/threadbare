@@ -44,7 +44,7 @@ import { emitTrace } from '../../../engine/traceBuffer';
 import type { GameScreenStore } from '../frame/GameScreenState';
 import type { HandPressValue } from '../frame/HandPressContext';
 export { CARD_DRAG_MIME } from '../frame/HandPressContext';
-import { useEscapeLayer } from '../../shared/useEscapeLayer';
+import { THROUGH_TRANSIENT_ESCAPE_LAYER, useEscapeLayer } from '../../shared/useEscapeLayer';
 import { Z_BAND } from '../../shared/zBands';
 import { isInspectorOpen } from './inspectorState';
 import { armForDrag, armFromFind, noteArmed, pressHandCard, stageTarget, type ArmedSlice } from './armedState';
@@ -262,7 +262,8 @@ export function useCardArming({ gameState, runtime, castOnTarget, pushToast, ope
   const isArmed = armed !== null;
 
   // Esc puts the card down first (above the dialog band, plan § Debug inspection).
-  useEscapeLayer(isArmed, disarm, Z_BAND.modalAboveInterrupt, ARMED_ESCAPE_LABEL);
+  // THR-2167: and it reaches through a tooltip showing over the card, so one Esc does it.
+  useEscapeLayer(isArmed, disarm, Z_BAND.modalAboveInterrupt, ARMED_ESCAPE_LABEL, THROUGH_TRANSIENT_ESCAPE_LAYER);
 
   // An arm whose card left the hand clears itself, and says so; nothing was spent.
   const armedId = armed?.actionId ?? null;
