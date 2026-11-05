@@ -24,6 +24,22 @@
  * supervisable inside an automated single-issue run. Held to the editorial REVISE
  * triggers: approach prose at every step, scene-specific god-verbs, cool failure
  * at every branch, human consequences over mechanical labels.
+ *
+ * ─── The mortal decides (THR-2157, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was two cards whose ids were the
+ * aftermath keys, so the click picked the ending. Now the fork decides on
+ * `tradition_novelty`: a Traditionalist (+1) reads the comet as the heavens
+ * keeping their old appointments and tells the world to hold fast; an
+ * Innovator (−1) reads it as the end of the old order and proclaims the
+ * turning. The god argues with a composed hand — two pole-leaning specials plus
+ * a Repertoire fill — and the prophet answers.
+ *
+ * - Fork axis: `tradition_novelty` — the endings disagree on whether the age
+ *   should hold or move on. `positive` = Let Them Read It (hold fast),
+ *   `negative` = Proclaim the Turning. Variants, aftermath and `stakes.arms`
+ *   are keyed to the pole, because pole mode writes the bare key.
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
  */
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch, AftermathVariant, EncounterAftermathChange } from '../../types/unifiedAction';
@@ -55,8 +71,7 @@ const step0TheSkyOpens: ActionStep = {
     'them at the top of the hill, in the cold, where the comet\'s light fell on both alike.',
   successAfterimage: 'The prophet stood beneath the comet, and a waiting world held its breath.',
   failureAfterimage: 'The prophet faltered at the threshold of the reading, and the cold crept in.',
-  // THR-1667 S3: the missing afterimages. Step 0 is the authored choice, so it
-  // carries no hand (a hand on a choice step would replace the fork).
+  // THR-1667 S3: the missing afterimages.
   successAtCostAfterimage:
     'The prophet held the reading through the night, but the cold took two fingers\' feeling and did not give ' +
     'it back.',
@@ -66,6 +81,37 @@ const step0TheSkyOpens: ActionStep = {
   criticalFailureAfterimage:
     'The prophet slipped on the frosted tiles and came down the hill with a gashed head, the reading still ' +
     'unmade. The couriers waited at the foot of the hill until dawn.',
+  purposeLine: 'Read the comet',
+  // THR-2157 — the fork's argument. Two specials, one per pole of
+  // `tradition_novelty`; the Repertoire fills the rest of the hand.
+  nudges: [
+    {
+      id: 'comet.the_old_star_charts',
+      name: 'The Old Star Charts',
+      sphere: 'time',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'tradition_novelty', toward: 'positive' },
+      effectLine: 'Bring the old star charts to mind, where comets came and went before. An old pattern argues for holding fast.',
+      bandProse: {
+        success: '{actor} remembered the old charts, and the comet looked less strange.',
+        failure: '{actor} reached for the old charts, and could not find this comet in them.',
+      },
+    },
+    {
+      id: 'comet.the_cracked_throne',
+      name: 'Show The Cracked Throne',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'tradition_novelty', toward: 'negative' },
+      effectLine: 'Show them how tired the old order already is. A crumbling throne argues for proclaiming the turning.',
+      bandProse: {
+        success: '{actor} thought of the tired courts below, and the comet looked like an ending.',
+        failure: '{actor} thought of the courts below, and the cold drove the thought away.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['lore', 'insight'] },
 };
 
 /**
@@ -159,9 +205,11 @@ const step1LetThemReadIt: ActionStep = {
 
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  // THR-2157 — the mortal decides; the fallback lets them read it, as it always did.
+  decidedBy: { axis: 'tradition_novelty' },
   variants: {
-    proclaim_the_turning: step1ProclaimTheTurning,
-    let_them_read_it: step1LetThemReadIt,
+    positive: step1LetThemReadIt,
+    negative: step1ProclaimTheTurning,
   },
   fallback: { ...step1LetThemReadIt },
 };
@@ -442,7 +490,7 @@ export const COMET_AT_THE_TURNING_TEMPLATE: UnifiedActionTemplate = withEncounte
     lost: 'spoke the turning in a shaking voice',
     lostBadly: 'named false ruins and sent them out as prophecy',
     arms: {
-      let_them_read_it: {
+      positive: {
         won: 'told a frightened world to hold fast',
         lost: 'gave a hedged reading that left nations arguing',
         lostBadly: 'told the nations to hold fast against ruin',
@@ -485,42 +533,12 @@ export const COMET_AT_THE_TURNING_TEMPLATE: UnifiedActionTemplate = withEncounte
   },
 
 
-  authoredChoices: {
-    0: [
-      {
-        id: 'proclaim_the_turning',
-        label: 'Open the vastness to them.',
-        intent:
-          'Pour the height through the prophet until the age beneath them goes small — one breath among ' +
-          'uncountable breaths — and they read the comet as the ending it could be. They will proclaim the ' +
-          'turning: that the old order has reached the end of its season and the only sin left is to cling. ' +
-          'The words will reshape the fate of nations. Some of what they unseat needed unseating; some of ' +
-          'it was holding people up.',
-        targetLabel: 'The prophet',
-        essenceCost: 2, // THR-1800 — the god's push is paid for
-        interventionType: 'coercive',
-      },
-      {
-        id: 'let_them_read_it',
-        label: 'Stay your hand. Let them read the sky alone.',
-        intent:
-          'Pour nothing. Steady only their footing on the cold hill, and let the frightened, faithful human ' +
-          'read the human meaning — that the heavens keep their old appointments, that the age is watched ' +
-          'over and not ended, that the people should hold fast. The nations will exhale. A great deal of ' +
-          'grief will be prevented, and something that wanted to be born under the comet will go quietly ' +
-          'back to sleep, mourned by no one but you.',
-        targetLabel: 'The prophet',
-        essenceCost: 0, // THR-1800 — staying your hand costs nothing
-        interventionType: 'withdrawn',
-      },
-    ],
-  },
 
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      proclaim_the_turning: TURNING_ENDINGS,
-      let_them_read_it: ANCHORED_ENDINGS,
+      negative: TURNING_ENDINGS,
+      positive: ANCHORED_ENDINGS,
     },
     fallback: { ...ANCHORED_ENDINGS },
   },

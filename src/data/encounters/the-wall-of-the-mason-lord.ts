@@ -26,10 +26,27 @@
  * supervisable inside an automated single-issue run. Held to the editorial REVISE
  * triggers: approach prose at every step, scene-specific god-verbs, cool failure
  * at every branch, human consequences over mechanical labels.
+ *
+ * ─── The mortal decides (THR-2157, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was two cards whose ids were the
+ * aftermath keys, so the click picked the ending. Now the fork decides on
+ * `mercy_ruthlessness`: a Protector (+1) cannot shut the far side out and
+ * lets the doubt in; a Conqueror (−1) finishes the wall. The god argues with a
+ * composed hand — two pole-leaning specials plus a Repertoire fill — and the
+ * mason-lord answers.
+ *
+ * - Fork axis: `mercy_ruthlessness` — the one value the endings disagree on
+ *   (who is worth shutting out). `positive` = Let the Doubt In,
+ *   `negative` = Harden Their Resolve. Variants, aftermath and `stakes.arms`
+ *   are keyed to the pole, because pole mode writes the bare key.
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
+ * - Each arm deals an ordinary hand from the god's Repertoire.
  */
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
 import { withEncounterContract } from '../encounter-contract-builder';
+import { DEAL_DEFAULT_COUNT } from '../nudge-constants';
 
 // ─── Steps ───────────────────────────────────────────────────────────
 
@@ -59,6 +76,37 @@ const step0TheReckoning: ActionStep = {
   criticalSuccessAfterimage: 'The mason-lord saw both costs plainly, and made up their mind without fear.',
   criticalFailureAfterimage:
     'The mason-lord argued with the crew for a whole day. Half of them put down their tools and went home.',
+  purposeLine: 'Weigh the far side',
+  // THR-2157 — the fork's argument. Two specials, one per pole of
+  // `mercy_ruthlessness`; the Repertoire fills the rest of the hand.
+  nudges: [
+    {
+      id: 'wall.show_the_far_side',
+      name: 'Show The Far Side',
+      sphere: 'spirit',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'mercy_ruthlessness', toward: 'positive' },
+      effectLine: 'Let them see the herders\' fires beyond the pass. Faces on the far side argue for leaving it open.',
+      bandProse: {
+        success: '{actor} looked west at the herders\' fires, and put the trowel down.',
+        failure: '{actor} saw the fires in the west, and the wind blew the smoke away.',
+      },
+    },
+    {
+      id: 'wall.count_the_valley',
+      name: 'Count The Valley',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'mercy_ruthlessness', toward: 'negative' },
+      effectLine: 'Put the valley\'s children in front of them, one by one. Every name argues for finishing the wall.',
+      bandProse: {
+        success: '{actor} counted the valley\'s children, and picked up the trowel.',
+        failure: '{actor} began to count the valley\'s children, and lost the count.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['craft', 'labor'] },
 };
 
 /**
@@ -87,6 +135,8 @@ const step1HardenTheirResolve: ActionStep = {
   criticalFailureAfterimage:
     'The mason-lord pushed the work over a cracked footing and did not stop to fix it. The wall stands ' +
     'finished but unsound, and it will fall in the first hard winter.',
+  purposeLine: 'Close the pass',
+  deal: { count: DEAL_DEFAULT_COUNT, tags: ['craft', 'labor'] },
   successMetadata: { reputationDelta: 0.16 },
   failureMetadata: { reputationDelta: -0.1 },
 };
@@ -119,15 +169,19 @@ const step1LetTheDoubtIn: ActionStep = {
   criticalFailureAfterimage:
     'The mason-lord could neither finish the wall nor leave it, and kept guard on it all season. The ' +
     'valley lost a season of work and gained no safety.',
+  purposeLine: 'Stand the crew down',
+  deal: { count: DEAL_DEFAULT_COUNT, tags: ['presence', 'social'] },
   successMetadata: { reputationDelta: 0.08 },
   failureMetadata: { reputationDelta: -0.12 },
 };
 
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  // THR-2157 — the mortal decides; the fallback lets the doubt in, as it always did.
+  decidedBy: { axis: 'mercy_ruthlessness' },
   variants: {
-    harden_their_resolve: step1HardenTheirResolve,
-    let_the_doubt_in: step1LetTheDoubtIn,
+    positive: step1LetTheDoubtIn,
+    negative: step1HardenTheirResolve,
   },
   fallback: { ...step1LetTheDoubtIn },
 };
@@ -326,7 +380,7 @@ export const WALL_OF_THE_MASON_LORD_TEMPLATE: UnifiedActionTemplate = withEncoun
     lost: 'finished the wall over a weak section',
     lostBadly: 'built the wall on a cracked footing',
     arms: {
-      let_the_doubt_in: {
+      positive: {
         won: 'walked away and left the pass open',
         lost: 'stopped the work but kept guards on it',
         lostBadly: 'stood on the half-wall all season',
@@ -369,32 +423,11 @@ export const WALL_OF_THE_MASON_LORD_TEMPLATE: UnifiedActionTemplate = withEncoun
   },
 
 
-  authoredChoices: {
-    0: [
-      {
-        id: 'harden_their_resolve',
-        label: 'Harden their resolve. Let the wall rise.',
-        intent: 'Harden the mason-lord\'s resolve, so they stop looking west and keep laying stone.',
-        targetLabel: 'The mason-lord',
-        essenceCost: 2, // THR-1800 — the god's push is paid for
-        interventionType: 'coercive',
-      },
-      {
-        id: 'let_the_doubt_in',
-        label: 'Stay your hand. Let the doubt in.',
-        intent: 'Hold back and let the doubt in. The mason-lord looks west again, at the people the wall will shut out.',
-        targetLabel: 'The mason-lord',
-        essenceCost: 0, // THR-1800 — staying your hand costs nothing
-        interventionType: 'withdrawn',
-      },
-    ],
-  },
-
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      harden_their_resolve: WALL_RAISED_AFTERMATH,
-      let_the_doubt_in: WALL_UNFINISHED_AFTERMATH,
+      positive: WALL_UNFINISHED_AFTERMATH,
+      negative: WALL_RAISED_AFTERMATH,
     },
     fallback: { ...WALL_UNFINISHED_AFTERMATH },
   },

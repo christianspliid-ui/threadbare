@@ -5,13 +5,13 @@
  * - Template structure (2 steps, step 0 concrete, step 1 ActionStepBranch)
  * - Branch resolution via resolveStepDefinition for all 3 variants
  * - Aftermath variant resolution for all 3 paths
- * - AuthoredChoices at step 0 (branch selection) and step 1 (intervention approach)
+ * - The mortal decides the fork (THR-2157: route mode; no authored choices)
  * - Support bundle contract (Maren, Dalla, Torve, forge)
  */
 
 import { describe, it, expect } from 'vitest';
 import { FLAWED_STEEL_TEMPLATE } from '../flawed-steel';
-import { isActionStepBranch } from '../../../types/unifiedAction';
+import { isActionStepBranch, isRouteDecision } from '../../../types/unifiedAction';
 import type { ActionStepBranch } from '../../../types/unifiedAction';
 import type { EncounterChoiceMemory } from '../../../types/encounter';
 import { resolveStepDefinition } from '../../../engine/unifiedActionLifecycle';
@@ -153,104 +153,39 @@ describe('Flawed Steel — branch resolution', () => {
   });
 });
 
-// ─── Authored Choices — Step 0 ────────────────────────────────────
+// ─── The mortal decides (THR-2157) ───────────────────────────────
 
-describe('Flawed Steel — authoredChoices at step 0', () => {
-  const choices = template.authoredChoices![0];
-
-  it('has exactly 3 authored choices at step 0', () => {
-    expect(choices).toHaveLength(3);
+describe('Flawed Steel — the mortal decides the fork', () => {
+  it('carries no authored choices — the player never picks the ending', () => {
+    expect(template.authoredChoices).toBeUndefined();
   });
 
-  it('has forge_the_truth as the first choice', () => {
-    const choice = choices[0];
-    expect(choice.id).toBe('forge_the_truth');
-    expect(choice.label).toBe('Forge the truth');
-    expect(choice.interventionType).toBe('supportive');
-    expect(choice.essenceCost).toBe(2);
-    expect(choice.intent).toBeTruthy();
-    expect(choice.likelyBurden).toBeTruthy();
+  it('forks on three routes, one per ending, each tied to a reach', () => {
+    const branch = template.steps[1] as ActionStepBranch;
+    const decision = branch.decidedBy;
+    expect(decision && isRouteDecision(decision)).toBe(true);
+    const routes = decision && isRouteDecision(decision) ? decision.routes : [];
+    expect(routes.map(r => [r.key, r.reach])).toEqual([
+      ['forge_the_truth', 'heart'],
+      ['temper_the_narrative', 'shadow'],
+      ['keep_your_hand_folded', 'stone'],
+    ]);
   });
 
-  it('has temper_the_narrative as the second choice', () => {
-    const choice = choices[1];
-    expect(choice.id).toBe('temper_the_narrative');
-    expect(choice.label).toBe('Temper the narrative');
-    expect(choice.interventionType).toBe('coercive');
-    expect(choice.essenceCost).toBe(2);
-    expect(choice.intent).toBeTruthy();
-    expect(choice.likelyBurden).toBeTruthy();
+  it('step 0 deals a composed hand arguing the two courses the ruling names', () => {
+    const step0 = template.steps[0];
+    if (isActionStepBranch(step0)) throw new Error('step 0 should not be a branch');
+    const routes = (step0.nudges ?? []).map(n =>
+      n.poleLean && typeof n.poleLean === 'object' && 'route' in n.poleLean ? n.poleLean.route : undefined);
+    expect(routes).toEqual(['forge_the_truth', 'temper_the_narrative']);
+    expect(step0.deal?.count ?? 0).toBeGreaterThan(0);
   });
 
-  it('has keep_your_hand_folded as the third choice', () => {
-    const choice = choices[2];
-    expect(choice.id).toBe('keep_your_hand_folded');
-    expect(choice.label).toBe('Keep your hand folded');
-    expect(choice.interventionType).toBe('withdrawn');
-    expect(choice.essenceCost).toBe(0);
-    expect(choice.intent).toBeTruthy();
-    expect(choice.likelyBurden).toBeTruthy();
-  });
-});
-
-// ─── Authored Choices — Step 1 ────────────────────────────────────
-
-describe('Flawed Steel — authoredChoices at step 1', () => {
-  const choices = template.authoredChoices![1];
-
-  it('has exactly 2 authored choices at step 1', () => {
-    expect(choices).toHaveLength(2);
-  });
-
-  it('first choice is the supportive "Temper the Moment" approach', () => {
-    const choice = choices[0];
-    expect(choice.id).toBe('temper_the_moment');
-    expect(choice.label).toBe('Temper the Moment');
-    expect(choice.interventionType).toBe('supportive');
-    expect(choice.essenceCost).toBe(1);
-    expect(choice.intent).toBeTruthy();
-    expect(choice.likelyBurden).toBeTruthy();
-  });
-
-  it('second choice is the coercive "Strike While the Iron Burns" approach', () => {
-    const choice = choices[1];
-    expect(choice.id).toBe('strike_while_the_iron_burns');
-    expect(choice.label).toBe('Strike While the Iron Burns');
-    expect(choice.interventionType).toBe('coercive');
-    expect(choice.essenceCost).toBe(3);
-    expect(choice.intent).toBeTruthy();
-    expect(choice.likelyBurden).toBeTruthy();
-  });
-
-  it('supportive approach has lower essence cost than coercive approach', () => {
-    const supportive = choices.find(c => c.interventionType === 'supportive')!;
-    const coercive = choices.find(c => c.interventionType === 'coercive')!;
-    expect(supportive.essenceCost).toBeLessThan(coercive.essenceCost);
-  });
-
-  it('step 1 choices use scene-specific forge-themed labels (not generic god-verbs)', () => {
-    for (const choice of choices) {
-      // Labels should not be generic god-verbs
-      expect(choice.label).not.toMatch(/tip the scales/i);
-      expect(choice.label).not.toMatch(/pour divine power/i);
-      expect(choice.label).not.toMatch(/let it play out/i);
-      // Labels should be non-empty authored strings
-      expect(choice.label.length).toBeGreaterThan(5);
-    }
-  });
-
-  it('step 1 choices have substantive intent prose (2+ sentences)', () => {
-    for (const choice of choices) {
-      // A rough proxy: intent should contain at least one period mid-string
-      const sentences = choice.intent.split('.').filter(s => s.trim().length > 0);
-      expect(sentences.length).toBeGreaterThanOrEqual(2);
-    }
-  });
-
-  it('step 1 choices have substantive likelyBurden prose', () => {
-    for (const choice of choices) {
-      expect(choice.likelyBurden).toBeTruthy();
-      expect(choice.likelyBurden!.length).toBeGreaterThan(20);
+  it('each arm deals an ordinary Repertoire hand in place of the old approach cards', () => {
+    const branch = template.steps[1] as ActionStepBranch;
+    for (const arm of Object.values(branch.variants)) {
+      expect(arm.deal?.count ?? 0).toBeGreaterThan(0);
+      expect(arm.purposeLine).toBeTruthy();
     }
   });
 });

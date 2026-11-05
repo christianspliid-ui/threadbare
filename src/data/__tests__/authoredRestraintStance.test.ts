@@ -21,7 +21,11 @@ describe('authored restraint cards carry a restraint stance', () => {
         }
       }
     }
-    expect(seen).toBeGreaterThan(0);
-    expect(offenders).toEqual([]);
+    // THR-2157 took the last restraint-phrased cards ("Stay your hand. …" on the
+    // five sphere story beats) off the catalog, so the population is now zero by
+    // design: the guard stands to catch a reintroduction, and THR-2161 retires
+    // authored cards altogether. No non-empty floor: there is nothing left to
+    // be non-empty about.
+    expect(offenders, `${seen} restraint-phrased card(s) inspected`).toEqual([]);
   });
 });

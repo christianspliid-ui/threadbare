@@ -75,6 +75,12 @@ more, else the first). That is a proxy for authorial grouping, not a curated tax
 | `reputation.eye` | 2 | 4 | push 4, rider 0, sphere 0, trait 0, free 0 |
 | `encounter.rival` | 1 | 4 | push 0, rider 0, sphere 3, trait 1, free 0 |
 | `broker.quest` | 1 | 2 | push 1, rider 0, sphere 1, trait 0, free 0 |
+| `crafting.quest` | 1 | 2 | push 1, rider 0, sphere 1, trait 0, free 0 |
+| `star.turning` | 1 | 2 | push 1, rider 0, sphere 1, trait 0, free 0 |
+| `stone.permanence` | 1 | 2 | push 1, rider 0, sphere 1, trait 0, free 0 |
+| `veil.truth` | 1 | 2 | push 1, rider 0, sphere 1, trait 0, free 0 |
+| `eye.reckoning` | 1 | 2 | push 1, rider 0, sphere 1, trait 0, free 0 |
+| `gold.famine` | 1 | 2 | push 1, rider 0, sphere 1, trait 0, free 0 |
 | `reputation.heart` | 1 | 2 | push 2, rider 0, sphere 0, trait 0, free 0 |
 | `reputation.star` | 1 | 2 | push 2, rider 0, sphere 0, trait 0, free 0 |
 | `reputation.power` | 1 | 2 | push 2, rider 0, sphere 0, trait 0, free 0 |

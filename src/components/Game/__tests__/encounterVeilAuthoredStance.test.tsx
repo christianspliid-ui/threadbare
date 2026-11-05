@@ -14,10 +14,14 @@
  * file hands `EncounterVeil` a fixture choice that already carries
  * `stanceLabel`, so it proves the surface renders a stance it was given. It
  * went green through the entire period the attended veil showed no stance at
- * all. This file starts one step earlier — the real shipped
- * `crafting.quest.flawed_steel` template, through the real
- * `buildUnifiedEncounterStageModel`, into the real veil — so the producer is
- * inside the system under test rather than standing in for it.
+ * all. This file starts one step earlier — a real shipped template, through
+ * the real `buildUnifiedEncounterStageModel`, into the real veil — so the
+ * producer is inside the system under test rather than standing in for it.
+ *
+ * THR-2157: this used to read `crafting.quest.flawed_steel`, which no longer
+ * hands the player cards (the forge-master decides). It now reads the
+ * mentorship graduation, one of the last templates still carrying authored
+ * cards; THR-2161 retires those and this path with them.
  */
 
 import { describe, expect, it, vi } from 'vitest';
@@ -38,15 +42,21 @@ vi.mock('../../../services/narration/useNarration', () => ({
   }),
 }));
 
-const AGENT_ID = 'agent.maren_probe';
+const AGENT_ID = 'agent.mentor_probe';
 const AGENT_NAME = 'Kael Thornweaver';
-const TARGET_ID = 'loc.ironhewn_forge';
+const TARGET_ID = 'loc.workshop';
 
-const FLAWED_STEEL: UnifiedActionTemplate = (() => {
-  const t = UNIFIED_ACTION_TEMPLATES.find((x) => x.id === 'crafting.quest.flawed_steel');
-  if (!t) throw new Error('crafting.quest.flawed_steel is not in the shipped catalog');
+/** The step of each mentorship template that carries its authored cards. */
+const CARD_STEP = 1;
+
+function shippedTemplate(id: string): UnifiedActionTemplate {
+  const t = UNIFIED_ACTION_TEMPLATES.find((x) => x.id === id);
+  if (!t) throw new Error(`${id} is not in the shipped catalog`);
   return t;
-})();
+}
+
+const GRADUATION = shippedTemplate('mentorship.graduation');
+const FALLING_OUT = shippedTemplate('mentorship.the-falling-out');
 
 function buildGraph(): WorldGraph {
   const graph = new WorldGraph();
@@ -54,17 +64,17 @@ function buildGraph(): WorldGraph {
     id: AGENT_ID, type: 'actor', name: AGENT_NAME,
     properties: { actorType: 'individual' },
   });
-  graph.addNode({ id: TARGET_ID, type: 'location', name: 'Ironhewn Forge', properties: {} });
+  graph.addNode({ id: TARGET_ID, type: 'location', name: 'The Workshop', properties: {} });
   return graph;
 }
 
-function buildAction(stepIndex: number): UnifiedAction {
+function buildAction(template: UnifiedActionTemplate, stepIndex: number): UnifiedAction {
   return {
-    actionId: `ua_veil_stance_${stepIndex}`,
+    actionId: `ua_veil_stance_${template.id}_${stepIndex}`,
     actorId: AGENT_ID,
-    templateId: FLAWED_STEEL.id,
+    templateId: template.id,
     targetId: TARGET_ID,
-    scale: FLAWED_STEEL.scale,
+    scale: template.scale,
     source: 'agent',
     startTick: 1,
     currentStep: stepIndex,
@@ -80,15 +90,15 @@ function buildAction(stepIndex: number): UnifiedAction {
  * other stance producer, so emptying it means anything rendered below came from
  * the authored card.
  */
-function buildChoicelessNotification(): EncounterNotification {
+function buildChoicelessNotification(template: UnifiedActionTemplate): EncounterNotification {
   return {
-    id: 'notif_veil_stance',
+    id: `notif_veil_stance_${template.id}`,
     agentId: AGENT_ID,
     agentName: AGENT_NAME,
     courtPosition: 'the_first',
-    encounterId: FLAWED_STEEL.id,
-    encounterName: FLAWED_STEEL.name,
-    prose: 'The forge is cold and the letter is still in her hand.',
+    encounterId: template.id,
+    encounterName: template.name,
+    prose: 'The apprentice stands at the workbench with the finished piece.',
     choices: [],
     createdTick: 1,
     autoResolveTick: null,
@@ -97,16 +107,20 @@ function buildChoicelessNotification(): EncounterNotification {
   };
 }
 
-function renderVeilAtStep(stepIndex: number) {
-  const model = buildUnifiedEncounterStageModel({
-    template: FLAWED_STEEL,
-    activeAction: buildAction(stepIndex),
-    notification: buildChoicelessNotification(),
+function buildModel(template: UnifiedActionTemplate) {
+  return buildUnifiedEncounterStageModel({
+    template,
+    activeAction: buildAction(template, CARD_STEP),
+    notification: buildChoicelessNotification(template),
     agentName: AGENT_NAME,
     threadTier: 'strong',
     graph: buildGraph(),
     essence: 12,
   });
+}
+
+function renderVeil(template: UnifiedActionTemplate = GRADUATION) {
+  const model = buildModel(template);
 
   render(
     <EncounterVeil
@@ -134,19 +148,19 @@ function veilText(): string {
 
 describe('THR-1411 — the authored hand reaches the attended veil with its stance', () => {
   it('renders the three authored cards at all (anti-vacuity for every gate below)', () => {
-    const model = renderVeilAtStep(0);
+    const model = renderVeil();
 
     // The model is the authored hand, not an empty fallback.
     expect(model.choices).toHaveLength(3);
     // And the card faces are on screen — a veil with no choices would pass
     // every "contains the right words" gate below by containing nothing.
-    expect(screen.getByText(/opens the gate and tells the whole truth/)).toBeInTheDocument();
-    expect(screen.getByText(/toward a smaller story/)).toBeInTheDocument();
-    expect(screen.getByText(/must find her own way to the gate/)).toBeInTheDocument();
+    expect(screen.getByText(/strengthens the moment with a current of warmth/)).toBeInTheDocument();
+    expect(screen.getByText(/watches without weighing in/)).toBeInTheDocument();
+    expect(screen.getByText(/lets the truth of what just happened sit visible/)).toBeInTheDocument();
   });
 
   it('shows a stance word on every card — the element the pixel sweep found 0 of', () => {
-    renderVeilAtStep(0);
+    renderVeil();
 
     // The exact query from the ticket's evidence:
     // `document.querySelectorAll('[data-testid=choice-stance]')` → was 0.
@@ -154,13 +168,13 @@ describe('THR-1411 — the authored hand reaches the attended veil with its stan
     expect(stances).toHaveLength(3);
     expect(stances.map((el) => el.textContent)).toEqual([
       'lend strength',
-      'press them',
       'stand back',
+      'press them',
     ]);
   });
 
   it('reveals the stance on hover, and keeps it transparent at rest', () => {
-    renderVeilAtStep(0);
+    renderVeil();
 
     // The meta row is hover-revealed by design; the ticket's Done-when is
     // "hovering a card shows the stance word".
@@ -176,7 +190,7 @@ describe('THR-1411 — the authored hand reaches the attended veil with its stan
   });
 
   it('restores the two sibling reads that died with the same dropped field', () => {
-    renderVeilAtStep(0);
+    renderVeil();
 
     // `interventionType` also drives the withdrawn card's `fate decides` label.
     // It was absent from the attended veil for the same reason the stance was.
@@ -189,7 +203,7 @@ describe('THR-1411 — the authored hand reaches the attended veil with its stan
   });
 
   it('keeps the withdrawn card\'s three-item meta row on one line (Law 33, structural half)', () => {
-    renderVeilAtStep(0);
+    renderVeil();
 
     // `stand back · ◆ 0 essence · fate decides` is the longest meta row the
     // change can produce, and the ticket asks whether it wraps or pushes the
@@ -218,7 +232,7 @@ describe('THR-1411 — the authored hand reaches the attended veil with its stan
   });
 
   it('Law 14 — no interventionType key reaches the DOM verbatim', () => {
-    renderVeilAtStep(0);
+    renderVeil();
 
     const text = veilText().toLowerCase();
     // Literals on purpose: importing the union would let the gate agree with a
@@ -228,12 +242,13 @@ describe('THR-1411 — the authored hand reaches the attended veil with its stan
     }
   });
 
-  it('holds on the second authored step too, so this is not a step-0 special case', () => {
-    const model = renderVeilAtStep(1);
+  it('holds on a second template too, so this is not a one-template special case', () => {
+    const model = renderVeil(FALLING_OUT);
 
-    expect(model.choices).toHaveLength(2);
+    expect(model.choices).toHaveLength(3);
     expect(screen.getAllByTestId('choice-stance').map((el) => el.textContent)).toEqual([
       'lend strength',
+      'stand back',
       'press them',
     ]);
   });
@@ -242,15 +257,7 @@ describe('THR-1411 — the authored hand reaches the attended veil with its stan
     // The absence half of the contract: `stanceLabel` stays a designed empty,
     // so a producer that legitimately tags no stance renders nothing rather
     // than an empty coloured span.
-    const model = buildUnifiedEncounterStageModel({
-      template: FLAWED_STEEL,
-      activeAction: buildAction(0),
-      notification: buildChoicelessNotification(),
-      agentName: AGENT_NAME,
-      threadTier: 'strong',
-      graph: buildGraph(),
-      essence: 12,
-    });
+    const model = buildModel(GRADUATION);
 
     const stripped = {
       ...model,
@@ -280,6 +287,6 @@ describe('THR-1411 — the authored hand reaches the attended veil with its stan
 
     expect(screen.queryAllByTestId('choice-stance')).toHaveLength(0);
     // Still a rendered surface — the absence is the stance, not the veil.
-    expect(screen.getByText(/opens the gate and tells the whole truth/)).toBeInTheDocument();
+    expect(screen.getByText(/strengthens the moment with a current of warmth/)).toBeInTheDocument();
   });
 });

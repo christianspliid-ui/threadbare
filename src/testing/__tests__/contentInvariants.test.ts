@@ -162,7 +162,10 @@ describe('authored choice cards and illustrations (catalog-wide, THR-1800)', () 
   const authored = UNIFIED_ACTION_TEMPLATES.filter(t => Object.keys(t.authoredChoices ?? {}).length > 0);
 
   it('inspects a non-empty authored-choice population', () => {
-    expect(authored.length).toBeGreaterThanOrEqual(8);
+    // THR-2157 — this population shrinks by design as the THR-2135 slices move
+    // templates off authoredChoices (THR-2161 retires the field). The floor is
+    // non-empty while any remain.
+    expect(authored.length).toBeGreaterThan(0);
   });
 
   it('every authored choice card carries a numeric essenceCost', () => {

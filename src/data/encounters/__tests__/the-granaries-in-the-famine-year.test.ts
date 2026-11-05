@@ -3,6 +3,9 @@
  *
  * Regional-scale branching encounter. Validates structure, scale honesty,
  * branch resolution, and aftermath completeness.
+ *
+ * THR-2157: the fork is decided by the mortal (pole mode); the variant keys are
+ * the poles, not the ids of the cards the god used to click.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -60,8 +63,8 @@ describe('The Granaries in the Famine Year — structure & scale', () => {
     const step1 = template.steps[1];
     expect(isActionStepBranch(step1)).toBe(true);
     const branch = step1 as ActionStepBranch;
-    expect(branch.variants).toHaveProperty('open_the_granaries');
-    expect(branch.variants).toHaveProperty('let_the_market_close');
+    expect(branch.variants).toHaveProperty('positive');
+    expect(branch.variants).toHaveProperty('negative');
     expect(branch.fallback).toBeDefined();
   });
 
@@ -74,23 +77,26 @@ describe('The Granaries in the Famine Year — structure & scale', () => {
     }
   });
 
-  it('offers exactly two authored god-action choices on step 0', () => {
-    expect(template.authoredChoices?.[0]).toHaveLength(2);
-    const ids = template.authoredChoices![0].map(c => c.id);
-    expect(ids).toContain('open_the_granaries');
-    expect(ids).toContain('let_the_market_close');
+  // THR-2157 — the player no longer picks; the mortal decides on asceticism_extravagance.
+  it('carries no authored choices; the mortal decides the fork on asceticism_extravagance', () => {
+    expect(template.authoredChoices).toBeUndefined();
+    const branch = template.steps[1] as ActionStepBranch;
+    expect(branch.decidedBy).toEqual({ axis: 'asceticism_extravagance' });
+    const step0 = template.steps[0];
+    if (isActionStepBranch(step0)) throw new Error('step 0 should not be a branch');
+    expect(step0.nudges?.length ?? 0).toBeGreaterThan(0);
   });
 });
 
 describe('The Granaries in the Famine Year — branch & aftermath resolution', () => {
-  it('resolves the patron variant for open_the_granaries', () => {
-    const resolved = resolveStepDefinition(template, 1, [makeChoiceMemory(0, 'open_the_granaries')]);
+  it('resolves the patron variant for the positive pole (open_the_granaries)', () => {
+    const resolved = resolveStepDefinition(template, 1, [makeChoiceMemory(0, 'positive')]);
     expect(resolved.reach).toBe('gold');
     expect(resolved.difficulty).toBe(0.45);
   });
 
-  it('resolves the restraint (extractor) variant for let_the_market_close', () => {
-    const resolved = resolveStepDefinition(template, 1, [makeChoiceMemory(0, 'let_the_market_close')]);
+  it('resolves the restraint (extractor) variant for the negative pole (let_the_market_close)', () => {
+    const resolved = resolveStepDefinition(template, 1, [makeChoiceMemory(0, 'negative')]);
     expect(resolved.difficulty).toBe(0.4);
   });
 
@@ -102,14 +108,14 @@ describe('The Granaries in the Famine Year — branch & aftermath resolution', (
   it('aftermath branches on step 0 and covers both poles + fallback', () => {
     const cfg = template.aftermathConfig!;
     expect(cfg.branchOnStep).toBe(0);
-    expect(cfg.variants['open_the_granaries']).toBeDefined();
-    expect(cfg.variants['let_the_market_close']).toBeDefined();
+    expect(cfg.variants['positive']).toBeDefined();
+    expect(cfg.variants['negative']).toBeDefined();
     expect(cfg.fallback).toBeDefined();
   });
 
   it('both aftermath poles have 2 reactions, each with at least one effect', () => {
     const cfg = template.aftermathConfig!;
-    for (const key of ['open_the_granaries', 'let_the_market_close']) {
+    for (const key of ['positive', 'negative']) {
       const variant = cfg.variants[key];
       expect(variant.reactions).toHaveLength(2);
       for (const r of variant.reactions!) {

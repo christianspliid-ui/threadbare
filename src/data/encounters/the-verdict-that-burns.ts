@@ -23,6 +23,22 @@
  * feel the region behind the accused records the truth but cannot, alone, choose
  * to set it all on fire.
  *
+ * ─── The mortal decides (THR-2157, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was two cards whose ids were the
+ * aftermath keys, so the click picked the ending. Now the fork decides on
+ * `mercy_ruthlessness`: a Protector (+1) magistrate feels the living region at
+ * their back and withholds the hammer; a Conqueror (−1) lets the fact stand at
+ * its full size and speaks the verdict, whatever it burns. The god argues with
+ * a composed hand — two pole-leaning specials plus a Repertoire fill — and the
+ * magistrate answers.
+ *
+ * - Fork axis: `mercy_ruthlessness` — the endings disagree on whether the
+ *   living outweigh the dead. `positive` = Bear Witness, `negative` = Deliver
+ *   the Verdict. Variants, aftermath and `stakes.arms` are keyed to the pole,
+ *   because pole mode writes the bare key.
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
+ *
  * TODO(THR-498): repeatability: 'unique' — bespoke regional marquee, fire ≤1×/playthrough.
  * Field does not exist on UnifiedActionTemplate until THR-498 lands.
  *
@@ -35,6 +51,7 @@
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
 import { withEncounterContract } from '../encounter-contract-builder';
+import { DEAL_DEFAULT_COUNT } from '../nudge-constants';
 
 // ─── Steps ───────────────────────────────────────────────────────────
 
@@ -65,6 +82,44 @@ const step0TheWord: ActionStep = {
     'both, pulling against each other in the magistrate\'s throat.',
   successAfterimage: 'The magistrate held the true verdict in their mouth and felt the whole region pulling against it.',
   failureAfterimage: 'The magistrate\'s voice cracked on the first syllable and they had to call a recess to keep from saying anything at all.',
+  // THR-2157: the rest of the ladder, now that step 0 deals a hand.
+  successAtCostAfterimage:
+    'The magistrate found their answer, but sat so long over it that the lord\'s captains began to stand.',
+  criticalSuccessAfterimage:
+    'The magistrate saw the fords and the region side by side, plainly, and knew which they could live with.',
+  criticalFailureAfterimage:
+    'The magistrate called a recess, and in the corridor the lord\'s kin were already counting spears.',
+  purposeLine: 'Weigh the region',
+  // THR-2157 — the fork's argument. Two specials, one per pole of
+  // `mercy_ruthlessness`; the Repertoire fills the rest of the hand.
+  nudges: [
+    {
+      id: 'verdict.the_children_of_peace',
+      name: 'The Children Of Peace',
+      sphere: 'life',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'mercy_ruthlessness', toward: 'positive' },
+      effectLine: 'Show them the children born in the decade of peace. The living argue for withholding the hammer.',
+      bandProse: {
+        success: '{actor} thought of the children born since the bad years, and set the hammer down.',
+        failure: '{actor} thought of the children, and the faces would not hold still.',
+      },
+    },
+    {
+      id: 'verdict.the_pit_at_the_fords',
+      name: 'The Burial Pit',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'mercy_ruthlessness', toward: 'negative' },
+      effectLine: 'Put them back at the lip of the burial pit, counting. The dead argue for the verdict, whatever it burns.',
+      bandProse: {
+        success: '{actor} stood again at the lip of the pit, and reached for the hammer.',
+        failure: '{actor} tried to see the pit again, and saw only the full hall.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['insight', 'presence'] },
 };
 
 /**
@@ -107,6 +162,8 @@ const step1DeliverTheVerdict: ActionStep = {
     'something wild — accusations past the writ, names not on the charge. The lord\'s captains rose to a ' +
     'judgment that had already discredited itself, and the region burned for a verdict no one could later ' +
     'defend as justice. Even the coal went cold.',
+  purposeLine: 'Speak the verdict',
+  deal: { count: DEAL_DEFAULT_COUNT, tags: ['presence', 'insight'] },
   successMetadata: { reputationDelta: 0.12 },
   failureMetadata: { reputationDelta: -0.12 },
 };
@@ -153,15 +210,19 @@ const step1BearWitness: ActionStep = {
     'technicality would not stand, so the lord walked free of a truth that had never quite been fixed in ' +
     'place. The region got neither justice nor a clean account of why it had none, and the magistrate\'s ' +
     'name became a byword for the judge who looked away and could not even do that well.',
+  purposeLine: 'Fix the record',
+  deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'insight'] },
   successMetadata: { reputationDelta: 0.1 },
   failureMetadata: { reputationDelta: -0.12 },
 };
 
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  // THR-2157 — the mortal decides; the fallback bears witness, as it always did.
+  decidedBy: { axis: 'mercy_ruthlessness' },
   variants: {
-    deliver_the_verdict: step1DeliverTheVerdict,
-    bear_witness: step1BearWitness,
+    positive: step1BearWitness,
+    negative: step1DeliverTheVerdict,
   },
   fallback: { ...step1BearWitness },
 };
@@ -399,7 +460,7 @@ export const VERDICT_THAT_BURNS_TEMPLATE: UnifiedActionTemplate = withEncounterC
     won: 'spoke the true verdict, and the region went up in fire',
     lost: 'mangled the verdict, and the region burned anyway',
     arms: {
-      bear_witness: {
+      positive: {
         won: 'recorded the truth and kept the region\'s peace',
         lost: 'botched the withholding, and the lord walked free',
       },
@@ -440,44 +501,12 @@ export const VERDICT_THAT_BURNS_TEMPLATE: UnifiedActionTemplate = withEncounterC
   },
 
 
-  authoredChoices: {
-    0: [
-      {
-        id: 'deliver_the_verdict',
-        label: 'Steel them. Let the verdict fall.',
-        intent:
-          'Put the cold refusal in them to let the size of a consequence change the size of a fact, and let ' +
-          'the true word out: guilty, and the sentence the law requires. The law will reach the strongest man ' +
-          'alive for the first time in the region\'s history. And the region will burn for it: the militia ' +
-          'in revolt, the kin-towns rising, the decade of peace gone up like a dry barn. The bad years come ' +
-          'round again, with your blessing on the verdict that lit them. Justice that lands, paid for by ' +
-          'everyone who lives under it.',
-        targetLabel: 'The magistrate',
-        essenceCost: 2, // THR-1800 — the god's push is paid for
-        interventionType: 'coercive',
-      },
-      {
-        id: 'bear_witness',
-        label: 'Stay your hand. Let them witness, and withhold the hammer.',
-        intent:
-          'Give them nothing to steel them, and let a decent judge feel the whole region breathing behind the ' +
-          'accused. They will put the truth on the record forever — every fact, every witness sworn, so the ' +
-          'massacre can never be denied — and then withhold the sentence on a technicality dressed in just ' +
-          'enough law to stand. The lord walks; the region keeps its fragile peace; the children of the next ' +
-          'decade are born. The truth is kept where the justice is not, and the debt at the fords stays owed. ' +
-          'Mercy to the living through a reckoning deferred.',
-        targetLabel: 'The magistrate',
-        essenceCost: 0, // THR-1800 — staying your hand costs nothing
-        interventionType: 'withdrawn',
-      },
-    ],
-  },
 
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      deliver_the_verdict: VERDICT_DELIVERED_AFTERMATH,
-      bear_witness: HAMMER_WITHHELD_AFTERMATH,
+      negative: VERDICT_DELIVERED_AFTERMATH,
+      positive: HAMMER_WITHHELD_AFTERMATH,
     },
     fallback: { ...HAMMER_WITHHELD_AFTERMATH },
   },
