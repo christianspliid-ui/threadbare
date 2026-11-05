@@ -13,7 +13,7 @@ import { playerSpendSince, recordEssenceMovement } from '../../../engine/essence
 import { buildNeedsYou, NEEDS_YOU_COUNT_INCLUDES_NEWS, type NeedsYouSources } from '../../../engine/views/needsYou';
 import { nudgeGlyphLegendForHand, NUDGE_ODDS_LEGEND_LABEL } from '../../../data/nudge-card-display';
 import { CONSEQUENCE_LEGEND_MEANINGS } from '../../../data/aftermath-legend-words';
-import { NEEDS_YOU_PILL_NEWS_ONLY_LABEL, NEEDS_YOU_AFTER_ONLY_WORD, NEEDS_YOU_PILL_AFTER_ONLY_LABEL } from '../../../data/frame-content';
+import { NEEDS_YOU_PILL_NEWS_ONLY_LABEL, NEEDS_YOU_AFTER_ONLY_WORD, NEEDS_YOU_PILL_AFTER_ONLY_LABEL, NEEDS_YOU_PAUSE_ONLY_WORD, NEEDS_YOU_PILL_PAUSE_ONLY_LABEL } from '../../../data/frame-content';
 import { NeedsYou } from '../frame/NeedsYou';
 import type { AlertItem } from '../../../types/notification';
 import type { EssencePool } from '../../../types/influence';
@@ -186,6 +186,8 @@ describe('THR-2169 — a place-less pause is not "Waiting"', () => {
   it('only a named pause with no hex: the pill does not promise an after', () => {
     const vm = buildNeedsYou(sources({ namedPause: { line: 'Time stops.', hex: null, tick: 99 } }));
     render(<NeedsYou vm={vm} open={false} onOpenChange={() => {}} guarded={false} raised={false} onPressRow={() => {}} />);
-    expect(screen.getByTestId('needs-you-pill').textContent).not.toBe(NEEDS_YOU_AFTER_ONLY_WORD);
+    const pill = screen.getByTestId('needs-you-pill');
+    expect(pill.textContent).toBe(NEEDS_YOU_PAUSE_ONLY_WORD);
+    expect(pill.querySelector('button')?.getAttribute('aria-label')).toBe(NEEDS_YOU_PILL_PAUSE_ONLY_LABEL);
   });
 });

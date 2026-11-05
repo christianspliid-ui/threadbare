@@ -169,6 +169,10 @@ export const NEEDS_YOU_NEWS_ONLY_WORD = 'News';
 export const NEEDS_YOU_AFTER_ONLY_WORD = 'Waiting';
 /** THR-2169 — the pill's aria and tooltip label for that case. */
 export const NEEDS_YOU_PILL_AFTER_ONLY_LABEL = 'Nothing to open yet; it opens after this moment';
+/** THR-2169 — the pill's word when only a pause with no place is listed: the clock stopped, nothing to open. */
+export const NEEDS_YOU_PAUSE_ONLY_WORD = 'Paused';
+/** THR-2169 — the pill's aria and tooltip label for that case. */
+export const NEEDS_YOU_PILL_PAUSE_ONLY_LABEL = 'The clock is stopped; nothing to open';
 /** The list's group headers, followed by " · {n}". */
 export const NEEDS_YOU_GROUP_TITLES = {
   waiting: 'Waiting for you',
