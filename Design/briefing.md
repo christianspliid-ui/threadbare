@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-05 06:59 local (05:59 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-05 07:58 local (06:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -43,14 +43,14 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: one in progress, two ready.** The builder took [the last player picks go](https://linear.app/threadbare/issue/THR-2161/the-last-player-picks-go-the-three-mentorship-moments-and-the-two) at 05:42 UTC, right after the orchestrator promoted it. It is the fifth and final slice of the mortal-decides conversion. The two ready tickets, [the one-line records](https://linear.app/threadbare/issue/THR-2162/town-encounters-the-one-line-records-each-summary-line-names-the) and [the overviews and follow-up lines](https://linear.app/threadbare/issue/THR-2163/town-encounters-the-overviews-and-carryover-lines-name-the-mortal-say), wait out your veto window until 14:25 UTC.
+**Two ready, nothing in progress. The builder is idle by design until 14:25 UTC.** [The last player picks go](https://linear.app/threadbare/issue/THR-2161/the-last-player-picks-go-the-three-mentorship-moments-and-the-two) merged at 06:31 UTC ([#2748](https://github.com/christianspliid-ui/threadbare/pull/2748)) and is live, which finishes the mortal-decides conversion. The two ready tickets, [the one-line records](https://linear.app/threadbare/issue/THR-2162/town-encounters-the-one-line-records-each-summary-line-names-the) and [the overviews and follow-up lines](https://linear.app/threadbare/issue/THR-2163/town-encounters-the-overviews-and-carryover-lines-name-the-mortal-say), wait out your veto window. The builder's runs since then stood down for that reason only, which is correct.
 
 Items for agents, not you:
-- **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (16 days; In Dev since 15 Oct). No pushed branch and no local worktree holds work for it (checked this run). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it. With the builder idle, it is the cheapest work on the board.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (16 days; In Dev since 15 Oct). No local worktree holds work for it (checked this run). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 - **The returning-player playtest should run at today's 09:47 UTC fire.** *— from [the playtest lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/warm-playtest-round-2-stale.md)*
 
 ## Health
 
-- **Engine speed jumped:** tick cost 219 ms/tick steady, 40% above the 7-day median (156, 121 rows since 9c6fc808); top phase agent_decision, 628 agents. Name the merges between 9c6fc808 and 78921d88: git log --oneline --merges 9c6fc808..78921d88. Last hour read 169 ms. This run measured while the builder was working on the same machine, so part of the jump may be load; the executor checks it if the next reading stays high.
-- Everything else is green. The live site is current (the commits since its last publish touched only notes). Checks on main and the 3 scheduled background jobs pass, and no pull requests are waiting. All 10 enabled scheduled tasks are on time. The worktree cleaner last ran at 06:40 local. The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 23 commits behind main. It is the read-only mirror and catches up on its own.
+- All green. The live site serves the latest commit on main (36c3e9ca). Checks on main and the 3 scheduled background jobs pass, and no pull requests are waiting. All 10 enabled scheduled tasks are on time. The worktree cleaner last ran at 07:40 local. Engine speed is back in range: 180 ms/tick, 15% above the 7-day median, so last hour's 219 reading was most likely load from the builder.
+- The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 29 commits behind main. It is the read-only mirror and catches up on its own.
