@@ -151,7 +151,7 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
       + 'is a Crown (derived, never stored). Written ONLY by src/engine/crown.ts: created by '
       + 'executeSeekFealty, loyalty edited and removed by the daily `crown` phase. Properties: '
       + 'kind (persuaded|bought|coerced), taxShare, loyalty (0–1, the reputation ladder), '
-      + 'swornTick, giftPaid, lastLoyaltyDay, recentLosses, taxPaidTotal.',
+      + 'swornTick, giftPaid, lastLoyaltyDay, loyaltyTrend (THR-2170: the smoothed daily change the trend word reads), recentLosses, taxPaidTotal.',
   },
   hostile_to: {
     type: 'hostile_to',

@@ -138,6 +138,22 @@ function roleOf(
 }
 
 /** Is this slot wanted at this checkpoint? Absent `steps` ⇒ every step. */
+/**
+ * Node ids live-bound to any cast key other than `castKey` (THR-2170). Excluded from
+ * the board so one person never holds two slots of the same undertaking at once; the
+ * slot's own holder stays a candidate, which is what carry-forward continuity needs.
+ */
+function nodesHeldByOtherKeys(
+  liveByKey: ReadonlyMap<string, UndertakingBindingRecord>,
+  castKey: string,
+): ReadonlySet<string> {
+  const held = new Set<string>();
+  for (const [key, record] of liveByKey) {
+    if (key !== castKey) held.add(record.nodeId);
+  }
+  return held;
+}
+
 function wantedAtStep(spec: UndertakingCastSpec, stepIndex: number): boolean {
   if (!spec.steps || spec.steps.length === 0) return true;
   return spec.steps.includes(stepIndex);
@@ -419,6 +435,7 @@ function bindPassInner(
       stageNodeId,
       identityRequirement: spec.identityRequirement,
       carryForward,
+      excludeNodeIds: nodesHeldByOtherKeys(liveByKey, spec.key),
     };
 
     const mintAvailable = getMintQueue(strategicState).length < BINDER_MINT_QUEUE_MAX;

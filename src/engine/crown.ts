@@ -40,6 +40,7 @@ import type { EconomicChronicleTrigger } from '../data/economic-chronicle-conten
 import type { BattleState } from '../types/battle';
 import type { LoyaltyDelta, LoyaltyReason, OathForcedBy, OathKind, OfferParts, SwornToEdgeProperties } from './crown/types';
 import { LOYALTY_REASON_ORDER } from './crown/types';
+import { nextLoyaltyTrend } from './crown/loyaltyTrend';
 import { emitTrace } from './traceBuffer';
 import { readWealth, applyTreasuryDelta } from './wealth';
 import { resolveEconomicChronicle, chronicleSeed } from './economicChronicle';
@@ -879,7 +880,13 @@ export function runCrownPhase(state: GameState, hooks: CrownHooks = {}): CrownPh
         ...deltas.filter(d => d.amount < 0).map(d => ({ tick, reason: d.reason, amount: -d.amount })),
       ];
       graph.updateEdge(edge.id, {
-        properties: { loyalty, lastLoyaltyDay: { tick, deltas }, recentLosses, lastPassTick: tick },
+        properties: {
+          loyalty,
+          lastLoyaltyDay: { tick, deltas },
+          loyaltyTrend: nextLoyaltyTrend(props.loyaltyTrend, sum),
+          recentLosses,
+          lastPassTick: tick,
+        },
       });
       const updated = graph.getOutgoingEdges(edge.source, 'sworn_to').find(e => e.id === edge.id) ?? edge;
       if (loyalty < OATH_BREAK_THRESHOLD) {

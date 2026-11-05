@@ -3,6 +3,7 @@ import type { GameState } from '../../types/gameState';
 import { WorldGraph } from '../graph';
 import { getUnifiedTemplateById, UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
 import { prepareEncounterSupportBundle } from '../encounterSupportBundle';
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import {
   DEFAULT_BUNDLE_MAX_SPECS,
   DEFAULT_FAMILY_SUPPORT_BUNDLES,
@@ -230,6 +231,51 @@ describe('prepareEncounterSupportBundle', () => {
     expect(bindings.find(binding => binding.key === 'gate_captain')?.nodeId).toBe('captain_1');
     expect(graph.getNode('enc_support_cg.quest.gate_duty_loc_town_suspect_courier')).toBeDefined();
     expect(graph.getNode('enc_support_cg.quest.gate_duty_faction_cg_suspect_courier')).toBeUndefined();
+  });
+});
+
+describe('one person, one slot (THR-2170)', () => {
+  function twoScholarTemplate(): UnifiedActionTemplate {
+    const base = getUnifiedTemplateById('cg.quest.gate_duty')!;
+    const scholar = (key: string, supportRole: string) => ({
+      kind: 'actor' as const,
+      key,
+      delivery: 'lazy-materialize-on-trigger' as const,
+      persistence: 'scene-only' as const,
+      reuseNpcRoles: ['scholar', 'archivist'],
+      supportRole,
+      spawnNpcRole: 'civilian',
+      spawnName: key,
+    });
+    return {
+      ...base,
+      id: 'test.two_scholars',
+      supportBundle: [scholar('scholar_one', 'first_scholar'), scholar('scholar_two', 'second_scholar')],
+    } as UnifiedActionTemplate;
+  }
+
+  function libraryGraph(scholars: number): WorldGraph {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'loc_town', type: 'location', name: 'Mock Town', properties: { locationSubtype: 'town' } });
+    for (let i = 0; i < scholars; i++) addIndividual(graph, `scholar_${i}`, `Shiaru ${i}`, 'scholar', 'loc_town');
+    return graph;
+  }
+
+  it('two same-role slots bind two different people when two are present', () => {
+    const state = makeState(libraryGraph(2));
+    const bindings = prepareEncounterSupportBundle(state, twoScholarTemplate(), 'loc_town');
+    const ids = bindings.filter(b => b.kind === 'actor').map(b => b.nodeId);
+    expect(ids).toHaveLength(2);
+    expect(new Set(ids).size).toBe(2);
+  });
+
+  it('with only one scholar present, the second slot never re-binds the first', () => {
+    const state = makeState(libraryGraph(1));
+    const bindings = prepareEncounterSupportBundle(state, twoScholarTemplate(), 'loc_town');
+    const one = bindings.find(b => b.key === 'scholar_one');
+    const two = bindings.find(b => b.key === 'scholar_two');
+    expect(one?.nodeId).toBe('scholar_0');
+    expect(two?.nodeId).not.toBe('scholar_0');
   });
 });
 

@@ -30,6 +30,8 @@
  * | LOYALTY_RISE_* / LOYALTY_FALL_* | the daily loyalty table                                        |
  * | LOYALTY_FAIL_DEFENCE            | fall per holding lost while sworn                              |
  * | LOYALTY_ROUND_DECIMALS          | daily loyalty rounding (the break test reads tuning, not drift) |
+ * | LOYALTY_TREND_EMA_ALPHA         | weight of today's net loyalty change in the smoothed trend     |
+ * | LOYALTY_TREND_DEAD_BAND         | a smoothed trend inside ± this reads "holds steady"            |
  * | OATH_BREAK_THRESHOLD            | below this the oath breaks (= the Distrusted band)             |
  * | REBELLION_INCOME_RATIO          | a breaking realm earning this share of its liege's income rebels |
  * | NEVER_SWEAR_*                   | factions that never swear                                      |
@@ -102,6 +104,18 @@ export const LOYALTY_FAIL_DEFENCE = 0.15;
 export const LOYALTY_ROUND_DECIMALS = 6;
 export const LOYALTY_FALL_OUTGROWN = 0.02;
 export const LOYALTY_FALL_RIVAL_OFFER = 0.02;
+/**
+ * THR-2170 — the sheet's "rising / falling / holds steady" reads a smoothed trend, not
+ * one day. 0.25 ≈ the last week; a lone fail-defence (−0.15) still reads "falling" the
+ * same day (−0.0375), while a liege's means wobbling rich ↔ destitute (±0.01 a day)
+ * never leaves the dead band (its first day is ±0.0025, its settled ripple ±0.0014).
+ */
+export const LOYALTY_TREND_EMA_ALPHA = 0.25;
+/**
+ * THR-2170 — dead band on the smoothed trend. A steady strained fall (−0.005 a day)
+ * crosses it on its fourth day; a steady wealthy rise (+0.01) on its second.
+ */
+export const LOYALTY_TREND_DEAD_BAND = 0.003;
 export const OATH_BREAK_THRESHOLD = 0.2;
 export const REBELLION_INCOME_RATIO = 0.5;
 

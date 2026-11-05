@@ -14,7 +14,7 @@ import type { PursePart } from '../factionPurse/purseSentences';
 import { durationWords } from '../factionPurse/purseSentences';
 import type { LoyaltyReason, OathForcedBy, OathKind, SwornToEdgeProperties } from './types';
 import { getReputationWord } from '../../data/domain-words';
-import { FEALTY_LIST_FOLD } from '../../data/crown-constants';
+import { FEALTY_LIST_FOLD, LOYALTY_TREND_DEAD_BAND } from '../../data/crown-constants';
 import { PURSE_CYCLE_TICKS } from '../../data/faction-purse-constants';
 import { crownRulerOf, isCrown, oathOf, oathsTo, readOath } from './crownView';
 import { readPurseDay } from '../factionPurse';
@@ -85,12 +85,20 @@ const REASON_CLAUSE: Readonly<Record<LoyaltyReason, string>> = {
   rival_offer: 'another realm courts it with a better offer',
 };
 
-/** "rising because its liege is rich" · "falling because …" · "holding steady". */
+/**
+ * "rising because its liege is rich" · "falling because …" · "holding steady".
+ *
+ * THR-2170: the direction comes from the smoothed `loyaltyTrend` with a dead band, so a
+ * loyalty seesawing around flat reads "holds steady" instead of flipping daily. The
+ * reason is still today's largest delta in that direction (none → no "because").
+ * Oaths without a trend yet fall back to today's sum, through the same dead band.
+ */
 export function trendClause(props: SwornToEdgeProperties): string {
   const deltas = props.lastLoyaltyDay?.deltas ?? [];
-  const sum = deltas.reduce((s, d) => s + d.amount, 0);
-  if (deltas.length === 0 || Math.abs(sum) < 1e-9) return 'and its loyalty holds steady';
-  const sign = Math.sign(sum);
+  const todaySum = deltas.reduce((s, d) => s + d.amount, 0);
+  const trend = typeof props.loyaltyTrend === 'number' ? props.loyaltyTrend : todaySum;
+  if (Math.abs(trend) < LOYALTY_TREND_DEAD_BAND) return 'and its loyalty holds steady';
+  const sign = Math.sign(trend);
   const lead = deltas
     .filter(d => Math.sign(d.amount) === sign)
     .sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount))[0];

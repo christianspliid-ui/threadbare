@@ -622,6 +622,8 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       interventionType: null,
       rangeStatus,
       hexDistance: hexDist,
+      // THR-2170: the reach the range gate used, so the blocked reason can name it.
+      ...(rangeStatus === 'unlimited' ? {} : { rangeLimitHexes: TARGET_ACTION_CONSTANTS.DEFAULT_LOCAL_RANGE }),
       description: template.narrativeTemplates.initiation,
       durationMode: template.durationMode,
       perTickCostLabel,

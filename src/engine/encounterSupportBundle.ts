@@ -183,10 +183,24 @@ function resolveLocationSupport(
   };
 }
 
+/**
+ * Actor node ids already cast in this bundle (THR-2170). Two slots that accept the
+ * same roles ("scholar_one" / "scholar_two") must bind two people: without this set
+ * both matchers returned the first scholar at the placement twice — "Cast: Shiaru Shiaru".
+ */
+function boundActorIds(bindings: ReadonlyMap<string, EncounterSupportBinding>): ReadonlySet<string> {
+  const ids = new Set<string>();
+  for (const binding of bindings.values()) {
+    if (binding.kind === 'actor') ids.add(binding.nodeId);
+  }
+  return ids;
+}
+
 function findExistingActorSupport(
   state: GameState,
   placementId: string,
   spec: EncounterSupportActorSpec,
+  alreadyCast: ReadonlySet<string> = new Set(),
 ): string | null {
   // THR-1545: the dead are never cast. A retained death keeps its `located_at` edge
   // ("Edges are left standing", `agentLifecycle.ts`), so without this filter a band
@@ -194,7 +208,9 @@ function findExistingActorSupport(
   // as the beast a hunt goes to fight. `isAgentGone` is the dual test the seed
   // inheritance drop uses, so both sides of a scene agree on who is dead.
   const candidates = getAllActorsAtLocation(state.graph, placementId)
-    .filter(node => node.properties.actorType === 'individual' && !isAgentGone(node));
+    .filter(node => node.properties.actorType === 'individual' && !isAgentGone(node))
+    // THR-2170: nobody fills two slots of the same scene.
+    .filter(node => !alreadyCast.has(node.id));
 
   // THR-1545: a property match names the one creature the scene is about, and it
   // wins before any role match. It never falls through to the role branches: a spec
@@ -352,7 +368,7 @@ function resolveActorSupport(
 
   if (!placementId) return null;
 
-  const existingId = findExistingActorSupport(state, placementId, spec);
+  const existingId = findExistingActorSupport(state, placementId, spec, boundActorIds(bindings));
   if (existingId) {
     return {
       key: spec.key,
@@ -544,6 +560,7 @@ function resolveActorSupportViaBinder(
       acceptedRoles: spec.reuseNpcRoles,
       mintRole: spec.spawnNpcRole,
       stageNodeId: placementId,
+      excludeNodeIds: boundActorIds(bindings),
     },
     {
       graph: state.graph,

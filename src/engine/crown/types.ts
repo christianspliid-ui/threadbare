@@ -43,6 +43,12 @@ export interface SwornToEdgeProperties {
   giftPaid: number;
   /** The last daily pass: what moved loyalty and by how much. */
   lastLoyaltyDay: { tick: number; deltas: LoyaltyDelta[] } | null;
+  /**
+   * THR-2170 — exponential moving average of the daily net loyalty change
+   * (LOYALTY_TREND_EMA_ALPHA). The sheet's trend word reads this, so one noisy day
+   * does not flip "falling" to "holds steady". Absent on oaths sworn before it existed.
+   */
+  loyaltyTrend?: number;
   /** Losses inside OATH_BREAK_REASON_WINDOW_DAYS, trimmed each pass — names a break's reason. */
   recentLosses: { tick: number; reason: LoyaltyReason; amount: number }[];
   /** Fealty tax paid over the oath's life (the break trace reports it). */

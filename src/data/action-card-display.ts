@@ -138,8 +138,28 @@ export function upkeepChannelLabel(word: UpkeepWord): string {
  * asserted in `actionEffectsProse.test.ts`, and the corpus meets it.
  */
 
-/** Blocked reason for a target outside the action's reach — words, not a hex count. */
-export const ACTION_BLOCKED_OUT_OF_RANGE = 'Too far from here.';
+/**
+ * Blocked reason for a target outside the action's reach — words, not a hex count.
+ * The fallback when the slot carries no range limit; with one, the reason names it
+ * ({@link outOfRangeReason}). THR-2170: "here" named neither the place range is
+ * measured from nor how far it reaches.
+ */
+export const ACTION_BLOCKED_OUT_OF_RANGE = 'Too far from your avatar.';
+
+const RANGE_WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+
+/**
+ * THR-2170 — "More than three hexes from your avatar." Range is measured from the
+ * avatar's hex (`getAvatarHexPosition`), so the reason names the avatar and the limit,
+ * in words (Law 13). A limit with no word, or none at all, reads the plain fallback.
+ */
+export function outOfRangeReason(rangeLimitHexes?: number | null): string {
+  if (typeof rangeLimitHexes !== 'number' || !Number.isInteger(rangeLimitHexes)) return ACTION_BLOCKED_OUT_OF_RANGE;
+  if (rangeLimitHexes === 0) return 'Only on your avatar\'s own hex.';
+  const word = RANGE_WORDS[rangeLimitHexes];
+  if (!word) return ACTION_BLOCKED_OUT_OF_RANGE;
+  return `More than ${word} ${rangeLimitHexes === 1 ? 'hex' : 'hexes'} from your avatar.`;
+}
 
 /** Blocked reason for an action above the god's present influence tier. */
 export const ACTION_BLOCKED_TIER = 'Beyond your present standing.';
@@ -173,11 +193,12 @@ const NUMERAL = /\d/;
 export function actionBlockedReason(
   lockedReason: string | null | undefined,
   rangeStatus: 'in_range' | 'out_of_range' | 'unlimited' | 'unknown',
+  rangeLimitHexes?: number | null,
 ): string | undefined {
-  if (rangeStatus === 'out_of_range') return ACTION_BLOCKED_OUT_OF_RANGE;
+  if (rangeStatus === 'out_of_range') return outOfRangeReason(rangeLimitHexes);
   if (!lockedReason) return undefined;
   if (/\btier\b/i.test(lockedReason)) return ACTION_BLOCKED_TIER;
-  if (/out of range/i.test(lockedReason)) return ACTION_BLOCKED_OUT_OF_RANGE;
+  if (/out of range/i.test(lockedReason)) return outOfRangeReason(rangeLimitHexes);
   return NUMERAL.test(lockedReason) ? ACTION_BLOCKED_GENERIC : lockedReason;
 }
 

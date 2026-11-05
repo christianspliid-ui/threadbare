@@ -61,6 +61,12 @@ export interface WheelSlot {
   rangeStatus: 'in_range' | 'out_of_range' | 'unlimited' | 'unknown';
   /** Hex distance from avatar to target (null if no position data) */
   hexDistance: number | null;
+  /**
+   * THR-2170 — the reach this slot was range-checked against, in hexes from the
+   * avatar. The blocked reason names it in words ("More than three hexes from your
+   * avatar."). Absent when the producer has no single number to name.
+   */
+  rangeLimitHexes?: number;
   /** Brief description of what this action does */
   description: string;
   /** Duration mode: 'instant' (default) or 'sustained' (spawns ControlEffect on success) */
