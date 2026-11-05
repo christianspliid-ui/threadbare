@@ -181,6 +181,24 @@ describe('ThreadsPanel', () => {
     expect(screen.queryByText(/Thornwall/)).toBeNull();
   });
 
+  it('never lets a busy row squeeze the name below its longest word (THR-2165)', () => {
+    render(
+      <ThreadsPanel
+        threadedNodes={[makeAgent({ name: 'Kael' })]}
+        selectedNodeId={null}
+        onNodeSelect={noop}
+        onCenterOnHex={noop}
+      />
+    );
+    const name = screen.getByText('Kael');
+    expect(name.hasAttribute('data-row-name')).toBe(true);
+    // `anywhere` lowers min-content to one glyph; `minWidth: 0` lets the flex item reach it.
+    expect(name.style.overflowWrap).toBe('break-word');
+    expect(name.style.minWidth).toBe('');
+    // The marks wrap to a second line instead.
+    expect((name.parentElement as HTMLElement).style.flexWrap).toBe('wrap');
+  });
+
   it('no longer renders the encounter-pool button or the action chip (THR-664)', () => {
     render(
       <ThreadsPanel
