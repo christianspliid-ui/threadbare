@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-05 18:57 local (17:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-05 19:58 local (18:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -49,7 +49,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: three ready, all waiting out their veto windows.** The builder checked three times this hour and correctly took nothing; nothing new shipped since the town-encounter ticket at 15:51 UTC.
+**Healthy: three ready, all waiting out their veto windows.** The builder checked three times this hour and correctly took nothing, because every ticket is still on hold. Nothing new has shipped since the town-encounter ticket at 15:51 UTC.
 - **Ready at 23:45 UTC:** ["Waits for you" / "Theirs alone" on each chapter](https://linear.app/threadbare/issue/THR-2178/say-which-chapters-wait-for-the-god-a-waits-for-you-theirs-alone-word) (THR-2178).
 - **Ready at 02:45 UTC on 6 Nov:** [room for the god-rail hand](https://linear.app/threadbare/issue/THR-2177/god-rail-the-pinned-essence-block-leaves-the-hand-no-room-eight-50-px) (THR-2177), with [the one-card clip](https://linear.app/threadbare/issue/THR-2176) folded into it.
 - **Ready at 05:30 UTC on 6 Nov (new):** [a good-odds step that misses says so](https://linear.app/threadbare/issue/THR-2180/a-good-odds-step-that-misses-says-so-it-looked-fated-but-fate-rolled) (THR-2180). It must not be built at the same time as THR-2178: both change an ending's first lines.
@@ -61,5 +61,5 @@ Items for agents, not you:
 
 ## Health
 
-- All green. The live site serves the latest commit on main (90221547). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. All 10 enabled scheduled tasks are on time, and the worktree cleaner ran at 18:46 local. The engine's speed is normal (127 ms per tick, 19% under the weekly median of 157).
+- All green. The live site serves the latest commit on main (90221547). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. All 10 enabled scheduled tasks are on time, and the worktree cleaner ran at 19:40 local. The engine's speed is normal (128 ms per tick, 19% under the weekly median of 157).
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 77 commits behind main. It is the read-only mirror and catches up on its own.
