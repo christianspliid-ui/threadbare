@@ -22,7 +22,7 @@ import { Button } from '../shared/Button';
 import { formatEssence, formatEssencePool } from '../shared/formatEssence';
 import type { DigestEntry } from '../../types/attention';
 import type { ReachDomain } from '../../types/traits';
-import { queryDigest, digestEntryWon, digestOutcomeLabel, oneEntryPerAgent } from '../../engine/digestBuffer';
+import { queryDigest, digestEntryWon, digestOutcomeLabel, oneEntryPerAgent, DIGEST_ENDED_UNSEEN } from '../../engine/digestBuffer';
 import { durationLabel } from '../../engine/aftermathWords';
 import {
   READ_THREADS_COST_6,
@@ -404,6 +404,32 @@ export function untouchedLives(
   return canNameAgent ? dormant.filter(e => canNameAgent(e.agentId)) : dormant;
 }
 
+/**
+ * THR-2168 — the vague-fidelity line for one reach group. The total is the sum of
+ * the counts it names, so a chapter still unfolding (or ended out of sight) is
+ * never folded into a total that then reads as lost ("4 encounters, 0 succeeded").
+ * Pure; only non-zero counts are named, in a fixed order.
+ */
+export function vagueGroupSummary(
+  group: ReadonlyArray<Pick<DigestEntry, 'success' | 'outcomeBand' | 'unresolved' | 'ended'>>,
+): string {
+  let won = 0, lost = 0, unfolding = 0, unseen = 0;
+  for (const e of group) {
+    if (e.unresolved) unfolding++;
+    else if (e.ended) unseen++;
+    else if (digestEntryWon(e)) won++;
+    else lost++;
+  }
+  const total = won + lost + unfolding + unseen;
+  const parts = [
+    won > 0 ? `${won} succeeded` : null,
+    lost > 0 ? `${lost} failed` : null,
+    unfolding > 0 ? `${unfolding} still unfolding` : null,
+    unseen > 0 ? `${unseen} ${DIGEST_ENDED_UNSEEN.toLowerCase()}` : null,
+  ].filter((x): x is string => x !== null);
+  return `${total} encounter${total !== 1 ? 's' : ''}: ${parts.join(', ')}.`;
+}
+
 function PostReadState({ entries, fidelity, canNameAgent }: {
   entries: DigestEntry[];
   fidelity: Fidelity;
@@ -468,7 +494,7 @@ function PostReadState({ entries, fidelity, canNameAgent }: {
             {fidelity === 'vague' ? (
               // Vague: group-level summary only — no individual entries
               <div style={{ padding: 'var(--space-2) 0', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
-                {group.length} encounter{group.length !== 1 ? 's' : ''}. {group.filter(e => !e.unresolved && !e.ended && digestEntryWon(e)).length} succeeded.
+                {vagueGroupSummary(group)}
               </div>
             ) : (
               group.map((e, i) => <DigestRow key={`${reach}-${i}`} entry={e} fidelity={fidelity} />)

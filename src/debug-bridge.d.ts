@@ -953,6 +953,9 @@ export interface DebugBridge {
    * `nodeId: '$actor'` (e.g. `grant_companion`) lands on the ascendant and not
    * on the agent you named — the trace reads `bearerId asc.<identity>`. To put
    * an effect on the agent itself the template must target `$target` (THR-1412).
+   *
+   * A `hex_COL_ROW` first argument casts on that hex instead (THR-2168) — hex and
+   * location cards, whose target has no graph node.
    */
   fireAction: (agentId: string, templateId: string) => DebugFireResult;
   /** List canonical Starter 12 action IDs. */

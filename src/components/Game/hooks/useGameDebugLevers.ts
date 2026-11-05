@@ -76,6 +76,7 @@ import type { MapLensChangeSource } from '../../../types/traces/ui-traces';
 import { resolveAftermathContextForAgent } from '../../../engine/encounterAftermath';
 import { type BeatDismissalRecord, type BeatInterruptSurface, selectDefaultBeatChoice } from '../beatDismissal';
 import type { WorldRef } from '../../../types/worldRef';
+import { isHexTargetId } from '../../../engine/hexActionBridge';
 
 /** The argument a bridge's `_register*` method takes. */
 type Registered<K extends keyof DebugBridge> =
@@ -592,9 +593,17 @@ export function useGameDebugLevers(ctx: GameDebugLeverContext): void {
         // name, or the `@hero` alias. Its miss text names how many actors were
         // searched, so "no such agent" stays distinguishable from "the matcher
         // is blind" (THR-1412).
-        const resolved = resolveDebugAgent(state, agentId);
-        if (isDebugAgentMiss(resolved)) return { success: false, message: resolved.error };
-        const agentMatch = resolved.node;
+        // THR-2168: a `hex_COL_ROW` target casts on that hex (hex and location
+        // cards), which has no graph node — the receipt's hex naming is otherwise
+        // reachable only through a canvas click.
+        let agentMatch: { id: string; name?: string };
+        if (isHexTargetId(agentId)) {
+          agentMatch = { id: agentId };
+        } else {
+          const resolved = resolveDebugAgent(state, agentId);
+          if (isDebugAgentMiss(resolved)) return { success: false, message: resolved.error };
+          agentMatch = resolved.node;
+        }
 
         // Find template — exact id first, then partial match
         let template = getUnifiedTemplateById(templateId);
