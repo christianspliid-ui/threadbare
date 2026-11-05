@@ -290,8 +290,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         + 'the rye was bad.',
       successAfterimage: '{cast:magistrate} ruled that the healer was not touched and that the rye made the boy sick. '
         + 'Afterwards a mill hand told {actor} the miller knew the rye was bad and ground it anyway.',
-      successAtCostAfterimage: '{cast:magistrate} freed the healer on the ruling, but the miller swore before the whole square '
-        + 'that {actor} had lied to save a witch. A mill hand told {actor} the miller had known the rye was '
+      successAtCostAfterimage: '{cast:magistrate} freed the healer on the ruling, but the miller\'s men called {actor} the '
+        + 'witch\'s friend and spat as {actor} crossed the square. A mill hand told {actor} the miller had known the rye was '
         + 'bad.',
       failureAfterimage: 'The crowd would not hear the ruling. {cast:magistrate} would not burn the healer on {actor}\'s '
         + 'doubt, and would not free the healer either.',

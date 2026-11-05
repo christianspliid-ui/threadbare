@@ -695,8 +695,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           critical_failure: {
-            overview: 'Aldane walked out and told the market {actor} was Corrow\'s creature. The ruling goes to the '
-              + 'magistrate, and {actor}\'s name goes with it.',
+            overview: 'House Aldane left without paying the debt, and Aldane\'s clerks turn their backs when '
+              + '{actor} crosses the market. The ruling goes to the magistrate.',
             changes: [
               {
                 id: 'counting.pos.critfail.aldane',
@@ -995,8 +995,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           critical_failure: {
-            overview: 'Corrow walked out and told the market {actor} was Aldane\'s creature. The ruling goes to the '
-              + 'magistrate, and {actor}\'s name goes with it.',
+            overview: 'House Corrow left without paying the debt, and Corrow\'s clerks turn their backs when '
+              + '{actor} crosses the market. The ruling goes to the magistrate.',
             changes: [
               {
                 id: 'counting.neg.critfail.corrow',

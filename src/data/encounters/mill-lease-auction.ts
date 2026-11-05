@@ -274,7 +274,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
-      overview: 'The abbey\'s water-mill in {location} has been bid for, won or lost.',
+      overview: '{cast:cellarer} has closed the bidding for the abbey\'s water-mill in {location}.',
       changes: [],
       reactions: [],
       byOutcome: {

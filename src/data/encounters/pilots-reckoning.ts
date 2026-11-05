@@ -434,8 +434,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         byOutcome: {
           critical_success: {
             overview: 'The fault was one star, copied wrong in the house\'s tables years ago, and {actor} steered '
-              + 'around it. The goods sold before any rival\'s reached the market. {cast:factor} told every house '
-              + 'in {location} who had read the road.',
+              + 'around it. The goods sold before any rival\'s reached the market. {cast:factor} will bring the '
+              + 'house\'s next hard road to {actor} first.',
             changes: [
               {
                 id: 'reckoning.crit.route_known',

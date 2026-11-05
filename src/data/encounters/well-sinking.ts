@@ -337,7 +337,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
-      overview: 'A new well has been sunk in {location}, or lost to the rain.',
+      overview: '{actor} has climbed out of the new shaft in {location}, and {cast:reeve} has come to look down it.',
       changes: [
         {
           id: 'well.the_shaft_sunk',

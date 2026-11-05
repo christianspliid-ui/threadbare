@@ -721,8 +721,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           success_at_cost: {
-            overview: 'Brother {cast:friar} is out of the town, after a night that went worse than {actor} planned. The '
-              + 'smugglers who use the water-gate saw who got him out.',
+            overview: 'Brother {cast:friar} is out of the town, but only through the smugglers\' water-gate, and the '
+              + 'Thieves Guild that keeps that gate now calls {actor} one of its own.',
             changes: [
               {
                 id: 'friar.gate.cost.scroll',
@@ -860,8 +860,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           critical_failure: {
-            overview: 'Brother {cast:friar} is in the bishop\'s cells, and the watch has told the whole town that '
-              + '{actor} hid him.',
+            overview: 'Brother {cast:friar} is in the bishop\'s cells, and the townsfolk look away from {actor} '
+              + 'for hiding him.',
             changes: [
               {
                 id: 'friar.gate.critfail.trust',
@@ -1226,8 +1226,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           critical_failure: {
-            overview: 'Brother {cast:friar} is in the bishop\'s cells, and the watch has told the whole town that '
-              + '{actor} hid him.',
+            overview: 'Brother {cast:friar} is in the bishop\'s cells, and the townsfolk look away from {actor} '
+              + 'for hiding him.',
             changes: [
               {
                 id: 'friar.hide.critfail.trust',
@@ -1593,8 +1593,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         critical_failure: {
-          overview: 'Brother {cast:friar} is in the bishop\'s cells, and the watch has told the whole town that '
-            + '{actor} hid him.',
+          overview: 'Brother {cast:friar} is in the bishop\'s cells, and the townsfolk look away from {actor} '
+            + 'for hiding him.',
           changes: [
             {
               id: 'friar.fb.critfail.trust',

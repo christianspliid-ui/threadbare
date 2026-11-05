@@ -266,7 +266,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
-      overview: 'The boundary between the lord\'s land and the common in {location} has been surveyed, or lost.',
+      overview: '{actor} has walked the line between the lord\'s land and the common in {location}.',
       changes: [],
       reactions: [],
       byOutcome: {

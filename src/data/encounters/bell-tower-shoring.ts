@@ -340,7 +340,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
-      overview: 'The bell tower in {location} has been saved, or lost.',
+      overview: '{actor} has come down off the scaffold at the bell tower in {location}.',
       changes: [
         {
           id: 'bell.the_tower_worked',
@@ -563,7 +563,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         failure: {
-          overview: 'The lodge failed first, and now {actor} has failed after it.',
+          overview: 'The new courses gave way, and the tower in {location} still leans on its props with the bell silent.',
           changes: [
             {
               id: 'bell.lost.the_places_regard',
