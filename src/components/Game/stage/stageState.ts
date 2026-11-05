@@ -49,7 +49,12 @@ export interface StageScreenState {
    * whether the camera re-centred it in the visible map (it sat outside the middle third)
    * or left it where it was. Null until a Stage has closed.
    */
-  closeCamera: { hex: string; recentred: boolean } | null;
+  closeCamera: {
+    hex: string;
+    recentred: boolean;
+    /** THR-2166 — the camera moved after the Stage framed the place: the player panned, so it stays. */
+    playerMoved?: boolean;
+  } | null;
 }
 
 export const IDLE_STAGE: StageScreenState = {

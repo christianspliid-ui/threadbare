@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { readFileSync } from 'node:fs';
 import { dirname as dirnamePath, resolve as resolvePath } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { EncounterVeil, type EncounterVeilFrame } from '../EncounterVeil';
+import { AFTERMATH_CONTINUE_LABEL, EncounterVeil, type EncounterVeilFrame } from '../EncounterVeil';
 import { Modal, MODAL_Z_ABOVE_INTERRUPT } from '../../shared/Modal';
 import type { EncounterStageModel } from '../encounter-stage/types';
 import {
@@ -1880,7 +1880,34 @@ describe('aftermath mode', () => {
       />,
     );
     expect(screen.queryByTestId('aftermath-reaction-prompt')).not.toBeInTheDocument();
-    expect(screen.queryByText('Choose what to carry forward.')).not.toBeInTheDocument();
+    // THR-2166 — dropped from sight and from the accessibility tree, but it keeps its space.
+    const spent = screen.getByTestId('aftermath-reaction-prompt-spent');
+    expect(spent.style.visibility).toBe('hidden');
+    expect(spent.getAttribute('aria-hidden')).toBe('true');
+    expect(screen.queryByRole('status', { name: /Choose what to carry forward/ })).not.toBeInTheDocument();
+  });
+
+  it('Continue does not move when a reaction is picked: the prompt line keeps its space (THR-2166)', () => {
+    // jsdom has no layout, so the box is pinned by its causes: every node above Continue
+    // in the aftermath column stays mounted with the same box-affecting style.
+    const boxStyle = (el: HTMLElement) =>
+      [el.tagName, el.style.marginTop, el.style.marginBottom, el.style.padding, el.style.fontSize, el.style.lineHeight, el.style.display].join('|');
+    const shape = () => {
+      const cont = screen.getByRole('button', { name: AFTERMATH_CONTINUE_LABEL });
+      const nodes: string[] = [];
+      let n: Element | null = cont;
+      while (n && n !== document.body) {
+        let sib = n.previousElementSibling;
+        while (sib) { nodes.push(boxStyle(sib as HTMLElement) + '#' + sib.childElementCount); sib = sib.previousElementSibling; }
+        n = n.parentElement;
+      }
+      return nodes;
+    };
+    const { rerender } = render(<EncounterVeil {...defaultProps} model={reactionModel(twoReactions)} />);
+    const before = shape();
+    expect(screen.getByTestId('aftermath-reaction-prompt')).toBeInTheDocument();
+    rerender(<EncounterVeil {...defaultProps} model={reactionModel(twoReactions)} aftermathReactionTakenId="slice.bridge.walk_on" />);
+    expect(shape()).toEqual(before);
   });
 
   it('keeps "Continue" as the exit after a pick — the encounter is escapable (THR-1477)', () => {

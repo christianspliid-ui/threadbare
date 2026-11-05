@@ -207,7 +207,12 @@ export function SimulationControls({
                 display: 'block',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
+                // THR-2166 — a fixed width, not only a cap: sized to its text, the line
+                // moved Needs you / News sideways with every clock status, and clicks
+                // aimed at them missed (warm playtest round 3).
+                width: `${statusNarrow ? TOPBAR_TIME_STATUS_MIN_REM : TOPBAR_TIME_STATUS_MAX_REM}rem`,
                 maxWidth: `${statusNarrow ? TOPBAR_TIME_STATUS_MIN_REM : TOPBAR_TIME_STATUS_MAX_REM}rem`,
+                flexShrink: 0,
               }}
               {...(prompting ? { 'data-testid': 'first-run-caption' } : {})}
               {...(held ? { 'data-testid': 'clock-held-status' } : {})}
