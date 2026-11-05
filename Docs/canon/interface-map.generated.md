@@ -1452,10 +1452,10 @@ exit
 - **Producer → Consumer:** Factions & Succession → Mortal Economy & Prosperity
 - **UL terms:** *Realm*, *Faction*, *Means*
 - **Module:** `src/engine/crown.ts`
-- **Production hits:** 21 total — 3 write, 3 read, 15 unclassified
+- **Production hits:** 22 total — 3 write, 3 read, 16 unclassified
 - **Write sites:** `src/engine/crown.ts`, `src/engine/orchestrator.ts`, `src/engine/phaseFactionActions.ts`
 - **Read sites:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/crown/crownView.ts`, `src/engine/crown/fealtySentences.ts`
-- **Other hits:** `src/components/shared/HeldByLine.tsx`, `src/data/content-eval/compositionContract.ts`, `src/engine/crown/brokeredOath.ts`, `src/engine/crown/eligibility.ts`, `src/engine/crown/offer.ts` +10 more
+- **Other hits:** `src/components/shared/HeldByLine.tsx`, `src/data/content-eval/compositionContract.ts`, `src/engine/crown/brokeredOath.ts`, `src/engine/crown/eligibility.ts`, `src/engine/crown/loyaltyTrend.ts` +11 more
 - **Verdict:** Verified 2026-10-16: THR-1932. crown.test.ts drives the real executeSeekFealty and runCrownPhase on a graph: a realm buys a guild with 30 days of its income from its purse; a two-day siege and a town taken within five days each force a coerced oath; the tax takes the share and floors at 0; a destitute liege's vassal at Distrusted breaks with a grudge, a cooldown and a chronicle line naming the reason; a big realm vassal rebels (hostile_to both ways). scripts/measure-crown.ts on seeds 42, 99 and 7 medium over 1080 ticks: a crown forms on every seed, oath income 15–34% of the crowns' full income at day 60, one-layer held on every tick, no negative wealth.
 
 ### `crown-outline-to-political-map` — 🟢 LIVE
@@ -1784,10 +1784,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Factions & Succession
 - **UL terms:** *Realm*, *Faction*, *Encounter*
 - **Module:** `src/engine/crown/brokeredOath.ts`
-- **Production hits:** 26 total — 3 write, 2 read, 21 unclassified
+- **Production hits:** 27 total — 3 write, 2 read, 22 unclassified
 - **Write sites:** `src/engine/crown/brokeredOath.ts`, `src/engine/crown.ts`, `src/engine/encounterAftermath.ts`
 - **Read sites:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/crown/fealtySentences.ts`
-- **Other hits:** `src/components/shared/HeldByLine.tsx`, `src/data/content-eval/compositionContract.ts`, `src/data/crown-constants.ts`, `src/data/encounter-content.ts`, `src/data/encounters/warlords-tribute.ts` +16 more
+- **Other hits:** `src/components/shared/HeldByLine.tsx`, `src/data/content-eval/compositionContract.ts`, `src/data/crown-constants.ts`, `src/data/encounter-content.ts`, `src/data/encounters/warlords-tribute.ts` +17 more
 - **Verdict:** Verified 2026-10-25: THR-1944. crownBrokeredOath.test.ts drives applyEncounterAftermathReaction with $actor and $cast:warlord bound: the demand writes sworn_to warlord's company → the mortal's realm, coerced, forcedBy demand, brokeredBy the mortal, loyalty 0.35; no realm, an already-sworn company and a cooled-down pair write nothing and trace no_realm / may_not_swear / cooldown; a sworn realm hands the oath to its liege; the unification picks the best-standing present faction and never a rival. crown.test.ts passes unchanged. THR-2051 (2026-10-27): crownTributeOath.test.ts — a town a sworn temple order holds swears the actor's guild to that order's realm; a realm-held town swears to that realm; an unheld or unsworn-company town traces no_realm; a realm-only actor traces no_vassal; without liegeFrom the THR-1944 source is unchanged.
 
 ### `encounter-hex-lights-stage` — 🟢 LIVE
