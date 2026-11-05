@@ -169,6 +169,7 @@ import { bondFirstFromMeeting } from './meetingBond';
 import { closeThreadingRite, isRiteAgentMissing, type RiteClose } from '../../engine/threadingRiteQueue';
 import { firstClaimedMessage } from '../../data/threading-rite-prose';
 import { useNotifications } from './hooks/useNotifications';
+import { useActionToasts } from './hooks/useActionToasts';
 import { useInterruptAutoPause, releaseClockOnBond, clockHoldOpen, type InterruptAutoPauseHandle } from './hooks/useInterruptAutoPause';
 import { useChapterAnswerRun, type ChapterAnswerRunHandle } from './hooks/useChapterAnswerRun';
 import { resolveInterrupts, worldOpenedEncounterHeldBy, INTERRUPT_QUIET_AFTER_INPUT_MS, type ArrivalHoldReason } from './interruptRegistry';
@@ -621,7 +622,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // ── Imperative toast state (for action dispatch feedback from useAgentInteraction) ──
   // Toasts pushed here are merged with notificationState.toasts in ToastStack.
   // Must be defined before useAgentInteraction since onPushToast is passed to that hook.
-  const [actionToasts, setActionToasts] = useState<import('../../types/notification').ToastItem[]>([]);
+  // THR-2169 — they expire on their own clock now (they used to wait for the next push).
+  const { actionToasts, pushActionToast, dismissActionToast } = useActionToasts(running);
   // ── Divine Receipt (THR-727): id of a toast-tier receipt the player clicked through. ──
   // Modal-tier receipts auto-open (oldest unacknowledged); this only holds an explicitly
   // opened toast-tier receipt. Cleared on acknowledge.
@@ -631,13 +633,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // never two modals — review M4); held across an encounter that opens on top of
   // it; released on acknowledge.
   const [pendingMoment, setPendingMoment] = useState<UndertakingMomentRecord | null>(null);
-  const handlePushToast = useCallback((toast: import('../../types/notification').ToastItem) => {
-    setActionToasts(prev => {
-      const now = Date.now();
-      const live = prev.filter(t => t.expiresAt > now);
-      return [...live, toast];
-    });
-  }, []);
+  const handlePushToast = pushActionToast;
 
   // ── Agent interaction hook ──
   const {
@@ -3173,6 +3169,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     () => [...notificationState.toasts, ...actionToasts],
     [notificationState.toasts, actionToasts],
   );
+  // THR-2169 — the stack shows both channels, so its dismiss clears from both.
+  const handleDismissShownToast = useCallback((id: string) => {
+    handleDismissToast(id);
+    dismissActionToast(id);
+  }, [handleDismissToast, dismissActionToast]);
   const toastVisuals = useMemo(
     () => toastRowVisuals({ graph: gameState.graph, familiarityMap: gameState.familiarityMap, tiles: gameState.tiles }, shownToasts),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- the graph mutates in place; the toast list is the rebuild signal
@@ -3983,6 +3984,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         eyebrow: words.eyebrow,
         title: beatProseOverride?.title ?? null,
         tick: gameState.tick,
+        // THR-2169 — a press is ignored beside another blocking moment (THR-1853), so say so.
+        blocked: giftOtherInterrupts.length > 0,
       } : null,
       receipts,
       namedPause,
@@ -3991,7 +3994,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     };
   }, [pendingBeat, beatEntered, interruptsSuppressed, gameState.playerActionReceipts, gameState.tick, gameState.doomDefinition,
     notificationState.popupQueue, notificationState.alerts, interruptResolution.held, beatProseOverride, namedPause,
-    needsYouFixtureAlerts, needsYouFixtureHeld]);
+    needsYouFixtureAlerts, needsYouFixtureHeld, giftOtherInterrupts.length]);
   // THR-2099 — rows about a mortal carry their face; sources change every tick, so the memo refreshes with them.
   // eslint-disable-next-line react-hooks/exhaustive-deps -- the graph is mutated in place (never a dep)
   const needsYouVM = useMemo(() => withNeedsYouFaces(buildNeedsYou(needsYouSources), gameState.graph, gameState.familiarityMap), [needsYouSources]);
@@ -4580,7 +4583,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             <ToastStack
               toasts={shownToasts}
               toastVisuals={toastVisuals}
-              onDismiss={handleDismissToast}
+              onDismiss={handleDismissShownToast}
               onSelectAgent={handleAgentSelect}
               onNavigate={handleNotificationNavigate}
               // THR-1877 (D7): a receipt waits while a ceremony or Stage moment holds the screen.
