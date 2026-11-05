@@ -193,7 +193,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'A village asks someone who can read the sky to name the day its harvest starts, with a storm coming.',
+    initiation: 'A village asks {actor} to read the sky and name the day its harvest starts, with a storm coming.',
     success: 'The call was right, and the harvest came in before the storm.',
     failure: 'The call was wrong, and the storm took part of the harvest.',
   },

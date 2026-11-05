@@ -288,7 +288,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     initiation: 'A rival house pays for one page of a counting house\'s sealed ledger, copied by lamplight and '
       + 'put back before the dawn check.',
     success: 'The page was copied and the seal set back whole, and the factor who paid for it will send for '
-      + 'the copyist again.',
+      + '{actor} again.',
     failure: 'The house found its seal cracked at dawn, the purse went unpaid, and the town is watched now.',
   },
   aftermathConfig: {

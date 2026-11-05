@@ -519,9 +519,11 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'Someone who saw a hard star rise at the duke\'s heir\'s birth must decide whether to tell the duke.',
-    success: 'The reader\'s reading of the heir\'s hard first year was heard.',
-    failure: 'The reader\'s reading of the heir\'s stars was not believed, and the town took it for plague.',
+    initiation: '{actor} saw a hard star rise at the duke\'s heir\'s birth, and must decide whether to tell the duke.',
+    success: '{actor} read the heir\'s star as a hard first year, and either won the duke over to it or kept '
+      + 'it from the court without telling anyone.',
+    failure: '{actor} read a hard first year in the heir\'s stars, and the town took the star for plague, or '
+      + 'the cathedral\'s chart stood unchallenged.',
   },
   aftermathConfig: {
     branchOnStep: 0,

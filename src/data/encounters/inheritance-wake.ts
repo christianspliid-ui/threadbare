@@ -471,9 +471,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'A widow asks a stranger who can calm a room to keep her family whole through a wake.',
-    success: 'The stranger kept the peace at a farmer\'s wake.',
-    failure: 'The stranger could not keep the peace at a farmer\'s wake, and their name suffered for it.',
+    initiation: 'A widow asks {actor} to keep her family whole through her husband\'s wake.',
+    success: '{actor} kept the peace at a farmer\'s wake.',
+    failure: '{actor} could not keep the peace at a farmer\'s wake, and the family buried the farmer still '
+      + 'quarrelling over the land.',
   },
   aftermathConfig: {
     branchOnStep: 0,

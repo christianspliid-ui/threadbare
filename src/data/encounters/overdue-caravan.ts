@@ -384,8 +384,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'A merchant house\'s caravan is overdue on the old road, and the house\'s steward wants someone '
-      + 'who can read a road to find it.',
+    initiation: 'A merchant house\'s caravan is overdue on the old road, and the house\'s steward wants {actor} '
+      + 'to read the road and find it.',
     success: 'The caravan was found on the old road and brought out. The house has its season back.',
     failure: 'The search turned back without the caravan. The house carries the loss, and '
       + 'sells its last wagon to pay its debts.',

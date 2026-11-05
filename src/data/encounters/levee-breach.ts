@@ -362,8 +362,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'The river is up and the levee is seeping in the night. The levee warden blames the evening watch '
-      + 'and orders it onto the sandbag line.',
+    initiation: 'The river is up and the levee is seeping in the night. The levee warden blames {actor}, who stood '
+      + 'the evening watch, and orders them onto the sandbag line.',
     success: 'The far bank held until the river fell, and the fields below it were saved.',
     failure: 'The levee broke on the far bank, and the river took the fields below it.',
   },

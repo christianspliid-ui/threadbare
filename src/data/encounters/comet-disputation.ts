@@ -529,7 +529,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     initiation: 'A town\'s college of star-readers has named {actor} a false reader over a comet, and the two '
       + 'sides will argue it before the council at dawn.',
     success: 'The council took {actor}\'s side against the college over the comet.',
-    failure: 'The council took the college\'s side over the comet, and {actor}\'s name suffered for it.',
+    failure: 'The council took the college\'s side over the comet and shut the town gates on its word.',
   },
   aftermathConfig: {
     branchOnStep: 0,

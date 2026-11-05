@@ -351,8 +351,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'The cathedral in {location} has the spring feast a week wrong, and the bishop has sent for a '
-      + 'master to reckon it.',
+    initiation: 'Old priests in {location} say the tables put the spring feast a week late, and the bishop has '
+      + 'sent for {actor} to reckon the true day.',
     success: 'The reckoning was proved before the canons, and the synod hears it on synod day.',
     failure: 'The reckoning was not proved.',
   },

@@ -263,8 +263,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'The town\'s charter in {location} has been called a forgery, and the town council has sent for a '
-      + 'master to read it.',
+    initiation: 'The town\'s charter in {location} has been called a forgery, and the town council has sent for '
+      + '{actor} to read it.',
     success: 'The forger was named, and the findings go before the inquest on court day.',
     failure: 'No forger was named.',
   },
