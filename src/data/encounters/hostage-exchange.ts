@@ -40,7 +40,7 @@
  *                   carryover lines key on the band step 0 rolled, so the exchange uses what the questions found.
  *   Consequence hand (binding): relationship + companion, no swap.
  *                   relationship - bond_change with $cast:heir on both sides of step 1, and on step 0 failure
- *                   (the questions reached the captain and the held heir stopped trusting the go-between).
+ *                   (the questions reached the captain and the held heir stopped answering).
  *                   companion - grant_companion companion.sellsword-band to $actor on step 1 success: the
  *                   captain's sergeant and the men who would not back the ransom hire on with {actor}.
  *                   The band is a CONTRACT (durationTicks 10, MERCENARY_COMPANION_DURATION_TICKS): the
@@ -237,7 +237,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           forecastDelta: -0.03,
         },
         failure: {
-          text: 'The held heir no longer trusts the go-between.',
+          text: 'The held heir has stopped answering questions.',
           polarity: 'against',
           forecastDelta: -0.05,
         },

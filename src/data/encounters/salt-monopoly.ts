@@ -565,8 +565,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         success_at_cost: {
-          overview: 'The licence is the town\'s, but part of the price is still owed to the chancery, and someone '
-            + 'must stand for it.',
+          overview: 'The licence is the town\'s, but {actor} lost the next lease to {cast:merchant} at the '
+            + 'chancery.',
           changes: [
             {
               id: 'salt.sac.seal_case',

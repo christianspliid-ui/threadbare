@@ -191,9 +191,9 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       successAfterimage: 'The physicians waited for dawn, and the bishop was bled at the hour the figure gave. The fever '
         + 'broke by evening. At the bedside {actor} saw a hard swelling under the bishop\'s ribs, and kept quiet '
         + 'about it.',
-      successAtCostAfterimage: 'The physicians waited for dawn, but {cast:physician} told the college that {actor} had overruled '
-        + 'a physician at a sickbed. At the bedside {actor} saw a hard swelling under the bishop\'s ribs, '
-        + 'and kept quiet about it.',
+      successAtCostAfterimage: 'The physicians waited for dawn. At the bedside {actor} saw a hard swelling under the '
+        + 'bishop\'s ribs, and kept quiet about it. {cast:physician} has since asked the college to keep {actor} '
+        + 'out of the sickroom.',
       failureAfterimage: '{cast:physician} bled the bishop at once, against the figure. The bishop is weaker, and the '
         + 'college says {actor} only delayed them.',
       criticalFailureAfterimage: '{cast:physician} found a wrong sum in {actor}\'s figure and read it out at the bedside. The '

@@ -838,8 +838,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         critical_failure: {
-          overview: 'The miners are alive, and another crew is coming up the valley for them. {cast:reeve} tells '
-            + '{location} that {actor} read the rock wrong.',
+          overview: 'The miners are alive, but the fall crushed {cast:miner}\'s leg. Another crew is coming up the '
+            + 'valley to finish the dig, and {cast:reeve} wants {actor} gone before it arrives.',
           changes: [
             {
               id: 'drift.critfail.miner_wounded',

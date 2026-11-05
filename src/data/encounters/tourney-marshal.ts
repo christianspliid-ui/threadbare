@@ -768,8 +768,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         critical_failure: {
-          overview: '{cast:heir} was carried off the field more dead than alive. The young noble\'s house told the '
-            + 'whole town that {actor} could not keep the lists.',
+          overview: '{cast:heir} was carried off the field more dead than alive, trampled in the lists {actor} was '
+            + 'there to keep.',
           changes: [
             {
               id: 'tourney.cf.regard',

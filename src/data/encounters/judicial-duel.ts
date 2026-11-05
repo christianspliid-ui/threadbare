@@ -730,8 +730,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         critical_failure: {
-          overview: 'The court gives the farm to the order. {cast:claimant} tells the whole square that the family '
-            + 'trusted {actor}, and {actor} failed them.',
+          overview: 'The court gives the farm to the order, and {cast:claimant}\'s family must load the cart and be '
+            + 'off the land by the week\'s end.',
           changes: [
             {
               id: 'duel.critfail.regard',

@@ -244,7 +244,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
-      overview: 'The fair has moved on from the square. The widow\'s house has its answer, right or wrong.',
+      overview: 'The fair has moved on from the square, and the widow\'s family keeps the reading they were given.',
       changes: [
         {
           id: 'cunning.a_dream_read',
@@ -263,8 +263,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       reactions: [],
       byOutcome: {
         critical_success: {
-          overview: 'Someone climbed the widow\'s chimney in front of the whole fair and brought down his savings in '
-            + 'a cloth bag. {cast:rival} packed away the charms and left early.',
+          overview: 'On {actor}\'s word, a boy from the fair climbed the widow\'s chimney and brought down the dead '
+            + 'man\'s savings in a cloth bag. {cast:rival} packed away the charms and left early.',
           changes: [
             {
               id: 'cunning.crit.town_trust',

@@ -214,7 +214,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           forecastDelta: 0.04,
         },
         success_at_cost: {
-          text: 'The crowd jeers whoever speaks for the youth.',
+          text: 'The crowd jeers at every word said for the youth.',
           polarity: 'against',
           forecastDelta: -0.02,
         },
@@ -224,7 +224,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           forecastDelta: -0.03,
         },
         failure: {
-          text: 'The crowd shouted the last speaker down.',
+          text: 'The crowd shouted down the plea for the youth.',
           polarity: 'against',
           forecastDelta: -0.05,
         },
@@ -402,7 +402,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       ],
       byOutcome: {
         critical_success: {
-          overview: 'The youth lives, and the whole town knows who spoke for him at the gallows.',
+          overview: 'The youth lives because {actor} spoke for him at the gallows, and {cast:mother} has him home tonight.',
           changes: [
             {
               id: 'gallows.crit.town_thanks',
