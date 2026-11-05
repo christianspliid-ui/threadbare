@@ -668,8 +668,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         failure: {
-          overview: 'The mill stands idle between the two houses for another season. {location} sent for {actor} '
-            + 'because other peacemakers had already failed.',
+          overview: 'The mill stands idle between the two houses for another season, and both houses buy their flour '
+            + 'from the next valley.',
           changes: [
             {
               id: 'feud.fail.the_towns_regard',

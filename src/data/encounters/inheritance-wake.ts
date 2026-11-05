@@ -777,8 +777,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           failure: {
-            overview: '{cast:eldest} still claims the whole farm by custom, and the family is split over it. {actor} '
-              + 'was asked because they can calm a room, and this room did not calm.',
+            overview: '{cast:eldest} still claims the whole farm by custom, and the family is split over it. The '
+              + 'youngest will take the claim to the manor court, and the court\'s fee will cost the family a field.',
             changes: [
               {
                 id: 'wake.sworn.fail.village',
@@ -826,7 +826,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           },
           critical_failure: {
             overview: 'The wake ended in a quarrel no one could stop, and the family stood apart at the burial. The '
-              + 'whole village has heard that {actor} was asked to keep the peace, and did not.',
+              + 'eldest and the youngest will not plough side by side this spring, and half the farm may lie fallow.',
             changes: [
               {
                 id: 'wake.sworn.critfail.village',
@@ -1205,7 +1205,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           },
           critical_failure: {
             overview: 'The wake ended in a quarrel no one could stop, and the family stood apart at the burial. The '
-              + 'whole village has heard that {actor} was asked to keep the peace, and did not.',
+              + 'eldest and the youngest will not plough side by side this spring, and half the farm may lie fallow.',
             changes: [
               {
                 id: 'wake.renegade.critfail.village',
@@ -1532,8 +1532,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         failure: {
-          overview: '{cast:eldest} still claims the whole farm by custom, and the family is split over it. {actor} '
-            + 'was asked because they can calm a room, and this room did not calm.',
+          overview: '{cast:eldest} still claims the whole farm by custom, and the family is split over it. The '
+            + 'youngest will take the claim to the manor court, and the court\'s fee will cost the family a field.',
           changes: [
             {
               id: 'wake.fallback.fail.village',
@@ -1581,7 +1581,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         },
         critical_failure: {
           overview: 'The wake ended in a quarrel no one could stop, and the family stood apart at the burial. The '
-            + 'whole village has heard that {actor} was asked to keep the peace, and did not.',
+            + 'eldest and the youngest will not plough side by side this spring, and half the farm may lie fallow.',
           changes: [
             {
               id: 'wake.fallback.critfail.village',

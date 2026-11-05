@@ -98,7 +98,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         + 'The watch has shut the gates and is searching the town house by house. The friar is hiding in '
         + 'the stable behind {actor}\'s lodgings.\n\n'
         + 'Brother {cast:friar} asks {actor} to get him out before the morning bells. Anyone caught hiding '
-        + 'him will lose the town\'s trust. First {actor} must find a way out.',
+        + 'him shares his cell. First {actor} must find a way out.',
       criticalSuccessAfterimage: '{actor} found the water-gate under the mill, and learned the hour of every round and the order '
         + 'of the search.',
       successAfterimage: '{actor} found the water-gate under the mill, and learned which streets the watch will search '
@@ -802,7 +802,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           failure: {
-            overview: 'Brother {cast:friar} is in the bishop\'s cells, and the watch knows whose stable he hid in.',
+            overview: 'Brother {cast:friar} is in the bishop\'s cells, and he will be tried at the next assize.',
             changes: [
               {
                 id: 'friar.gate.fail.trust',
@@ -1168,7 +1168,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           failure: {
-            overview: 'Brother {cast:friar} is in the bishop\'s cells, and the street knows who hid him.',
+            overview: 'Brother {cast:friar} is in the bishop\'s cells, and his trial is set for the bishop\'s next court.',
             changes: [
               {
                 id: 'friar.hide.fail.trust',
@@ -1535,7 +1535,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         failure: {
-          overview: 'Brother {cast:friar} is in the bishop\'s cells, and the street knows who hid him.',
+          overview: 'Brother {cast:friar} is in the bishop\'s cells, and his trial is set for the bishop\'s next court.',
           changes: [
             {
               id: 'friar.fb.fail.trust',

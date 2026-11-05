@@ -672,7 +672,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         },
         failure: {
           overview: 'The heralds closed the lists, and the order rode out of {location} calling the bout won. The '
-            + 'town made {actor} marshal to stop exactly this.',
+            + 'town has lost the tourney purse to the order.',
           changes: [
             {
               id: 'tourney.f.wounded',

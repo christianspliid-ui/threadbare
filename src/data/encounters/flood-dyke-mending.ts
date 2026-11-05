@@ -262,7 +262,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       failBehavior: 'fail_action',
       narrativeTemplate: 'The crest will come down the river tonight. {actor} must set a new roof on the culvert and close '
         + 'the dyke over it before the water arrives. {cast:ganger} tells the reeve the sacks will hold '
-        + 'without it. By morning, the village will know whose work held.',
+        + 'without it. If the culvert gives way, the water takes the lower fields and the winter wheat.',
       criticalSuccessAfterimage: 'The new culvert roof was set and covered by dusk, and the crest passed without a seep.',
       successAfterimage: 'The dyke was closed over the new culvert before the crest, and it held through the night.',
       successAtCostAfterimage: 'The dyke held, but the crest washed out {cast:ganger}\'s sacks and flooded the nearest strip of '
@@ -671,7 +671,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         critical_failure: {
-          overview: 'The reeve sent for help to save the dyke, and now blames {actor} for breaking it, in front of '
+          overview: 'The dyke broke where {actor} was working on it, and the reeve says so in front of '
             + 'everyone in {location}.',
           changes: [
             {

@@ -641,7 +641,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       },
     },
   },
-  description: 'At a guild feast in the abbey refectory, the guild-master drank from a guest\'s cup and fell. '
+  description: 'At a guild feast in the abbey refectory, the guild-master drank from a cup that was not his own and fell. '
     + 'The coroner wants the poisoner named by dawn, and the guest whose cup it was is the likeliest '
     + 'suspect.',
   locationSubtypes: expandSettings(['urban']),

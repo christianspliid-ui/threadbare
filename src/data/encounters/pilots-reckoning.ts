@@ -423,7 +423,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     initiation: 'A merchant house\'s night runs keep coming in two days late, and its own pilot will not lead the '
       + 'next one. The factor wants the star tables checked before dusk.',
     success: 'The house\'s star tables were read, and the house has its answer before dusk.',
-    failure: 'The house lost days and money on the night road, and the factor knows who read the tables.',
+    failure: 'The house lost days and money on the night road, and {cast:factor} must sell a wagon to cover it.',
   },
   aftermathConfig: {
     branchOnStep: 0,
@@ -783,10 +783,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           overview: 'The house has its reading, and the factor has the tables back before dusk.',
         },
         failure: {
-          overview: 'The house lost days and money on the night road, and the factor knows who read the tables.',
+          overview: 'The house lost days and money on the night road, and {cast:factor} must sell a wagon to cover it.',
         },
         critical_failure: {
-          overview: 'The house\'s run went badly wrong, and the factor said in the yard who had read the tables.',
+          overview: 'The house\'s run went badly wrong, and {cast:factor} will not trust a star table again.',
         },
       },
     },

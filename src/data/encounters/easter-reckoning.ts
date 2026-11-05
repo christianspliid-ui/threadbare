@@ -566,7 +566,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         failure: {
-          overview: 'The cathedral will proclaim the feast a week late, though the bishop sent for {actor} to stop it, and '
+          overview: 'The cathedral will proclaim the feast a week late, so {location} keeps a week of fasting it did not owe, and '
             + 'the old priests say a year begun on a false feast goes badly.',
           changes: [
             {

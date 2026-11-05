@@ -157,7 +157,7 @@ export const CHARTER_INQUEST_DEFAULTED: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
-      overview: "Nobody read the findings on court day, and the count's copy of the charter stands.",
+      overview: "The findings were never read, and the count's copy of the charter stands.",
       changes: [],
     },
   },

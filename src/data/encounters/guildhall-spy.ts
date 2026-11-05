@@ -472,8 +472,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         failure: {
-          overview: 'The vote to close the gates failed by the spy\'s own vote. {location} asked {actor} for a name '
-            + 'and never got one.',
+          overview: 'The vote to close the gates failed by the spy\'s own vote, and {location} '
+            + 'still has a spy on its council.',
           changes: [
             {
               id: 'spy.fail.distrusted',
@@ -500,7 +500,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         },
         critical_failure: {
           overview: 'The council spent the sitting on the wrong name, and the gates stay open to the rival city. '
-            + '{location} asked {actor} for the spy and was handed an honest councillor instead.',
+            + 'An honest councillor has been put off the council, and the spy still sits in the chamber.',
           changes: [
             {
               id: 'spy.critfail.named_wrongly',

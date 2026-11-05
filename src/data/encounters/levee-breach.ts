@@ -162,8 +162,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       failBehavior: 'continue_weakened',
       narrativeTemplate: 'Water is spreading across the lowest fields, and it is not coming from the mill bank. It is '
         + 'coming through somewhere on the far bank. {actor} leaves the sandbag line to walk it in the '
-        + 'dark. {cast:warden} shouts that anyone who leaves the line will answer for it, and that the town '
-        + 'will hear who ran.',
+        + 'dark. {cast:warden} shouts that anyone who leaves the line will answer for it, and that the line '
+        + 'is thin enough already.',
       successAfterimage: 'They found where the far bank is washing out from beneath, above the fields.',
       failureAfterimage: 'They walked the far bank twice and found nothing before the water found it.',
       successAtCostAfterimage: 'They found the washout, and slid into the ditch below it and lost the lantern.',
