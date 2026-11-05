@@ -2417,10 +2417,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Factions & Succession
 - **UL terms:** *Settlement*, *Freehold*, *Faction*
 - **Module:** `src/engine/undertakingEconomy.ts`
-- **Production hits:** 318 total — 2 write, 3 read, 313 unclassified
+- **Production hits:** 319 total — 2 write, 3 read, 314 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/undertakingEconomy.ts`
 - **Read sites:** `src/engine/factionPurse/income.ts`, `src/engine/holdingIncome.ts`, `src/engine/views/subjects/placeRows.ts`
-- **Other hits:** `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/BeatsDebugTab.tsx`, `src/components/Game/debug/debugPanelStyles.ts` +308 more
+- **Other hits:** `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/BeatsDebugTab.tsx`, `src/components/Game/debug/debugPanelStyles.ts` +309 more
 - **Verdict:** Verified 2026-10-21: THR-1937. src/engine/__tests__/undertakingEconomy.test.ts: the founded hamlet never shares a hex with its site and nothing is founded when the neighbourhood is full; the higher-rank town-holding faction rules, a tie goes to the realm then the lower id, a lone founder rules; the ruler's controls and the founder's owns are written and computePurseIncome lists the town under the ruler's taxHolderOf; the place row reads Founded by with the founder linked.
 
 ### `founding-patron-pays-from-faction-purse` — 🟢 LIVE
@@ -3345,10 +3345,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 476 total — 1 write, 1 read, 474 unclassified
+- **Production hits:** 477 total — 1 write, 1 read, 475 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +469 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +470 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `recovered-town-keeps-faith` — 🟢 LIVE
@@ -3516,10 +3516,10 @@ exit
 - **Intent:** A held town at RISING_THRESHOLD 90 throws off its holder (THR-1957 S2). The holder's members who live there split off through the shared splinter writes (factionSplinter.ts, the new resident_of member selector); with none, the highest-ranked resident founds a free town through foundFaction. Either way the new faction takes the town's controls (via rising, takenFrom) and hostile_to is written both ways (reason rising), which war aims' enemy rule reads. No resident: no rising.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Settlement*, *Unrest*, *Faction*
-- **Production hits:** 271 total — 2 write, 2 read, 267 unclassified
+- **Production hits:** 272 total — 2 write, 2 read, 268 unclassified
 - **Write sites:** `src/engine/factionSplinter.ts`, `src/engine/unrestPressure/rising.ts`
 - **Read sites:** `src/engine/crown.ts`, `src/engine/warAims/enemy.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +262 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +263 more
 - **Verdict:** Verified 2026-10-20: THR-1957. unrestPressureS2.test.ts: resident members split off, take the town and are hostile to the old holder (isEnemyFaction true); with no member resident a resident founds "The Free Town of Ferris", which takes the town; no resident leaves the holder in place; the phase writes the A Town Rises chronicle line.
 
 ### `rite-applies-outcomes` — 🔵 UNVERIFIED-OK
@@ -3778,10 +3778,10 @@ exit
 - **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 427 total — 1 write, 1 read, 425 unclassified
+- **Production hits:** 428 total — 1 write, 1 read, 426 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +420 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +421 more
 - **Verdict:** Verified 2026-09-10: THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.
 
 ### `settlement-economy-drives-tier` — 🟢 LIVE
@@ -4144,10 +4144,10 @@ exit
 - **Intent:** A held town On the edge turns to a better lord (THR-1957 S2). Once a day the unrest phase weighs every faction that holds a settlement within DEFECTION_RADIUS_HEXES 8 (protection from the crown's offer term over this town, standing, fed, solvent); when the best beats the holder by DEFECTION_MARGIN 0.4 the holder's controls edges are retargeted to it with via defection and takenFrom, the old holder's relates_to toward it drops past the enemy line (DEFECTION_GRUDGE_SENTIMENT −0.35, defectionTick) and it adopts a revenge ambition whose grievanceSourceId / targetNodeId name the lord and the town. The crown's holding_lost reads takenFrom; war aims' isEnemyFaction reads the grudge.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Settlement*, *Unrest*, *Faction*, *Ambition*
-- **Production hits:** 263 total — 2 write, 2 read, 259 unclassified
+- **Production hits:** 264 total — 2 write, 2 read, 260 unclassified
 - **Write sites:** `src/engine/factionAmbitions.ts`, `src/engine/unrestPressure/defection.ts`
 - **Read sites:** `src/engine/crown.ts`, `src/engine/warAims/enemy.ts`
-- **Other hits:** `src/components/CMS/types.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +254 more
+- **Other hits:** `src/components/CMS/types.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +255 more
 - **Verdict:** Verified 2026-10-20: THR-1957. src/engine/__tests__/unrestPressureS2.test.ts: a fed, solvent neighbour with a hall in the town beats a broke holder and the town defects on the next daily pass — controls moves (via defection, takenFrom), the grudge reads as enemies under isEnemyFaction, and the holder pursues revenge naming the town; a holder that feeds and pays keeps it; the cooldown holds.
 
 ### `trace-ring-to-incident-bundle` — 🟢 LIVE
