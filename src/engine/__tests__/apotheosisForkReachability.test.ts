@@ -178,12 +178,15 @@ describe('each pole reaches its OWN authored ending, never the fallback', () => 
   it('the Martyr ending is the vessel opening', () => {
     const { ending } = draw(0.9);
     expect(ending.overview).not.toBe(FALLBACK_OVERVIEW);
-    expect(ending.overview).toContain('is an aspect of the god now');
+    // THR-2134: the overview tells the morning after; the chip names the aspect.
+    expect(ending.overview).toContain('some began to pray');
+    expect(ending.changes.some(c => c.title === 'An Aspect Walks')).toBe(true);
   });
 
   it('the Survivor ending is the doorway closing', () => {
     const { ending } = draw(-0.9);
-    expect(ending.overview).toContain('The bond to the god held');
+    expect(ending.overview).toContain('went about {their} usual work');
+    expect(ending.changes.some(c => c.title === 'The Doorway Closed')).toBe(true);
   });
 
   it('a band override reaches the player, layered on the decided pole', () => {
@@ -195,7 +198,7 @@ describe('each pole reaches its OWN authored ending, never the fallback', () => 
     const unmade = resolveAftermathVariant(
       TEMPLATE.aftermathConfig!, applied.action.choiceHistory, 'failure',
     );
-    expect(unmade.overview).toContain('The body did not hold');
+    expect(unmade.overview).toContain('The god pulled back before the pouring could kill');
     expect(unmade.changes.some(c => c.title === 'Unmade')).toBe(true);
   });
 });

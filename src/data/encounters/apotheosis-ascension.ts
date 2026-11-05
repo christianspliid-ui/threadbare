@@ -342,7 +342,7 @@ const step1Ascend: ActionStep = {
   failureAfterimage: '{actor}\'s body could not hold the god, and the god withdrew before it killed {them}.',
   successAtCostAfterimage: 'The body held, but it left a tremor in {actor}\'s left hand that will not go away.',
   criticalSuccessAfterimage: '{actor} took in all the god could give, and {their} body held without strain.',
-  criticalFailureAfterimage: '{actor}\'s body and mind gave way under the pouring. The god pulled back, too late to spare {them}.',
+  criticalFailureAfterimage: '{actor}\'s body and mind broke under the pouring. The god pulled back, too late to spare {them}.',
 };
 
 /**
@@ -480,7 +480,7 @@ const ASCEND_AFTERMATH = {
     },
     critical_failure: {
       overview:
-        'Part of the god was already inside {actor} when {their} body gave way. The god pulled back, and ' +
+        'Part of the god was already inside {actor} when {their} body broke. The god pulled back, and ' +
         'pulling back did more harm.',
       changes: [
         {
@@ -652,10 +652,10 @@ export const APOTHEOSIS_ASCENSION_TEMPLATE: UnifiedActionTemplate = compileOpeni
     id: APOTHEOSIS_ENCOUNTER_TEMPLATE_ID,
     stakes: {
       goal: 'answer while the doorway is held open',
-      risk: 'break in body and mind under the god',
-      won: 'said yes and became an aspect of the god',
-      lost: 'said yes, but the body could not hold the god',
-      lostBadly: 'broke in body and mind under the god',
+      risk: 'break in body and mind under the pouring',
+      won: 'said yes and became a living aspect',
+      lost: 'said yes, but the body could not hold what was poured in',
+      lostBadly: 'broke in body and mind under the pouring',
       arms: {
         negative: {
           won: 'chose to stay mortal and woke whole',

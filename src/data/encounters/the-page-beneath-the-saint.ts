@@ -31,7 +31,7 @@
  * at every branch, human consequences over mechanical labels.
  */
 
-import type { UnifiedActionTemplate, ActionStep, ActionStepBranch, AftermathVariant, EncounterAftermathChange } from '../../types/unifiedAction';
+import type { UnifiedActionTemplate, ActionStep, ActionStepBranch, AftermathVariant } from '../../types/unifiedAction';
 import { withEncounterContract } from '../encounter-contract-builder';
 import { DEAL_DEFAULT_COUNT } from '../nudge-constants';
 
@@ -159,7 +159,7 @@ const TRUTH_BURIED_AFTERMATH = {
       id: 'page_archivist_haunted',
       kind: 'reputation' as const,
       title: 'The Keeper of the Secret',
-      detail: 'Only {actor} knows the saint was invented, and must keep quiet.',
+      detail: '{actor} knows the saint was invented, and must keep quiet about it.',
       polarity: 'mixed' as const,
     },
     {
@@ -313,21 +313,9 @@ const TRUTH_SURFACED_AFTERMATH = {
 // losing band each path owes (THR-1509 per-path coverage). A band ending retells
 // how the existing change landed; it never adds a chip (UI Law 56).
 
-/**
- * The subset of a variant's own chips, by id — never a new chip. A local copy of
- * the Comet file's helper (THR-2134 decision 13).
- */
-function keepChanges(
-  variant: { readonly changes: readonly EncounterAftermathChange[] },
-  ids: readonly string[],
-): readonly EncounterAftermathChange[] {
-  return variant.changes.filter((change) => ids.includes(change.id));
-}
-
 // The burial still holds on a critical failure, but a junior reader saw the
-// open page, so the archivist is no longer the only one who knows. The keeper
-// chip says "only {actor} knows" and is now false, so the band drops it
-// (THR-2134 decision 13; UI Law 56).
+// open page. All three base chips stay true (the keeper chip says {actor}
+// knows, not that only {actor} knows), so the band retells the overview alone.
 const TRUTH_BURIED_ENDINGS: AftermathVariant = {
   ...TRUTH_BURIED_AFTERMATH,
   byOutcome: {
@@ -335,7 +323,6 @@ const TRUTH_BURIED_ENDINGS: AftermathVariant = {
       overview:
         'A junior reader found {actor} weeping over the open chronicle. {actor} told a clumsy lie about it ' +
         'and sealed the page in the wall anyway. The junior reader made no promise to keep quiet.',
-      changes: keepChanges(TRUTH_BURIED_AFTERMATH, ['page_faith_preserved', 'page_buried_timebomb']),
     },
   },
 };

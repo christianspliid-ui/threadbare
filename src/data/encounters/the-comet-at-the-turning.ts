@@ -91,7 +91,7 @@ const step1ProclaimTheTurning: ActionStep = {
     'and two neighbouring lords began to arm.',
   // THR-1667 S3: the missing at-cost line and a dealt hand.
   successAtCostAfterimage:
-    '{actor} proclaimed the end of the old age, but shouted {themselves} hoarse and could not speak for a week.',
+    '{actor} proclaimed the end of the old age, but shouted until {their} voice failed, and could not speak for a week.',
   deal: { count: DEAL_DEFAULT_COUNT, tags: ['presence', 'lore'] },
   successMetadata: { reputationDelta: 0.18 },
   failureMetadata: { reputationDelta: -0.12 },
@@ -255,7 +255,7 @@ const ANCHORED_AFTERMATH = {
       id: 'anchored_react_deepen_the_anchor',
       label: 'Make the old ways a covenant.',
       intent:
-        'Bless the customs and rulers that held, so the comet is remembered as a sign that the age will last.',
+        'Bless the customs and rulers that held, so the comet is remembered as the omen of a lasting age.',
       effects: [
         {
           kind: 'reputation_tally' as const,
