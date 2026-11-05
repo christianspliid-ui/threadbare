@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-05 14:57 local (13:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-05 16:00 local (15:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,20 +20,19 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
+From the design lane's [14:18 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-05d.md). Nobody builds on these before 02:45 UTC on 6 November.
+
+- [The god-rail hand has no room](https://linear.app/threadbare/issue/THR-2177/god-rail-the-pinned-essence-block-leaves-the-hand-no-room-eight-50-px) — each card in the left-hand rail becomes one line, its name on the left and its price on the right, like a deck list. The words stay the same. At 1920×1080 that shows six cards where today it shows two and a half.
+- Same ticket — every essence pool keeps everything you chose for it ("53 / 55", the bar that ends at the limit, the refill dots, the trend arrow). Each row just gets a little shorter. No pool is hidden or shrunk to an icon.
+- Same ticket — the hand always keeps room for three cards. Opening Reaches, Mandate, Signatures or Hooks no longer pushes the hand off the screen; that row's contents scroll inside their own box instead.
+- Same ticket — [the hand clips its only card](https://linear.app/threadbare/issue/THR-2176) has the same cause, so it gets built and closed with this one, not separately.
+
 From the design lane's [11:18 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-05c.md). Nobody builds on these before 23:45 UTC on 5 November.
 
 - [The player can't tell which chapters wait for their cards](https://linear.app/threadbare/issue/THR-2174/the-player-cant-tell-which-chapters-wait-for-their-cards-the-gallows) — your mortal still lives most chapters on their own, and the game now says so. A chapter shows **"Waits for you"** or **"Theirs alone"** after its title, in the Ledger and on the Stage. Build ticket: [THR-2178](https://linear.app/threadbare/issue/THR-2178/say-which-chapters-wait-for-the-god-a-waits-for-you-theirs-alone-word).
 - Same ticket — a chapter your mortal played out alone opens its ending with one line, *"This chapter was Kael's alone. Nothing in it waited on your hand."* That line never shows on a chapter where you could have played a card.
 - Same ticket — the two words show only for a mortal set to "Asks you". A mortal set to "Lives on" already tells you nothing waits.
 - Same ticket — giving more chapters a hand is a separate plan, and it starts with a measurement. Today 391 of the game's 541 story chapters offer no move at any step. The plan first counts which ones a bonded mortal actually meets. If the answer is "every chapter should ask you", that goes to you, not to me.
-
-From the design lane's [02:18 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-05a.md). Nobody builds these before 14:25 UTC on 5 November.
-
-- [Encounter Factory habits, slice c](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write) — the town-encounter fixes the second critic still found go to two tickets, not seven: [the one-line records](https://linear.app/threadbare/issue/THR-2162/town-encounters-the-one-line-records-each-summary-line-names-the) and [the overviews and follow-up lines](https://linear.app/threadbare/issue/THR-2163/town-encounters-the-overviews-and-carryover-lines-name-the-mortal-say).
-- Same ticket — the one-line chronicle records name the mortal too, the same rule as the scenes. "The stranger's reading failed" becomes the mortal's name.
-- Same ticket — "and their name suffered for it" (three towns) and "ended badly for…" get scene-specific words. A record that already names its loss stays as it is.
-- Same ticket — the new tickets finish when their listed lines are fixed. A fresh critic reads only the rewritten lines; anything new it finds is posted, not chased. No third round.
-- Same ticket — Easter Reckoning's blurb stops stating as fact what the first step exists to find. The Pawnbroker's "He" becomes the cooper, because two men are on stage.
 
 From the design lane's [05:18 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-05b.md). Nothing gets built on these: the ticket is parked until your writing-checks conversation.
 
@@ -50,10 +49,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Thin: three ready, all held in veto windows; nothing being built.** The builder is idle on purpose. That is expected, not a stall: its last six runs (11:51–13:52 UTC) each found nothing it was allowed to start. The first two tickets open at 14:25 UTC, so the next run after that should start one.
-- **Shipped earlier today:** [five small faults from the returning-player playtest](https://github.com/christianspliid-ui/threadbare/pull/2755) ([THR-2170](https://linear.app/threadbare/issue/THR-2170/five-small-faults-from-warm-round-3-one-scholar-cast-twice-shiaru)), merged 11:13 UTC and live. That was the last of [the playtest's](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/warm-playtest-round-3.md) screen bugs.
-- **Ready at 14:25 UTC:** the two town-encounter tickets ([THR-2162](https://linear.app/threadbare/issue/THR-2162/town-encounters-the-one-line-records-each-summary-line-names-the), [THR-2163](https://linear.app/threadbare/issue/THR-2163/town-encounters-the-overviews-and-carryover-lines-name-the-mortal-say)).
-- **Ready at 23:45 UTC:** ["Waits for you" / "Theirs alone" on each chapter](https://linear.app/threadbare/issue/THR-2178/say-which-chapters-wait-for-the-god-a-waits-for-you-theirs-alone-word) (THR-2178), from the design lane.
+**Healthy and building: three ready, one being built.** The veto windows opened at 14:25 UTC and the builder started straight away.
+- **Built, merging on green:** [the town encounters' one-line records](https://linear.app/threadbare/issue/THR-2162/town-encounters-the-one-line-records-each-summary-line-names-the) now name the mortal and say what each scene changed (18 encounters), in [PR #2757](https://github.com/christianspliid-ui/threadbare/pull/2757).
+- **Ready now:** [the town encounters' overviews and follow-up lines](https://linear.app/threadbare/issue/THR-2163/town-encounters-the-overviews-and-carryover-lines-name-the-mortal-say) (THR-2163). A builder run started at 14:53 UTC and is still working.
+- **Ready at 23:45 UTC:** ["Waits for you" / "Theirs alone" on each chapter](https://linear.app/threadbare/issue/THR-2178/say-which-chapters-wait-for-the-god-a-waits-for-you-theirs-alone-word) (THR-2178).
+- **Ready at 02:45 UTC on 6 Nov:** [room for the god-rail hand](https://linear.app/threadbare/issue/THR-2177/god-rail-the-pinned-essence-block-leaves-the-hand-no-room-eight-50-px) (THR-2177), new from the design lane this hour, with [the one-card clip](https://linear.app/threadbare/issue/THR-2176) folded into it.
 - The playtest's three bigger problems are with the design lane, not you: [rival gods you can see but not answer](https://linear.app/threadbare/issue/THR-2172), [a "Fated" roll that failed with no reason given](https://linear.app/threadbare/issue/THR-2171), and [no recap when you come back](https://linear.app/threadbare/issue/THR-2173).
 
 Items for agents, not you:
@@ -62,5 +62,5 @@ Items for agents, not you:
 
 ## Health
 
-- All green. The live site serves the latest commit on main (a57d0a18). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting. All 10 enabled scheduled tasks are on time, the worktree cleaner ran this hour, and the engine's speed is normal (168 ms per tick, 7% over the weekly median).
-- The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 61 commits behind main. It is the read-only mirror and catches up on its own.
+- All green. The live site is up to date (a57d0a18; later commits touched only notes and docs). Checks on main and the 3 scheduled background jobs pass. One pull request is waiting on its checks and will merge on green. All 10 enabled scheduled tasks are on time, and the worktree cleaner ran this hour. The engine's speed is normal (190 ms per tick, 20% over the weekly median of 158; the alarm is at 25%).
+- The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 64 commits behind main. It is the read-only mirror and catches up on its own.
