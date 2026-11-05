@@ -101,10 +101,10 @@ export const WELL_FIRST_WATER: UnifiedActionTemplate = {
 export const WELL_GONE_FOUL: UnifiedActionTemplate = {
   id: WELL_GONE_FOUL_ID,
   stakes: {
-    goal: 'get the reeve to pay for the well though it went foul',
-    risk: 'go unpaid for the well, and have the reeve warn the next village',
-    won: 'got the reeve to pay part of the fee though the well went foul',
-    lost: 'went unpaid for the well, and the reeve warned the next village',
+    goal: 'get paid for the well though it went foul',
+    risk: 'go unpaid, and have the reeve warn the next village',
+    won: 'got part of the fee though the well went foul',
+    lost: 'went unpaid, and the reeve warned the next village',
   },
   // Seed-only: the well sinking's appointment (missed branch) is its only planter (THR-1526).
   drawable: false,

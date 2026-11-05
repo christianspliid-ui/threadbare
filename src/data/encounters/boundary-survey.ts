@@ -474,7 +474,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         },
         failure: {
           overview: 'The lord keeps the grazing that the moved stones took from the common. The village cows must '
-            + 'graze the stubble, and the common's best grass feeds the lord's herd.',
+            + 'graze the stubble, and the common\'s best grass feeds the lord\'s herd.',
           changes: [
             {
               id: 'bounds.lost.the_lines_regard',

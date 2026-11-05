@@ -356,7 +356,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         },
         failure: {
           overview: '{cast:rival} took the cooper\'s box to the buyer at the fair gate. The pawnbroker found his lock '
-            + 'opened and told {location} who he thinks did it.',
+            + 'opened and has taken the matter to the fair\'s steward.',
           changes: [
             {
               id: 'strongroom.fail.compulsion',

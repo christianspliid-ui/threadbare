@@ -596,7 +596,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         byOutcome: {
           critical_success: {
             overview: 'The reeve caught {cast:elder} with the first sack and opened the road that morning. The reeve '
-              + 'told {location} who had found the thief. The hungry houses get none of the grain. The village '
+              + 'thanked {actor} before {location}. The hungry houses get none of the grain. The village '
               + 'calls the passage under the barn a sign of good luck.',
             changes: [
               {
@@ -1207,7 +1207,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       byOutcome: {
         critical_success: {
           overview: 'The reeve caught {cast:elder} with the first sack and opened the road that morning. The reeve '
-            + 'told {location} who had found the thief. The hungry houses get none of the grain. The village '
+            + 'thanked {actor} before {location}. The hungry houses get none of the grain. The village '
             + 'calls the passage under the barn a sign of good luck.',
           changes: [
             {

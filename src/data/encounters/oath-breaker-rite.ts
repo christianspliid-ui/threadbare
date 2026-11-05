@@ -65,7 +65,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         + 'the weaver\'s workshop has burned. The shrine lamp goes out whenever the weaver walks in.\n\n'
         + '{cast:oathbreaker} is sure of a curse and asks {actor}, who has a name for reading oaths, whether it is real. A '
         + 'frightened hedge-priest has already taken the weaver\'s coin for a rite at midnight. A wrong '
-        + 'answer sends the weaver to pay for a rite against the wrong thing.',
+        + 'answer buys the weaver the wrong rite.',
       criticalSuccessAfterimage: 'They read the stone plainly. The oath was a promise to repay a neighbour\'s loan by midsummer, '
         + 'and it still holds; that is why the lamp goes out. No curse follows the weaver. The fire was the '
         + 'weaver\'s own lamp, left burning.',
