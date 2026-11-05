@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-05 04:58 local (03:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-05 05:58 local (04:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -36,9 +36,9 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: one ticket in progress, two ready.** The builder is working on [THR-2157](https://linear.app/threadbare/issue/THR-2157/the-mortal-decides-flawed-steel-and-the-five-sphere-story-beats-their) — Flawed Steel and the five sphere story beats, where the mortal now decides the ending. Its [PR #2746](https://github.com/christianspliid-ui/threadbare/pull/2746) is open and set to merge once its checks pass. The two ready tickets, [the one-line records](https://linear.app/threadbare/issue/THR-2162/town-encounters-the-one-line-records-each-summary-line-names-the) and [the overviews and follow-up lines](https://linear.app/threadbare/issue/THR-2163/town-encounters-the-overviews-and-carryover-lines-name-the-mortal-say), wait out your veto window until 14:25 UTC.
+**Healthy but paused: nothing in progress, two ready.** The two ready tickets, [the one-line records](https://linear.app/threadbare/issue/THR-2162/town-encounters-the-one-line-records-each-summary-line-names-the) and [the overviews and follow-up lines](https://linear.app/threadbare/issue/THR-2163/town-encounters-the-overviews-and-carryover-lines-name-the-mortal-say), wait out your veto window until 14:25 UTC. The builder's last three runs stood down for exactly that reason, which is correct.
 
-- **The story-beats rewrite, slice B, is closed.** Its closing paperwork ([PR #2745](https://github.com/christianspliid-ui/threadbare/pull/2745)) merged at 02:56 UTC. The story text stayed as on main, because all three encounters failed their second cold read; the findings went to [THR-2164](https://linear.app/threadbare/issue/THR-2164) for the design lane.
+- **Flawed Steel and the five sphere story beats now let the mortal decide, and it is live** ([THR-2157](https://linear.app/threadbare/issue/THR-2157/the-mortal-decides-flawed-steel-and-the-five-sphere-story-beats-their), merged via [PR #2746](https://github.com/christianspliid-ui/threadbare/pull/2746)).
 
 Items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -47,4 +47,4 @@ Items for agents, not you:
 
 ## Health
 
-All green. The live site is current (the commits since its last build only touched docs). Checks on main and the 3 scheduled background jobs pass. All 10 enabled scheduled tasks are on time, and the builder is mid-run. Engine speed: 169 ms per tick, 9% above the weekly median (156). The worktree cleaner last ran at 04:40 local. The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 17 commits behind main. It is the read-only mirror and catches up on its own.
+All green. The live site serves the latest commit on main. Checks on main and the 3 scheduled background jobs pass, and no pull requests are waiting. All 10 enabled scheduled tasks are on time. Engine speed: 169 ms per tick, 8% above the weekly median (156). The worktree cleaner last ran at 05:40 local. The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 21 commits behind main. It is the read-only mirror and catches up on its own.

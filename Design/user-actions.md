@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-05 04:58 local (03:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-05 05:58 local (04:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,6 +46,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-05: Flawed Steel and the five sphere story beats now let the mortal decide, and it is live** ([THR-2157](https://linear.app/threadbare/issue/THR-2157/the-mortal-decides-flawed-steel-and-the-five-sphere-story-beats-their)). Merged via [#2746](https://github.com/christianspliid-ui/threadbare/pull/2746).
 - **2026-11-04: Legibility 4 is live: the god rail, the Ledger rail, list rows and the hover card read cleaner** ([THR-2125](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover)). Merged via [#2741](https://github.com/christianspliid-ui/threadbare/pull/2741).
 - **2026-11-04: half two of the reputation encounters now lets the mortal decide, and it is live** ([THR-2160](https://linear.app/threadbare/issue/THR-2160)). Merged via [#2740](https://github.com/christianspliid-ui/threadbare/pull/2740).
 - **2026-11-04: half one of the reputation encounters now lets the mortal decide, and it is live** ([THR-2159](https://linear.app/threadbare/issue/THR-2159)). Merged via [#2738](https://github.com/christianspliid-ui/threadbare/pull/2738).
@@ -55,7 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-04: the Mandate row now leads with the hunger's own words and counts the mortals bound to you** ([THR-2154](https://linear.app/threadbare/issue/THR-2154/the-goal-says-what-fills-it-the-mandate-row-leads-with-the-hungers-own)). Merged via [#2734](https://github.com/christianspliid-ui/threadbare/pull/2734), and it is live.
 - **2026-11-03: Legibility 3 is live: the Stage and the dialogs show the title first, then the stakes** ([THR-2124](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first)). Merged via [#2733](https://github.com/christianspliid-ui/threadbare/pull/2733).
 - **2026-11-03: Legibility 2 is live: Inspector pages read Who, Now, Act, Detail, Out** ([THR-2123](https://linear.app/threadbare/issue/THR-2123/plan-doc-legibility-2-inspector-pages-read-who-now-act-detail-out-at)). Merged via [#2731](https://github.com/christianspliid-ui/threadbare/pull/2731).
-- **2026-11-03: after Play, a chapter step stays on the Stage while the world turns, and its answer opens in place, and it is live** ([THR-2151](https://linear.app/threadbare/issue/THR-2151/the-answer-comes-here-after-play-a-chapter-step-stays-on-the-stage)). Merged via [#2730](https://github.com/christianspliid-ui/threadbare/pull/2730).
 ---
 
 Older resolved items and every earlier revision of this file: `git log -p origin/ops -- Design/user-actions.md`.
