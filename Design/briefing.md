@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-05 01:58 local (00:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-05 02:58 local (01:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -36,7 +36,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Starved: 1 ticket ready, waiting out your veto window.** [The story-beats rewrite, slice B](https://linear.app/threadbare/issue/THR-2134/novel-prose-story-beats-slice-b-the-comet-at-the-turning-the-page) opens at 02:30 UTC. [Town encounters, round 2](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write) shipped at 00:18 UTC ([PR #2744](https://github.com/christianspliid-ui/threadbare/pull/2744)) and is live. The builder runs since then have rightly waited for the window.
+**Starved: 1 ticket ready, waiting out your veto window.** [The story-beats rewrite, slice B](https://linear.app/threadbare/issue/THR-2134/novel-prose-story-beats-slice-b-the-comet-at-the-turning-the-page) opens at 02:30 UTC. [Town encounters, round 2](https://linear.app/threadbare/issue/THR-2130/encounter-factory-habits-slice-c-town-encounters-name-the-mortal-write) shipped at 00:18 UTC ([PR #2744](https://github.com/christianspliid-ui/threadbare/pull/2744)) and is live. The six builder runs since then (00:15–01:52 UTC) have rightly waited for the window.
 
 Items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -45,4 +45,4 @@ Items for agents, not you:
 
 ## Health
 
-All green. The live site serves the latest main, including the town-encounter rewrite. Checks on main and the 3 scheduled background jobs pass. No PRs are waiting to merge. All 10 enabled scheduled tasks are on time. The builder is not stalled: its short runs since 00:15 UTC each found the one ready ticket still inside its veto window. Engine speed: 125 ms per tick, 20% below the weekly median (156). The worktree cleaner last ran at 01:50 local. The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 15 commits behind main. It is the read-only mirror and catches up on its own.
+All green. The live site serves the latest main, including the town-encounter rewrite. Checks on main and the 3 scheduled background jobs pass. No PRs are waiting to merge. All 10 enabled scheduled tasks are on time. The builder is not stalled: its short runs since 00:15 UTC each found the one ready ticket still inside its veto window. Engine speed: 125 ms per tick, 20% below the weekly median (156). The worktree cleaner last ran at 02:40 local. The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 15 commits behind main. It is the read-only mirror and catches up on its own.
