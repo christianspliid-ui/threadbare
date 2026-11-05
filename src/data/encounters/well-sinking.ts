@@ -337,7 +337,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
-      overview: '{actor} has climbed out of the new shaft in {location}, and the windlass stands over it for the morning.',
+      overview: '{actor} has climbed out of the new shaft in {location}, and the diggers have gone home.',
       changes: [
         {
           id: 'well.the_shaft_sunk',

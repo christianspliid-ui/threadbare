@@ -91,7 +91,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       narrativeTemplate: 'The cooper pawned his father\'s iron box for winter grain. The pawnbroker swore to hold it until quarter '
         + 'day, but will sell it at the fair tomorrow. The buyer has hired {cast:rival} to take it tonight. '
         + 'The cooper asks {actor} to get there first. A starved, lame dog guards the '
-        + 'strongroom stair. The pawnbroker saw them talking, so any theft will be blamed on {actor}.',
+        + 'strongroom stair. The pawnbroker saw the cooper talking to {actor}, so any theft falls on {actor}.',
       criticalSuccessAfterimage: 'They slipped past the dog and down the stair, and opened the strongroom without a sound.',
       successAfterimage: 'They got past the dog and opened the strongroom lock in the dark.',
       successAtCostAfterimage: 'They opened the strongroom, but the dog whined, and a light moved in the house above.',
@@ -330,7 +330,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         success_at_cost: {
-          overview: 'The cooper has his box and paid {actor} from inside it, but {cast:rival} saw {actor} come up through the yard with it.',
+          overview: 'The cooper has his box and paid {actor} from inside it, but {cast:rival} saw {actor} come up through the yard with it, and can name {actor} to the pawnbroker.',
           changes: [
             {
               id: 'strongroom.cost.buyer_seed',

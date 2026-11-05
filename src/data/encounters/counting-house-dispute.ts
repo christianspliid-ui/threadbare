@@ -695,7 +695,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           critical_failure: {
-            overview: 'House Aldane left the counting house without paying, and its clerks turn their backs when '
+            overview: 'House Aldane left without paying the debt, and Aldane\'s clerks turn their backs when '
               + '{actor} crosses the market. The ruling goes to the magistrate.',
             changes: [
               {
@@ -995,7 +995,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           critical_failure: {
-            overview: 'House Corrow left the counting house without paying, and its clerks turn their backs when '
+            overview: 'House Corrow left without paying the debt, and Corrow\'s clerks turn their backs when '
               + '{actor} crosses the market. The ruling goes to the magistrate.',
             changes: [
               {

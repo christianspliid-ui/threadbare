@@ -565,8 +565,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         success_at_cost: {
-          overview: 'The licence is the town\'s, but the town still owes the chancery part of its '
-            + 'price.',
+          overview: 'The licence is the town\'s, but the town still owes the chancery part of what it '
+            + 'bid.',
           changes: [
             {
               id: 'salt.sac.seal_case',

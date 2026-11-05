@@ -244,7 +244,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
-      overview: 'The fair has moved on from the square, and the widow\'s family keeps the reading they were given.',
+      overview: 'The fair has moved on from the square, and the widow goes home with {actor}\'s reading of her dream.',
       changes: [
         {
           id: 'cunning.a_dream_read',

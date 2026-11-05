@@ -768,8 +768,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         critical_failure: {
-          overview: '{cast:heir} was carried off the field more dead than alive, trampled in the lists {actor} was '
-            + 'meant to hold.',
+          overview: '{cast:heir} was carried off the field more dead than alive, struck down by {cast:champion} '
+            + 'in the lists {actor} was meant to hold.',
           changes: [
             {
               id: 'tourney.cf.regard',

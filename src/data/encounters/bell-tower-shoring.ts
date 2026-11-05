@@ -340,7 +340,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
-      overview: 'The props stay under the bell tower in {location} until the bell is next rung.',
+      overview: '{actor} has come down off the scaffold at the bell tower in {location}.',
       changes: [
         {
           id: 'bell.the_tower_worked',
