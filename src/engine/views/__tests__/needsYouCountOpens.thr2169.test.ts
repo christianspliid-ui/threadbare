@@ -60,3 +60,11 @@ describe('THR-2169 — Needs you counts only what can open', () => {
     expect(vm.total).toBe(1);
   });
 });
+
+describe('THR-2169 — review fixes', () => {
+  it('the view stamp changes when a gift becomes blocked', async () => {
+    const { needsYouStamp } = await import('../needsYou');
+    const offer = { kind: 'gift' as const, beatId: 'spine.seat', eyebrow: 'The Seat', title: null, tick: 90 };
+    expect(needsYouStamp(sources({ beatOffer: offer }))).not.toBe(needsYouStamp(sources({ beatOffer: { ...offer, blocked: true } })));
+  });
+});

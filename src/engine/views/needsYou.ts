@@ -473,7 +473,7 @@ export interface NeedsYouArgs {
 export function needsYouStamp(src: NeedsYouSources): string {
   return [
     src.currentTick,
-    src.beatOffer ? `${src.beatOffer.kind}:${src.beatOffer.beatId}:${src.beatOffer.title ?? ''}` : '',
+    src.beatOffer ? `${src.beatOffer.kind}:${src.beatOffer.beatId}:${src.beatOffer.title ?? ''}:${src.beatOffer.blocked ? 'blocked' : ''}` : '',
     src.receipts.map(r => r.id).join(','),
     src.namedPause ? `${src.namedPause.tick}:${src.namedPause.line}` : '',
     src.held.map(h => `${h.kind}:${h.subject ?? ''}:${h.title ?? ''}`).join(','),

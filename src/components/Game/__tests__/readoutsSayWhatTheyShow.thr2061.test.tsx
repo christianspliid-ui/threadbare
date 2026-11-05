@@ -181,3 +181,11 @@ describe('U7 — the aftermath words carry meanings', () => {
     });
   });
 });
+
+describe('THR-2169 — a place-less pause is not "Waiting"', () => {
+  it('only a named pause with no hex: the pill does not promise an after', () => {
+    const vm = buildNeedsYou(sources({ namedPause: { line: 'Time stops.', hex: null, tick: 99 } }));
+    render(<NeedsYou vm={vm} open={false} onOpenChange={() => {}} guarded={false} raised={false} onPressRow={() => {}} />);
+    expect(screen.getByTestId('needs-you-pill').textContent).not.toBe(NEEDS_YOU_AFTER_ONLY_WORD);
+  });
+});
