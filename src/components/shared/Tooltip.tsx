@@ -12,7 +12,7 @@ import {
 import { resolveTooltip } from '../../engine/tooltipResolver';
 import { FOCUSABLE_SELECTOR } from './focusableSelector';
 import { TEXT_TOKENS_REM, remToPx } from './layoutContract';
-import { useEscapeLayer } from './useEscapeLayer';
+import { TRANSIENT_ESCAPE_LAYER, useEscapeLayer } from './useEscapeLayer';
 import { Z_BAND } from './zBands';
 
 interface TooltipProps {
@@ -458,8 +458,10 @@ export const Tooltip = React.memo(function Tooltip({
   // Law 23 (THR-1884): an open tooltip is the topmost surface, so Escape closes it
   // alone — the dialog or sheet beneath stays open for the next Escape. Nested
   // chain tooltips sit one band step higher each, so the deepest closes first.
+  // THR-2167: a tooltip is transient — the same Escape also reaches an armed card
+  // beneath it (a `throughTransient` layer), whose banner promises Esc puts it down.
   const hideNow = useCallback(() => setIsVisible(false), []);
-  useEscapeLayer(isVisible, hideNow, Z_BAND.tooltip + depth, 'tooltip');
+  useEscapeLayer(isVisible, hideNow, Z_BAND.tooltip + depth, 'tooltip', TRANSIENT_ESCAPE_LAYER);
 
   useEffect(() => {
     return () => {

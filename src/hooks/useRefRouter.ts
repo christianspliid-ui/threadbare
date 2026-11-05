@@ -55,6 +55,13 @@ import { generateContentPage } from '../engine/contentPageGenerator';
 import { emitTrace } from '../engine/traceBuffer';
 import type { WorldGraph } from '../engine/graph';
 import type { SimulationRuntime } from '../engine/simulationRuntime';
+import { TRANSIENT_ESCAPE_LAYER, useEscapeLayer } from '../components/shared/useEscapeLayer';
+import { Z_BAND } from '../components/shared/zBands';
+
+/** The hover card's Escape band: it floats with the tooltips (THR-2167). */
+export const HOVER_CARD_ESCAPE_BAND = Z_BAND.tooltip;
+/** The label `window.__DEBUG.getEscapeLayers()` reports for an open hover card. */
+export const HOVER_CARD_ESCAPE_LABEL = 'hover card';
 
 export type { RefOpenMode };
 
@@ -197,6 +204,11 @@ export function useRefRouter(config: RefRouterConfig): RefRouter {
     }
     setHoverCard(null);
   }, []);
+
+  // THR-2167 (Law 23): Escape closes an open hover card. It is a pointer-born popup like a
+  // tooltip, so it is transient — closing it never costs the surface beneath its Escape
+  // unless that surface reaches through (the armed card).
+  useEscapeLayer(hoverCard !== null, closeHover, HOVER_CARD_ESCAPE_BAND, HOVER_CARD_ESCAPE_LABEL, TRANSIENT_ESCAPE_LAYER);
 
   const open = useCallback(
     (ref: AnyRef, mode: RefOpenMode = 'card', options: OpenRefOptions = {}) => {

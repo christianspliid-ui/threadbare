@@ -26,6 +26,30 @@ function isInputActive(): boolean {
   return tag === 'input' || tag === 'textarea' || el.hasAttribute('contenteditable');
 }
 
+/**
+ * THR-2167 — the controls Space activates natively (or by their own key handler). When one
+ * holds *keyboard* focus, Space belongs to it: toggling the clock too made one keypress do
+ * two things. A control focused by a mouse click (not `:focus-visible`) keeps the old
+ * contract — Space runs the clock, and its `preventDefault` stops the native press — so
+ * clicking a lens and then pressing Space still pauses. Controls with their own Space
+ * handler (`role="button"` divs such as Doom) call `preventDefault`, which the hotkey
+ * honours whatever the focus modality.
+ */
+const ACTIVATABLE_SELECTOR = 'button, a[href], select, summary, [role="button"], [role="menuitem"], [role="tab"], [role="checkbox"], [role="switch"], [role="option"]';
+
+export function isActivatableTarget(target: EventTarget | null): boolean {
+  if (!target || typeof (target as Element).closest !== 'function') return false;
+  const control = (target as Element).closest(ACTIVATABLE_SELECTOR);
+  if (!control) return false;
+  try {
+    return (target as Element).matches(':focus-visible');
+  } catch {
+    // No `:focus-visible` support: treat the focus as keyboard focus (the safe reading —
+    // the focused control gets its own key).
+    return true;
+  }
+}
+
 export function useTopBarHotkeys({ running, speed, onToggle, onSpeedChange, onStep, onMoveClick, onToggleLens, onLedgerKey, onNeedsYouKey }: UseTopBarHotkeysProps) {
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -53,6 +77,8 @@ export function useTopBarHotkeys({ running, speed, onToggle, onSpeedChange, onSt
 
       switch (e.key) {
         case ' ': {
+          // THR-2167: Space on a focused control is that control's press, not the clock's.
+          if (e.defaultPrevented || isActivatableTarget(e.target)) return;
           e.preventDefault();
           onToggle();
           break;
