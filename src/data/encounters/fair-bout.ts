@@ -411,8 +411,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   narrativeTemplates: {
     initiation: 'The fair\'s ring champion has picked {actor} out of the crowd for a purse bout. By the '
       + 'fair\'s custom, a challenger who refuses is named a coward at the ring.',
-    success: 'The ring champion\'s challenge at the fair ended well for {actor}.',
-    failure: 'The ring champion\'s challenge at the fair ended badly for {actor}.',
+    success: 'The ring champion called {actor} to the ring, and {actor} came away with no shame at the fair.',
+    failure: 'The ring champion called {actor} to the ring, and the whole fair watched {actor} come off worse.',
   },
   aftermathConfig: {
     branchOnStep: 0,

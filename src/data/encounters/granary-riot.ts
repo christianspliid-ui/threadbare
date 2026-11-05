@@ -360,7 +360,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'A hungry crowd is at the abbey granary gate, and both sides send for a judge to rule on the '
+    initiation: 'A hungry crowd is at the abbey granary gate, and both sides send for {actor} to rule on the '
       + 'grain.',
     success: 'The ruling held, and the granary gave the town bread without giving up the seed.',
     failure: 'The ruling failed, and the granary stayed shut against a hungry town.',

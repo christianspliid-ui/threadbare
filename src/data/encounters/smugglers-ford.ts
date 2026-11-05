@@ -452,8 +452,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'A mule train of untaxed salt has to pass an excise post in the fog before the river rises. The '
-      + 'carrier wants a guide who can move unseen.',
+    initiation: 'A mule train of untaxed salt has to pass an excise post in the fog before the river rises. '
+      + '{cast:carrier} wants {actor} to guide it across unseen.',
     success: 'The salt train is over the ford, and the post never saw it.',
     failure: 'The salt train did not get over the ford, and {cast:carrier} goes home with the salt unsold.',
   },

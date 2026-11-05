@@ -406,8 +406,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'A village\'s dyke is failing as the river rises, and the reeve sends for someone who can read stone to find out '
-      + 'why.',
+    initiation: 'A village\'s dyke is failing as the river rises, and the reeve sends for {actor} to read the stone '
+      + 'and find out why.',
     success: 'The dyke was mended before the crest, and the lower fields stayed dry.',
     failure: 'The dyke was not mended in time, and the river reached the lower fields.',
   },

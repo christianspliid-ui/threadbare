@@ -218,7 +218,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   ],
   narrativeTemplates: {
     initiation: 'A sealed letter swearing for a miller charged with heresy has to reach the assize in two days, '
-      + 'and the clerk who holds it needs a carrier.',
+      + 'and the clerk who holds it asks {actor} to carry it.',
     success: 'The priest\'s letter reached the court in time and was read before the miller\'s case.',
     failure: 'The priest\'s letter did not reach the court before the miller\'s case was heard. The mill is '
       + 'forfeit.',

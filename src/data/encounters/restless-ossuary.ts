@@ -416,7 +416,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'The dead under a town\'s cathedral will not lie still, and the dean sends for a master to lay '
+    initiation: 'The dead under a town\'s cathedral will not lie still, and the dean sends for {actor} to lay '
       + 'them and rule between the guilds.',
     success: 'The dead were laid, and the guilds accepted the ruling.',
     failure: 'The dead were not laid, and the guilds rejected the ruling.',

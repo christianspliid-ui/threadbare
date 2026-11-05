@@ -400,7 +400,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'A family\'s farm will be settled by trial by combat, and they ask a master to fight for them.',
+    initiation: 'A family\'s farm will be settled by trial by combat, and they ask {actor} to fight for them.',
     success: 'The order\'s champion yielded, and the court gave the farm back to the family.',
     failure: 'The order\'s champion won, and the court gave the farm to the order.',
   },

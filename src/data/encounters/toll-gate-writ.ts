@@ -453,9 +453,9 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   ],
   narrativeTemplates: {
     initiation: 'A toll-master asks {actor} to judge a travelling family\'s writ of passage.',
-    success: 'The stranger\'s reading of a forged writ held at the toll gate.',
-    failure: 'The stranger\'s reading of a forged writ failed at the toll gate, and their name suffered for '
-      + 'it.',
+    success: '{actor}\'s reading of a forged writ held at the toll gate.',
+    failure: '{actor} got a forged writ wrong at the toll gate, and the family\'s case went to the town\'s '
+      + 'court without the forger.',
   },
   aftermathConfig: {
     branchOnStep: 0,
