@@ -624,7 +624,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   },
   description: 'Old priests say the cathedral\'s tables put this year\'s spring feast a week late, and the canons will hear no '
-    + 'word against them. Someone has to reckon the true day from the moon and the equinox, and prove '
+    + 'word against the tables. Someone has to reckon the true day from the moon and the equinox, and prove '
     + 'it before the canons and their dean.',
   locationSubtypes: expandSettings(['urban']),
   consequenceDraw: ['drive', 'omen'],

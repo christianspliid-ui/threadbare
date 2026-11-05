@@ -695,8 +695,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           critical_failure: {
-            overview: 'House Aldane left the counting house without paying, and its clerks will not deal at any '
-              + 'table {actor} sits at. The ruling goes to the magistrate.',
+            overview: 'House Aldane left the counting house without paying, and its clerks turn their backs when '
+              + '{actor} crosses the market. The ruling goes to the magistrate.',
             changes: [
               {
                 id: 'counting.pos.critfail.aldane',
@@ -995,8 +995,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           critical_failure: {
-            overview: 'House Corrow left the counting house without paying, and its clerks will not deal at any '
-              + 'table {actor} sits at. The ruling goes to the magistrate.',
+            overview: 'House Corrow left the counting house without paying, and its clerks turn their backs when '
+              + '{actor} crosses the market. The ruling goes to the magistrate.',
             changes: [
               {
                 id: 'counting.neg.critfail.corrow',

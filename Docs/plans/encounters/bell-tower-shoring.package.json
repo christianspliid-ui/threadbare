@@ -338,7 +338,7 @@
       "branchOnStep": 0,
       "variants": {},
       "fallback": {
-        "overview": "The masons are down from the bell tower in {location}, and the props stay until the bell is rung.",
+        "overview": "The props stay under the bell tower in {location} until the bell is next rung.",
         "changes": [
           {
             "id": "bell.the_tower_worked",

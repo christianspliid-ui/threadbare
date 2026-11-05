@@ -402,7 +402,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       ],
       byOutcome: {
         critical_success: {
-          overview: 'The youth lives because {actor} spoke for him at the gallows, and {cast:mother} has him home tonight.',
+          overview: 'The youth lives because {actor} spoke for him at the gallows, and the rope hangs empty.',
           changes: [
             {
               id: 'gallows.crit.town_thanks',

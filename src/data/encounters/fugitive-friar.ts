@@ -722,7 +722,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           },
           success_at_cost: {
             overview: 'Brother {cast:friar} is out of the town, but only through the smugglers\' water-gate, and the '
-              + 'smugglers now count {actor} as one of theirs.',
+              + 'Thieves Guild that keeps that gate has put {actor} on its rolls.',
             changes: [
               {
                 id: 'friar.gate.cost.scroll',
@@ -860,7 +860,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           critical_failure: {
-            overview: 'Brother {cast:friar} is in the bishop\'s cells, and the town shuts its doors on {actor} '
+            overview: 'Brother {cast:friar} is in the bishop\'s cells, and the townsfolk look away from {actor} '
               + 'for hiding him.',
             changes: [
               {
@@ -1226,7 +1226,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             ],
           },
           critical_failure: {
-            overview: 'Brother {cast:friar} is in the bishop\'s cells, and the town shuts its doors on {actor} '
+            overview: 'Brother {cast:friar} is in the bishop\'s cells, and the townsfolk look away from {actor} '
               + 'for hiding him.',
             changes: [
               {
@@ -1593,7 +1593,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         critical_failure: {
-          overview: 'Brother {cast:friar} is in the bishop\'s cells, and the town shuts its doors on {actor} '
+          overview: 'Brother {cast:friar} is in the bishop\'s cells, and the townsfolk look away from {actor} '
             + 'for hiding him.',
           changes: [
             {

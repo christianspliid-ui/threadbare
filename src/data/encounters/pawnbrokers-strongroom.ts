@@ -330,7 +330,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         success_at_cost: {
-          overview: 'The cooper has his box and paid {actor} from inside it, but the buyer saw it go and wants a word with {actor}.',
+          overview: 'The cooper has his box and paid {actor} from inside it, but {cast:rival} saw {actor} come up through the yard with it.',
           changes: [
             {
               id: 'strongroom.cost.buyer_seed',

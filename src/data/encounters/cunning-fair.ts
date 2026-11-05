@@ -263,7 +263,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       reactions: [],
       byOutcome: {
         critical_success: {
-          overview: 'On {actor}\'s word, a boy from the fair climbed the widow\'s chimney and brought down the dead '
+          overview: '{actor} climbed the widow\'s chimney in front of the whole fair and brought down the dead '
             + 'man\'s savings in a cloth bag. {cast:rival} packed away the charms and left early.',
           changes: [
             {
