@@ -1595,11 +1595,16 @@ export function EncounterVeil({
               */}
               {/* THR-1477 — and once the choice is taken the question is answered:
                   a "which do you choose" prompt standing above a spent set is the
-                  same Law 25 defect the length check above fixes, one beat later. */}
-              {aftermath.reactionPrompt && aftermath.reactions.length > 1 && !aftermathReactionTakenId && (
+                  same Law 25 defect the length check above fixes, one beat later.
+                  THR-2166 — but the line keeps its space: removing it moved Continue up
+                  ~40px between the pick and the click, and the click missed (warm
+                  playtest round 3, 3 of 3 testers). Hidden, not unmounted. */}
+              {aftermath.reactionPrompt && aftermath.reactions.length > 1 && (
                 <div
-                  data-testid="aftermath-reaction-prompt"
+                  data-testid={aftermathReactionTakenId ? 'aftermath-reaction-prompt-spent' : 'aftermath-reaction-prompt'}
+                  aria-hidden={aftermathReactionTakenId ? true : undefined}
                   style={{
+                    visibility: aftermathReactionTakenId ? 'hidden' : undefined,
                     fontFamily: FONT_PROSE,
                     fontStyle: 'italic',
                     fontSize: 'var(--text-xs)',

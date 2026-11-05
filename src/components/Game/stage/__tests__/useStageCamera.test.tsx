@@ -15,10 +15,12 @@ import { IDLE_STAGE, type StageScreenState } from '../stageState';
 const CANVAS = { left: 0, top: 48, right: 1305, bottom: 1080 };
 
 function fakeMap(litAt: { x: number; y: number }) {
+  const view = { x: 100, y: 200, k: 6, w: 1305, h: 1032 };
   return {
+    view,
     setStageFocus: vi.fn(),
     setStageOptionHover: vi.fn(),
-    getCameraState: () => ({ k: 6, minK: 1, maxK: 20 }),
+    getCameraState: () => ({ k: view.k, minK: 1, maxK: 20, viewport: { ...view } }),
     getViewportForHex: () => ({ ...litAt, visible: true }),
     projectHex: () => litAt,
     getCanvasRect: () => CANVAS,
@@ -71,5 +73,46 @@ describe('useStageCamera — close (THR-2056)', () => {
     await closeAndSettle(hook);
     expect(map.centerHexesAt).not.toHaveBeenCalled();
     expect(hook.result.current.stage.closeCamera).toEqual({ hex: '13,9', recentred: false });
+  });
+});
+
+describe('useStageCamera — close after the player moved the map (THR-2166)', () => {
+  beforeEach(() => { vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'setTimeout'] }); });
+  afterEach(() => { vi.useRealTimers(); });
+
+  async function openSettled(map: ReturnType<typeof fakeMap>) {
+    const hook = run(map);
+    // centerHexesAt resolves → settle snapshots the framed camera.
+    await act(async () => { await Promise.resolve(); });
+    expect(hook.result.current.stage.cameraSettled).toBe(true);
+    map.centerHexesAt.mockClear();
+    return hook;
+  }
+
+  it('a pan after the frame settled leaves the camera where the player put it', async () => {
+    const map = fakeMap({ x: 1256, y: 564 }); // outside the middle third: would re-centre
+    const hook = await openSettled(map);
+    map.view.x += 40; // the player drags the map: 40 world units × k 6 = 240 px
+    await closeAndSettle(hook);
+    expect(map.centerHexesAt).not.toHaveBeenCalled();
+    expect(hook.result.current.stage.closeCamera).toEqual({ hex: '13,9', recentred: false, playerMoved: true });
+  });
+
+  it('a zoom after the frame settled also counts as the player moving the map', async () => {
+    const map = fakeMap({ x: 1256, y: 564 });
+    const hook = await openSettled(map);
+    map.view.k = 8;
+    await closeAndSettle(hook);
+    expect(map.centerHexesAt).not.toHaveBeenCalled();
+    expect(hook.result.current.stage.closeCamera?.playerMoved).toBe(true);
+  });
+
+  it('a sub-threshold drift is not a pan: the place outside the middle third is still re-centred', async () => {
+    const map = fakeMap({ x: 1256, y: 564 });
+    const hook = await openSettled(map);
+    map.view.x += 0.2; // 1.2 px at k 6
+    await closeAndSettle(hook);
+    expect(map.centerHexesAt).toHaveBeenCalledTimes(1);
+    expect(hook.result.current.stage.closeCamera).toEqual({ hex: '13,9', recentred: true });
   });
 });

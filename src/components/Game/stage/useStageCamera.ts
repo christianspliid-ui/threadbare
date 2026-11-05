@@ -15,14 +15,40 @@
  * (`STAGE_CLOSE_CENTRE_BAND_FRACTION`) is eased to the visible map's centre; one inside
  * it stays. The visible map is the canvas after the rails settle, so a docked Inspector
  * (a flex sibling) is already outside it.
+ *
+ * THR-2166 — but a camera the player moved after the Stage framed the place stays where the
+ * player put it: re-centring it then reads as the map cutting away under their hand (warm
+ * playtest round 3). The camera is snapshotted when the frame settles and compared on close.
  */
 import { useEffect, useRef, type Dispatch, type RefObject, type SetStateAction } from 'react';
 import type { HexMapV2Handle } from '../../HexMapV2/HexMapV2';
 import { chooseStageFrame, chooseStageZoom, hexScreenWidth, recentreOnClose } from '../../HexMapV2/camera/stageCamera';
 import { hexToWorld } from '../../../lib/worldPosition';
 import { HEX_CONSTANTS } from '../../HexMapV2/scene/HexFillMesh';
-import { STAGE_CLOSE_CENTRE_BAND_FRACTION, STAGE_DIM_FADE_MS, STAGE_LAYOUT_SETTLE_FRAMES } from '../../../data/stage-content';
+import {
+  STAGE_CLOSE_CENTRE_BAND_FRACTION,
+  STAGE_CLOSE_PLAYER_MOVED_PX,
+  STAGE_CLOSE_PLAYER_MOVED_ZOOM_RATIO,
+  STAGE_DIM_FADE_MS,
+  STAGE_LAYOUT_SETTLE_FRAMES,
+} from '../../../data/stage-content';
+import type { MapCameraState } from '../../HexMapV2/camera/mapCamera';
 import { isStageOpen, type StageCameraMode, type StageScreenState } from './stageState';
+
+/** The camera's view at a moment: centre (world units) and zoom. Null when not attached. */
+type CameraView = { x: number; y: number; k: number } | null;
+
+function viewOf(state: MapCameraState): CameraView {
+  return state.viewport ? { x: state.viewport.x, y: state.viewport.y, k: state.viewport.k } : null;
+}
+
+/** THR-2166 — did the camera move between the Stage's frame and now? Unknown views → no. */
+export function cameraMovedSince(framed: CameraView, now: CameraView): boolean {
+  if (!framed || !now) return false;
+  if (Math.abs(now.k - framed.k) > framed.k * STAGE_CLOSE_PLAYER_MOVED_ZOOM_RATIO) return true;
+  const screenPx = Math.hypot(now.x - framed.x, now.y - framed.y) * now.k;
+  return screenPx > STAGE_CLOSE_PLAYER_MOVED_PX;
+}
 
 function parseKey(key: string | undefined): { col: number; row: number } | null {
   if (!key) return null;
@@ -36,6 +62,8 @@ export function useStageCamera(
   setStage: Dispatch<SetStateAction<StageScreenState>>,
 ): void {
   const lastLit = useRef<{ key: string; instant: boolean } | null>(null);
+  /** THR-2166 — the camera as the Stage left it once the frame settled. */
+  const framedView = useRef<CameraView>(null);
   const focus = stage.focus;
 
   // ── The focus: dim, ring, camera; then report where it landed. ──
@@ -47,10 +75,13 @@ export function useStageCamera(
     let cancelled = false;
     map.setStageFocus({ lit: focus.lit, options: focus.options, strength: focus.strength }, { fadeMs: focus.instant ? 0 : STAGE_DIM_FADE_MS });
     lastLit.current = focus.lit[0] ? { key: focus.lit[0], instant: focus.instant } : null;
+    framedView.current = null;
 
     const settle = (mode: StageCameraMode) => {
       if (cancelled) return;
-      const k = map.getCameraState().k;
+      const cam = map.getCameraState();
+      const k = cam.k;
+      framedView.current = viewOf(cam);
       const at = parseKey(focus.lit[0]);
       const vp = at ? map.getViewportForHex(at.col, at.row) : null;
       setStage(prev => (prev.focus !== focus ? prev : {
@@ -95,6 +126,8 @@ export function useStageCamera(
     map.setStageOptionHover(null);
     const last = lastLit.current;
     lastLit.current = null;
+    const framed = framedView.current;
+    framedView.current = null;
     const at = parseKey(last?.key);
     if (!at || !last) return;
     let frames = STAGE_LAYOUT_SETTLE_FRAMES;
@@ -102,6 +135,11 @@ export function useStageCamera(
     const step = () => {
       if (--frames > 0) {
         id = requestAnimationFrame(step);
+        return;
+      }
+      // THR-2166 — the player moved the map after the Stage framed it: leave it there.
+      if (cameraMovedSince(framed, viewOf(map.getCameraState()))) {
+        setStage(prev => (isStageOpen(prev) ? prev : { ...prev, closeCamera: { hex: last.key, recentred: false, playerMoved: true } }));
         return;
       }
       const rect = map.getCanvasRect();
