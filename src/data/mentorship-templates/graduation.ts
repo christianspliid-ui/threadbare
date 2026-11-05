@@ -8,17 +8,22 @@
  * The Mastery trait grant is already done by resolveMentorship() before this
  * encounter fires; this template *narrates* the moment, it does not re-grant.
  *
- * Three player choices:
- *   - Honor the bond     (supportive — strengthens relates_to, tilts Sworn)
- *   - Let the moment be theirs (withdrawn)
- *   - Name the rivalry   (coercive — only meaningful on Surpassing; seeds future story)
+ * ─── The mortal decides (THR-2161, THR-866 pattern) ──────────────────
+ *
+ * Step 1 used to carry three player cards whose ids were the aftermath keys.
+ * Now the **apprentice** decides on step 0, in route mode (THR-898), and the
+ * god leans with a hand. Route keys are the old variant keys:
+ *   - `honor_the_bond`           — Heart, `loyalty_ambition` +: they thank their teacher as a peer.
+ *   - `let_the_moment_be_theirs` — Veil, `tradition_novelty` +: they take leave the old way, by custom.
+ *   - `name_the_rivalry`         — Iron, `loyalty_ambition` −: they say out loud they are the better.
+ * `aftermathConfig.branchOnStep` is 0, the deciding step (THR-979).
  *
  * Reach: heart. Archetype axis: Sworn ↔ Renegade.
  *
  * @see Docs/plans/2026-05-15-thr-75-mentor-apprentice-relationship-chains.md §5.1
  */
 
-import type { UnifiedActionTemplate, ActionStep } from '../../types/unifiedAction';
+import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
 import {
   MENTORSHIP_HONORED_SENTIMENT,
   MENTORSHIP_HONORED_TRUST,
@@ -43,9 +48,39 @@ const step0Reckoning: ActionStep = {
     'The god feels it as a hinge. The bond they have shaped through these months is about to ' +
     'become a different kind of bond, or end. Whatever happens in the next breath will be the ' +
     'story the settlement remembers when it tells this name.',
+  purposeLine: 'Close the apprenticeship',
+  // THR-2161 — one card per route, plus a Repertoire fill.
+  nudges: [
+    {
+      id: 'mentorship.graduation.a_debt_of_thanks',
+      name: 'A Debt of Thanks',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { route: 'honor_the_bond' },
+      effectLine: 'Remind the apprentice what their teacher gave them. Gratitude argues for parting as peers.',
+    },
+    {
+      id: 'mentorship.graduation.the_old_words',
+      name: 'The Old Words',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { route: 'let_the_moment_be_theirs' },
+      effectLine: 'Bring the old leave-taking words of the craft to mind. Custom argues for a quiet parting.',
+    },
+    {
+      id: 'mentorship.graduation.the_better_work',
+      name: 'The Better Work',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { route: 'name_the_rivalry' },
+      effectLine: 'Set their best work beside the work of their teacher. The difference argues for saying it out loud.',
+    },
+  ],
+  deal: { count: 2, tags: ['social', 'presence'] },
 };
 
-const step1Branch: ActionStep = {
+/** Route `honor_the_bond` — the apprentice thanks their teacher as a peer. */
+const step1HonorTheBond: ActionStep = {
   reach: 'heart',
   duration: { min: 1, max: 2 },
   difficulty: 0.2,
@@ -53,9 +88,58 @@ const step1Branch: ActionStep = {
   onFailure: [],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'Words pass between the two of them — not many, and not loud. The shape of what the apprenticeship ' +
-    'has been settles into something the god can carry forward, and into something the apprentice ' +
-    'will carry until they teach someone of their own.',
+    '{name} thanks their teacher in front of everyone in the workshop. They speak as an equal now, ' +
+    'not as a student. Their teacher has to find the words to answer.',
+  purposeLine: 'Part as peers',
+  deal: { count: 4, tags: ['social', 'presence'] },
+};
+
+/** Route `let_the_moment_be_theirs` — the apprentice takes leave by custom. */
+const step1TakeLeave: ActionStep = {
+  reach: 'veil',
+  duration: { min: 1, max: 2 },
+  difficulty: 0.2,
+  onSuccess: [],
+  onFailure: [],
+  failBehavior: 'continue_weakened',
+  narrativeTemplate:
+    '{name} takes leave the old way. They bow, return the borrowed tools, and say the words ' +
+    'every apprentice of this craft has said before them. Nothing more is said.',
+  purposeLine: 'Take leave by custom',
+  deal: { count: 4, tags: ['social', 'presence'] },
+};
+
+/** Route `name_the_rivalry` — the apprentice says they are the better. */
+const step1NameTheRivalry: ActionStep = {
+  reach: 'iron',
+  duration: { min: 1, max: 2 },
+  difficulty: 0.3,
+  onSuccess: [],
+  onFailure: [],
+  failBehavior: 'continue_weakened',
+  narrativeTemplate:
+    '{name} says out loud what everyone in the workshop already knows: they have surpassed their teacher. ' +
+    'Their teacher does not deny it. Neither of them smiles.',
+  purposeLine: 'Claim the higher rank',
+  deal: { count: 4, tags: ['social', 'presence'] },
+};
+
+const step1Branch: ActionStepBranch = {
+  branchOnStep: 0,
+  // THR-2161 — the apprentice decides how the apprenticeship closes.
+  decidedBy: {
+    routes: [
+      { key: 'honor_the_bond', reach: 'heart', axis: 'loyalty_ambition', toward: 'positive' },
+      { key: 'let_the_moment_be_theirs', reach: 'veil', axis: 'tradition_novelty', toward: 'positive' },
+      { key: 'name_the_rivalry', reach: 'iron', axis: 'loyalty_ambition', toward: 'negative' },
+    ],
+  },
+  variants: {
+    honor_the_bond: step1HonorTheBond,
+    let_the_moment_be_theirs: step1TakeLeave,
+    name_the_rivalry: step1NameTheRivalry,
+  },
+  fallback: { ...step1HonorTheBond },
 };
 
 export const MENTORSHIP_GRADUATION_TEMPLATE: UnifiedActionTemplate = {
@@ -65,6 +149,16 @@ export const MENTORSHIP_GRADUATION_TEMPLATE: UnifiedActionTemplate = {
     risk: 'part with the teacher\'s last lesson unpassed',
     won: 'closed the apprenticeship on good terms',
     lost: 'parted with the teacher\'s last lesson unpassed',
+    arms: {
+      let_the_moment_be_theirs: {
+        won: 'took leave by custom, and the lineage holds',
+        lost: 'took leave by custom, and the last lesson went unsaid',
+      },
+      name_the_rivalry: {
+        won: 'claimed the higher rank, and the teacher conceded it',
+        lost: 'claimed the higher rank and lost the teacher\'s respect',
+      },
+    },
   },
   rarityTier: 3,
   intrinsicTier: 'story_beat',
@@ -95,57 +189,8 @@ export const MENTORSHIP_GRADUATION_TEMPLATE: UnifiedActionTemplate = {
 
   illustrationAlt: 'A workshop or study at the end of a long apprenticeship — tools laid down, the teacher watching the apprentice with a look of complicated pride.',
 
-  authoredChoices: {
-    1: [
-      {
-        id: 'honor_the_bond',
-        label: 'Honor the bond',
-        intent:
-          'The god strengthens the moment with a current of warmth — the kind that makes the teacher\'s ' +
-          'pride land cleanly in the apprentice\'s chest, and the apprentice\'s gratitude land cleanly in ' +
-          'the teacher\'s. The bond closes its first chapter as a peer-bond, not a hierarchy. Whatever ' +
-          'the apprentice does next will carry the teacher with it as something carried, not something escaped.',
-        targetLabel: 'teacher and apprentice',
-        essenceCost: 1,
-        likelyBurden:
-          'A bond honored at graduation can become a bond that pulls — the apprentice may shape their ' +
-          'craft to their teacher\'s template rather than their own. The cost of warmth is sometimes that.',
-        interventionType: 'supportive',
-      },
-      {
-        id: 'let_the_moment_be_theirs',
-        label: 'Let the moment be theirs',
-        intent:
-          'The god watches without weighing in. Whatever pride or grief or grudge passes between the two ' +
-          'of them is theirs. The settlement will remember the graduation in whatever shape they give it.',
-        targetLabel: 'the moment',
-        essenceCost: 0,
-        likelyBurden:
-          'A god who stands aside at graduation accepts whatever shape the parting takes. Not all ' +
-          'partings are clean. Some leave the apprentice without the closing words they needed.',
-        interventionType: 'withdrawn',
-      },
-      {
-        id: 'name_the_rivalry',
-        label: 'Name the rivalry',
-        intent:
-          'The god lets the truth of what just happened sit visible in the air between them: the ' +
-          'apprentice has equalled or exceeded the teacher, and pretending otherwise would be a kindness ' +
-          'that costs both of them. The naming converts the pride into a live current — competitive, ' +
-          'alive, dangerous in the way that all real rivalries are dangerous. The bond does not break. ' +
-          'It changes shape.',
-        targetLabel: 'teacher and apprentice',
-        essenceCost: 2,
-        likelyBurden:
-          'A named rivalry is a live wire. It will draw both of them back into each other\'s orbit, ' +
-          'and the next encounter between them will not be peaceful. The god\'s fingerprint is on this turn.',
-        interventionType: 'coercive',
-      },
-    ],
-  },
-
   aftermathConfig: {
-    branchOnStep: 1,
+    branchOnStep: 0,
     variants: {
       honor_the_bond: {
         overview:
@@ -181,18 +226,18 @@ export const MENTORSHIP_GRADUATION_TEMPLATE: UnifiedActionTemplate = {
       },
       let_the_moment_be_theirs: {
         overview:
-          'The god watched. Whatever the two of them gave each other at the end was theirs to give. ' +
+          '{name} took leave by custom. Whatever the two of them gave each other at the end was theirs to give. ' +
           'The apprenticeship closed on mortal terms.',
         changes: [
           {
             id: 'reputation_tally_quiet_graduation',
             kind: 'reputation_tally',
             title: 'A quiet ending',
-            detail: 'Completed an apprenticeship without divine weight on the closing words.',
+            detail: 'Completed an apprenticeship with the old words of the craft, and nothing more.',
             polarity: 'info',
           },
         ],
-        // The whole point of this variant is that the god added nothing, so the
+        // The whole point of this variant is that nothing was added, so the
         // tally is the only write — the settlement still marks the completion.
         reactions: [
           {
@@ -207,7 +252,7 @@ export const MENTORSHIP_GRADUATION_TEMPLATE: UnifiedActionTemplate = {
       },
       name_the_rivalry: {
         overview:
-          'The apprentice has outgrown their teacher, and the god named it in the open. What was a ' +
+          '{name} has outgrown their teacher, and said so in the open. What was a ' +
           'mentorship is now a live rivalry — kin in craft, but no longer kin in rank. They will meet ' +
           'again, and the meeting will not be soft.\n\n' +
           'The teacher\'s pride and loss arrive in the same breath. The apprentice carries a craft ' +

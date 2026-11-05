@@ -14,6 +14,7 @@ import { isActionStepBranch } from '../../../types/unifiedAction';
 import type { ActionStepBranch } from '../../../types/unifiedAction';
 import type { EncounterChoiceMemory } from '../../../types/encounter';
 import { resolveStepDefinition } from '../../../engine/unifiedActionLifecycle';
+import { assertNoRetiredPlayerPickField } from '../../../testing/contentInvariants';
 
 function makeChoiceMemory(stepIndex: number, choiceId: string): EncounterChoiceMemory {
   return {
@@ -79,7 +80,7 @@ describe('The Page Beneath the Saint — structure & scale', () => {
 
   // THR-2157 — the player no longer picks; the mortal decides on honesty_cunning.
   it('carries no authored choices; the mortal decides the fork on honesty_cunning', () => {
-    expect(template.authoredChoices).toBeUndefined();
+    assertNoRetiredPlayerPickField(template);
     const branch = template.steps[1] as ActionStepBranch;
     expect(branch.decidedBy).toEqual({ axis: 'honesty_cunning' });
     const step0 = template.steps[0];

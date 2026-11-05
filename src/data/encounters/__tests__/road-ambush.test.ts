@@ -16,6 +16,7 @@ import { isActionStepBranch } from '../../../types/unifiedAction';
 import type { ActionStepBranch } from '../../../types/unifiedAction';
 import type { EncounterChoiceMemory } from '../../../types/encounter';
 import { resolveStepDefinition } from '../../../engine/unifiedActionLifecycle';
+import { assertNoRetiredPlayerPickField } from '../../../testing/contentInvariants';
 
 // ─── Helpers ──────────────────────────────────────────────────────
 
@@ -282,8 +283,8 @@ describe('Road Ambush — support bundle', () => {
 // ─── The mortal decides (THR-2158) ────────────────────────────────
 
 describe('Road Ambush — the mortal decides the fork', () => {
-  it('authors no authoredChoices — the god never picks the ending', () => {
-    expect(template.authoredChoices).toBeUndefined();
+  it('carries no retired player-pick field — the god never picks the ending', () => {
+    assertNoRetiredPlayerPickField(template);
   });
 
   it('step 1 is decided by the mortal on mercy_ruthlessness', () => {

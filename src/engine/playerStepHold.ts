@@ -69,8 +69,7 @@ export const SKIP_STEPS_WITHOUT_PLAYER_MOVE = true;
 
 /**
  * THR-2140 — does the step at `stepIndex` offer the player a move? Yes when the
- * template authors choices for it, or the resolved step (branches followed)
- * authors nudges or declares a dealt hand. Read off the template alone, so it
+ * resolved step (branches followed) authors nudges or declares a dealt hand. Read off the template alone, so it
  * is the same answer at post time and at render time. A missing template or
  * step is fail-soft `true`: today's behaviour, never a silent skip.
  */
@@ -81,7 +80,6 @@ export function stepOffersPlayerMove(
 ): boolean {
   if (!template) return true;
   try {
-    if ((template.authoredChoices?.[stepIndex]?.length ?? 0) > 0) return true;
     const step = resolveStepDefinition(template, stepIndex, choiceHistory);
     if (!step) return true;
     return (step.nudges?.length ?? 0) > 0 || step.deal !== undefined;

@@ -165,6 +165,29 @@ export function assertValidUnifiedTemplate(template: UnifiedActionTemplate): voi
 
   assertKnownAftermathKinds(template);
   assertDecidedAftermathReachable(template);
+  assertNoRetiredPlayerPickField(template);
+}
+
+/**
+ * The retired player-pick field, by name (THR-2161). Canon said "zero templates
+ * carry it" for three months while 34 did, because nothing checked. The string
+ * lives here, in the guard, and nowhere live.
+ */
+export const RETIRED_PLAYER_PICK_FIELD = 'authoredChoices';
+
+/**
+ * THR-2161 — no shipped template carries the retired player-pick field. The
+ * field is gone from `UnifiedActionTemplate`, but content files are object
+ * literals spread through builders, so the type alone does not keep it out
+ * (the THR-1800 lesson). Christian, 2026-07-26: "the player must never pick an
+ * ending" — a fork goes through `ActionStepBranch.decidedBy`.
+ */
+export function assertNoRetiredPlayerPickField(template: UnifiedActionTemplate): void {
+  expect(
+    Object.prototype.hasOwnProperty.call(template, RETIRED_PLAYER_PICK_FIELD),
+    `${template.id} carries the retired \`${RETIRED_PLAYER_PICK_FIELD}\` field — the player-pick `
+    + 'is gone (THR-2161). Fork through `ActionStepBranch.decidedBy` and give the god a nudge hand.',
+  ).toBe(false);
 }
 
 /**
@@ -244,15 +267,14 @@ export function assertDecidedAftermathReachable(template: UnifiedActionTemplate)
  * `assertDecidedAftermathReachable` asks whether a decided fork points at the
  * right step. This asks the question one level out, and the one that was never
  * asked: is there **any** writer at all that can put this key into
- * `choiceHistory`? There are exactly three, and a variant keyed to none of them
+ * `choiceHistory`? There are exactly two, and a variant keyed to none of them
  * is unreachable by construction — authored, committed, and rendered to nobody.
+ *
+ * (There were three; the player's pick, `authoredChoices`, was retired by THR-2161.)
  *
  * 1. **A `decidedBy` fork** — `applyAgentDecidedBranches` writes the pole key
  *    (`positive`/`negative`) or the declared route key.
- * 2. **`authoredChoices[branchOnStep]`** — the player picks a card and
- *    `recordUnifiedActionChoiceMemory` writes its id. The card ids are required
- *    to match the variant keys; see `UnifiedActionTemplate.authoredChoices`.
- * 3. **A fight's result** (THR-1543) — the fight handler writes `fight:<result>`
+ * 2. **A fight's result** (THR-1543) — the fight handler writes `fight:<result>`
  *    at `fightResultIndex(steps)` when the template ends in a fight block.
  *
  * The failure mode this closes is total and silent: `resolveAftermathVariant`
@@ -283,11 +305,7 @@ export function assertAftermathVariantsProducible(template: UnifiedActionTemplat
     }
   }
 
-  for (const card of template.authoredChoices?.[cfg.branchOnStep] ?? []) {
-    producible.add(card.id);
-  }
-
-  // 3. **A fight's result** (THR-1543, fight block §6) — the fight handler writes
+  // 2. **A fight's result** (THR-1543, fight block §6) — the fight handler writes
   //    `fight:<result>` at `fightResultIndex(steps)`, an index no step owns, when
   //    the template's last step carries `fightRole`. A `fight:*` key on a template
   //    without a terminal block is still orphaned.
@@ -301,9 +319,9 @@ export function assertAftermathVariantsProducible(template: UnifiedActionTemplat
   expect(
     orphaned,
     `${template.id} aftermath variant(s) [${orphaned.join(', ')}] can be produced by nothing. `
-    + `Step ${cfg.branchOnStep} carries no decidedBy fork offering them and no authoredChoices `
-    + `card with that id — the writers are \`applyAgentDecidedBranches\` and the player's pick, `
-    + `and neither can emit these (nor a terminal fight block's \`fight:<result>\`). `
+    + `Step ${cfg.branchOnStep} carries no decidedBy fork offering them — the writer is `
+    + `\`applyAgentDecidedBranches\`, and it cannot emit these (nor can a terminal fight block's `
+    + `\`fight:<result>\`). `
     + `\`resolveAftermathVariant\` returns \`fallback\` on every `
     + `resolution, so the authored ending reaches nobody and nothing goes red (THR-989). `
     + `Producible here: [${[...producible].join(', ') || 'nothing'}].`,
@@ -332,31 +350,6 @@ export function assertFightBlockRules(template: UnifiedActionTemplate): void {
       + 'prize is drawn from its result, never per exchange (fight block §6).',
     ).toBe(0);
   });
-}
-
-/**
- * THR-1800 — every authored choice card carries a numeric, finite, non-negative
- * `essenceCost`. The field is typed required, yet five chapters shipped without
- * it (content files are object literals spread through builders, so the type
- * never bit), and the stage read `essence >= undefined` as unaffordable: both
- * cards greyed out and the chapter could not be played. Catalog-wide, so the
- * class cannot return.
- */
-export function assertAuthoredChoicesPriced(template: UnifiedActionTemplate): void {
-  const unpriced: string[] = [];
-  for (const [step, cards] of Object.entries(template.authoredChoices ?? {})) {
-    for (const card of cards ?? []) {
-      const cost: unknown = (card as { essenceCost?: unknown }).essenceCost;
-      if (typeof cost !== 'number' || !Number.isFinite(cost) || cost < 0) {
-        unpriced.push(`step ${step} ${card.id}`);
-      }
-    }
-  }
-  expect(
-    unpriced,
-    `${template.id} authored choice card(s) [${unpriced.join(', ')}] carry no numeric essenceCost. `
-    + 'The stage greys an unpriced card out as unaffordable (THR-1800) — price every card, 0 for free.',
-  ).toEqual([]);
 }
 
 export function assertValidStep(step: ActionStepOrBranch, templateId: string): void {

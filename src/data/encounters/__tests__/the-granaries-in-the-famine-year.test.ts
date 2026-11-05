@@ -14,6 +14,7 @@ import { isActionStepBranch } from '../../../types/unifiedAction';
 import type { ActionStepBranch } from '../../../types/unifiedAction';
 import type { EncounterChoiceMemory } from '../../../types/encounter';
 import { resolveStepDefinition } from '../../../engine/unifiedActionLifecycle';
+import { assertNoRetiredPlayerPickField } from '../../../testing/contentInvariants';
 
 function makeChoiceMemory(stepIndex: number, choiceId: string): EncounterChoiceMemory {
   return {
@@ -79,7 +80,7 @@ describe('The Granaries in the Famine Year — structure & scale', () => {
 
   // THR-2157 — the player no longer picks; the mortal decides on asceticism_extravagance.
   it('carries no authored choices; the mortal decides the fork on asceticism_extravagance', () => {
-    expect(template.authoredChoices).toBeUndefined();
+    assertNoRetiredPlayerPickField(template);
     const branch = template.steps[1] as ActionStepBranch;
     expect(branch.decidedBy).toEqual({ axis: 'asceticism_extravagance' });
     const step0 = template.steps[0];

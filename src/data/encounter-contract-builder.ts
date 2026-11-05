@@ -5,9 +5,7 @@ import {
   ENCOUNTER_CATEGORY_VALUES,
   MORAL_AXIS_POLES_BY_REACH,
   QUINTESSENCE_POLES,
-  type EncounterArchetypePole,
   type EncounterCategory,
-  type EncounterChoiceCost,
   type EncounterChoiceReach,
   type EncounterContract,
 } from '../types/encounter-contract';
@@ -22,34 +20,6 @@ export const DEFAULT_FORECAST_FACTORS = [] as const;
 export const DEFAULT_STATE_DESCRIPTOR = 'no descriptor';
 export const DEFAULT_TILTS_TOWARD = 'uncertain';
 export const DEFAULT_ENCOUNTER_REACH: EncounterChoiceReach = 'iron';
-
-export type EncounterChoiceIntervention = NonNullable<
-  NonNullable<UnifiedActionTemplate['authoredChoices']>[number][number]['interventionType']
->;
-
-export type EncounterAuthoredChoice = NonNullable<
-  NonNullable<UnifiedActionTemplate['authoredChoices']>[number]
->[number];
-
-export const EFFECTIVE_INTERVENTION_TO_COST: Record<EncounterChoiceIntervention, EncounterChoiceCost> = {
-  supportive: 'small_breath',
-  coercive: 'deep_draught',
-  withdrawn: 'small_breath',
-};
-
-export function toEncounterChoiceCost(choice: EncounterAuthoredChoice): EncounterChoiceCost {
-  if (choice.interventionType) {
-    return EFFECTIVE_INTERVENTION_TO_COST[choice.interventionType];
-  }
-
-  if (choice.essenceCost === undefined || choice.essenceCost <= 1) {
-    return 'small_breath';
-  }
-  if (choice.essenceCost === 2) {
-    return 'fuller_breath';
-  }
-  return 'deep_draught';
-}
 
 function toTemplateReach(template: UnifiedActionTemplate): EncounterChoiceReach {
   const rawReach = (template as UnifiedActionTemplate & { reach?: string }).reach;
@@ -72,61 +42,17 @@ export function toStepFallbackReach(template: UnifiedActionTemplate, stepIndex: 
   return toTemplateReach(template);
 }
 
-export function toEncounterChoiceReach(
-  template: UnifiedActionTemplate,
-  stepIndex: number,
-  choice: EncounterAuthoredChoice,
-): EncounterChoiceReach {
-  const nextStep = template.steps[stepIndex + 1] as UnifiedActionTemplate['steps'][number] | undefined;
-  if (
-    nextStep
-    && 'variants' in nextStep
-    && choice.id
-    && typeof nextStep.variants === 'object'
-    && nextStep.variants !== null
-  ) {
-    const matchingVariant = (nextStep.variants as Record<string, { reach?: string }>)[choice.id];
-    if (matchingVariant && typeof matchingVariant.reach === 'string') {
-      return matchingVariant.reach as EncounterChoiceReach;
-    }
-  }
-
-  return toStepFallbackReach(template, stepIndex);
-}
-
 /**
  * Inferred archetype-pole heuristic (legacy fallback, THR-318). Maps a choice's
  * `interventionType` to the reach's virtue/vice pole. Retired as the *primary*
  * path by THR-528 — prefer `resolveEncounterArchetypePole`, which honors an
  * authored `pole` on the card and only falls back here when none is declared.
  */
-export function toEncounterArchetypePole(
-  reach: EncounterChoiceReach,
-  choice: EncounterAuthoredChoice,
-): EncounterArchetypePole {
-  const poles = reach === 'quintessence' ? QUINTESSENCE_POLES : MORAL_AXIS_POLES_BY_REACH[reach];
-  if (choice.interventionType === 'coercive') {
-    return poles[1];
-  }
-  return poles[0];
-}
-
 /**
  * Resolve a choice's display archetype pole, preferring the **authored** `pole`
  * declared on the card (THR-528) over the inferred `interventionType` heuristic.
  * Authored `'virtue'` → the reach's virtue pole, `'vice'` → its vice pole.
  */
-export function resolveEncounterArchetypePole(
-  reach: EncounterChoiceReach,
-  choice: EncounterAuthoredChoice,
-): EncounterArchetypePole {
-  if (choice.pole) {
-    const poles = reach === 'quintessence' ? QUINTESSENCE_POLES : MORAL_AXIS_POLES_BY_REACH[reach];
-    return choice.pole === 'vice' ? poles[1] : poles[0];
-  }
-  return toEncounterArchetypePole(reach, choice);
-}
-
 export function encodeEncounterContractMetadata(contract: EncounterContract): string {
   return `${ENCOUNTER_CONTRACT_METADATA_KEY}:${JSON.stringify(contract)}`;
 }
@@ -215,35 +141,15 @@ function getNarrativeText(
 }
 
 export function buildLiteEncounterContract(template: UnifiedActionTemplate): EncounterContract {
-  const authoredChoices = template.authoredChoices ?? {};
-  const rawStepIndexes = Object.keys(authoredChoices)
-    .map((key) => Number(key))
-    .filter((value) => Number.isInteger(value));
-  const stepIndexes = (rawStepIndexes.length > 0
-    ? rawStepIndexes
-    : template.steps.map((_, index) => index)).sort((a, b) => a - b);
+  const stepIndexes = template.steps.map((_, index) => index);
   const templateReach = toTemplateReach(template);
   const capabilityAxisReach = templateReach === 'quintessence' ? 'star' : templateReach;
   const initiationProse = getNarrativeText(template, 'initiation');
   const successProse = getNarrativeText(template, 'success');
 
   const beats = stepIndexes.map((stepIndex) => {
-    const encounterChoices = (authoredChoices[stepIndex] ?? []) as readonly EncounterAuthoredChoice[];
     const stepReach = toStepFallbackReach(template, stepIndex);
     const step = template.steps[stepIndex] as UnifiedActionTemplate['steps'][number] | undefined;
-
-    const mappedChoices = encounterChoices.map((choice) => {
-      const reach = toEncounterChoiceReach(template, stepIndex, choice);
-      return {
-        reach,
-        cost: toEncounterChoiceCost(choice),
-        god_verb: choice.label,
-        agent_reaction: firstAuthored(template, choice.intent, choice.label),
-        tilts_toward: choice.targetLabel ?? DEFAULT_TILTS_TOWARD,
-        moral_axis_pole: resolveEncounterArchetypePole(reach, choice),
-        fail_forward: firstAuthored(template, choice.likelyBurden, template.narrativeTemplates?.failure),
-      };
-    });
 
     return {
       title: `Beat ${stepIndex + 1}`,
@@ -254,9 +160,7 @@ export function buildLiteEncounterContract(template: UnifiedActionTemplate): Enc
           : initiationProse,
       prose_tooltips: {},
       encounter_choices:
-        mappedChoices.length > 0
-          ? mappedChoices
-          : [buildFallbackEncounterChoice(template, stepIndex, stepReach)],
+        [buildFallbackEncounterChoice(template, stepIndex, stepReach)],
     };
   });
 

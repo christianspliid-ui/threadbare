@@ -110,15 +110,6 @@ function collectEncounters(): EvalInput[] {
     addField(fields, 'consequenceSuccess', t.consequenceMessage?.success);
     addField(fields, 'consequenceFailure', t.consequenceMessage?.failure);
 
-    // Authored choice cards (per-step map): intent is the enriched prose body.
-    for (const stepChoices of Object.values(t.authoredChoices ?? {})) {
-      for (const choice of stepChoices ?? []) {
-        // Prefix the choice id so multiple choices don't overwrite each other.
-        addField(fields, `intent.${choice.id}`, choice.intent);
-        addField(fields, `likelyBurden.${choice.id}`, choice.likelyBurden);
-      }
-    }
-
     // Context fragments (THR-573) — every authored variant is swept individually so
     // multiplied surfaces clear the same register bar as inline prose. Fragment tables
     // are statically enumerable, which is what makes this sweep possible at all;

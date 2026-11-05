@@ -9,8 +9,9 @@ import { FACTION_DEFINITIONS } from '../../data/faction-definitions';
 import { MONSTER_FACTION_DEFINITIONS } from '../../data/monster-faction-definitions';
 import {
   assertAllValidReaches,
-  assertAuthoredChoicesPriced,
   assertNoDuplicateIds,
+  assertNoRetiredPlayerPickField,
+  RETIRED_PLAYER_PICK_FIELD,
   assertValidReachWeights,
   assertValidStep,
   assertValidUnifiedTemplate,
@@ -153,36 +154,35 @@ describe('assertValidReachWeights — real faction content (THR-1345)', () => {
 });
 
 /**
- * THR-1800 — every authored choice card is priced, and every authored
- * illustration points at a file that ships. Catalog-wide: the five unpriced
- * chapters and the nine dead placeholder URLs sat in templates no narrower
+ * THR-2161 — the retired player-pick field stays retired. Canon said "zero
+ * templates carry it" for three months while 34 did; this makes the claim a
+ * check. (THR-1800's pricing check on the same cards went with the field.)
+ */
+describe('retired player-pick field (catalog-wide, THR-2161)', () => {
+  it('no shipped template carries it', () => {
+    const carriers = UNIFIED_ACTION_TEMPLATES
+      .filter(t => Object.prototype.hasOwnProperty.call(t, RETIRED_PLAYER_PICK_FIELD))
+      .map(t => t.id);
+    expect(carriers).toEqual([]);
+    for (const template of UNIFIED_ACTION_TEMPLATES) assertNoRetiredPlayerPickField(template);
+  });
+
+  it('fails a template that carries it (negative control)', () => {
+    const poisoned = {
+      ...UNIFIED_ACTION_TEMPLATES[0],
+      [RETIRED_PLAYER_PICK_FIELD]: { 0: [] },
+    } as unknown as UnifiedActionTemplate;
+    expect(() => assertNoRetiredPlayerPickField(poisoned)).toThrow(/THR-2161/);
+    expect(() => assertValidUnifiedTemplate(poisoned)).toThrow(/THR-2161/);
+  });
+});
+
+/**
+ * THR-1800 — every authored illustration points at a file that ships.
+ * Catalog-wide: the nine dead placeholder URLs sat in templates no narrower
  * content harness looked at.
  */
-describe('authored choice cards and illustrations (catalog-wide, THR-1800)', () => {
-  const authored = UNIFIED_ACTION_TEMPLATES.filter(t => Object.keys(t.authoredChoices ?? {}).length > 0);
-
-  it('inspects a non-empty authored-choice population', () => {
-    // THR-2157 — this population shrinks by design as the THR-2135 slices move
-    // templates off authoredChoices (THR-2161 retires the field). The floor is
-    // non-empty while any remain.
-    expect(authored.length).toBeGreaterThan(0);
-  });
-
-  it('every authored choice card carries a numeric essenceCost', () => {
-    for (const template of authored) assertAuthoredChoicesPriced(template);
-  });
-
-  it('rejects a card with no essenceCost (negative control)', () => {
-    const template = authored[0];
-    const [step, cards] = Object.entries(template.authoredChoices ?? {})[0];
-    const { essenceCost: _dropped, ...unpriced } = cards[0];
-    const poisoned = {
-      ...template,
-      authoredChoices: { [step]: [unpriced, ...cards.slice(1)] },
-    } as unknown as UnifiedActionTemplate;
-    expect(() => assertAuthoredChoicesPriced(poisoned)).toThrow(/essenceCost/);
-  });
-
+describe('authored illustrations (catalog-wide, THR-1800)', () => {
   it('every illustrationUrl resolves to a file under public/', () => {
     const missing = UNIFIED_ACTION_TEMPLATES
       .filter(t => t.illustrationUrl && !existsSync(join(process.cwd(), 'public', t.illustrationUrl)))

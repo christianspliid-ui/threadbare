@@ -55,8 +55,8 @@ const warned = new Set<string>();
  *
  * Returns `undefined` for an absent stance rather than a fallback word: a
  * choice with no stance is a card the producer chose not to tag, and the meta
- * row renders nothing at all for it. (Authored cards always carry one —
- * `AuthoredChoiceCard.interventionType` is required, THR-1411.) That is a designed empty, not a missing value — inventing "step in"
+ * row renders nothing at all for it. (The retired authored cards always carried one, THR-1411; `authoredChoices`
+ * itself is gone since THR-2161.) That is a designed empty, not a missing value — inventing "step in"
  * there would put a stance on cards that deliberately carry none.
  *
  * Fail-soft (NFP #4): a value outside the union warns once and returns the

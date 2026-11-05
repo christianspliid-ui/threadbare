@@ -16,6 +16,7 @@ import type { ActionStepBranch, UnifiedActionTemplate } from '../../../types/uni
 import {
   assertAftermathVariantsProducible,
   assertDecidedAftermathReachable,
+  assertNoRetiredPlayerPickField,
 } from '../../../testing/contentInvariants';
 import { checkComposedHand, checkNudgeHand } from '../../content-eval/nudgeHandChecklist';
 import { encounterStakesProblems } from '../../content-eval/encounterStakesRules';
@@ -59,8 +60,8 @@ function decidingStep(template: UnifiedActionTemplate) {
 describe('THR-2159 — the mortal decides the reputation encounters, half one', () => {
   for (const id of ALL_IDS) {
     describe(id, () => {
-      it('carries no authoredChoices on the shipped catalog', () => {
-        expect(shipped(id).authoredChoices).toBeUndefined();
+      it('carries no retired player-pick field on the shipped catalog', () => {
+        assertNoRetiredPlayerPickField(shipped(id));
       });
 
       it('the deciding step deals a non-empty hand', () => {

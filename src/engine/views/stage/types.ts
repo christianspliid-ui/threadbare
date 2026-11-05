@@ -235,8 +235,8 @@ export interface EncounterStageChoiceModel {
    *
    * THR-1411 — this used to read "authored choice cards carry their own prose
    * instead", describing the one producer that dropped the field as though it
-   * had chosen to. `AuthoredChoiceCard.interventionType` is required, so an
-   * authored card always has a stance to band; the attended adapter just never
+   * had chosen to. The retired authored card (`authoredChoices`, gone since
+   * THR-2161) always carried a stance to band; the attended adapter just never
    * copied it, and the comment made that omission read as intent. An authored
    * card is now the same as any other: it has a stance, so it shows one.
    */
@@ -609,9 +609,8 @@ export interface EncounterStageAftermathModel {
 // ─── Nudge phase (THR-775 / WS2) ──────────────────────────────────
 //
 // The nudge stage is opt-in per template: `nudgePhase` is present only when the
-// action's current step carries an authored `nudges` hand. Templates with
-// `authoredChoices` and no hand keep `choices` and the legacy screen, so the
-// rollout is per-template and reversible (no flag day).
+// action's current step carries an authored `nudges` hand. (The legacy
+// `authoredChoices` screen it rolled out against was retired by THR-2161.)
 
 /**
  * How a nudge card renders, per the WS2 per-`NudgeBlockedCode` policy.
@@ -951,8 +950,8 @@ export interface EncounterStageModel {
   opponentHeader?: import('../../../components/Game/encounter-stage/adapters/buildOpponentHeaderModel').OpponentHeaderModel;
   /**
    * THR-775 — present when the current step carries an authored nudge hand.
-   * The stage branches on its presence: absent ⇒ the `authoredChoices` screen
-   * renders exactly as before.
+   * The stage branches on its presence: absent ⇒ the legacy choice screen
+   * (whose `authoredChoices` producer THR-2161 retired).
    *
    * THR-1121 — **also present, with an empty `cards` array, when the step
    * authored neither a hand nor choices.** That is the fate-alone screen:

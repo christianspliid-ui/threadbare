@@ -2581,15 +2581,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       agentId,
       encounter,
     } = tieredEncounterState;
-    // THR-989: the veil renders `authoredChoices` when the step carries them, so
-    // the clicked id is frequently not in `notification.choices` at all. Looking
-    // only there dropped the pick silently — see `resolveInterveneChoice`.
-    const choice = resolveInterveneChoice(
-      tieredEncounterState.template,
-      tieredEncounterState.activeActionSnapshot?.currentStep,
-      notification.choices,
-      choiceId,
-    );
+    // THR-2161 — the authored hand (`authoredChoices`) is retired; the clicked
+    // id resolves against the notification's own choices.
+    const choice = resolveInterveneChoice(notification.choices, choiceId);
     if (!choice) return false;
 
     // THR-1720 — pre-roll rejection, as `handleCommitNudges` does for a hand:
@@ -2698,8 +2692,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
    * This is the writer WS0 declared and never built: it writes `activeNudges`
    * onto the in-flight action, spends the essence, and emits the
    * declared-but-never-emitted `nudge_played` trace. The legacy
-   * `handleEncounterIntervene` is untouched and still owns `authoredChoices`
-   * templates.
+   * `handleEncounterIntervene` still serves notification choices; the
+   * authored-choice templates it once owned are gone (THR-2161).
    *
    * Pre-roll rejection: if the pool cannot cover the hand at commit time (the
    * player spent elsewhere while the stage was open), nothing is written and a
