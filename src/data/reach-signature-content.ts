@@ -645,9 +645,11 @@ export const REACH_SIGNATURE_CONTENT_TEMPLATES: UnifiedActionTemplate[] = [
       branchOnStep: 0,
       variants: {},
       fallback: {
+        // THR-2168: the reading itself is the reaction's effect, so the overview says
+        // it waits there — the cast alone changes nothing a player can see.
         overview:
-          'The Deep Eye opens. The region\'s buried strata lie legible before you, and a path ' +
-          'toward the elder work half-swallowed by the earth begins to clear.',
+          'The Deep Eye opens on the strata beneath this place. Nothing is read yet: choose to ' +
+          'read the deep memory, and the sight will name what lies buried and point the way to it.',
         changes: [],
         reactionPrompt: 'The sight is yours. Follow where it leads.',
         reactions: [

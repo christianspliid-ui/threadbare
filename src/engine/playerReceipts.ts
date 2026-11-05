@@ -70,7 +70,9 @@ import {
   CAST_INFLUENCE_AT_COST_BANDS,
   fillCastInfluenceLine,
 } from '../data/receipt-content';
-import type { CastInfluenceReceiptType } from '../data/receipt-content';
+import type { CastInfluenceReceiptType, CastInfluenceReceiptCase } from '../data/receipt-content';
+import { parseHexTargetId } from './hexActionBridge';
+import { hexPlaceName } from './targetContextBuilders';
 import { resolveCastValueDrift, valuePoleWord, findValueDriftInfluence } from './castInfluenceDrift';
 import type { DivineInfluenceEntry } from '../types/dream';
 import { targetSideChanges } from './castTargetChanges';
@@ -118,6 +120,13 @@ export interface PlayerActionReceipt {
    * measurable rather than asserted — this is the bit that makes it so.
    */
   readonly toastOverviewUsed?: boolean;
+  /**
+   * THR-2168 — the cast landed (clean or at-cost band) but found nothing to take
+   * hold of (`found_nothing` overview). The dialog's frame line reads from the
+   * no-hold pool so it cannot say "It went as you meant it to" above
+   * "they wake as they were".
+   */
+  readonly tookNoHold?: boolean;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────────
@@ -233,6 +242,20 @@ export function castInfluenceReceiptLine(
   band: OutcomeBand,
   targetName: string,
 ): string | undefined {
+  return castInfluenceReceiptReading(state, action, template, band, targetName)?.line;
+}
+
+/**
+ * THR-2168 — {@link castInfluenceReceiptLine} plus which case it read, so the
+ * receipt can tell a cast that found nothing from one that landed.
+ */
+export function castInfluenceReceiptReading(
+  state: GameState,
+  action: UnifiedAction,
+  template: Pick<UnifiedActionTemplate, 'steps'>,
+  band: OutcomeBand,
+  targetName: string,
+): { line: string; lineCase: CastInfluenceReceiptCase } | undefined {
   const payload = findValueDriftInfluence(template);
   const rule = payload?.valueDriftRule;
   if (!payload || !rule || !action.targetId) return undefined;
@@ -243,7 +266,7 @@ export function castInfluenceReceiptLine(
   if (resolved.outcome !== 'drift' || !resolved.pair) {
     // Only a cast that landed can have found nothing; a failed one keeps its own overview.
     if (CAST_INFLUENCE_CLEAN_BANDS.includes(band) || CAST_INFLUENCE_AT_COST_BANDS.includes(band)) {
-      return fillCastInfluenceLine(lines.found_nothing, targetName, '');
+      return { line: fillCastInfluenceLine(lines.found_nothing, targetName, ''), lineCase: 'found_nothing' };
     }
     return undefined;
   }
@@ -263,7 +286,29 @@ export function castInfluenceReceiptLine(
       (e.valueDrifts?.[pair] ?? 0) !== 0,
     );
   if (!written) return undefined;
-  return fillCastInfluenceLine(lines[lineCase], targetName, valuePoleWord(pair, resolved.drift));
+  return { line: fillCastInfluenceLine(lines[lineCase], targetName, valuePoleWord(pair, resolved.drift)), lineCase };
+}
+
+/**
+ * THR-2168 — the name a receipt reads for its target. A hex target has no graph
+ * node (its id is minted `hex_COL_ROW`), so it resolves to the place on the hex or
+ * its terrain via {@link hexPlaceName}; any other id with no node reads as no name
+ * (the dialog then drops its "on …" clause). A node id never reaches the player.
+ */
+export function receiptTargetName(
+  state: Pick<GameState, 'graph' | 'tiles'>,
+  action: Pick<UnifiedAction, 'actorId' | 'targetId'>,
+): string {
+  if (!action.targetId) return '';
+  if (action.targetId === action.actorId) return 'yourself';
+  const node = state.graph.getNode(action.targetId);
+  if (node?.name) return node.name;
+  const hex = parseHexTargetId(action.targetId);
+  if (hex) {
+    const tile = (state.tiles ?? []).find((t) => t.coord.col === hex.col && t.coord.row === hex.row);
+    return hexPlaceName(hex.col, hex.row, tile?.terrain ?? '', state.graph);
+  }
+  return '';
 }
 
 function emitReceiptTrace(entry: Omit<PlayerReceiptTrace, 'id' | 'timestamp'>): void {
@@ -349,10 +394,7 @@ export function processPlayerReceipts(state: GameState, _ctx: PhaseContext): Pha
       action.targetId && action.targetId !== action.actorId
         ? state.graph.getNode(action.targetId)
         : undefined;
-    const targetName =
-      action.targetId === action.actorId
-        ? 'yourself'
-        : targetNode?.name ?? action.targetId;
+    const targetName = receiptTargetName(state, action);
 
     // Law 14: the word a player reads for a template is its `spellName` where one
     // exists — `name` is the internal handle. This fallback is also the only place
@@ -367,8 +409,10 @@ export function processPlayerReceipts(state: GameState, _ctx: PhaseContext): Pha
       firstTargetChange && targetNode && !(summary?.overview ?? '').includes(targetName)
         ? firstTargetChange.detail
         : undefined;
+    const influenceReading = castInfluenceReceiptReading(state, action, template, band, targetName);
+    const tookNoHold = influenceReading?.lineCase === 'found_nothing';
     const rawOverview =
-      castInfluenceReceiptLine(state, action, template, band, targetName) ??
+      influenceReading?.line ??
       targetLedOverview ??
       summary?.overview ??
       `Your ${templateWord} ${outcomeBandWord(band)}.`;
@@ -420,6 +464,7 @@ export function processPlayerReceipts(state: GameState, _ctx: PhaseContext): Pha
       acknowledged: false,
       toastMessage,
       toastOverviewUsed,
+      ...(tookNoHold ? { tookNoHold: true } : {}),
     };
 
     queue.push(receipt);
