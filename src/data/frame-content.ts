@@ -162,6 +162,13 @@ export const NEEDS_YOU_PILL_NEWS_ONLY_LABEL = 'Nothing waits on you; news to rea
  * needed nothing sent players hunting for a task (round-6 cold playtest).
  */
 export const NEEDS_YOU_NEWS_ONLY_WORD = 'News';
+/**
+ * THR-2169 — the pill's word when the list holds moments that cannot open yet (held behind
+ * the one on screen, or a gift waiting on it) and nothing that can: no number, no ask.
+ */
+export const NEEDS_YOU_AFTER_ONLY_WORD = 'Waiting';
+/** THR-2169 — the pill's aria and tooltip label for that case. */
+export const NEEDS_YOU_PILL_AFTER_ONLY_LABEL = 'Nothing to open yet; it opens after this moment';
 /** The list's group headers, followed by " · {n}". */
 export const NEEDS_YOU_GROUP_TITLES = {
   waiting: 'Waiting for you',

@@ -29,6 +29,8 @@ import {
   NEEDS_YOU_PILL_LABEL,
   NEEDS_YOU_PILL_NEWS_ONLY_LABEL,
   NEEDS_YOU_NEWS_ONLY_WORD,
+  NEEDS_YOU_AFTER_ONLY_WORD,
+  NEEDS_YOU_PILL_AFTER_ONLY_LABEL,
   countWords,
   needsYouNewsTooltipDesc,
 } from '../../../data/frame-content';
@@ -184,7 +186,11 @@ export function NeedsYou({ vm, open, onOpenChange, guarded, raised, onPressRow, 
   const capacity = needsYouCapacityRows(viewportH, rootPx(), Math.max(1, groupsShown));
   const folded = useMemo(() => foldNeedsYou(vm, capacity, expanded), [vm, capacity, expanded]);
 
-  const label = vm.count > 0 ? countWords(vm.count, NEEDS_YOU_PILL_LABEL) : NEEDS_YOU_PILL_NEWS_ONLY_LABEL;
+  // THR-2169 — with nothing to open, the word says why: rows waiting behind a moment, or only news.
+  const afterOnly = vm.count === 0 && vm.groups.waiting.length + vm.groups.held.length > 0;
+  const label = vm.count > 0
+    ? countWords(vm.count, NEEDS_YOU_PILL_LABEL)
+    : afterOnly ? NEEDS_YOU_PILL_AFTER_ONLY_LABEL : NEEDS_YOU_PILL_NEWS_ONLY_LABEL;
   const desc = getUITooltip('ui.needs_you')?.desc;
   const pill = (
     <Chip
@@ -192,7 +198,7 @@ export function NeedsYou({ vm, open, onOpenChange, guarded, raised, onPressRow, 
       of="needs-you"
       count={vm.count}
       icon="needs-you"
-      word={vm.count > 0 ? NEEDS_YOU_LABEL : NEEDS_YOU_NEWS_ONLY_WORD}
+      word={vm.count > 0 ? NEEDS_YOU_LABEL : afterOnly ? NEEDS_YOU_AFTER_ONLY_WORD : NEEDS_YOU_NEWS_ONLY_WORD}
       showWhenZero
       label={label}
       desc={desc}

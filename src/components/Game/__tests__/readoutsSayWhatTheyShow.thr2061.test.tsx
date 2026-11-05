@@ -13,7 +13,7 @@ import { playerSpendSince, recordEssenceMovement } from '../../../engine/essence
 import { buildNeedsYou, NEEDS_YOU_COUNT_INCLUDES_NEWS, type NeedsYouSources } from '../../../engine/views/needsYou';
 import { nudgeGlyphLegendForHand, NUDGE_ODDS_LEGEND_LABEL } from '../../../data/nudge-card-display';
 import { CONSEQUENCE_LEGEND_MEANINGS } from '../../../data/aftermath-legend-words';
-import { NEEDS_YOU_PILL_NEWS_ONLY_LABEL } from '../../../data/frame-content';
+import { NEEDS_YOU_PILL_NEWS_ONLY_LABEL, NEEDS_YOU_AFTER_ONLY_WORD, NEEDS_YOU_PILL_AFTER_ONLY_LABEL } from '../../../data/frame-content';
 import { NeedsYou } from '../frame/NeedsYou';
 import type { AlertItem } from '../../../types/notification';
 import type { EssencePool } from '../../../types/influence';
@@ -114,7 +114,8 @@ describe('E5 / U8 — Needs-you counts only what waits', () => {
       alerts: [alert('a1'), { ...alert('a2'), icon: 'death' } as AlertItem],
     }));
     expect(vm.groups.news).toHaveLength(2);
-    expect(vm.count).toBe(2);
+    // THR-2169 — the held premonition is listed but cannot open, so only the receipt counts.
+    expect(vm.count).toBe(1);
     expect(vm.total).toBe(4);
   });
 
@@ -128,6 +129,15 @@ describe('E5 / U8 — Needs-you counts only what waits', () => {
     expect(pill.textContent).toBe('News');
     expect(pill.textContent).not.toMatch(/\d/);
     expect(pill.querySelector('button')?.getAttribute('aria-label')).toBe(NEEDS_YOU_PILL_NEWS_ONLY_LABEL);
+  });
+
+  it('with only a held moment, the pill reads Waiting with no number (THR-2169)', () => {
+    const vm = buildNeedsYou(sources({ held: [{ kind: 'premonition', surfaceId: 'PremonitionModal', subject: 'Kael' }] }));
+    render(<NeedsYou vm={vm} open={false} onOpenChange={() => {}} guarded={false} raised={false} onPressRow={() => {}} />);
+    const pill = screen.getByTestId('needs-you-pill');
+    expect(pill.getAttribute('data-needs-you-count')).toBe('0');
+    expect(pill.textContent).toBe(NEEDS_YOU_AFTER_ONLY_WORD);
+    expect(pill.querySelector('button')?.getAttribute('aria-label')).toBe(NEEDS_YOU_PILL_AFTER_ONLY_LABEL);
   });
 
   it('with something waiting, the pill shows the waiting count only', () => {

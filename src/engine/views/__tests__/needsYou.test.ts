@@ -60,7 +60,7 @@ describe('needsYou — the producer list (Law 58)', () => {
 });
 
 describe('needsYou — build', () => {
-  it('count is what waits (Waiting + Held), total is every row, and the VM is serialisable', () => {
+  it('count is what waits and can open (THR-2169), total is every row, and the VM is serialisable', () => {
     const vm = buildNeedsYou(sources({
       beatOffer: { kind: 'gift', beatId: 'spine.seat', eyebrow: 'A Place to Stand', title: null, tick: 90 },
       receipts: [{ id: 'r1', headline: 'The fever breaks before dawn.', tick: 95 }],
@@ -73,8 +73,9 @@ describe('needsYou — build', () => {
     // THR-2061 (E5) — News stays in the list but is not counted.
     expect(vm.total).toBe(rows);
     expect(vm.total).toBe(6);
-    expect(vm.count).toBe(vm.groups.waiting.length + vm.groups.held.length);
-    expect(vm.count).toBe(4);
+    // THR-2169 — the held moment is listed ("after this") but cannot open, so it is not counted.
+    expect(vm.count).toBe([...vm.groups.waiting, ...vm.groups.held].filter(r => r.opens !== 'none').length);
+    expect(vm.count).toBe(3);
     expect(vm.groups.waiting.map(r => r.line)).toEqual([
       'A gift waits: A Place to Stand',
       'What your act bought: The fever breaks before dawn.',

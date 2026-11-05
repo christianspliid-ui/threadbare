@@ -132,6 +132,10 @@ export interface NeedsYouVM {
    * What waits on the player: Waiting and Held rows, folded rows included
    * (THR-2061, plan E5). News stays in the list but is not counted unless
    * {@link NEEDS_YOU_COUNT_INCLUDES_NEWS}. The pill's number.
+   *
+   * THR-2169 — only rows the player can open count ({@link needsYouRowCounts}): a held
+   * moment, a pause with no place and a gift blocked by another moment are listed with
+   * their reason ("after this") but never raise the number a press cannot answer.
    */
   count: number;
   /** Rows in all three groups; a burst counts once. The pill shows while this is above 0. */
@@ -149,6 +153,11 @@ export interface NeedsYouBeatOffer {
   /** A pool beat's run-specific title; null when none resolves. */
   title: string | null;
   tick: number;
+  /**
+   * THR-2169 — another blocking moment is open, so a press cannot enter the beat yet
+   * (THR-1853). The row says "after this" and is not counted.
+   */
+  blocked?: boolean;
 }
 
 export interface NeedsYouReceipt {
@@ -296,9 +305,13 @@ export const NEEDS_YOU_PRODUCERS: readonly NeedsYouProducer[] = [
       const offer = src.beatOffer;
       if (!offer) return [];
       const line = beatOfferLine(offer);
+      const blocked = offer.blocked === true;
       return [{
         id: `beat_offer:${offer.beatId}`, producer: 'beat_offer', group: 'waiting', icon: 'needs-you',
-        line, tooltip: line, opens: 'beatOffer', action: NEEDS_YOU_WORDS.open, after: false, tick: offer.tick,
+        line, tooltip: line,
+        // THR-2169 — blocked: the press would be ignored, so the row is not a button.
+        opens: blocked ? 'none' : 'beatOffer', action: blocked ? NEEDS_YOU_WORDS.after : NEEDS_YOU_WORDS.open,
+        after: blocked, tick: offer.tick,
       }];
     },
   },
@@ -355,6 +368,14 @@ export const NEEDS_YOU_PRODUCERS: readonly NeedsYouProducer[] = [
  */
 export const NEEDS_YOU_COUNT_INCLUDES_NEWS = false;
 
+/**
+ * THR-2169 — the count invariant: a row adds to the pill's number only when pressing it
+ * opens something. Rows that cannot open stay in the list with their reason.
+ */
+export function needsYouRowCounts(row: Pick<NeedsYouRowVM, 'opens'>): boolean {
+  return row.opens !== 'none';
+}
+
 /** Build the queue. Pure; a producer that throws contributes nothing (fail-soft). */
 export function buildNeedsYou(src: NeedsYouSources): NeedsYouVM {
   const groups: Record<NeedsYouGroup, NeedsYouRowVM[]> = { waiting: [], held: [], news: [] };
@@ -367,9 +388,10 @@ export function buildNeedsYou(src: NeedsYouSources): NeedsYouVM {
       // fail-soft: one producer's fault never empties the list
     }
   }
-  const waits = groups.waiting.length + groups.held.length;
-  const total = waits + groups.news.length;
-  return { count: NEEDS_YOU_COUNT_INCLUDES_NEWS ? total : waits, total, groups };
+  const waits = [...groups.waiting, ...groups.held].filter(needsYouRowCounts).length;
+  const news = groups.news.filter(needsYouRowCounts).length;
+  const total = groups.waiting.length + groups.held.length + groups.news.length;
+  return { count: NEEDS_YOU_COUNT_INCLUDES_NEWS ? waits + news : waits, total, groups };
 }
 
 export function emptyNeedsYou(): NeedsYouVM {
