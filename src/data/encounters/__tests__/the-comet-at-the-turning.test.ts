@@ -3,6 +3,9 @@
  *
  * Cosmic-scale branching encounter. Validates structure, scale honesty,
  * branch resolution, and aftermath completeness.
+ *
+ * THR-2157: the fork is decided by the mortal (pole mode); the variant keys are
+ * the poles, not the ids of the cards the god used to click.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -60,8 +63,8 @@ describe('The Comet at the Turning — structure & scale', () => {
     const step1 = template.steps[1];
     expect(isActionStepBranch(step1)).toBe(true);
     const branch = step1 as ActionStepBranch;
-    expect(branch.variants).toHaveProperty('proclaim_the_turning');
-    expect(branch.variants).toHaveProperty('let_them_read_it');
+    expect(branch.variants).toHaveProperty('negative');
+    expect(branch.variants).toHaveProperty('positive');
     expect(branch.fallback).toBeDefined();
   });
 
@@ -74,23 +77,26 @@ describe('The Comet at the Turning — structure & scale', () => {
     }
   });
 
-  it('offers exactly two authored god-action choices on step 0', () => {
-    expect(template.authoredChoices?.[0]).toHaveLength(2);
-    const ids = template.authoredChoices![0].map(c => c.id);
-    expect(ids).toContain('proclaim_the_turning');
-    expect(ids).toContain('let_them_read_it');
+  // THR-2157 — the player no longer picks; the mortal decides on tradition_novelty.
+  it('carries no authored choices; the mortal decides the fork on tradition_novelty', () => {
+    expect(template.authoredChoices).toBeUndefined();
+    const branch = template.steps[1] as ActionStepBranch;
+    expect(branch.decidedBy).toEqual({ axis: 'tradition_novelty' });
+    const step0 = template.steps[0];
+    if (isActionStepBranch(step0)) throw new Error('step 0 should not be a branch');
+    expect(step0.nudges?.length ?? 0).toBeGreaterThan(0);
   });
 });
 
 describe('The Comet at the Turning — branch & aftermath resolution', () => {
-  it('resolves the turning variant for proclaim_the_turning', () => {
-    const resolved = resolveStepDefinition(template, 1, [makeChoiceMemory(0, 'proclaim_the_turning')]);
+  it('resolves the turning variant for the negative pole (proclaim_the_turning)', () => {
+    const resolved = resolveStepDefinition(template, 1, [makeChoiceMemory(0, 'negative')]);
     expect(resolved.reach).toBe('star');
     expect(resolved.difficulty).toBe(0.5);
   });
 
-  it('resolves the anchored variant for let_them_read_it', () => {
-    const resolved = resolveStepDefinition(template, 1, [makeChoiceMemory(0, 'let_them_read_it')]);
+  it('resolves the anchored variant for the positive pole (let_them_read_it)', () => {
+    const resolved = resolveStepDefinition(template, 1, [makeChoiceMemory(0, 'positive')]);
     expect(resolved.difficulty).toBe(0.35);
   });
 
@@ -102,14 +108,14 @@ describe('The Comet at the Turning — branch & aftermath resolution', () => {
   it('aftermath branches on step 0 and covers both poles + fallback', () => {
     const cfg = template.aftermathConfig!;
     expect(cfg.branchOnStep).toBe(0);
-    expect(cfg.variants['proclaim_the_turning']).toBeDefined();
-    expect(cfg.variants['let_them_read_it']).toBeDefined();
+    expect(cfg.variants['negative']).toBeDefined();
+    expect(cfg.variants['positive']).toBeDefined();
     expect(cfg.fallback).toBeDefined();
   });
 
   it('both aftermath poles have 2 reactions, each with at least one effect', () => {
     const cfg = template.aftermathConfig!;
-    for (const key of ['proclaim_the_turning', 'let_them_read_it']) {
+    for (const key of ['negative', 'positive']) {
       const variant = cfg.variants[key];
       expect(variant.reactions).toHaveLength(2);
       for (const r of variant.reactions!) {

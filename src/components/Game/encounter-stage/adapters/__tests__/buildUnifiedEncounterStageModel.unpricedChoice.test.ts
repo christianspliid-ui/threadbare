@@ -8,6 +8,11 @@
  * unaffordable, and the play button stayed dead. The content is priced now
  * (and `contentInvariants` holds the catalog to it); this test pins the
  * adapter's fail-soft read so the next unpriced card degrades to free.
+ *
+ * THR-2157: the Page no longer hands the player cards (the archivist decides),
+ * so the probe now reads `mentorship.the-offer`, one of the last templates that
+ * still carries authored cards. THR-2161 retires those too, and with them this
+ * adapter path.
  */
 import { describe, expect, it } from 'vitest';
 import { WorldGraph } from '../../../../../engine/graph';
@@ -29,7 +34,7 @@ function buildGraph(): WorldGraph {
   return graph;
 }
 
-function buildAction(template: UnifiedActionTemplate): UnifiedAction {
+function buildAction(template: UnifiedActionTemplate, stepIndex: number): UnifiedAction {
   return {
     actionId: `ua_price_${template.id}`,
     actorId: AGENT_ID,
@@ -38,7 +43,7 @@ function buildAction(template: UnifiedActionTemplate): UnifiedAction {
     scale: template.scale,
     source: 'agent',
     startTick: 1,
-    currentStep: 0,
+    currentStep: stepIndex,
     stepProgress: 0,
     stepDuration: 2,
     resolved: false,
@@ -63,25 +68,28 @@ function buildNotification(template: UnifiedActionTemplate): EncounterNotificati
   };
 }
 
-function pageBeneathTheSaint(): UnifiedActionTemplate {
-  const template = UNIFIED_ACTION_TEMPLATES.find((t) => t.id === 'veil.truth.page_beneath_saint');
+/** The step of `mentorship.the-offer` that carries the authored cards. */
+const CARD_STEP = 1;
+
+function theOffer(): UnifiedActionTemplate {
+  const template = UNIFIED_ACTION_TEMPLATES.find((t) => t.id === 'mentorship.the-offer');
   expect(template).toBeDefined();
   return template!;
 }
 
 /** The pre-fix shape: the same template with every card's price stripped. */
 function withUnpricedCards(template: UnifiedActionTemplate): UnifiedActionTemplate {
-  const cards = (template.authoredChoices?.[0] ?? []).map((card) => {
+  const cards = (template.authoredChoices?.[CARD_STEP] ?? []).map((card) => {
     const { essenceCost: _dropped, ...rest } = card;
     return rest as unknown as AuthoredChoiceCard;
   });
-  return { ...template, authoredChoices: { 0: cards } };
+  return { ...template, authoredChoices: { [CARD_STEP]: cards } };
 }
 
-function build(template: UnifiedActionTemplate) {
+function build(template: UnifiedActionTemplate, stepIndex: number = CARD_STEP) {
   return buildUnifiedEncounterStageModel({
     template,
-    activeAction: buildAction(template),
+    activeAction: buildAction(template, stepIndex),
     notification: buildNotification(template),
     agentName: AGENT_NAME,
     threadTier: 'strong',
@@ -98,8 +106,8 @@ describe('buildUnifiedEncounterStageModel — unpriced authored cards (THR-1800)
   });
 
   it('a card with essenceCost undefined comes out affordable, priced 0, with no cost label', () => {
-    const model = build(withUnpricedCards(pageBeneathTheSaint()));
-    expect(model.choices).toHaveLength(2);
+    const model = build(withUnpricedCards(theOffer()));
+    expect(model.choices).toHaveLength(3);
     for (const choice of model.choices) {
       expect(choice.affordable).toBe(true);
       expect(choice.essenceCost).toBe(0);
@@ -107,9 +115,9 @@ describe('buildUnifiedEncounterStageModel — unpriced authored cards (THR-1800)
     }
   });
 
-  it('the shipped chapter offers two selectable cards to a player holding 45 essence', () => {
-    const model = build(pageBeneathTheSaint());
-    expect(model.choices.map((c) => c.id)).toEqual(['bury_it_deeper', 'let_the_truth_surface']);
+  it('the shipped chapter offers three selectable cards to a player holding 45 essence', () => {
+    const model = build(theOffer());
+    expect(model.choices.map((c) => c.id)).toEqual(['steady_their_nerve', 'let_them_choose', 'whisper_the_cost']);
     expect(model.choices.every((c) => c.affordable)).toBe(true);
   });
 });
@@ -122,12 +130,13 @@ describe('encounter illustration — the missing placeholder renders nothing (TH
   });
 
   it('a template pointing at the placeholder gets no image panel and no caption', () => {
-    const model = build({ ...pageBeneathTheSaint(), illustrationUrl: PLACEHOLDER });
+    // The opening step is where the image panel shows.
+    const model = build({ ...theOffer(), illustrationUrl: PLACEHOLDER }, 0);
     expect(model.illustration).toBeUndefined();
   });
 
   it('a template with a real illustration still gets its panel', () => {
-    const model = build({ ...pageBeneathTheSaint(), illustrationUrl: '/concept-art/encounters/gate-duty.jpg' });
+    const model = build({ ...theOffer(), illustrationUrl: '/concept-art/encounters/gate-duty.jpg' }, 0);
     expect(model.illustration?.src).toBe('/concept-art/encounters/gate-duty.jpg');
   });
 });

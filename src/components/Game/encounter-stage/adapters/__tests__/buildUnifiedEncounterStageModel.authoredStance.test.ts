@@ -86,10 +86,13 @@ function buildChoicelessNotification(template: UnifiedActionTemplate): Encounter
 
 describe('buildUnifiedEncounterStageModel — authored choices carry their stance (THR-1411)', () => {
   it('finds the shipped authored-choice corpus (guards against a vacuous sweep)', () => {
-    // An empty or near-empty population would let every case below pass by
-    // iterating nothing. The sweep is only meaningful against the real corpus.
-    expect(AUTHORED_TEMPLATES.length).toBeGreaterThanOrEqual(8);
-    expect(AUTHORED_TEMPLATES.map((t) => t.id)).toContain('crafting.quest.flawed_steel');
+    // An empty population would let every case below pass by iterating
+    // nothing. The corpus shrinks by design as the THR-2135 slices move
+    // templates to mortal-decided forks (THR-2157 took Flawed Steel); THR-2161
+    // retires the last of it along with this adapter path. Until then the
+    // enumerated survivor holds the guard.
+    expect(AUTHORED_TEMPLATES.length).toBeGreaterThan(0);
+    expect(AUTHORED_TEMPLATES.map((t) => t.id)).toContain('mentorship.graduation');
   });
 
   it.each(AUTHORED_TEMPLATES.map((t) => [t.id, t] as const))(
@@ -136,13 +139,14 @@ describe('buildUnifiedEncounterStageModel — authored choices carry their stanc
     },
   );
 
-  it('flawed_steel step 0 offers the three stances the pixel sweep found blank', () => {
-    const template = UNIFIED_ACTION_TEMPLATES.find((t) => t.id === 'crafting.quest.flawed_steel');
+  // THR-2157: was flawed_steel step 0, which no longer hands out cards.
+  it('graduation step 1 offers all three stances by word', () => {
+    const template = UNIFIED_ACTION_TEMPLATES.find((t) => t.id === 'mentorship.graduation');
     expect(template).toBeDefined();
 
     const model = buildUnifiedEncounterStageModel({
       template: template!,
-      activeAction: buildAction(template!, 0),
+      activeAction: buildAction(template!, 1),
       notification: buildChoicelessNotification(template!),
       agentName: AGENT_NAME,
       threadTier: 'strong',
@@ -152,8 +156,8 @@ describe('buildUnifiedEncounterStageModel — authored choices carry their stanc
 
     expect(model.choices.map((c) => c.stanceLabel)).toEqual([
       'lend strength',
-      'press them',
       'stand back',
+      'press them',
     ]);
   });
 });

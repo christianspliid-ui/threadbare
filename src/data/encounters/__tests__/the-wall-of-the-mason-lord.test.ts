@@ -3,6 +3,9 @@
  *
  * Regional-scale branching encounter. Validates structure, scale honesty,
  * branch resolution, and aftermath completeness.
+ *
+ * THR-2157: the fork is decided by the mortal (pole mode); the variant keys are
+ * the poles, not the ids of the cards the god used to click.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -60,8 +63,8 @@ describe('The Wall of the Mason-Lord — structure & scale', () => {
     const step1 = template.steps[1];
     expect(isActionStepBranch(step1)).toBe(true);
     const branch = step1 as ActionStepBranch;
-    expect(branch.variants).toHaveProperty('harden_their_resolve');
-    expect(branch.variants).toHaveProperty('let_the_doubt_in');
+    expect(branch.variants).toHaveProperty('negative');
+    expect(branch.variants).toHaveProperty('positive');
     expect(branch.fallback).toBeDefined();
   });
 
@@ -74,23 +77,26 @@ describe('The Wall of the Mason-Lord — structure & scale', () => {
     }
   });
 
-  it('offers exactly two authored god-action choices on step 0', () => {
-    expect(template.authoredChoices?.[0]).toHaveLength(2);
-    const ids = template.authoredChoices![0].map(c => c.id);
-    expect(ids).toContain('harden_their_resolve');
-    expect(ids).toContain('let_the_doubt_in');
+  // THR-2157 — the player no longer picks; the mortal decides on mercy_ruthlessness.
+  it('carries no authored choices; the mortal decides the fork on mercy_ruthlessness', () => {
+    expect(template.authoredChoices).toBeUndefined();
+    const branch = template.steps[1] as ActionStepBranch;
+    expect(branch.decidedBy).toEqual({ axis: 'mercy_ruthlessness' });
+    const step0 = template.steps[0];
+    if (isActionStepBranch(step0)) throw new Error('step 0 should not be a branch');
+    expect(step0.nudges?.length ?? 0).toBeGreaterThan(0);
   });
 });
 
 describe('The Wall of the Mason-Lord — branch & aftermath resolution', () => {
-  it('resolves the keeper variant for harden_their_resolve', () => {
-    const resolved = resolveStepDefinition(template, 1, [makeChoiceMemory(0, 'harden_their_resolve')]);
+  it('resolves the keeper variant for the negative pole (harden_their_resolve)', () => {
+    const resolved = resolveStepDefinition(template, 1, [makeChoiceMemory(0, 'negative')]);
     expect(resolved.reach).toBe('stone');
     expect(resolved.difficulty).toBe(0.45);
   });
 
-  it('resolves the restraint variant for let_the_doubt_in', () => {
-    const resolved = resolveStepDefinition(template, 1, [makeChoiceMemory(0, 'let_the_doubt_in')]);
+  it('resolves the restraint variant for the positive pole (let_the_doubt_in)', () => {
+    const resolved = resolveStepDefinition(template, 1, [makeChoiceMemory(0, 'positive')]);
     expect(resolved.difficulty).toBe(0.4);
   });
 
@@ -102,14 +108,14 @@ describe('The Wall of the Mason-Lord — branch & aftermath resolution', () => {
   it('aftermath branches on step 0 and covers both poles + fallback', () => {
     const cfg = template.aftermathConfig!;
     expect(cfg.branchOnStep).toBe(0);
-    expect(cfg.variants['harden_their_resolve']).toBeDefined();
-    expect(cfg.variants['let_the_doubt_in']).toBeDefined();
+    expect(cfg.variants['negative']).toBeDefined();
+    expect(cfg.variants['positive']).toBeDefined();
     expect(cfg.fallback).toBeDefined();
   });
 
   it('both aftermath poles have 2 reactions, each with at least one effect', () => {
     const cfg = template.aftermathConfig!;
-    for (const key of ['harden_their_resolve', 'let_the_doubt_in']) {
+    for (const key of ['negative', 'positive']) {
       const variant = cfg.variants[key];
       expect(variant.reactions).toHaveLength(2);
       for (const r of variant.reactions!) {

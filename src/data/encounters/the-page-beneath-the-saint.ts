@@ -29,6 +29,21 @@
  * supervisable inside an automated single-issue run. Held to the editorial REVISE
  * triggers: approach prose at every step, scene-specific god-verbs, cool failure
  * at every branch, human consequences over mechanical labels.
+ *
+ * ─── The mortal decides (THR-2157, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was two cards whose ids were the
+ * aftermath keys, so the click picked the ending. Now the fork decides on
+ * `honesty_cunning`: an Honest (+1) archivist cannot sit on a proof and brings
+ * it into the light; a Cunning (−1) one judges the comfort worth the lie and
+ * seals the page deeper. The god argues with a composed hand — two
+ * pole-leaning specials plus a Repertoire fill — and the archivist answers.
+ *
+ * - Fork axis: `honesty_cunning` — the endings disagree on whether a known lie
+ *   may stand. `positive` = Let the Truth Surface, `negative` = Bury It Deeper.
+ *   Variants, aftermath and `stakes.arms` are keyed to the pole, because pole
+ *   mode writes the bare key.
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
  */
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch, AftermathVariant } from '../../types/unifiedAction';
@@ -64,8 +79,7 @@ const step0TheFind: ActionStep = {
     'of the page and the weight of the hundred thousand graves it would reopen.',
   successAfterimage: 'The archivist held the founding chronicle in the failing lamplight and could not put it down.',
   failureAfterimage: 'The archivist\'s hands shook so badly that the brittle page nearly tore, and they had to set it flat and breathe.',
-  // THR-1667 S3: the missing afterimages. Step 0 is the authored choice, so it
-  // carries no hand (a hand on a choice step would replace the fork).
+  // THR-1667 S3: the missing afterimages.
   successAtCostAfterimage: 'The archivist kept hold of the chronicle, but gripped it hard enough to crack the page along its old fold.',
   criticalSuccessAfterimage:
     'Under the lamp the archivist found a second hand in the margin: a later scribe who had read the same page, ' +
@@ -73,6 +87,37 @@ const step0TheFind: ActionStep = {
   criticalFailureAfterimage:
     'The lamp went out. The archivist groped for the stair in the dark and came up with the page crushed in ' +
     'one fist.',
+  purposeLine: 'Weigh the page',
+  // THR-2157 — the fork's argument. Two specials, one per pole of
+  // `honesty_cunning`; the Repertoire fills the rest of the hand.
+  nudges: [
+    {
+      id: 'page.forty_years_of_true',
+      name: 'Forty Years Of True',
+      sphere: 'mind',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'honesty_cunning', toward: 'positive' },
+      effectLine: 'Remind them of every false copy they ever caught and threw out. A lifetime of telling true from false argues for the light.',
+      bandProse: {
+        success: '{actor} remembered every forgery they had ever caught, and rolled the page to carry it up.',
+        failure: '{actor} remembered the forgeries they had caught, and the memory felt very far away.',
+      },
+    },
+    {
+      id: 'page.the_river_lamps',
+      name: 'The River Lamps',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'honesty_cunning', toward: 'negative' },
+      effectLine: 'Show them the lamps in the windows of the dying, lit for the river. That comfort argues for sealing the page.',
+      bandProse: {
+        success: '{actor} pictured the lamps in the windows of the dying, and reached for the wax.',
+        failure: '{actor} pictured the river-lamps, and saw only the dark between them.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['lore', 'shadow'] },
 };
 
 /**
@@ -165,9 +210,11 @@ const step1LetTheTruthSurface: ActionStep = {
 
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  // THR-2157 — the mortal decides; the fallback lets the truth surface, as it always did.
+  decidedBy: { axis: 'honesty_cunning' },
   variants: {
-    bury_it_deeper: step1BuryItDeeper,
-    let_the_truth_surface: step1LetTheTruthSurface,
+    positive: step1LetTheTruthSurface,
+    negative: step1BuryItDeeper,
   },
   fallback: { ...step1LetTheTruthSurface },
 };
@@ -446,7 +493,7 @@ export const PAGE_BENEATH_THE_SAINT_TEMPLATE: UnifiedActionTemplate = withEncoun
     lost: 'sealed the page but botched the forgeries',
     lostBadly: 'was found weeping over the open page',
     arms: {
-      let_the_truth_surface: {
+      positive: {
         won: 'carried the chronicle into the light',
         lost: 'leaked the truth half-proven and easy to deny',
         lostBadly: 'was named a heretic as the copies burned',
@@ -488,44 +535,12 @@ export const PAGE_BENEATH_THE_SAINT_TEMPLATE: UnifiedActionTemplate = withEncoun
   },
 
 
-  authoredChoices: {
-    0: [
-      {
-        id: 'bury_it_deeper',
-        label: 'Bury it deeper. Let the comfort stand.',
-        intent:
-          'Make the truth feel like cruelty and the lie feel like mercy, until the archivist re-seals the ' +
-          'page deeper than they found it. The regional faith will stand untouched — its calendar, its courts, ' +
-          'the river-lamps in the windows of the dying. All of it rests, knowingly, on a forgery you helped ' +
-          'press back into the dark. The comfort is real and the farmers die easier for it; the cost is one ' +
-          'keeper carrying the fact that could end everything, for the rest of their life, with your name on ' +
-          'the not-looking.',
-        targetLabel: 'The archivist',
-        essenceCost: 2, // THR-1800 — the god's push is paid for
-        interventionType: 'coercive',
-      },
-      {
-        id: 'let_the_truth_surface',
-        label: 'Stay your hand. Let the truth surface.',
-        intent:
-          'Give them nothing — no vision, no permission, no push — and let a person who spent forty years ' +
-          'learning true from false do what they cannot help doing: bring the proof into the light. The faith ' +
-          'that ordered the region for two centuries will crack. Schism, scattering, the old devout grieving ' +
-          'a comfort they now know was staged, the young building something colder and truer in the rubble. ' +
-          'The dying will not be comforted the way they were; they will also not be lied to. A reckoning ' +
-          'through restraint, paid for by everyone who loved the river.',
-        targetLabel: 'The archivist',
-        essenceCost: 0, // THR-1800 — staying your hand costs nothing
-        interventionType: 'withdrawn',
-      },
-    ],
-  },
 
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      bury_it_deeper: TRUTH_BURIED_ENDINGS,
-      let_the_truth_surface: TRUTH_SURFACED_ENDINGS,
+      negative: TRUTH_BURIED_ENDINGS,
+      positive: TRUTH_SURFACED_ENDINGS,
     },
     fallback: { ...TRUTH_SURFACED_ENDINGS },
   },

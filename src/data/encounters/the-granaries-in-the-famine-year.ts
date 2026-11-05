@@ -22,6 +22,22 @@
  * is complicity in the bleeding. This batch's deliberate inversion of the usual
  * restraint-is-mercy shape — sometimes letting them handle it is the cruelty.
  *
+ * ─── The mortal decides (THR-2157, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was two cards whose ids were the
+ * aftermath keys, so the click picked the ending. Now the fork decides on
+ * `asceticism_extravagance`, Gold's own value pair: an Ascetic (+1)
+ * merchant-prince can take the loss and opens the granaries; an Indulgent (−1)
+ * one runs the campaign in the ledger and corners the grain. The god argues
+ * with a composed hand — two pole-leaning specials plus a Repertoire fill — and
+ * the merchant answers.
+ *
+ * - Fork axis: `asceticism_extravagance` — the endings disagree on whether a
+ *   fortune is worth a region. `positive` = Open the Granaries, `negative` =
+ *   Let the Market Close. Variants, aftermath and `stakes.arms` are keyed to
+ *   the pole, because pole mode writes the bare key.
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
+ *
  * TODO(THR-498): repeatability: 'unique' — bespoke regional marquee, fire ≤1×/playthrough.
  * Field does not exist on UnifiedActionTemplate until THR-498 lands.
  *
@@ -34,6 +50,7 @@
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
 import { withEncounterContract } from '../encounter-contract-builder';
+import { DEAL_DEFAULT_COUNT } from '../nudge-constants';
 import { MEANS_STEP, MEANS_STEP_BIG } from '../mortal-means-constants';
 import { W_PROSPERITY, W_STOCK } from '../economy-shift-constants';
 
@@ -67,6 +84,44 @@ const step0TheKey: ActionStep = {
     'fortune and the weight of the hungry both.',
   successAfterimage: 'The merchant-prince looked from the granary key to the ledger and saw a fortune and a region in the same number.',
   failureAfterimage: 'The merchant-prince\'s hand hovered over the key and would not close on it, and they sat a long time with neither door nor ledger decided.',
+  // THR-2157: the rest of the ladder, now that step 0 deals a hand.
+  successAtCostAfterimage:
+    'The merchant-prince made up their mind, but sat over the ledger until the first queue had formed at the granary doors.',
+  criticalSuccessAfterimage:
+    'The merchant-prince saw the fortune and the hungry region plainly, and knew which they could live with.',
+  criticalFailureAfterimage:
+    'The merchant-prince sat with the key until dawn, and by dawn a crowd was already shouting at the locked doors.',
+  purposeLine: 'Weigh the fortune',
+  // THR-2157 — the fork's argument. Two specials, one per pole of
+  // `asceticism_extravagance`; the Repertoire fills the rest of the hand.
+  nudges: [
+    {
+      id: 'granaries.the_hungry_child',
+      name: 'The Hungry Child',
+      sphere: 'spirit',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'asceticism_extravagance', toward: 'positive' },
+      effectLine: 'Remind them of the winter they were hungry as a child. That memory argues for taking the loss.',
+      bandProse: {
+        success: '{actor} remembered an empty bowl of their own, and reached for the key.',
+        failure: '{actor} reached for the old memory, and the ledger was louder.',
+      },
+    },
+    {
+      id: 'granaries.the_great_house',
+      name: 'The Great House',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { axis: 'asceticism_extravagance', toward: 'negative' },
+      effectLine: 'Show them the house they could build from this winter. A fortune that size argues for cornering the grain.',
+      bandProse: {
+        success: '{actor} saw the great house rise in the ledger\'s columns, and closed the book on the key.',
+        failure: '{actor} pictured the great house, and the hungry crowd stood in the doorway of it.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['social', 'insight'] },
 };
 
 /**
@@ -99,6 +154,8 @@ const step1OpenTheGranaries: ActionStep = {
   failureAfterimage:
     'The generosity half-took — the merchant opened some doors and kept the richest closed, hedging the loss ' +
     'so the region was fed thin and unevenly, fed enough to live and not enough to forgive.',
+  purposeLine: 'Open the doors',
+  deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'labor'] },
   successMetadata: { reputationDelta: 0.16 },
   failureMetadata: { reputationDelta: -0.1 },
 };
@@ -135,15 +192,19 @@ const step1LetTheMarketClose: ActionStep = {
     'The cornering came out clumsy — prices set too cruel too fast, a granary stormed, some grain spoiled in ' +
     'the holding — so the region was bled and starved both, and the merchant got a smaller fortune and a ' +
     'larger hatred than the clean extraction would have brought.',
+  purposeLine: 'Corner the grain',
+  deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'shadow'] },
   successMetadata: { reputationDelta: 0.1 },
   failureMetadata: { reputationDelta: -0.13 },
 };
 
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  // THR-2157 — the mortal decides; the fallback lets the market close, as it always did.
+  decidedBy: { axis: 'asceticism_extravagance' },
   variants: {
-    open_the_granaries: step1OpenTheGranaries,
-    let_the_market_close: step1LetTheMarketClose,
+    positive: step1OpenTheGranaries,
+    negative: step1LetTheMarketClose,
   },
   fallback: { ...step1LetTheMarketClose },
 };
@@ -408,7 +469,7 @@ export const GRANARIES_IN_THE_FAMINE_YEAR_TEMPLATE: UnifiedActionTemplate = with
     won: 'opened the granaries and fed the region at a loss',
     lost: 'fed the region thin and unevenly, and unforgiven',
     arms: {
-      let_the_market_close: {
+      negative: {
         won: 'cornered the grain and bought the region',
         lost: 'botched the cornering and earned a region\'s hatred',
       },
@@ -449,43 +510,12 @@ export const GRANARIES_IN_THE_FAMINE_YEAR_TEMPLATE: UnifiedActionTemplate = with
   },
 
 
-  authoredChoices: {
-    0: [
-      {
-        id: 'open_the_granaries',
-        label: 'Press them open. Let the granaries feed the region.',
-        intent:
-          'Lean on the part of them that was once, also, a hungry child, and press their grasping nature past ' +
-          'itself until the doors unlock. They will sell at cost where people can pay and give where they ' +
-          'cannot, and feed the region through to spring — keeping the farmland in its families and the young ' +
-          'out of bond. The merchant ends the famine poorer in coin and bound to no one\'s ruin, a patron ' +
-          'instead of a master. Generosity that has to be pressed into being, paid for by the fortune not made.',
-        targetLabel: 'The merchant-prince',
-        essenceCost: 2, // THR-1800 — the god's push is paid for
-        interventionType: 'coercive',
-      },
-      {
-        id: 'let_the_market_close',
-        label: 'Stay your hand. Let the market close.',
-        intent:
-          'Put no thumb on the scale, and let a merchant-prince run the campaign already written in their ' +
-          'ledger. They will meter the grain at the price a parent pays against an empty bowl, and the price ' +
-          'will buy the region a piece at a time — farms signed over, commons taken, a generation bonded for ' +
-          'terms that outlast the famine by fifteen years. No law broken; every deal willing in the way it is ' +
-          'willing when one hand holds all the food. The region is fed and sold at once, and your silence ' +
-          'underwrites the deed. Letting them handle it, when handling it means the bleeding.',
-        targetLabel: 'The merchant-prince',
-        essenceCost: 0, // THR-1800 — staying your hand costs nothing
-        interventionType: 'withdrawn',
-      },
-    ],
-  },
 
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      open_the_granaries: GRANARIES_OPENED_AFTERMATH,
-      let_the_market_close: MARKET_CLOSED_AFTERMATH,
+      positive: GRANARIES_OPENED_AFTERMATH,
+      negative: MARKET_CLOSED_AFTERMATH,
     },
     fallback: { ...MARKET_CLOSED_AFTERMATH },
   },

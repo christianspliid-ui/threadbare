@@ -9,6 +9,29 @@
  *
  * Design doc: Docs/plans/encounters/flawed-steel-revised.md
  * Systems audit: Docs/plans/encounters/flawed-steel-systems.md
+ *
+ * ─── The mortal decides (THR-2157, THR-866 pattern) ──────────────────
+ *
+ * The god no longer clicks an ending. Step 0 was three cards — "Forge the
+ * truth" / "Temper the narrative" / "Keep your hand folded" — whose ids were the
+ * aftermath keys, so the click picked the ending. Christian's 2026-07-26 ruling
+ * ("the player must never pick an ending") names this exact pair. Now the fork
+ * is a three-way route decision (`decidedBy.routes`, THR-898): the forge-master
+ * takes the course she is good at and inclined to, and the god argues with a
+ * composed hand on step 0.
+ *
+ * - Fork: route mode, three courses toward one door (the captain is answered).
+ *   - `forge_the_truth` — Heart, `honesty_cunning` +: the whole account, in public.
+ *   - `temper_the_narrative` — Shadow, `honesty_cunning` −: a smaller, true-in-
+ *     every-number story.
+ *   - `keep_your_hand_folded` — Stone, `courage_prudence` −: she waits, then
+ *     stumbles through it on her own.
+ * - Route keys are the old variant keys, so aftermath and `stakes.arms` keep
+ *   their keys; only the choosing moved.
+ * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
+ * - Step 1's old approach cards ("Temper the Moment" / "Strike While the Iron
+ *   Burns") picked nothing; each arm now deals an ordinary Repertoire hand.
+ * - The step-1 openings are re-voiced so the mortal acts, not the god.
  */
 
 import type {
@@ -31,6 +54,7 @@ import type {
   EncounterContract,
 } from '../../types/encounter-contract';
 import { MORAL_AXIS_POLES_BY_REACH, QUINTESSENCE_POLES } from '../../types/encounter-contract';
+import { DEAL_DEFAULT_COUNT } from '../nudge-constants';
 
 // ─── Support Bundle ──────────────────────────────────────────────
 
@@ -115,6 +139,38 @@ const step0TheReckoning: ActionStep = {
     '{cast:maren_ironhewn} counted the bad blades in her ledger before she went. She knows the whole number now.',
   criticalFailureAfterimage:
     '{cast:maren_ironhewn} shouted at the shed door, and {cast:dalla} stopped answering her.',
+  purposeLine: 'Face the gate',
+  // THR-2157 — the fork's argument. Two specials naming two of the three
+  // routes; the waiting route is argued by its axis (`courage_prudence`)
+  // through the Repertoire fill and by the forge-master's own Stone capability.
+  nudges: [
+    {
+      id: 'flawed_steel.her_own_stamp',
+      name: 'Her Own Stamp',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { route: 'forge_the_truth' },
+      effectLine: 'Put her maker\'s stamp in front of her, the one on every bad blade. Her own name argues for the whole account.',
+      bandProse: {
+        success: '{cast:maren_ironhewn} looked at her stamp, and unbolted the coal shed.',
+        failure: '{cast:maren_ironhewn} looked at her stamp, and could not make herself say the number.',
+      },
+    },
+    {
+      id: 'flawed_steel.the_true_ledger',
+      name: 'The True Ledger',
+      sphere: 'mind',
+      essenceCost: 1,
+      forecastDelta: 0.06,
+      poleLean: { route: 'temper_the_narrative' },
+      effectLine: 'Show her which pages of the ledger are true on their own. A story with no false number argues for telling less.',
+      bandProse: {
+        success: '{cast:maren_ironhewn} tore out the later pages, and every line left was true.',
+        failure: '{cast:maren_ironhewn} chose her pages, and the gaps between them showed.',
+      },
+    },
+  ],
+  deal: { count: 3, tags: ['social', 'craft'] },
 };
 
 /**
@@ -145,7 +201,7 @@ const step1ForgeTheTruth: ActionStep = {
   ],
   failBehavior: 'fail_action',
   narrativeTemplate:
-    'The god steadies {cast:maren_ironhewn}\'s nerve. She unbolts the coal shed and walks her apprentice ' +
+    '{cast:maren_ironhewn} steadies her nerve. She unbolts the coal shed and walks her apprentice ' +
     'out to the Greycloak camp. There she tells {cast:torve_ashgrip} the whole truth. The flaw came from ' +
     'her forge, under her name, and the apprentice beside her sold it. Then she asks for the captain\'s terms.',
   successMetadata: {
@@ -160,6 +216,8 @@ const step1ForgeTheTruth: ActionStep = {
   successAtCostAfterimage: '{cast:torve_ashgrip} accepted the account on hard terms: free replacements, and a month of work without pay.',
   criticalSuccessAfterimage: '{cast:torve_ashgrip} offered her hand first. The Greycloaks will speak well of the forge in other towns.',
   criticalFailureAfterimage: 'The full count of bad blades was worse than anyone expected. {cast:torve_ashgrip} tore up the contract on the spot.',
+  purposeLine: 'Give the whole account',
+  deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'presence'] },
 };
 
 /**
@@ -190,7 +248,7 @@ const step1TemperTheNarrative: ActionStep = {
   ],
   failBehavior: 'fail_action',
   narrativeTemplate:
-    'The god leans {cast:maren_ironhewn} toward a smaller story. She leaves her apprentice in the shed and ' +
+    '{cast:maren_ironhewn} settles on a smaller story. She leaves her apprentice in the shed and ' +
     'goes to the gate alone, with a ledger and a new blade. She tells {cast:torve_ashgrip} that one bad ' +
     'load of ore caused the flaw. Every number in the ledger is true. It leaves out months of sales.',
   successMetadata: {
@@ -205,6 +263,8 @@ const step1TemperTheNarrative: ActionStep = {
   successAtCostAfterimage: '{cast:torve_ashgrip} believed the story, but asked a lower price on every future contract.',
   criticalSuccessAfterimage: '{cast:torve_ashgrip} thanked the forge for catching the flaw, and promised it more orders.',
   criticalFailureAfterimage: '{cast:torve_ashgrip} caught the lie as they shook hands, and said so loud enough for the whole settlement to hear.',
+  purposeLine: 'Sell the smaller story',
+  deal: { count: DEAL_DEFAULT_COUNT, tags: ['shadow', 'social'] },
 };
 
 /**
@@ -230,7 +290,7 @@ const step1KeepYourHandFolded: ActionStep = {
   ],
   failBehavior: 'fail_action',
   narrativeTemplate:
-    'The god holds back. After an hour, {cast:maren_ironhewn} walks to the gate on her own. She has not ' +
+    '{cast:maren_ironhewn} waits. After an hour, she walks to the gate on her own. She has not ' +
     'planned what to say, and she stumbles through it. A town guard brings {cast:dalla} out of the shed ' +
     'without being asked. The settlement watches from the walls.',
   successMetadata: {
@@ -245,10 +305,20 @@ const step1KeepYourHandFolded: ActionStep = {
   successAtCostAfterimage: 'The settlement got through, but the quarrel at the gate cost {cast:maren_ironhewn} her seat among the guild elders.',
   criticalSuccessAfterimage: '{cast:maren_ironhewn} found the right words on her own. {cast:torve_ashgrip} accepted a rough but honest account.',
   criticalFailureAfterimage: 'The quarrel at the gate spread to the guild and the townsfolk. By nightfall, the settlement had split into two sides.',
+  purposeLine: 'Find the words',
+  deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'peril'] },
 };
 
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
+  // THR-2157 — the mortal decides which course to take.
+  decidedBy: {
+    routes: [
+      { key: 'forge_the_truth', reach: 'heart', axis: 'honesty_cunning', toward: 'positive' },
+      { key: 'temper_the_narrative', reach: 'shadow', axis: 'honesty_cunning', toward: 'negative' },
+      { key: 'keep_your_hand_folded', reach: 'stone', axis: 'courage_prudence', toward: 'negative' },
+    ],
+  },
   variants: {
     forge_the_truth: step1ForgeTheTruth,
     temper_the_narrative: step1TemperTheNarrative,
@@ -850,73 +920,6 @@ export const FLAWED_STEEL_TEMPLATE: UnifiedActionTemplate = withEncounterContrac
   illustrationUrl: '/concept-art/encounters/flawed-steel.jpg',
   illustrationAlt: 'The interior of a cold forge at dawn — racks of finished blades, an anvil with a demand letter, and the forge-master standing with her back to a bolted coal shed door.',
 
-  authoredChoices: {
-    1: [
-      {
-        id: 'temper_the_moment',
-        label: 'Temper the Moment',
-        intent:
-          'Calm the people at the gate a little. {cast:maren_ironhewn} still has to carry the talk herself.',
-        essenceCost: 1,
-        likelyBurden:
-          'A light touch may not be enough. {cast:torve_ashgrip} may still doubt what ' +
-          '{cast:maren_ironhewn} tells her.',
-        interventionType: 'supportive',
-      },
-      {
-        id: 'strike_while_the_iron_burns',
-        label: 'Strike While the Iron Burns',
-        intent:
-          'Push hard on the talk at the gate. Whatever {cast:maren_ironhewn} chose to say lands with force, ' +
-          'and everyone there feels the push.',
-        essenceCost: 3,
-        likelyBurden:
-          '{cast:maren_ironhewn} may come to lean on the god\'s push, and {cast:torve_ashgrip} will remember ' +
-          'being steered.',
-        interventionType: 'coercive',
-      },
-    ],
-    0: [
-      {
-        id: 'forge_the_truth',
-        label: 'Forge the truth',
-        intent:
-          'Steady {cast:maren_ironhewn} so she opens the gate and tells the whole truth. Her shame will ' +
-          'be public.',
-        targetLabel: '{cast:maren_ironhewn}',
-        essenceCost: 2,
-        likelyBurden:
-          'The whole settlement will know the forge failed. {cast:maren_ironhewn}\'s name takes the blow ' +
-          'in public.',
-        interventionType: 'supportive',
-      },
-      {
-        id: 'temper_the_narrative',
-        label: 'Temper the narrative',
-        intent:
-          'Lean {cast:maren_ironhewn} toward a smaller story: one bad load of ore, caught early. The real ' +
-          'count stays hidden.',
-        targetLabel: '{cast:torve_ashgrip}',
-        essenceCost: 2,
-        likelyBurden:
-          'The hidden count becomes a debt. If {cast:torve_ashgrip} learns it, the lie will anger her ' +
-          'more than the fraud.',
-        interventionType: 'coercive',
-      },
-      {
-        id: 'keep_your_hand_folded',
-        label: 'Keep your hand folded',
-        intent:
-          'Hold back. {cast:maren_ironhewn} must find her own way to the gate, and whoever has the most ' +
-          'nerve sets the terms.',
-        targetLabel: 'the settlement',
-        essenceCost: 0,
-        likelyBurden:
-          'The god keeps its essence. The settlement\'s answer will be its own, and it may be a poor one.',
-        interventionType: 'withdrawn',
-      },
-    ],
-  },
 
   aftermathConfig: {
     branchOnStep: 0,

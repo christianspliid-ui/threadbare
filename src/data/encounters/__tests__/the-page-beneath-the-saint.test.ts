@@ -3,6 +3,9 @@
  *
  * Regional-scale branching encounter. Validates structure, scale honesty,
  * branch resolution, and aftermath completeness.
+ *
+ * THR-2157: the fork is decided by the mortal (pole mode); the variant keys are
+ * the poles, not the ids of the cards the god used to click.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -60,8 +63,8 @@ describe('The Page Beneath the Saint — structure & scale', () => {
     const step1 = template.steps[1];
     expect(isActionStepBranch(step1)).toBe(true);
     const branch = step1 as ActionStepBranch;
-    expect(branch.variants).toHaveProperty('bury_it_deeper');
-    expect(branch.variants).toHaveProperty('let_the_truth_surface');
+    expect(branch.variants).toHaveProperty('negative');
+    expect(branch.variants).toHaveProperty('positive');
     expect(branch.fallback).toBeDefined();
   });
 
@@ -74,23 +77,26 @@ describe('The Page Beneath the Saint — structure & scale', () => {
     }
   });
 
-  it('offers exactly two authored god-action choices on step 0', () => {
-    expect(template.authoredChoices?.[0]).toHaveLength(2);
-    const ids = template.authoredChoices![0].map(c => c.id);
-    expect(ids).toContain('bury_it_deeper');
-    expect(ids).toContain('let_the_truth_surface');
+  // THR-2157 — the player no longer picks; the mortal decides on honesty_cunning.
+  it('carries no authored choices; the mortal decides the fork on honesty_cunning', () => {
+    expect(template.authoredChoices).toBeUndefined();
+    const branch = template.steps[1] as ActionStepBranch;
+    expect(branch.decidedBy).toEqual({ axis: 'honesty_cunning' });
+    const step0 = template.steps[0];
+    if (isActionStepBranch(step0)) throw new Error('step 0 should not be a branch');
+    expect(step0.nudges?.length ?? 0).toBeGreaterThan(0);
   });
 });
 
 describe('The Page Beneath the Saint — branch & aftermath resolution', () => {
-  it('resolves the manipulator variant for bury_it_deeper', () => {
-    const resolved = resolveStepDefinition(template, 1, [makeChoiceMemory(0, 'bury_it_deeper')]);
+  it('resolves the manipulator variant for the negative pole (bury_it_deeper)', () => {
+    const resolved = resolveStepDefinition(template, 1, [makeChoiceMemory(0, 'negative')]);
     expect(resolved.reach).toBe('veil');
     expect(resolved.difficulty).toBe(0.45);
   });
 
-  it('resolves the restraint (seer) variant for let_the_truth_surface', () => {
-    const resolved = resolveStepDefinition(template, 1, [makeChoiceMemory(0, 'let_the_truth_surface')]);
+  it('resolves the restraint (seer) variant for the positive pole (let_the_truth_surface)', () => {
+    const resolved = resolveStepDefinition(template, 1, [makeChoiceMemory(0, 'positive')]);
     expect(resolved.difficulty).toBe(0.4);
   });
 
@@ -102,14 +108,14 @@ describe('The Page Beneath the Saint — branch & aftermath resolution', () => {
   it('aftermath branches on step 0 and covers both poles + fallback', () => {
     const cfg = template.aftermathConfig!;
     expect(cfg.branchOnStep).toBe(0);
-    expect(cfg.variants['bury_it_deeper']).toBeDefined();
-    expect(cfg.variants['let_the_truth_surface']).toBeDefined();
+    expect(cfg.variants['negative']).toBeDefined();
+    expect(cfg.variants['positive']).toBeDefined();
     expect(cfg.fallback).toBeDefined();
   });
 
   it('both aftermath poles have 2 reactions, each with at least one effect', () => {
     const cfg = template.aftermathConfig!;
-    for (const key of ['bury_it_deeper', 'let_the_truth_surface']) {
+    for (const key of ['negative', 'positive']) {
       const variant = cfg.variants[key];
       expect(variant.reactions).toHaveLength(2);
       for (const r of variant.reactions!) {
