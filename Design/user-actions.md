@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-05 08:59 local (07:59 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-05 09:58 local (08:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,6 +46,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-05: the bonded mortal's name stays whole in the Threads rail, and it is live** ([THR-2165](https://linear.app/threadbare/issue/THR-2165)). Merged via [#2750](https://github.com/christianspliid-ui/threadbare/pull/2750); the first fix from this morning's returning-player playtest.
 - **2026-11-05: the last player picks go — the mentorship moments and the elite encounters now let the mortal decide, and it is live** ([THR-2161](https://linear.app/threadbare/issue/THR-2161/the-last-player-picks-go-the-three-mentorship-moments-and-the-two)). Merged via [#2748](https://github.com/christianspliid-ui/threadbare/pull/2748); this finishes the mortal-decides conversion.
 - **2026-11-05: Flawed Steel and the five sphere story beats now let the mortal decide, and it is live** ([THR-2157](https://linear.app/threadbare/issue/THR-2157/the-mortal-decides-flawed-steel-and-the-five-sphere-story-beats-their)). Merged via [#2746](https://github.com/christianspliid-ui/threadbare/pull/2746).
 - **2026-11-04: Legibility 4 is live: the god rail, the Ledger rail, list rows and the hover card read cleaner** ([THR-2125](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover)). Merged via [#2741](https://github.com/christianspliid-ui/threadbare/pull/2741).
@@ -55,7 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-04: the path now pulls only scenes about the same thing, and it is live** ([THR-2156](https://linear.app/threadbare/issue/THR-2156)). Merged via [#2736](https://github.com/christianspliid-ui/threadbare/pull/2736).
 - **2026-11-04: the next follower has a path, and it is live** ([THR-2155](https://linear.app/threadbare/issue/THR-2155)). Merged via [#2735](https://github.com/christianspliid-ui/threadbare/pull/2735).
 - **2026-11-04: the Mandate row now leads with the hunger's own words and counts the mortals bound to you** ([THR-2154](https://linear.app/threadbare/issue/THR-2154/the-goal-says-what-fills-it-the-mandate-row-leads-with-the-hungers-own)). Merged via [#2734](https://github.com/christianspliid-ui/threadbare/pull/2734), and it is live.
-- **2026-11-03: Legibility 3 is live: the Stage and the dialogs show the title first, then the stakes** ([THR-2124](https://linear.app/threadbare/issue/THR-2124/plan-doc-legibility-3-the-stage-and-the-dialogs-a-title-you-see-first)). Merged via [#2733](https://github.com/christianspliid-ui/threadbare/pull/2733).
 ---
 
 Older resolved items and every earlier revision of this file: `git log -p origin/ops -- Design/user-actions.md`.

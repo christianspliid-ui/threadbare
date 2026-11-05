@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-05 08:59 local (07:59 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-05 09:58 local (08:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -43,14 +43,17 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Two ready, nothing in progress. The builder is idle by design until 14:25 UTC.** [The last player picks go](https://linear.app/threadbare/issue/THR-2161/the-last-player-picks-go-the-three-mentorship-moments-and-the-two) merged at 06:31 UTC ([#2748](https://github.com/christianspliid-ui/threadbare/pull/2748)) and is live, which finishes the mortal-decides conversion. The two ready tickets, [the one-line records](https://linear.app/threadbare/issue/THR-2162/town-encounters-the-one-line-records-each-summary-line-names-the) and [the overviews and follow-up lines](https://linear.app/threadbare/issue/THR-2163/town-encounters-the-overviews-and-carryover-lines-name-the-mortal-say), wait out your veto window. The builder's runs since then (newest 07:52 UTC) stood down for that reason only, which is correct.
+**Healthy: six ready, one being built. The builder is working again.** This morning's [returning-player playtest](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/warm-playtest-round-3.md) got all three testers into the mid-game for the first time, and all three called the Gallows Pardon chapter the best thing they played. Its screen bugs became tickets, and the builder took them straight away:
+- **Being built now:** [buttons that move just as the player clicks them](https://linear.app/threadbare/issue/THR-2166/buttons-move-just-as-the-player-clicks-them-continue-jumps-up-after-a) (branch [`claude/thr-2166-buttons-hold-still`](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-2166-buttons-hold-still), active a few minutes ago).
+- **Shipped:** [the bonded mortal's name stays whole in the Threads rail](https://github.com/christianspliid-ui/threadbare/pull/2750) (THR-2165), merged 08:47 UTC and live.
+- **Ready next:** [a cast's result contradicts itself](https://linear.app/threadbare/issue/THR-2168/a-casts-result-contradicts-itself-a-dream-that-took-no-hold-says-it), [the "Needs you" count and toasts that never expire](https://linear.app/threadbare/issue/THR-2169/recurs-after-fix-needs-you-counts-things-that-cannot-be-opened-and), [Escape and Space do the wrong thing](https://linear.app/threadbare/issue/THR-2167/escape-and-space-do-the-wrong-thing-a-showing-tooltip-eats-the-escape), and [five small faults](https://linear.app/threadbare/issue/THR-2170/five-small-faults-from-warm-round-3-one-scholar-cast-twice-shiaru). The two town-encounter tickets ([THR-2162](https://linear.app/threadbare/issue/THR-2162/town-encounters-the-one-line-records-each-summary-line-names-the), [THR-2163](https://linear.app/threadbare/issue/THR-2163/town-encounters-the-overviews-and-carryover-lines-name-the-mortal-say)) wait for your veto window to end at 14:25 UTC.
+- The playtest's three bigger problems go to the design lane, not you: [rival gods you can see but not answer](https://linear.app/threadbare/issue/THR-2172), [a "Fated" roll that failed with no reason given](https://linear.app/threadbare/issue/THR-2171), and [no recap when you come back](https://linear.app/threadbare/issue/THR-2173). *— from the playtest lane*
 
 Items for agents, not you:
-- **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it. With the builder idle, it is the cheapest work on the board.
+- **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (16 days; In Dev since 15 Oct). No local worktree holds work for it (checked this run). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
-- **The returning-player playtest should run at today's 09:47 UTC fire.** *— from [the playtest lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/warm-playtest-round-2-stale.md)*
 
 ## Health
 
-- All green. The live site serves the latest commit on main (36c3e9ca). Checks on main and the 3 scheduled background jobs pass, and no pull requests are waiting. All 10 enabled scheduled tasks are on time. The worktree cleaner last ran at 08:52 local. Engine speed is fine: 128 ms/tick, 18% below the 7-day median.
-- The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 29 commits behind main. It is the read-only mirror and catches up on its own.
+- All green. The live site serves the latest commit on main (c6fda875). Checks on main and the 3 scheduled background jobs pass, and no pull requests are waiting. All 10 enabled scheduled tasks are on time. The worktree cleaner last ran at 09:40 local. Engine speed is fine: 177 ms/tick, 13% above the 7-day median, inside the 25% band.
+- The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 34 commits behind main. It is the read-only mirror and catches up on its own.
