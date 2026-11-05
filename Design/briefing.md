@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-05 10:57 local (09:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-05 12:00 local (11:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -43,18 +43,18 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: four ready, one being built.** The builder is working through this morning's [returning-player playtest](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/warm-playtest-round-3.md) bugs. Two shipped this hour:
-- **Shipped:** [buttons hold still under the player's hand](https://github.com/christianspliid-ui/threadbare/pull/2751) (THR-2166), merged 09:02 UTC, and [a cast's result says one thing](https://github.com/christianspliid-ui/threadbare/pull/2752) (THR-2168), merged 09:36 UTC. Both are live.
-- **Being built now:** [the "Needs you" count and toasts that never expire](https://linear.app/threadbare/issue/THR-2169/recurs-after-fix-needs-you-counts-things-that-cannot-be-opened-and). Its fix is in [PR #2753](https://github.com/christianspliid-ui/threadbare/pull/2753), waiting on checks and set to merge itself.
-- **Ready next:** [Escape and Space do the wrong thing](https://linear.app/threadbare/issue/THR-2167/escape-and-space-do-the-wrong-thing-a-showing-tooltip-eats-the-escape) and [five small faults](https://linear.app/threadbare/issue/THR-2170/five-small-faults-from-warm-round-3-one-scholar-cast-twice-shiaru). The two town-encounter tickets ([THR-2162](https://linear.app/threadbare/issue/THR-2162/town-encounters-the-one-line-records-each-summary-line-names-the), [THR-2163](https://linear.app/threadbare/issue/THR-2163/town-encounters-the-overviews-and-carryover-lines-name-the-mortal-say)) wait for your veto window to end at 14:25 UTC.
+**Thin: two ready, both held until 14:25 UTC; one being built.** The builder is finishing this morning's [returning-player playtest](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/warm-playtest-round-3.md) bugs. Two more shipped this hour:
+- **Shipped:** [the "Needs you" count and toasts that never expire](https://github.com/christianspliid-ui/threadbare/pull/2753) (THR-2169), merged 10:01 UTC, and [Escape and Space do the right thing](https://github.com/christianspliid-ui/threadbare/pull/2754) (THR-2167), merged 10:32 UTC. Both are live.
+- **Being built now:** [five small faults](https://linear.app/threadbare/issue/THR-2170/five-small-faults-from-warm-round-3-one-scholar-cast-twice-shiaru), on [branch `claude/thr-2170-warm-round3-faults`](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-2170-warm-round3-faults). This is the last of the playtest's screen bugs.
+- **Ready next:** the two town-encounter tickets ([THR-2162](https://linear.app/threadbare/issue/THR-2162/town-encounters-the-one-line-records-each-summary-line-names-the), [THR-2163](https://linear.app/threadbare/issue/THR-2163/town-encounters-the-overviews-and-carryover-lines-name-the-mortal-say)). They wait for your veto window to end at 14:25 UTC, so the builder may sit idle for a few hours after THR-2170. That is expected.
 - The playtest's three bigger problems go to the design lane, not you: [rival gods you can see but not answer](https://linear.app/threadbare/issue/THR-2172), [a "Fated" roll that failed with no reason given](https://linear.app/threadbare/issue/THR-2171), and [no recap when you come back](https://linear.app/threadbare/issue/THR-2173). *— from the playtest lane*
 
 Items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (16 days; In Dev since 15 Oct). No branch names it, and last hour's worktree check found no local work for it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (16 days; In Dev since 15 Oct). No pushed branch names it and no local worktree holds work for it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- **Engine speed drifted (for an agent, not you):** tick cost 220 ms/tick steady, 40% above the 7-day median (157, 125 rows since 9c6fc808); top phase agent_decision, 628 agents. Name the merges between 9c6fc808 and fc23ceae: `git log --oneline --merges 9c6fc808..fc23ceae`. The builder was compiling and testing on the same machine during this measurement, so one reading may be noise; last hour read 177 ms/tick.
-- Everything else is green. The live site serves the latest commit on main (fc23ceae). Checks on main and the 3 scheduled background jobs pass. All 10 enabled scheduled tasks are on time, and the worktree cleaner ran this hour.
-- The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 44 commits behind main. It is the read-only mirror and catches up on its own.
+- **Engine speed drifted (for an agent, not you):** tick cost 254 ms/tick steady, 61% above the 7-day median (157, 126 rows since 9c6fc808); top phase agent_decision, 628 agents. Name the merges between 9c6fc808 and 8a2ff3c6: `git log --oneline --merges 9c6fc808..8a2ff3c6`. The builder was building THR-2170 on the same machine during this measurement too, so the reading is likely inflated; of the last three hours, two read high (220, 254) and one normal (177).
+- Everything else is green. The live site serves the latest commit on main (8a2ff3c6). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting. All 10 enabled scheduled tasks are on time, and the worktree cleaner ran this hour.
+- The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 54 commits behind main. It is the read-only mirror and catches up on its own.

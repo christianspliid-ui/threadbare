@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-05 10:57 local (09:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-05 12:00 local (11:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,6 +46,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-05: Escape and Space now do the right thing, and it is live** ([THR-2167](https://linear.app/threadbare/issue/THR-2167/escape-and-space-do-the-wrong-thing-a-showing-tooltip-eats-the-escape)). Merged via [#2754](https://github.com/christianspliid-ui/threadbare/pull/2754).
+- **2026-11-05: "Needs you" counts only what can be opened, and action toasts expire, and it is live** ([THR-2169](https://linear.app/threadbare/issue/THR-2169/recurs-after-fix-needs-you-counts-things-that-cannot-be-opened-and)). Merged via [#2753](https://github.com/christianspliid-ui/threadbare/pull/2753).
 - **2026-11-05: a cast's result now says one thing, and it is live** ([THR-2168](https://linear.app/threadbare/issue/THR-2168/a-casts-result-contradicts-itself-a-dream-that-took-no-hold-says-it)). Merged via [#2752](https://github.com/christianspliid-ui/threadbare/pull/2752).
 - **2026-11-05: buttons hold still under the player's hand, and it is live** ([THR-2166](https://linear.app/threadbare/issue/THR-2166/buttons-move-just-as-the-player-clicks-them-continue-jumps-up-after-a)). Merged via [#2751](https://github.com/christianspliid-ui/threadbare/pull/2751).
 - **2026-11-05: the bonded mortal's name stays whole in the Threads rail, and it is live** ([THR-2165](https://linear.app/threadbare/issue/THR-2165)). Merged via [#2750](https://github.com/christianspliid-ui/threadbare/pull/2750); the first fix from this morning's returning-player playtest.
@@ -54,8 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-04: Legibility 4 is live: the god rail, the Ledger rail, list rows and the hover card read cleaner** ([THR-2125](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover)). Merged via [#2741](https://github.com/christianspliid-ui/threadbare/pull/2741).
 - **2026-11-04: half two of the reputation encounters now lets the mortal decide, and it is live** ([THR-2160](https://linear.app/threadbare/issue/THR-2160)). Merged via [#2740](https://github.com/christianspliid-ui/threadbare/pull/2740).
 - **2026-11-04: half one of the reputation encounters now lets the mortal decide, and it is live** ([THR-2159](https://linear.app/threadbare/issue/THR-2159)). Merged via [#2738](https://github.com/christianspliid-ui/threadbare/pull/2738).
-- **2026-11-04: the six seeded quests now let the mortal decide, and it is live** ([THR-2158](https://linear.app/threadbare/issue/THR-2158)). Merged via [#2737](https://github.com/christianspliid-ui/threadbare/pull/2737).
-- **2026-11-04: the path now pulls only scenes about the same thing, and it is live** ([THR-2156](https://linear.app/threadbare/issue/THR-2156)). Merged via [#2736](https://github.com/christianspliid-ui/threadbare/pull/2736).
 ---
 
 Older resolved items and every earlier revision of this file: `git log -p origin/ops -- Design/user-actions.md`.
