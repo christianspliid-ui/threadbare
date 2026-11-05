@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-05 13:00 local (12:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-05 14:00 local (13:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -50,8 +50,8 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Thin: three ready, all held in veto windows; nothing being built.** The builder is idle on purpose. That is expected, not a stall: its last three runs each found nothing it was allowed to start.
-- **Shipped this hour:** [five small faults from the returning-player playtest](https://github.com/christianspliid-ui/threadbare/pull/2755) ([THR-2170](https://linear.app/threadbare/issue/THR-2170/five-small-faults-from-warm-round-3-one-scholar-cast-twice-shiaru)), merged 11:13 UTC and live. That was the last of [the playtest's](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/warm-playtest-round-3.md) screen bugs.
+**Thin: three ready, all held in veto windows; nothing being built.** The builder is idle on purpose. That is expected, not a stall: its last four runs (11:51–12:52 UTC) each found nothing it was allowed to start.
+- **Shipped earlier today:** [five small faults from the returning-player playtest](https://github.com/christianspliid-ui/threadbare/pull/2755) ([THR-2170](https://linear.app/threadbare/issue/THR-2170/five-small-faults-from-warm-round-3-one-scholar-cast-twice-shiaru)), merged 11:13 UTC and live. That was the last of [the playtest's](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/warm-playtest-round-3.md) screen bugs.
 - **Ready at 14:25 UTC:** the two town-encounter tickets ([THR-2162](https://linear.app/threadbare/issue/THR-2162/town-encounters-the-one-line-records-each-summary-line-names-the), [THR-2163](https://linear.app/threadbare/issue/THR-2163/town-encounters-the-overviews-and-carryover-lines-name-the-mortal-say)).
 - **Ready at 23:45 UTC:** ["Waits for you" / "Theirs alone" on each chapter](https://linear.app/threadbare/issue/THR-2178/say-which-chapters-wait-for-the-god-a-waits-for-you-theirs-alone-word) (THR-2178). New this hour, from the design lane.
 - The playtest's three bigger problems are with the design lane, not you: [rival gods you can see but not answer](https://linear.app/threadbare/issue/THR-2172), [a "Fated" roll that failed with no reason given](https://linear.app/threadbare/issue/THR-2171), and [no recap when you come back](https://linear.app/threadbare/issue/THR-2173).
@@ -63,5 +63,4 @@ Items for agents, not you:
 ## Health
 
 - All green. The live site serves the latest commit on main (a57d0a18). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting. All enabled scheduled tasks are on time, and the worktree cleaner ran this hour.
-- Engine speed is back to normal: 134 ms per tick, 15% under the week's median (157). Last hour's high reading came while the builder shared the machine.
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 61 commits behind main. It is the read-only mirror and catches up on its own.
