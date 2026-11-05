@@ -722,7 +722,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           },
           success_at_cost: {
             overview: 'Brother {cast:friar} is out of the town, but only through the smugglers\' water-gate, and the '
-              + 'Thieves Guild that keeps that gate has put {actor} on its rolls.',
+              + 'Thieves Guild that keeps that gate now calls {actor} one of its own.',
             changes: [
               {
                 id: 'friar.gate.cost.scroll',
