@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-05 07:58 local (06:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-05 08:59 local (07:59 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -43,7 +43,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Two ready, nothing in progress. The builder is idle by design until 14:25 UTC.** [The last player picks go](https://linear.app/threadbare/issue/THR-2161/the-last-player-picks-go-the-three-mentorship-moments-and-the-two) merged at 06:31 UTC ([#2748](https://github.com/christianspliid-ui/threadbare/pull/2748)) and is live, which finishes the mortal-decides conversion. The two ready tickets, [the one-line records](https://linear.app/threadbare/issue/THR-2162/town-encounters-the-one-line-records-each-summary-line-names-the) and [the overviews and follow-up lines](https://linear.app/threadbare/issue/THR-2163/town-encounters-the-overviews-and-carryover-lines-name-the-mortal-say), wait out your veto window. The builder's runs since then stood down for that reason only, which is correct.
+**Two ready, nothing in progress. The builder is idle by design until 14:25 UTC.** [The last player picks go](https://linear.app/threadbare/issue/THR-2161/the-last-player-picks-go-the-three-mentorship-moments-and-the-two) merged at 06:31 UTC ([#2748](https://github.com/christianspliid-ui/threadbare/pull/2748)) and is live, which finishes the mortal-decides conversion. The two ready tickets, [the one-line records](https://linear.app/threadbare/issue/THR-2162/town-encounters-the-one-line-records-each-summary-line-names-the) and [the overviews and follow-up lines](https://linear.app/threadbare/issue/THR-2163/town-encounters-the-overviews-and-carryover-lines-name-the-mortal-say), wait out your veto window. The builder's runs since then (newest 07:52 UTC) stood down for that reason only, which is correct.
 
 Items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it. With the builder idle, it is the cheapest work on the board.
@@ -52,5 +52,5 @@ Items for agents, not you:
 
 ## Health
 
-- All green. The live site serves the latest commit on main (36c3e9ca). Checks on main and the 3 scheduled background jobs pass, and no pull requests are waiting. All 10 enabled scheduled tasks are on time. The worktree cleaner last ran at 07:40 local. Engine speed is back in range: 180 ms/tick, 15% above the 7-day median, so last hour's 219 reading was most likely load from the builder.
+- All green. The live site serves the latest commit on main (36c3e9ca). Checks on main and the 3 scheduled background jobs pass, and no pull requests are waiting. All 10 enabled scheduled tasks are on time. The worktree cleaner last ran at 08:52 local. Engine speed is fine: 128 ms/tick, 18% below the 7-day median.
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 29 commits behind main. It is the read-only mirror and catches up on its own.
