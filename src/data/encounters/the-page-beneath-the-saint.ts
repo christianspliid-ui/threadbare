@@ -31,7 +31,7 @@
  * at every branch, human consequences over mechanical labels.
  */
 
-import type { UnifiedActionTemplate, ActionStep, ActionStepBranch, AftermathVariant } from '../../types/unifiedAction';
+import type { UnifiedActionTemplate, ActionStep, ActionStepBranch, AftermathVariant, EncounterAftermathChange } from '../../types/unifiedAction';
 import { withEncounterContract } from '../encounter-contract-builder';
 import { DEAL_DEFAULT_COUNT } from '../nudge-constants';
 
@@ -52,18 +52,17 @@ const step0TheFind: ActionStep = {
   // THR-2134: all player text rewritten to Prose Doctrine v2 (opening skeleton).
   narrativeTemplate:
     '{actor}, an archivist, is working late in the sealed lower stacks of the great library at {location}.\n\n' +
-    '{actor} finds the faith\'s founding chronicle, in the first scribe\'s own hand. It says the saint never ' +
-    'healed the dying at the river. The miracle was staged with a borrowed corpse and a paid witness, and ' +
-    'the relic came from a butcher\'s shop.\n\n' +
-    'The whole region lives by that faith. {actor} must decide what to do with the page.',
-  successAfterimage: '{actor} held the chronicle under the lamp and could not put it down.',
+    '{actor} finds the faith\'s founding chronicle in the first scribe\'s own hand. It says the saint\'s ' +
+    'miracle at the river was staged. A paid witness lied, and the relic came from a butcher\'s shop.\n\n' +
+    'The whole region lives by this faith. If {actor} shows the page to anyone, the faith may break apart.',
+  successAfterimage: '{actor} read the whole chronicle and is sure it is genuine.',
   failureAfterimage: '{actor}\'s hands shook so badly that the old page nearly tore.',
   // THR-1667 S3: the missing afterimages. Step 0 is the authored choice, so it
   // carries no hand (a hand on a choice step would replace the fork).
-  successAtCostAfterimage: '{actor} kept hold of the chronicle, but gripped it hard enough to crack the page along its fold.',
+  // THR-2134 decision 10: an at-cost line names the mortal's price.
+  successAtCostAfterimage: '{actor} kept reading until dawn and has not slept or eaten since.',
   criticalSuccessAfterimage:
-    '{actor} found a note from a later scribe in the margin. That scribe had read the same page and kept ' +
-    'the secret.',
+    '{actor} found a note in the margin from a later scribe, who had read the same page and kept the secret.',
   criticalFailureAfterimage:
     'The lamp went out. {actor} found the stair in the dark and came up with the page crushed in one fist.',
 };
@@ -81,19 +80,19 @@ const step1BuryItDeeper: ActionStep = {
   onFailure: [],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god shows {actor} the dying farmers the faith comforts, and makes the page seem cruel beside them. ' +
-    '{actor} begins writing false notes into the library\'s copies, calling the old hand unreliable. ' +
-    '{actor} means to seal the original in a wall deeper in the stacks.',
-  successAfterimage: 'The page went back into the dark, deeper than before. The faith stood untouched.',
+    'The god pushes {actor} to protect the faith and the comfort it gives the dying. {actor} writes false ' +
+    'notes into the library\'s copies, calling the old hand unreliable. Then {actor} carries the original ' +
+    'deeper into the stacks to seal it in a wall.',
+  successAfterimage: '{actor} sealed the page in a wall deep in the stacks, and the faith went on as before.',
   failureAfterimage:
-    '{actor} sealed the page but botched the false notes. A sharp reader could follow them back one day.',
+    '{actor} sealed the page but botched the false notes. A careful reader could trace them back one day.',
   // THR-1667 S3: the missing afterimages and a dealt hand.
   successAtCostAfterimage:
-    'The page was sealed, but the mortaring took several nights. A novice saw {actor} on the lowest stair with a trowel.',
+    'Sealing the page took several nights of work, and {actor} has barely slept since.',
   criticalSuccessAfterimage:
-    '{actor} sealed the page and then burned the only shelf-list that named it. Finding it now would take a long search.',
+    '{actor} sealed the page and burned the only shelf-list that named it.',
   criticalFailureAfterimage:
-    '{actor} broke down halfway through the false notes. A junior reader found {actor} weeping, with the ' +
+    '{actor} broke down halfway through the false notes. A junior reader found {them} weeping, with the ' +
     'page open on the desk.',
   deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'presence'] },
   successMetadata: { reputationDelta: 0.14 },
@@ -113,18 +112,18 @@ const step1LetTheTruthSurface: ActionStep = {
   onFailure: [],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god gives {actor} nothing, and leaves {actor} alone with the page. {actor} makes careful copies, ' +
-    'with the proof of the page\'s age set out plainly. {actor} gives one copy to the youngest reader in ' +
-    'the order and lets the others travel.',
-  successAfterimage: 'The chronicle came into the open, and the faith split around it.',
+    'The god gives {actor} no push and leaves {them} alone with the page. {actor} makes careful copies and ' +
+    'sets out the proof of the page\'s age. {They} give{s} one copy to the youngest reader in the order and ' +
+    'send{s} the rest to other libraries.',
+  successAfterimage: 'The copies spread through the region, and the faith began to argue over them.',
   failureAfterimage:
-    'The truth came out half-proven at first. It took a year of quarrels before the faith split.',
+    'The copies went out without enough proof, and the order called them doubtful. The quarrel over them will take years.',
   // THR-1667 S3: the missing afterimages and a dealt hand.
   successAtCostAfterimage:
-    'The chronicle came into the open, but the order took {actor}\'s keys the day the copies went out.',
+    'The copies went out, but the order took {actor}\'s keys and barred {them} from the library.',
   criticalSuccessAfterimage:
-    'The order\'s own high reader compared the page with the relic\'s papers, and declared in chapter that ' +
-    'the page was genuine.',
+    'The order\'s own high reader compared the page with the relic\'s papers and declared in chapter that ' +
+    'it was genuine.',
   criticalFailureAfterimage:
     'The order called the chronicle a forgery before the copies were a day old. {actor} was named a ' +
     'heretic, and the copies burned in the square.',
@@ -146,32 +145,32 @@ const step1Branch: ActionStepBranch = {
 
 const TRUTH_BURIED_AFTERMATH = {
   overview:
-    'The region\'s calendar, its courts and its prayers for the dying go on as before. Nothing in the ' +
-    'faith has changed. Only {actor} knows what it is built on.',
+    'That season the saint\'s feast went ahead as it does every year. {actor} walked in the procession ' +
+    'and sang the saint\'s hymn with everyone else.',
   changes: [
     {
       id: 'page_faith_preserved',
       kind: 'future_hook' as const,
       title: 'A Faith Kept Whole',
-      detail: 'The faith stands undisturbed on a forged founding.',
+      detail: 'The faith goes on unchanged, though its founding was forged.',
       polarity: 'gain' as const,
     },
     {
       id: 'page_archivist_haunted',
       kind: 'reputation' as const,
-      title: 'The Most Devout in the Region',
-      detail: '{actor} buried the truth, and now prays louder than anyone.',
+      title: 'The Keeper of the Secret',
+      detail: 'Only {actor} knows the saint was invented, and must keep quiet.',
       polarity: 'mixed' as const,
     },
     {
       id: 'page_buried_timebomb',
       kind: 'future_hook' as const,
       title: 'The Page in the Wall',
-      detail: 'The true chronicle is mortared into a wall. Someone may find it.',
+      detail: 'The true chronicle is sealed in a wall. Someone could find it.',
       polarity: 'loss' as const,
     },
   ],
-  reactionPrompt: 'The faith stands, and the true page is hidden. What does the god do now?',
+  reactionPrompt: 'Does the god bless the faith, or stay with {actor}?',
   reactions: [
     {
       id: 'page_buried_react_bless_the_comfort',
@@ -201,7 +200,7 @@ const TRUTH_BURIED_AFTERMATH = {
     {
       id: 'page_buried_react_ease_the_keeper',
       label: 'Stay with the keeper.',
-      intent: 'Stay near {actor}, who carries the secret and prays every day to a saint who never lived.',
+      intent: 'Stay near {actor}, who carries the secret and still prays to a saint who never lived.',
       effects: [
         {
           kind: 'reputation_tally' as const,
@@ -228,8 +227,8 @@ const TRUTH_BURIED_AFTERMATH = {
 
 const TRUTH_SURFACED_AFTERMATH = {
   overview:
-    'The old believers grieve a miracle they now know was staged. The young are building a colder, more ' +
-    'honest faith of their own. The dying no longer have the saint\'s river to hope for.',
+    'The copies reached every parish. In each one, the priest had to answer for the chronicle in front of ' +
+    'the congregation.',
   changes: [
     {
       id: 'page_faith_shattered',
@@ -242,18 +241,18 @@ const TRUTH_SURFACED_AFTERMATH = {
       id: 'page_truth_freed',
       kind: 'future_hook' as const,
       title: 'The Truth in the Open',
-      detail: 'Copies of the true chronicle are everywhere. No one can call them back.',
+      detail: 'Copies of the chronicle are everywhere, and no one can call them back.',
       polarity: 'gain' as const,
     },
     {
       id: 'page_archivist_marked',
       kind: 'reputation' as const,
       title: 'The One Who Read the Page',
-      detail: 'Half the region hates {actor}. The other half gives thanks for the truth.',
+      detail: 'Half the region hates {actor}. The other half is grateful.',
       polarity: 'mixed' as const,
     },
   ],
-  reactionPrompt: 'The truth is out, and the faith is split. What does the god do now?',
+  reactionPrompt: 'Does the god comfort the grieving, or bless the reformers?',
   reactions: [
     {
       id: 'page_surfaced_react_tend_the_grieving',
@@ -314,16 +313,29 @@ const TRUTH_SURFACED_AFTERMATH = {
 // losing band each path owes (THR-1509 per-path coverage). A band ending retells
 // how the existing change landed; it never adds a chip (UI Law 56).
 
-// The burial still holds on a critical failure, only worse kept: all three
-// base chips stay true, so the band restates the overview alone.
+/**
+ * The subset of a variant's own chips, by id — never a new chip. A local copy of
+ * the Comet file's helper (THR-2134 decision 13).
+ */
+function keepChanges(
+  variant: { readonly changes: readonly EncounterAftermathChange[] },
+  ids: readonly string[],
+): readonly EncounterAftermathChange[] {
+  return variant.changes.filter((change) => ids.includes(change.id));
+}
+
+// The burial still holds on a critical failure, but a junior reader saw the
+// open page, so the archivist is no longer the only one who knows. The keeper
+// chip says "only {actor} knows" and is now false, so the band drops it
+// (THR-2134 decision 13; UI Law 56).
 const TRUTH_BURIED_ENDINGS: AftermathVariant = {
   ...TRUTH_BURIED_AFTERMATH,
   byOutcome: {
     critical_failure: {
       overview:
-        'The secret did not keep for even a season. A junior reader found {actor} weeping over the open ' +
-        'chronicle and was told a clumsy lie. The page went back into the wall all the same. But two people ' +
-        'now know it exists, and one of them never agreed to keep quiet.',
+        'A junior reader found {actor} weeping over the open chronicle. {actor} told a clumsy lie about it ' +
+        'and sealed the page in the wall anyway. The junior reader made no promise to keep quiet.',
+      changes: keepChanges(TRUTH_BURIED_AFTERMATH, ['page_faith_preserved', 'page_buried_timebomb']),
     },
   },
 };
@@ -336,10 +348,10 @@ const TRUTH_SURFACED_ENDINGS: AftermathVariant = {
   byOutcome: {
     critical_failure: {
       overview:
-        'The faith did not split. It hardened, and more lamps burn for the saint than before. {actor} lives outside the ' +
-        'library now, on what a few believers can spare.',
+        'The faithful believed the order\'s denial, and more of them visit the saint\'s shrine than before. ' +
+        '{actor} lives outside the library now, on what a few friends can spare.',
       changes: [],
-      reactionPrompt: 'The faith has hardened, and {actor} is out in the cold. What does the god do now?',
+      reactionPrompt: 'What does the god do now?',
       reactions: [],
     },
   },
@@ -350,15 +362,15 @@ const TRUTH_SURFACED_ENDINGS: AftermathVariant = {
 export const PAGE_BENEATH_THE_SAINT_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'veil.truth.page_beneath_saint',
   stakes: {
-    goal: 'seal the true page about the saint back in the dark',
+    goal: 'hide the page that proves the saint was invented',
     risk: 'be found weeping over the open page',
-    won: 'sealed the saint’s page deeper in the stacks',
+    won: 'sealed the page in a wall deep in the stacks',
     lost: 'sealed the page but botched the false notes',
     lostBadly: 'was found weeping over the open page',
     arms: {
       let_the_truth_surface: {
-        won: 'carried the chronicle into the open',
-        lost: 'leaked the truth half-proven and easy to deny',
+        won: 'sent copies of the chronicle across the region',
+        lost: 'sent out copies the order called doubtful',
         lostBadly: 'was named a heretic as the copies burned',
       },
     },
@@ -385,14 +397,12 @@ export const PAGE_BENEATH_THE_SAINT_TEMPLATE: UnifiedActionTemplate = withEncoun
 
   narrativeTemplates: {
     initiation:
-      'A threaded archivist has found proof that a regional faith\'s saint was invented. A god can push the ' +
-      'page back into the dark, or leave the archivist to bring it out.',
+      'An archivist has found proof that a regional faith\'s saint was invented. A god can push the archivist ' +
+      'to hide the page, or leave the archivist to bring it out.',
     success:
-      'The archivist seals the page away or carries it into the open. The faith stands on a known lie, or ' +
-      'splits around the truth.',
+      'The archivist seals the page away, or sends copies of it across the region.',
     failure:
-      'The archivist\'s work goes wrong: a botched burial, or a truth leaked half-proven. The region gets ' +
-      'neither comfort nor a reckoning.',
+      'The archivist\'s work goes wrong: the false notes are botched, or the copies go out without enough proof.',
   },
 
 
@@ -401,8 +411,7 @@ export const PAGE_BENEATH_THE_SAINT_TEMPLATE: UnifiedActionTemplate = withEncoun
       {
         id: 'bury_it_deeper',
         label: 'Bury it deeper. Let the comfort stand.',
-        intent:
-          'Make the truth feel cruel and the lie feel kind, and push the archivist to seal the page away.',
+        intent: 'Push the archivist to protect the faith and seal the page away.',
         targetLabel: 'The archivist',
         essenceCost: 2, // THR-1800 — the god's push is paid for
         interventionType: 'coercive',
@@ -410,7 +419,7 @@ export const PAGE_BENEATH_THE_SAINT_TEMPLATE: UnifiedActionTemplate = withEncoun
       {
         id: 'let_the_truth_surface',
         label: 'Hold back. Let the truth surface.',
-        intent: 'Give the archivist nothing, no vision and no push, and leave them alone with the page.',
+        intent: 'Give the archivist no vision and no push. Leave the archivist alone with the page.',
         targetLabel: 'The archivist',
         essenceCost: 0, // THR-1800 — staying your hand costs nothing
         interventionType: 'withdrawn',
