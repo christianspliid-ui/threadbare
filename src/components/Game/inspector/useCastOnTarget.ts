@@ -82,7 +82,7 @@ export function useCastOnTarget(deps: CastOnTargetDeps): CastOnTarget {
     if (!read) return { cast: false, reason: null };
     const slot = read.slots.find(s => s.id === actionId);
     if (!slot) return { cast: false, reason: null };
-    if (!slot.available) return { cast: false, reason: actionBlockedReason(slot.lockedReason, slot.rangeStatus) ?? null };
+    if (!slot.available) return { cast: false, reason: actionBlockedReason(slot.lockedReason, slot.rangeStatus, slot.rangeLimitHexes) ?? null };
 
     if (slot.type === 'intervention' && slot.interventionType && target.kind === 'agent') {
       beginIntervention?.(target.id, slot);

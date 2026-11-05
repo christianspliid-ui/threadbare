@@ -244,6 +244,19 @@ describe('resolveBinding', () => {
     expect(decisionTraces()[0].rows.some(r => r.nodeId === 'actor-hero')).toBe(false);
   });
 
+  it('never casts one person in two slots — excludeNodeIds drops them from the board (THR-2170)', () => {
+    const graph = world();
+    addPerson(graph, 'actor-inn', { npcRole: 'innkeeper' });
+
+    const decision = resolveBinding(
+      request({ castKey: '$second', excludeNodeIds: new Set(['actor-inn']) }),
+      ctxFor(graph),
+    );
+
+    expect(decision.mode).toBe('mint');
+    expect(decisionTraces()[0].rows.some(r => r.nodeId === 'actor-inn')).toBe(false);
+  });
+
   it('excludes the dead from the board', () => {
     const graph = world();
     addPerson(graph, 'actor-ghost', { npcRole: 'innkeeper', deceased: true });

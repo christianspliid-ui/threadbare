@@ -128,7 +128,7 @@ export function actionCardModel(slot: WheelSlot, opts: ActionCardModelOptions = 
   const verb = actionVerbChip(slot);
   const artPath = getActionArt(slot.id);
   const dimmed = !slot.available && !playing;
-  const blockedReason = dimmed ? actionBlockedReason(slot.lockedReason, slot.rangeStatus) : undefined;
+  const blockedReason = dimmed ? actionBlockedReason(slot.lockedReason, slot.rangeStatus, slot.rangeLimitHexes) : undefined;
 
   // An unaffordable card emphasises its price, so the reason the card is dim is
   // legible from the zone that caused it rather than only from the sentence.

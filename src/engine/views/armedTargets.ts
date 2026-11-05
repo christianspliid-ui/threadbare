@@ -17,7 +17,7 @@
  * Range is unchanged (Christian, 2026-10-14): person and place contexts carry no
  * position, so only cards cast on bare land can be "too far". For bare land the map
  * evaluates the known hexes within the range gate's reach only — every hex past it is
- * "Too far from here." by the same gate, which the click on it still answers (§ Fail-soft)
+ * "More than three hexes from your avatar." by the same gate, which the click on it still answers (§ Fail-soft)
  * — so the build never runs the gates once per hex of the whole map (kill criterion 6).
  *
  * Pure: reads the world, never writes it. A card the registry does not know, or a target
@@ -139,7 +139,7 @@ export function evaluateCardOnTarget(state: GameState, actionId: string, ref: Wo
   if (!slot || (slot.type !== 'target_action' && slot.type !== 'intervention')) return NOT_A_TARGET;
   const effectsLine = slot.effectsLine ?? null;
   if (slot.available) return { state: 'castable', reason: null, slotId: slot.id, effectsLine };
-  return { state: 'locked', reason: actionBlockedReason(slot.lockedReason, slot.rangeStatus) ?? null, slotId: slot.id, effectsLine };
+  return { state: 'locked', reason: actionBlockedReason(slot.lockedReason, slot.rangeStatus, slot.rangeLimitHexes) ?? null, slotId: slot.id, effectsLine };
 }
 
 /**

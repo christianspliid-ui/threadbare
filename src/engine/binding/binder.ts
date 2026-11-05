@@ -95,6 +95,12 @@ export interface BindingRequest {
   readonly identityRequirement?: BindingIdentityRequirement;
   /** Node ids bound to this undertaking at an earlier step — continuity beats novelty. */
   readonly carryForward?: ReadonlySet<string>;
+  /**
+   * Node ids already holding another cast slot of this same scene (THR-2170). One
+   * person never fills two slots — "Cast: Shiaru Shiaru" — so these are not candidates
+   * at all, rather than candidates scored down.
+   */
+  readonly excludeNodeIds?: ReadonlySet<string>;
 }
 
 /** An additive change a `modify` decision asks the caller to apply. */
@@ -157,6 +163,8 @@ function enumerateCandidates(ctx: BinderContext, request: BindingRequest): Graph
     if (node.type !== 'actor' || node.properties?.actorType !== 'individual') return;
     // The undertaking's own actor is not castable as their own supporting cast.
     if (node.id === request.actorId) return;
+    // THR-2170: someone already cast in another slot of this scene is not castable twice.
+    if (request.excludeNodeIds?.has(node.id)) return;
     if (isAgentGone(node)) return;
     seen.add(node.id);
     out.push(node);

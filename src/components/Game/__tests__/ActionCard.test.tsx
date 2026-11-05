@@ -159,8 +159,21 @@ describe('ActionCard — Law 13 (no numerals) and Law 14 (no raw keys)', () => {
       lockedReason: 'Out of range (7 hexes)',
     }));
     expect(text).not.toMatch(/\d/);
-    expect(text.toLowerCase()).not.toContain('hex');
+    // THR-2170: no distance *count*; with no limit on the slot, the plain fallback.
+    expect(text).not.toContain('seven');
     expect(text).toContain(ACTION_BLOCKED_OUT_OF_RANGE);
+  });
+
+  it('names the avatar and the reach, in words, when the slot carries its range limit (THR-2170)', () => {
+    const text = cardText(slot({
+      available: false,
+      rangeStatus: 'out_of_range',
+      hexDistance: 7,
+      rangeLimitHexes: 3,
+      lockedReason: 'Out of range (7 hexes)',
+    }));
+    expect(text).not.toMatch(/\d/);
+    expect(text).toContain('More than three hexes from your avatar.');
   });
 
   it('never prints the schema type line the slot id used to be split into', () => {

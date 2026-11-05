@@ -55,6 +55,18 @@ export const NAME_MAX_SYLLABLES = 4;
 export const NAME_MAX_CONSONANT_CLUSTER = 2;
 /** Maximum run of consecutive vowel characters */
 export const NAME_MAX_VOWEL_RUN = 2;
+/**
+ * Hard cap on letters in a generated personal name (THR-2170). Four syllables of
+ * two-letter clusters still reach 15 letters ("Oetgotkoetgoeyt"); a name a player
+ * has to say out loud stops reading as a name well before that.
+ */
+export const NAME_MAX_LENGTH = 11;
+/**
+ * A syllable (onset + nucleus) or letter pair may appear at most this many times in
+ * one personal name (THR-2170). Two is a cadence ("Lalla", "Tartan"); three is a
+ * stammer ("oe" thrice in "Oetgotkoetgoeyt").
+ */
+export const NAME_MAX_REPEATS = 2;
 /** How many times to retry before falling back to curated pool */
 export const NAME_RETRY_BUDGET = 6;
 
@@ -97,6 +109,54 @@ export function hasVowelRunLongerThan(word: string, max: number): boolean {
     } else {
       run = 0;
     }
+  }
+  return false;
+}
+
+/**
+ * Split a word into syllable chunks: each chunk is the consonants before a vowel
+ * group plus that group, and trailing consonants join the last chunk. Same vowel
+ * definition as {@link countSyllables}, so the chunk count matches it.
+ */
+export function syllableChunks(word: string): string[] {
+  const lower = word.toLowerCase().replace(/[^a-z]/g, '');
+  const chunks: string[] = [];
+  let current = '';
+  let sawVowel = false;
+  for (const ch of lower) {
+    const isVowel = VOWELS.has(ch);
+    if (!isVowel && sawVowel) {
+      chunks.push(current);
+      current = '';
+      sawVowel = false;
+    }
+    current += ch;
+    if (isVowel) sawVowel = true;
+  }
+  if (current) {
+    if (sawVowel || chunks.length === 0) chunks.push(current);
+    else chunks[chunks.length - 1] += current;
+  }
+  return chunks;
+}
+
+/**
+ * True when any syllable chunk, or any adjacent letter pair, occurs more than `max`
+ * times in the word (THR-2170).
+ */
+export function hasRepeatsMoreThan(word: string, max: number): boolean {
+  const counts = new Map<string, number>();
+  const bump = (key: string): boolean => {
+    const n = (counts.get(key) ?? 0) + 1;
+    counts.set(key, n);
+    return n > max;
+  };
+  for (const chunk of syllableChunks(word)) {
+    if (bump(`s:${chunk}`)) return true;
+  }
+  const letters = word.toLowerCase().replace(/[^a-z]/g, '');
+  for (let i = 0; i + 1 < letters.length; i++) {
+    if (bump(`b:${letters.slice(i, i + 2)}`)) return true;
   }
   return false;
 }
@@ -392,13 +452,17 @@ export function generatePhoneticName(
 
     // Constraint checks (THR-456)
     if (mode === 'personal') {
-      let constraintReason: 'syllables' | 'consonants' | 'vowels' | null = null;
-      if (countSyllables(candidate) > NAME_MAX_SYLLABLES) {
+      let constraintReason: NamingConstrainedRejectTrace['reason'] | null = null;
+      if (candidate.length > NAME_MAX_LENGTH) {
+        constraintReason = 'length';
+      } else if (countSyllables(candidate) > NAME_MAX_SYLLABLES) {
         constraintReason = 'syllables';
       } else if (hasConsonantClusterLongerThan(candidate, NAME_MAX_CONSONANT_CLUSTER)) {
         constraintReason = 'consonants';
       } else if (hasVowelRunLongerThan(candidate, NAME_MAX_VOWEL_RUN)) {
         constraintReason = 'vowels';
+      } else if (hasRepeatsMoreThan(candidate, NAME_MAX_REPEATS)) {
+        constraintReason = 'repeats';
       }
       if (constraintReason !== null) {
         emitTrace({

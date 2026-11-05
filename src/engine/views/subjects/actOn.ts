@@ -212,7 +212,7 @@ function cardsOf(slots: readonly WheelSlot[]): ActOnCardVM[] {
       name: s.spellName ?? s.label,
       sphere: (s.sphere ?? null) as SphereName | null,
       available: s.available,
-      reason: s.available ? null : (actionBlockedReason(s.lockedReason, s.rangeStatus) ?? null),
+      reason: s.available ? null : (actionBlockedReason(s.lockedReason, s.rangeStatus, s.rangeLimitHexes) ?? null),
       ...(s.forecastTier ? { odds: FORECAST_TIER_WORDS[s.forecastTier] } : {}),
     }));
 }

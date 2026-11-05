@@ -94,6 +94,8 @@ import { CulturePhoneticsInspector } from '../Game/debug/CulturePhoneticsInspect
 import { WorldGraph } from '../../engine/graph';
 import { buildPhoneticSignature } from '../../engine/culturePhonetics';
 import type { CultureIdentity } from '../../types/culture';
+import { outOfRangeReason } from '../../data/action-card-display';
+import { TARGET_ACTION_CONSTANTS } from '../../engine/targetActions';
 
 // ─── Phonetic sample graph ───────────────────────────────────────────────────
 
@@ -2001,7 +2003,7 @@ export default function StyleGuide() {
                       id: 'sg.action.blocked',
                       dimmed: true,
                       disabled: true,
-                      blockedReason: 'Too far from here.',
+                      blockedReason: outOfRangeReason(TARGET_ACTION_CONSTANTS.DEFAULT_LOCAL_RANGE),
                     }}
                     designerView={false}
                     onToggle={() => {}}

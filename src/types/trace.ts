@@ -7832,12 +7832,12 @@ export interface ChronicleIntakeSkippedTrace extends TraceBase {
   reason: 'not_threaded';
 }
 
-/** Trace: phonetic name candidate rejected by constraint (syllables/consonants/vowels) */
+/** Trace: phonetic name candidate rejected by constraint (length/syllables/consonants/vowels/repeats) */
 export interface NamingConstrainedRejectTrace extends TraceBase {
   category: 'naming.constrained_reject';
   cultureId: string;
   rejectedCandidate: string;
-  reason: 'syllables' | 'consonants' | 'vowels';
+  reason: 'length' | 'syllables' | 'consonants' | 'vowels' | 'repeats';
   attempt: number;
 }
 
