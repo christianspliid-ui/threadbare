@@ -266,8 +266,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
-      overview: '{actor} has walked the line between the lord\'s land and the common in {location}, and has given the '
-        + 'steward a reading of it.',
+      overview: '{actor} has walked the line between the lord\'s land and the common in {location}.',
       changes: [],
       reactions: [],
       byOutcome: {
