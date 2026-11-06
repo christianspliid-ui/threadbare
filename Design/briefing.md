@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-06 03:58 local (02:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-06 04:57 local (03:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,7 +20,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-From the design lane's [02:20 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-06a.md) (new). Nobody builds on these before 14:44 UTC on 6 November.
+From the design lane's [02:20 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-06a.md). Nobody builds on these before 14:44 UTC on 6 November.
 
 - [Rival gods you can see but not answer](https://linear.app/threadbare/issue/THR-2172) — your answer to a rival is tending, and the game now says so. A place you tend (your seat, somewhere one of your threaded mortals stands, a place you claim, or a town your anointed faction holds) already shrugs off a rival's hand. Nothing ever told the player. Build ticket: [A rival's move has a place and an answer](https://linear.app/threadbare/issue/THR-2185).
 - Same ticket — a rival toast appears only when its hand actually lands, and it names the place: *"The Hollow Warden pressed Death on Iron Glade. Tend it and the next blow breaks."* or *"…pressed on Ashford, but your thread held it."* Clicking it opens the place, where your cards for it are. The old random lines ("curses your followers with plague") are gone from the toast, because none of them ever happened.
@@ -59,12 +59,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: one being built, four ready and waiting out their veto windows.**
-- **Being built now:** [room for the god-rail hand](https://linear.app/threadbare/issue/THR-2177/god-rail-the-pinned-essence-block-leaves-the-hand-no-room-eight-50-px) (THR-2177) — its window opened at 02:45 UTC and the builder's 02:51 UTC run took it.
-- **Ready at 05:30 UTC:** [a good-odds step that misses says so](https://linear.app/threadbare/issue/THR-2180/a-good-odds-step-that-misses-says-so-it-looked-fated-but-fate-rolled) (THR-2180).
+**Healthy: four ready, all waiting out their veto windows; nothing being built right now.**
+- **Just shipped:** [room for the god-rail hand](https://linear.app/threadbare/issue/THR-2177/god-rail-the-pinned-essence-block-leaves-the-hand-no-room-eight-50-px) (THR-2177) merged via [#2763](https://github.com/christianspliid-ui/threadbare/pull/2763) and is live.
+- **Ready at 05:30 UTC (next):** [a good-odds step that misses says so](https://linear.app/threadbare/issue/THR-2180/a-good-odds-step-that-misses-says-so-it-looked-fated-but-fate-rolled) (THR-2180).
 - **Ready at 08:45 UTC:** [the rail rows say what they are](https://linear.app/threadbare/issue/THR-2183/the-rail-rows-say-what-they-are-plain-summaries-on-the-folded-god-rail) (THR-2183).
 - **Ready at 11:40 UTC:** ["While you were away" recap](https://linear.app/threadbare/issue/THR-2184/while-you-were-away-the-warm-up-card-ends-on-a-five-line-recap-led-by) (THR-2184).
-- **Ready at 14:44 UTC (new):** [a rival's move has a place and an answer](https://linear.app/threadbare/issue/THR-2185) (THR-2185).
+- **Ready at 14:44 UTC:** [a rival's move has a place and an answer](https://linear.app/threadbare/issue/THR-2185) (THR-2185).
 
 Items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -72,6 +72,6 @@ Items for agents, not you:
 
 ## Health
 
-- **Engine speed reading jumped (agents' job, not yours):** tick cost 320 ms/tick steady, 107% above the 7-day median (154, 142 rows since 9c6fc808); top phase agent_decision, 638 agents. Name the merges between 9c6fc808 and cd79fc23: git log --oneline --merges 9c6fc808..cd79fc23. No game code changed since last hour's 126 ms reading (only [the rival plan doc](https://github.com/christianspliid-ui/threadbare/pull/2762) merged), and the builder was running at the same time, so this is most likely a busy machine. If the next reading is still high, it is real.
-- Everything else is green. The live site is up to date (1c67e898; since then only notes and docs changed). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. All 10 scheduled tasks are on time, and the worktree cleaner ran this hour.
-- The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 92 commits behind main. It is the read-only mirror and catches up on its own.
+- All green. The live site serves the latest main (d964339b, the god-rail fix). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. All 10 scheduled tasks are on time, and the worktree cleaner ran this hour. Last hour's engine-speed jump was a busy machine: this hour reads 129 ms/tick, below the weekly median.
+- The builder's last three runs were short because every ready ticket is inside its veto window. That is by design, not a stall.
+- The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 95 commits behind main. It is the read-only mirror and catches up on its own.
