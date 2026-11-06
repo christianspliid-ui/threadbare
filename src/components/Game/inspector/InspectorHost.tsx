@@ -276,6 +276,8 @@ export function InspectorHost({ gameState, runtime, extras, onCast, onShowOnMap,
             toolbar={<>{toolbar}<ArmedBanner subject={subjectRef} /></>}
             onCast={castTarget ? cast : undefined}
             headingRef={headingRef}
+            initialTab={entry.tab}
+            tabSeq={entry.tabSeq}
           />
         </div>
       </ArmedRowsProvider>

@@ -19,6 +19,17 @@ export interface InspectorEntry {
   key: string;
   /** The subject's name for the trail, filled in by the host once the page is built. */
   name: string;
+  /**
+   * THR-2186 — the body tab a link asked this page to open on (`'journey'` for "See the
+   * work →"). Absent: the first tab, as before. The page falls back to the first tab when
+   * the id is unknown or not drawn at this size; back/forward restore it with the entry.
+   */
+  tab?: string;
+  /**
+   * THR-2186 — bumped each time a link re-asks for a tab on the subject already shown, so
+   * the page jumps to it even when the player has since clicked to another tab.
+   */
+  tabSeq?: number;
 }
 
 export interface InspectorState {
@@ -59,23 +70,32 @@ export function currentEntry(state: InspectorState): InspectorEntry | null {
  * (browser rule). Opening never narrows a wider current size (Law 57: the Inspector
  * never picks a smaller size than the player has); opening the subject already shown
  * only widens to the asked size.
+ *
+ * `tab` (THR-2186): the body tab to open on. Re-opening the subject already shown with a
+ * tab switches that page to it; with no tab, the shown page keeps whatever tab it is on.
  */
-export function openSubject(state: InspectorState, subject: InspectorSubject, size: InspectorOpenSize): InspectorState {
+export function openSubject(state: InspectorState, subject: InspectorSubject, size: InspectorOpenSize, tab?: string): InspectorState {
   const key = subjectKeyOf(subject);
   const open = isInspectorOpen(state);
   const nextSize: InspectorSize = open && RANK[state.size] >= RANK[size] ? state.size : size;
   const current = currentEntry(state);
   if (current && current.key === key) {
+    if (tab) {
+      const history = state.history.slice();
+      history[state.index] = { ...current, tab, tabSeq: (current.tabSeq ?? 0) + 1 };
+      return { ...state, history, size: nextSize };
+    }
     return nextSize === state.size ? state : { ...state, size: nextSize };
   }
   const kept = open ? state.history.slice(0, state.index + 1) : [];
-  const history = [...kept, { subject, key, name: '' }].slice(-INSPECTOR_HISTORY_MAX);
+  const entry: InspectorEntry = tab ? { subject, key, name: '', tab } : { subject, key, name: '' };
+  const history = [...kept, entry].slice(-INSPECTOR_HISTORY_MAX);
   return { ...state, history, index: history.length - 1, size: nextSize, sizeBeforeFull: nextSize === 'full' ? state.sizeBeforeFull : null };
 }
 
 /** A map click while pinned does not replace the subject (§ D3). */
-export function openFromMap(state: InspectorState, subject: InspectorSubject, size: InspectorOpenSize): InspectorState {
-  return state.pinned && isInspectorOpen(state) ? state : openSubject(state, subject, size);
+export function openFromMap(state: InspectorState, subject: InspectorSubject, size: InspectorOpenSize, tab?: string): InspectorState {
+  return state.pinned && isInspectorOpen(state) ? state : openSubject(state, subject, size, tab);
 }
 
 export function goBack(state: InspectorState): InspectorState {

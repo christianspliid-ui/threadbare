@@ -84,7 +84,7 @@ interface UseAgentInteractionParams {
    * to the Inspector instead of the card drawer, the detail column and the profile sheet.
    * `fromMap` marks a map click, which a pinned Inspector does not follow (§ D3).
    */
-  openInspector?: (subject: WorldRef, size: 'docked' | 'wide', fromMap?: boolean) => void;
+  openInspector?: (subject: WorldRef, size: 'docked' | 'wide', fromMap?: boolean, tab?: string) => void;
 }
 
 /**
@@ -706,7 +706,7 @@ export function useAgentInteraction({
       setStrandViewAgent(null);
       setDrawerOpen(false);
       // THR-1911: the profile is the person's page, wide.
-      if (openInspector) openInspector({ kind: 'agent', id: selectedAgentId }, 'wide');
+      if (openInspector) openInspector({ kind: 'agent', id: selectedAgentId }, 'wide', false, tab);
       else setProfileModalAgentId(selectedAgentId);
 
       // Record the backstory tier read on the thread edge so New badges clear. The engine
@@ -757,7 +757,8 @@ export function useAgentInteraction({
     setSelectedAgentId(agentId);
     setStrandViewAgent(null);
     setDrawerOpen(false);
-    if (openInspector) openInspector({ kind: 'agent', id: agentId }, 'wide');
+    // THR-2186: the tab reaches the Inspector too, so "See the work →" opens on Journey.
+    if (openInspector) openInspector({ kind: 'agent', id: agentId }, 'wide', false, initialTab);
     else setProfileModalAgentId(agentId);
   }, [openInspector]);
 

@@ -159,8 +159,17 @@ export function hiddenForWidth(body: readonly DetailSection[], size: InspectorSi
   return tabs.length > 0 ? tabs : sections;
 }
 
-function Body({ tabs, tabsLabel }: { tabs: TabGroup[]; tabsLabel: string }) {
-  const [tab, setTab] = useState<string>(tabs[0]?.id ?? 'overview');
+/**
+ * THR-2186: the tab a link asked for, when this page draws it at this size; otherwise the
+ * first tab (an unknown id, or one hidden at this width, never throws).
+ */
+export function startTabOf(tabs: readonly { id: string }[], asked: string | undefined): string {
+  if (asked && tabs.some(t => t.id === asked)) return asked;
+  return tabs[0]?.id ?? 'overview';
+}
+
+function Body({ tabs, tabsLabel, initialTab }: { tabs: TabGroup[]; tabsLabel: string; initialTab?: string }) {
+  const [tab, setTab] = useState<string>(() => startTabOf(tabs, initialTab));
   if (tabs.length === 0) return null;
   const renderSections = (sections: DetailSection[]) => sections.map(s => <Section key={s.typeId} section={s} />);
   if (tabs.length === 1) return <div data-inspector-body="">{renderSections(tabs[0].sections)}</div>;
@@ -195,9 +204,13 @@ interface InspectorPageProps {
   onCast?: (actionId: string) => ActCastResult;
   /** THR-1911 — the page heading, focused when a subject opens (Law 50). */
   headingRef?: React.Ref<HTMLDivElement>;
+  /** THR-2186 — the body tab to open on (the history entry's). Absent: the first tab. */
+  initialTab?: string;
+  /** THR-2186 — bumped when a link re-asks for a tab on this page, to jump to it again. */
+  tabSeq?: number;
 }
 
-export function InspectorPage({ page, size, graph, onWiden, onReport, toolbar, onCast, headingRef }: InspectorPageProps) {
+export function InspectorPage({ page, size, graph, onWiden, onReport, toolbar, onCast, headingRef, initialTab, tabSeq }: InspectorPageProps) {
   const overviewIcon = overviewIconFor(page.header.visual.kind);
   const tabs = useMemo(() => tabsAt(page.body, size, overviewIcon), [page.body, size, overviewIcon]);
   const now = useMemo(() => nowSectionOf(page.body, size), [page.body, size]);
@@ -283,7 +296,7 @@ export function InspectorPage({ page, size, graph, onWiden, onReport, toolbar, o
   const nowSlot = now ? <div data-inspector-now={now.typeId} style={{ marginBottom: 'calc(-1 * var(--space-6))' }}><Section section={now} /></div> : null;
   const act = page.actOn ? <ActOnRow key={page.subjectKey} actOn={page.actOn} targetName={page.header.name} onCast={onCast} /> : null;
   const land = isLand ? <InThisLand index={page.inThisLand} /> : null;
-  const body = <Body key={planKey} tabs={tabs} tabsLabel={page.header.name} />;
+  const body = <Body key={`${planKey}|${initialTab ?? ''}|${tabSeq ?? 0}`} tabs={tabs} tabsLabel={page.header.name} initialTab={initialTab} />;
   const more = <MoreWhenWidened hidden={hidden} onWiden={onWiden} />;
   const connections = <ConnectionsBlock connections={page.connections} folded={effectiveFolded} onShowAll={showAll} />;
   // THR-2123 (decision 4): page slots sit the between-section distance apart.
