@@ -18,6 +18,7 @@ import { outcomePhrase } from './aftermathWords';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { stakesLineForAction } from './encounters/stakesLine';
 import { isRoutineTemplate } from './attentionCadence';
+import { chapterWaitWord, type ChapterWaitWord } from './playerStepHold';
 import { mortalFace, resolveEntityVisual, type EntityVisualDescriptor } from './views/entityVisualResolver';
 
 export interface LedgerRow {
@@ -37,6 +38,12 @@ export interface LedgerRow {
   routine: boolean;
   /** The actor and every bound participant, for the per-agent filter. */
   participantIds: readonly string[];
+  /**
+   * THR-2178 — a live chapter on an "Asks you" thread says whether it will wait for
+   * the god ("Waits for you") or is the mortal's own ("Theirs alone"). Absent on a
+   * resolved row (the Aftermath says it after), a routine one, or a "Lives on" thread.
+   */
+  waitWord?: ChapterWaitWord;
 }
 
 /**
@@ -60,6 +67,16 @@ function liveStakesLine(gameState: GameState, action: UnifiedAction): string | u
     return stakesLineForAction(action, template, gameState.graph)?.text;
   } catch {
     return undefined;
+  }
+}
+
+/** THR-2178 — the live row's wait word, spread so an absent word adds no key. Fail-soft. */
+function liveWaitWord(gameState: GameState, action: UnifiedAction): { waitWord?: ChapterWaitWord } {
+  try {
+    const word = chapterWaitWord(gameState.graph, action.actorId, getUnifiedTemplateById(action.templateId), action.choiceHistory);
+    return word ? { waitWord: word } : {};
+  } catch {
+    return {};
   }
 }
 
@@ -112,6 +129,7 @@ export function buildLedgerRows(gameState: GameState, opts: { withStakes?: boole
     threaded: isThreaded(gameState, a.actorId),
     routine: isRoutineTemplate(a.templateId),
     participantIds: [a.actorId, ...(a.supportBindings ?? []).map(b => b.nodeId)],
+    ...liveWaitWord(gameState, a),
   }));
 
   // Live chapters all sort at the current tick, and `unifiedActions` is appended in

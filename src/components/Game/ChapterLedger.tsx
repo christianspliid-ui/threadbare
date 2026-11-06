@@ -42,6 +42,7 @@ import type { GameState } from '../../types/gameState';
 import type { UnifiedAction } from '../../types/unifiedAction';
 import type { SimulationRuntime } from '../../engine/simulationRuntime';
 import { buildChapterRecord, CHAPTER_LEDGER_PAGE_SIZE } from '../../engine/chapterArchive';
+import { ChapterWaitWordBadge } from './ChapterWaitWord';
 import {
   activeLedgerEncounters,
   buildLedgerRows,
@@ -255,6 +256,7 @@ export function ChapterLedger({
           <span style={{ fontSize: 'var(--text-sm)' }}>
             {row.threaded && <Icon name="threads" size="floor" label="Threaded" style={{ color: 'var(--accent-gold, #d4af37)', marginRight: 4 }} />}
             {row.templateName}
+            <ChapterWaitWordBadge word={row.waitWord} name={row.actorName} />
           </span>
           {row.stakesLine && (
             <span

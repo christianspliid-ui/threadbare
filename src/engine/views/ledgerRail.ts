@@ -35,6 +35,7 @@ import {
 } from '../../data/frame-content';
 import { SEASONS_PER_YEAR, deriveSeasonAndYear } from '../../types/temporal';
 import { selectThreadedChapters } from '../threadedChapters';
+import type { ChapterWaitWord } from '../playerStepHold';
 import { rowVisual, type RowVisualContext } from './rowVisual';
 import type { EntityVisualDescriptor } from './entityVisualResolver';
 
@@ -86,6 +87,8 @@ export interface LedgerRailChapterRow {
   isNew: boolean;
   /** THR-2103 (S7.1) — the mortal's face, knowledge-gated (Law 8); null when none resolves. */
   visual?: EntityVisualDescriptor | null;
+  /** THR-2178 — "Waits for you" / "Theirs alone" on a live chapter (see `LedgerRow.waitWord`). */
+  waitWord?: ChapterWaitWord;
 }
 
 export interface LedgerRailVM {
@@ -194,6 +197,7 @@ export function buildLedgerRail(state: GameState, args: LedgerRailArgs): LedgerR
     state: r.statusLabel,
     isNew: newKeys.has(r.key),
     visual: rowVisual(visualCtx, { kind: 'agent', id: r.actorId, name: r.actorName }),
+    ...(r.waitWord ? { waitWord: r.waitWord } : {}),
   }));
 
   return {

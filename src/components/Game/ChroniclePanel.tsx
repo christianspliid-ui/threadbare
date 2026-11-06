@@ -27,6 +27,7 @@ import { renderProseWithIPK } from '../ProseKeyword';
 import { NEWLY_REVEALED_STYLE } from './GameView/openingReveal';
 import type { LedgerRailVM } from '../../engine/views/ledgerRail';
 import { LEDGER_LINES, LEDGER_TABS, type LedgerTabId } from '../../data/frame-registry';
+import { ChapterWaitWordBadge } from './ChapterWaitWord';
 import {
   CHRONICLE_EMPTY_LINE,
   CHRONICLE_LABEL,
@@ -368,7 +369,7 @@ function LedgerTab({
               >
                 {row.visual && <ListRow.Leading><RowPicture visual={row.visual} /></ListRow.Leading>}
                 <span style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}>
-                  <ListRow.Title>{row.name}</ListRow.Title>
+                  <ListRow.Title>{row.name}<ChapterWaitWordBadge word={row.waitWord} name={row.mortalName} /></ListRow.Title>
                   <ListRow.Subtitle>{row.mortalName} · {row.state}</ListRow.Subtitle>
                 </span>
               </ListRow>

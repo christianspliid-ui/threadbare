@@ -62,6 +62,7 @@ import {
 import { getDurationWord } from '../../data/domain-words';
 import { CONSEQUENCE_LEGEND_MEANINGS, CONSEQUENCE_LEGEND_SEPARATOR } from '../../data/aftermath-legend-words';
 import { Z_BAND } from '../shared/zBands';
+import { ChapterWaitWordBadge } from './ChapterWaitWord';
 
 // ── Thread tier types ──────────────────────────────────────────────
 type ThreadTier = 'strong' | 'light' | 'watched';
@@ -1070,6 +1071,25 @@ export function EncounterVeil({
           >
             {aftermath.title ?? 'Aftermath'}
           </div>
+
+          {/* THR-2178 — a chapter no step of which offered the god a move opens its
+              ending saying so, in one plain line above the overview. */}
+          {aftermath.aloneLine && (
+            <p
+              data-testid="aftermath-alone-line"
+              style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: 'var(--text-xs)',
+                lineHeight: 1.6,
+                color: TEXT_WARM,
+                margin: '0 0 14px',
+                maxWidth: PROSE_MEASURE,
+                ...aftermathEntrance(0.9, 0.8),
+              }}
+            >
+              {aftermath.aloneLine}
+            </p>
+          )}
 
           {/* Overview prose — drop cap */}
           <div style={aftermathEntrance(1.0, 1.0)}>
@@ -2373,6 +2393,7 @@ export function EncounterVeil({
           >
             <StageLabelIcon label="encounterTitle" />
             {model.header.title}
+            <ChapterWaitWordBadge word={model.header.waitWord} name={model.header.agentName ?? ''} style={{ verticalAlign: 'middle' }} />
           </div>
           {/* THR-1724 — the title row is the encounter's metadata row: title ·
               reach icon · the sheet's reach readout · forecast pill. */}

@@ -34,6 +34,8 @@ import { stakesContextFor, stakesLineForAction } from '../../encounters/stakesLi
 import { resolveFightStepInputs } from '../../fights/fightStepInputs';
 import { buildOpponentHeaderModel, fightStepLabel } from './buildOpponentHeaderModel';
 import { resolveStepDefinition } from '../../unifiedActionLifecycle';
+import { chapterWaitWord } from '../../playerStepHold';
+import { CHAPTER_ALONE_AFTERMATH_LINE } from '../../../data/ui-content';
 import { BRANCH_DECISION_INTERVENTION_TYPE } from '../../encounters/branchDecision';
 import { firstPathFitFor, firstPathRecallFor } from '../../firstPath';
 import {
@@ -286,6 +288,7 @@ function buildHeader(
     // second magnitude language on the same quantity (Law 10).
     ...(currentStep.fightRole ? {} : { threatLabel: difficultyToThreatLabel(headerDifficulty) }),
     threadTier,
+    ...waitWordFor(args),
     familyLabel: agentName,
     agentName,
     focalActorId: activeAction.actorId,
@@ -294,6 +297,27 @@ function buildHeader(
     hexRow: notification.hexRow,
     reachLabel: reachLabelFor(headerReach),
   };
+}
+
+/** THR-2178 — the chapter's wait word, spread so an absent word adds no key. Fail-soft. */
+function waitWordFor(args: BuildUnifiedEncounterStageModelArgs): { waitWord?: 'waits' | 'theirs_alone' } {
+  try {
+    const word = chapterWaitWord(args.graph, args.activeAction.actorId, args.template, args.activeAction.choiceHistory);
+    return word ? { waitWord: word } : {};
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * THR-2178 — the Aftermath's "alone" line: only when the chapter carries the
+ * `theirs_alone` word, i.e. no step offered a move, so a chapter where the player
+ * let fate decide never claims the mortal met it alone (THR-2139).
+ */
+function aloneLineFor(args: BuildUnifiedEncounterStageModelArgs): string | undefined {
+  if (waitWordFor(args).waitWord !== 'theirs_alone') return undefined;
+  const name = args.graph.getNode(args.activeAction.actorId)?.name ?? args.agentName;
+  return name ? CHAPTER_ALONE_AFTERMATH_LINE.replace(/{name}/g, name) : undefined;
 }
 
 function buildScene(
@@ -683,6 +707,7 @@ function buildAftermath(
   const { activeAction, template, graph, realmProjection } = args;
   const summary = activeAction.aftermathSummary;
   if (!summary) return undefined;
+  const aloneLine = aloneLineFor(args);
 
   // When the template has an aftermathConfig, the authored variant supplies the
   // curated prose — but the engine-derived changes stay (THR-1042). See
@@ -878,6 +903,7 @@ function buildAftermath(
   return {
     title: 'Aftermath',
     overview: displayOverview,
+    ...(aloneLine ? { aloneLine } : {}),
     // Use actorMoments + highlights instead of raw changes — suppresses mechanical deltas
     actorMoments: actorMomentArray.length > 0 ? actorMomentArray : undefined,
     highlights: highlights.length > 0 ? highlights : undefined,

@@ -18,6 +18,10 @@
  * | PLAYER_HOLD_ON_POST    | true     | THR-2052: hold from the beat's post  |
  * | SKIP_STEPS_WITHOUT_PLAYER_MOVE | true | THR-2140: a moveless step plays out |
  *
+ * THR-2178 adds `chapterOffersPlayerMove` / `chapterWaitWord`: the chapter-level
+ * reading of `stepOffersPlayerMove`, for the Ledger / Stage word and the
+ * Aftermath's "alone" line (plan: THR-2178 ticket; decision on THR-2174).
+ *
  * ─── Fail-soft ───────────────────────────────────────────────────
  * | Actor has no thread edge     | not live → `thread_not_pause` release |
  * | Hold on an earlier step      | not live → `step_changed` release     |
@@ -86,6 +90,57 @@ export function stepOffersPlayerMove(
   } catch {
     return true;
   }
+}
+
+/**
+ * THR-2178 — does any step of the chapter offer the player a move? True when
+ * {@link stepOffersPlayerMove} passes for at least one step, branches followed
+ * through `choiceHistory` (a branch step with no recorded choice reads its
+ * fallback). Read off the template alone, like its sibling, so the Ledger word
+ * before the chapter and the Aftermath line after it can never disagree with
+ * the hold. Fail-soft `true`: a missing template, an empty or unreadable step
+ * list says "waits", which is today's behaviour.
+ */
+export function chapterOffersPlayerMove(
+  template: UnifiedActionTemplate | undefined,
+  choiceHistory?: readonly EncounterChoiceMemory[],
+): boolean {
+  if (!template) return true;
+  try {
+    const stepCount = template.steps?.length ?? 0;
+    if (stepCount === 0) return true;
+    for (let i = 0; i < stepCount; i++) {
+      if (stepOffersPlayerMove(template, i, choiceHistory)) return true;
+    }
+    return false;
+  } catch {
+    return true;
+  }
+}
+
+/**
+ * THR-2178 — the word a chapter carries on the Ledger row and the Stage header:
+ * `waits` ("Waits for you") or `theirs_alone` ("Theirs alone").
+ */
+export type ChapterWaitWord = 'waits' | 'theirs_alone';
+
+/**
+ * THR-2178 — the chapter's wait word, or `undefined` when it carries none:
+ * a routine (daily-life) template, a missing template, or an actor whose
+ * thread is not a live pause-mode ("Asks you") thread. A "Lives on" thread
+ * already says nothing waits, so it shows neither word. With the THR-2140
+ * skip switched off every step holds, so every chapter waits.
+ */
+export function chapterWaitWord(
+  graph: WorldGraph,
+  actorId: string,
+  template: UnifiedActionTemplate | undefined,
+  choiceHistory?: readonly EncounterChoiceMemory[],
+): ChapterWaitWord | undefined {
+  if (!template || template.routine === true) return undefined;
+  if (!actorThreadIsPause(graph, actorId)) return undefined;
+  if (!SKIP_STEPS_WITHOUT_PLAYER_MOVE) return 'waits';
+  return chapterOffersPlayerMove(template, choiceHistory) ? 'waits' : 'theirs_alone';
 }
 
 /**
