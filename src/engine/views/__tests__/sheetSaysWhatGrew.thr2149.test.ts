@@ -195,3 +195,18 @@ describe('the reach tile mark (THR-2149 U3)', () => {
     expect(staleTiles.every(t => t.mark === undefined)).toBe(true);
   });
 });
+
+describe('the reach tile shows its ladder (THR-2182 U1)', () => {
+  it('every reach tile says where its word sits, names the next word, and hovers the ladder', () => {
+    const tiles = (sections(world({ archive: [] })).find(s => s.typeId === 'domains') as CardsSection).tiles;
+    expect(tiles.length).toBeGreaterThan(0);
+    for (const tile of tiles) {
+      const word = tile.lines[0];
+      expect(tile.subline, tile.title).toMatch(/^(Bottom|Low|Middle|High) (of|on) the ladder · next \S+$|^Top of the ladder$/);
+      expect(tile.wordHover?.label).toBe(word);
+      expect(tile.wordHover?.desc?.startsWith(`${tile.title}, low to high: `)).toBe(true);
+      expect(tile.wordHover?.desc?.split(': ')[1]?.replace(/\.$/, '').split(', ')).toContain(word);
+      expect(tile.titleTooltipId).toBe(`reach.${tile.title.toLowerCase()}`);
+    }
+  });
+});

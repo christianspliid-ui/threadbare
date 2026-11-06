@@ -148,6 +148,25 @@ export const SHEET_GAIN_MARK_HEADING = '{reach} grew';
 export const SHEET_GAIN_MARK_HOVER = 'Grew {band} {elapsed} ago, in {chapter}. A word spans a wide range, so it can hold through a gain.';
 export const SHEET_GAIN_MARK_HOVER_NO_BAND = 'Grew {elapsed} ago, in {chapter}. A word spans a wide range, so it can hold through a gain.';
 
+/**
+ * THR-2182 — where a reach tile's rank word sits on its five-word ladder, in words
+ * (Law 13: no "3 of 5"). Indexed by tier 0–4. Never "rung": the UL gives that word
+ * to the god's card ladder (`Cosmology.md` § Rung).
+ */
+export const RANK_PLACE_WORDS: readonly [string, string, string, string, string] = [
+  'Bottom of the ladder',
+  'Low on the ladder',
+  'Middle of the ladder',
+  'High on the ladder',
+  'Top of the ladder',
+];
+/** The tile's second line below the top: "Middle of the ladder · next Fearsome". */
+export const RANK_PLACE_LINE = '{place} · next {next}';
+/** The tile's second line at the top of the ladder. */
+export const RANK_TOP_LINE = 'Top of the ladder';
+/** The rank word's hover: the whole ladder, low to high. */
+export const RANK_LADDER_HOVER = '{reach}, low to high: {ladder}.';
+
 /** The empty and gated lines a row says instead of going blank (Law 4). */
 export const PERSON_EMPTY_LINES = {
   natureHidden: "You haven't observed {name} closely enough to read their character.",

@@ -296,6 +296,15 @@ const SAMPLE_DETAIL_SECTIONS: DetailPageSection[] = [
     tiles: [
       { title: 'Fevered', kindWord: 'Condition', lines: ['Burns through the night.'], durationWord: 'for four days', meter: 0.4 },
       { title: 'The Bridge Toll', kindWord: 'Work', lines: ['Raising stone across the ford.'] },
+      // THR-2182 — a reach tile: its place on the ladder, the ladder on hover.
+      {
+        title: 'Iron',
+        kindWord: 'Reach',
+        lines: ['Formidable'],
+        subline: 'Middle of the ladder · next Fearsome',
+        wordHover: { label: 'Formidable', desc: 'Iron, low to high: Meek, Trained, Formidable, Fearsome, Legendary.' },
+        titleTooltipId: 'reach.iron',
+      },
     ],
   },
 ];
@@ -1029,6 +1038,11 @@ function ChipSection() {
           onOpen={() => setCountOpens((n) => n + 1)}
         />
         <code style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>opened {countOpens}× — still 12</code>
+      </Row>
+      <Label>count with a noun — the number says what it counts (THR-2182: the Inspector row&apos;s cards)</Label>
+      <Row>
+        <Chip role="count" size="sm" count={4} of="styleguide-noun" icon="cards" label="4 cards" noun="cards" />
+        <Chip role="count" size="sm" count={1} of="styleguide-noun-one" icon="cards" label="1 card" noun="card" />
       </Row>
       <Label>count, badge form — on an IconButton that already carries the name and tooltip</Label>
       <Row>

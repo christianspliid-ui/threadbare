@@ -120,6 +120,8 @@ export const INSPECTOR_WORDS = {
   castOdds: 'Odds: {word}',
   /** THR-1913 — a world-ref row's card count, spoken and in its tooltip: "2 cards". */
   rowCards: { one: '1 card', many: '{n} cards' },
+  /** THR-2182 — the count chip's visible noun after its number: "4 cards". */
+  rowCardsNoun: { one: 'card', many: 'cards' },
   /** THR-1913 — the row tray's name: "Your cards for Temple Quarter". */
   rowTray: 'Your cards for {name}',
   /** The armed card, said to a screen reader. */

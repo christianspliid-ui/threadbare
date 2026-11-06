@@ -12,6 +12,7 @@
 
 import type { ReachDomain } from '../types/traits';
 import type { ValuePair } from '../types/agent';
+import { personLine, RANK_LADDER_HOVER, RANK_PLACE_LINE, RANK_PLACE_WORDS, RANK_TOP_LINE } from './person-sheet-words';
 
 /**
  * 5-tier verbal scales for the Nine Reaches.
@@ -82,6 +83,34 @@ export const CAPABILITY_TO_DOMAIN_SCALE = 10;
 export function getCapabilityTier(capability: number): number {
   const safe = Number.isFinite(capability) ? capability : 0;
   return getDomainTier(safe * CAPABILITY_TO_DOMAIN_SCALE);
+}
+
+function ladderTier(domain: ReachDomain, tier: number): [string, string, string, string, string] | undefined {
+  if (!Number.isInteger(tier) || tier < 0 || tier > 4) return undefined;
+  return DOMAIN_WORD_SCALES[domain];
+}
+
+/**
+ * THR-2182 — a reach tile's second line: where its word sits and the word above it
+ * ("Middle of the ladder · next Fearsome"), or "Top of the ladder" at tier 4.
+ * `undefined` for a tier that is not an integer 0–4 or a Reach with no ladder.
+ */
+export function rankPlaceLine(domain: ReachDomain, tier: number): string | undefined {
+  const scale = ladderTier(domain, tier);
+  if (!scale) return undefined;
+  if (tier === 4) return RANK_TOP_LINE;
+  return personLine(RANK_PLACE_LINE, { place: RANK_PLACE_WORDS[tier], next: scale[tier + 1] });
+}
+
+/**
+ * THR-2182 — the rank word's hover, built from `DOMAIN_WORD_SCALES` so it cannot
+ * disagree with the tile: "Iron, low to high: Meek, Trained, Formidable, Fearsome, Legendary."
+ * `reachName` is the Reach's display name (the engine owns that table).
+ */
+export function rankLadderHover(domain: ReachDomain, reachName: string): string | undefined {
+  const scale = DOMAIN_WORD_SCALES[domain];
+  if (!scale) return undefined;
+  return personLine(RANK_LADDER_HOVER, { reach: reachName, ladder: scale.join(', ') });
 }
 
 /** The reach word for a capability (0–1) — THR-1583. */

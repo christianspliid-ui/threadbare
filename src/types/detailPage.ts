@@ -376,6 +376,15 @@ export interface CardTile {
    * tile's word, with `heading` and `label` as its hover. Backed by the chapter archive (Law 56).
    */
   mark?: { steps: 1 | 2 | 3; heading: string; label: string };
+  /**
+   * THR-2182 (additive): one muted line under the lines — the reach tile's place on its
+   * ladder ("Middle of the ladder · next Fearsome"). Wraps, never clips.
+   */
+  subline?: string;
+  /** THR-2182 (additive): a hover on the first line's text — the rank word's whole ladder. */
+  wordHover?: { label: string; desc: string };
+  /** THR-2182 (additive): a registry hover on the title (ignored when the tile has a `ref`). */
+  titleTooltipId?: string;
 }
 
 /** A row of small cards — conditions, works, powers (THR-1876 § D6, new shape). */

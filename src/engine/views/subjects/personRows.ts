@@ -54,11 +54,11 @@ import { getAgentStrategicHistory, getAgentStrategicSummary } from '../../strate
 import { getNotableStandings } from '../../reputation';
 import { getWealthTier } from '../../wealth';
 import { pastLineText } from '../../worldPastWords';
-import { durationLabel, elapsedLabel, humanizeKeySegment, outcomePhrase, reachDisplayName } from '../../aftermathWords';
+import { durationLabel, elapsedLabel, humanizeKeySegment, outcomePhrase, reachDisplayName, reachTooltipId } from '../../aftermathWords';
 import { getChapterTemplateName, isEncounterAction, isRoutineChapter } from '../../chapterArchive';
 import { recentReachGrowth, SHEET_GAIN_MARK_WINDOW_TICKS, type ReachGrowthMark } from '../reachGrowthMarks';
 import { isRoutineTemplate } from '../../attentionCadence';
-import { getReputationWord } from '../../../data/domain-words';
+import { getReputationWord, rankLadderHover, rankPlaceLine } from '../../../data/domain-words';
 import { stepOutcomeWord } from '../../../data/outcome-band-content';
 import { UNDERTAKING_HALT_RATCHET_N } from '../../../data/strategic-action-constants';
 import { SLOT_TAG_DISPLAY_NAMES } from '../../../data/attachment-slot-constants';
@@ -695,11 +695,20 @@ const domains: SectionResolver = (ctx) => {
   // The rank word per Reach; the magnitude dots go (Law 10: pips mean odds only).
   return cards('domains', PERSON_ROW_LABELS.domains, (s.card.domains ?? []).filter(d => revealedDomain(d.domain)).map(d => {
     const mark = growth.get(d.domain as ReachGrowthMark['reach']);
+    const title = reachDisplayName(d.domain);
+    // THR-2182: where the word sits on its ladder, and the whole ladder on hover.
+    // Same tier the word came from (agentDetail), so the two cannot disagree.
+    const subline = rankPlaceLine(d.domain, d.tier);
+    const ladder = rankLadderHover(d.domain, title);
+    const titleTooltipId = reachTooltipId(d.domain);
     return {
-      title: reachDisplayName(d.domain),
+      title,
       kindWord: PERSON_FACT_WORDS.reach,
       lines: [d.word],
-      ...(mark ? { mark: { steps: mark.steps, heading: personLine(SHEET_GAIN_MARK_HEADING, { reach: reachDisplayName(d.domain) }), label: gainMarkLabel(mark, s.state.tick) } } : {}),
+      ...(subline ? { subline } : {}),
+      ...(ladder && d.word ? { wordHover: { label: d.word, desc: ladder } } : {}),
+      ...(titleTooltipId ? { titleTooltipId } : {}),
+      ...(mark ?{ mark: { steps: mark.steps, heading: personLine(SHEET_GAIN_MARK_HEADING, { reach: reachDisplayName(d.domain) }), label: gainMarkLabel(mark, s.state.tick) } } : {}),
     };
   }));
 };
