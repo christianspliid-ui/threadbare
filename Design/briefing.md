@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-06 14:54 local (13:54 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-06 15:57 local (14:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -40,15 +40,6 @@ From the design lane's [05:18 UTC run](https://github.com/christianspliid-ui/thr
 - Same ticket — on the sheet's front page, the "Their work" and "What they want most" hovers stop saying "Opens their sheet on the Journey tab" (you are already on the sheet, and nothing opens). They now end *"The Journey tab tells it in full."*
 - Same ticket — the work gets no page of its own. If you want a mortal's work to have its own page, that is a new slice.
 
-From the design lane's [02:20 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-06a.md). Nobody builds on these before 14:44 UTC on 6 November.
-
-- [Rival gods you can see but not answer](https://linear.app/threadbare/issue/THR-2172) — your answer to a rival is tending, and the game now says so. A place you tend (your seat, somewhere one of your threaded mortals stands, a place you claim, or a town your anointed faction holds) already shrugs off a rival's hand. Nothing ever told the player. Build ticket: [A rival's move has a place and an answer](https://linear.app/threadbare/issue/THR-2185).
-- Same ticket — a rival toast appears only when its hand actually lands, and it names the place: *"The Hollow Warden pressed Death on Iron Glade. Tend it and the next blow breaks."* or *"…pressed on Ashford, but your thread held it."* Clicking it opens the place, where your cards for it are. The old random lines ("curses your followers with plague") are gone from the toast, because none of them ever happened.
-- Same ticket — a rival starts **hostile**, not "aggressive". It grows angrier when its schemes run, and more so when you break one: *"Toward you: wrathful. You broke its scheme against Iron Glade."* It cools a little each quiet day, but never below hostile.
-- Same ticket — the rival's name stops looking like a link (there is no rival page to open). Opening it shows why it is angry, where it last pressed, and how tending stops it.
-- Same ticket — the Chronicle line that read *"actor_rival_1's hand has pressed on Iron Glade"* now names the rival god.
-- Not in this slice: a new card for fighting rivals. If warm round 4 still says "I could see them but not act", that card is the next slice.
-
 Say "veto <title>" to reverse any of these.
 
 ## This week's screens
@@ -57,20 +48,19 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: four ready, each waiting out its veto window. Nothing is being built until 14:44 UTC, about 50 minutes from now.**
-- **Just shipped and live:** ["While you were away" recap](https://linear.app/threadbare/issue/THR-2184/while-you-were-away-the-warm-up-card-ends-on-a-five-line-recap-led-by) (THR-2184), merged via [#2768](https://github.com/christianspliid-ui/threadbare/pull/2768).
-- **Ready at 14:44 UTC:** [a rival's move has a place and an answer](https://linear.app/threadbare/issue/THR-2185/a-rivals-move-has-a-place-and-an-answer-the-raid-toast-names-the-place) (THR-2185).
+**Healthy: one being built, three ready and each waiting out its veto window.**
+- **Being built now:** [a rival's move has a place and an answer](https://linear.app/threadbare/issue/THR-2185/a-rivals-move-has-a-place-and-an-answer-the-raid-toast-names-the-place) (THR-2185). Its veto window closed at 14:44 UTC and the builder run that started at 14:51 UTC took it.
 - **Ready at 17:30 UTC:** ["See the work" lands on the work](https://linear.app/threadbare/issue/THR-2186/see-the-work-lands-on-the-work-the-inspector-opens-on-the-tab-a-link) (THR-2186).
 - **Ready at 20:59 UTC:** [rank words show their ladder](https://linear.app/threadbare/issue/THR-2182/rank-words-show-their-ladder-a-reach-tile-says-where-its-word-sits-and) (THR-2182).
-- **Ready at 23:50 UTC:** [your cards say how they landed](https://linear.app/threadbare/issue/THR-2187/your-cards-say-how-they-landed-each-card-the-god-played-adds-its-own) (THR-2187). Its plan merged via [#2767](https://github.com/christianspliid-ui/threadbare/pull/2767).
+- **Ready at 23:50 UTC:** [your cards say how they landed](https://linear.app/threadbare/issue/THR-2187/your-cards-say-how-they-landed-each-card-the-god-played-adds-its-own) (THR-2187).
 
 Items for agents, not you:
-- **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea (checked this run), so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (17 days; In Dev since 15 Oct, 22 days; last touched 1 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching. No pushed branch and no local worktree holds work for it, so nothing is stranded.
+- **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (17 days; In Dev since 15 Oct, 22 days; last touched 1 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching. No pushed branch and no local worktree holds work for it (checked this run), so nothing is stranded.
 
 ## Health
 
-- The live site serves the latest commit on main (501ce947, the THR-2184 recap). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time, and the worktree cleaner ran at 14:40 local. The builder's last four runs each stood down because every ready ticket is inside its veto window, so it is idle by design, not stalled.
-- Engine speed: 131 ms/tick steady, 12% below the 7-day median (148).
+- The live site serves the latest commit on main (501ce947, the THR-2184 recap). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time, and the worktree cleaner ran at 15:48 local. The builder is running now, so it is not stalled; its four earlier short runs each stood down because every ready ticket was inside its veto window.
+- Engine speed: 141 ms/tick steady, 5% below the 7-day median (148).
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask.
-- The home-folder copy of the repo is 127 commits behind main. Its newest commit is from 4 Nov 11:02 local, about 52 hours ago. It is the read-only mirror, which normally catches up on its own. This is the seventh hour in a row this brief has flagged it, so an agent should check the mirror's sync. Nothing is lost, because the lanes work from fresh copies of main.
+- The home-folder copy of the repo is 127 commits behind main. Its newest commit is from 4 Nov 11:02 local, about 53 hours ago. It is the read-only mirror, which normally catches up on its own. This is the eighth hour in a row this brief has flagged it, so an agent should check the mirror's sync. Nothing is lost, because the lanes work from fresh copies of main.
