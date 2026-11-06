@@ -249,7 +249,8 @@ function EssenceRow({ row, previewed }: EssenceRowProps) {
               data-testid={`essence-trend-${row.sphere}`}
               data-trend={row.trend}
               aria-label={ESSENCE_TREND_WORDS[row.trend]}
-              style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)', color: trendColor, minWidth: 12, lineHeight: 1, textAlign: 'center' }}
+              // THR-2177 (U4) — the arrow fits the 8 px bar line (the glyph overhangs into the row's padding), so the row is ~42 px, not 50.
+              style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)', color: trendColor, minWidth: 12, lineHeight: 'var(--essence-bar-line, 8px)', alignSelf: 'center', textAlign: 'center' }}
             >
               {arrow}
             </span>

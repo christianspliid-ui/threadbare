@@ -6,7 +6,17 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { HandSection } from '../HandSection';
 import { HandPressProvider } from '../HandPressContext';
-import { HAND_FIT_HYSTERESIS_PX, handWholeHeight, nextHandFitMode, openHandGroup } from '../handFit';
+import {
+  GOD_RAIL_HAND_MIN_ROWS,
+  HAND_CHROME_EST_PX,
+  HAND_FIT_HYSTERESIS_PX,
+  HAND_ROW_EST_PX,
+  HAND_ROW_GAP_PX,
+  handFloorPx,
+  handWholeHeight,
+  nextHandFitMode,
+  openHandGroup,
+} from '../handFit';
 import type { GodRailHand, HandCardVM } from '../../../../engine/views/godRail';
 import { HAND_REST_LINES } from '../../../../data/frame-content';
 import { GOD_RAIL_HAND_GROUP_KEY } from '../../../../data/frame-registry';
@@ -155,5 +165,52 @@ describe('HandSection', () => {
       expect(chevronOf('spirit').style.transform).toBe('rotate(180deg)');
       expect(chevronOf('life').style.transform).toBe('rotate(90deg)');
     });
+  });
+});
+
+describe('THR-2177 — the hand gets room', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('the row estimate is one line at the 16 px floor (33 px, was 52 for two lines)', () => {
+    expect(HAND_ROW_EST_PX).toBe(33);
+    expect(handWholeHeight(6)).toBe(6 * 33 + 5 * HAND_ROW_GAP_PX);
+  });
+
+  it('handFloorPx: chrome plus three whole rows; non-finite inputs fall back to the estimates', () => {
+    expect(GOD_RAIL_HAND_MIN_ROWS).toBe(3);
+    expect(handFloorPx(33, 6, 80)).toBe(80 + 3 * 33 + 2 * 6);
+    expect(handFloorPx()).toBe(HAND_CHROME_EST_PX + handWholeHeight(3, HAND_ROW_EST_PX, HAND_ROW_GAP_PX));
+    expect(handFloorPx(Number.NaN, 6, -1)).toBe(HAND_CHROME_EST_PX + handWholeHeight(3, HAND_ROW_EST_PX, 6));
+    expect(handFloorPx(33, 6, 80, 1)).toBe(80 + 33);
+  });
+
+  it('one card renders its name and price inside one data-row-layout="line" button', () => {
+    const one: GodRailHand = { ...HAND, cards: [card('whisper_insight', 'mind', 'Illuminating Whisper')], sphereOrder: ['mind'] };
+    render(<HandSection hand={one} showInvestiture rest={null} />);
+    const btn = screen.getByTestId('hand-card');
+    expect(btn.dataset.rowLayout).toBe('line');
+    expect(btn.style.flexDirection).toBe('row');
+    expect(btn.querySelector('[data-testid="hand-card-name"]')?.textContent).toBe('Illuminating Whisper');
+    expect(btn.querySelector('[data-testid="hand-card-price"]')?.textContent).toBe('mind · 2 essence');
+    expect(btn.querySelector('[data-testid="hand-card-reason"]')).toBeNull();
+    // A one-card hand floors at one row, not three (THR-2176: the only card shows whole).
+    expect(Number(screen.getByTestId('god-rail-hand').dataset.handFloor)).toBe(handFloorPx(HAND_ROW_EST_PX, HAND_ROW_GAP_PX, HAND_CHROME_EST_PX, 1));
+  });
+
+  it('an unpayable card adds its reason as a full-width line under the name and price', () => {
+    const c = { ...card('divine.inspire', 'life', 'Inspire'), payable: false, reason: 'Not enough Life essence' };
+    render(<HandSection hand={{ ...HAND, cards: [c], sphereOrder: ['life'] }} showInvestiture rest={null} />);
+    const reason = screen.getByTestId('hand-card-reason');
+    expect(reason.textContent).toBe('Not enough Life essence');
+    expect(reason.style.flexBasis).toBe('100%');
+    expect(screen.getByTestId('hand-card').dataset.rowLayout).toBe('line');
+  });
+
+  it('the hand section carries its floor as its min-height (three rows with three or more cards)', () => {
+    render(<HandSection hand={HAND} showInvestiture rest={null} />);
+    const section = screen.getByTestId('god-rail-hand');
+    const floor = Number(section.dataset.handFloor);
+    expect(floor).toBe(handFloorPx(HAND_ROW_EST_PX, HAND_ROW_GAP_PX, HAND_CHROME_EST_PX, 3));
+    expect(section.style.minHeight).toBe(`${floor}px`);
   });
 });

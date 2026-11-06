@@ -2,11 +2,12 @@
  * HandSection — the god rail's hand, headed "Your cards" (THR-1894, frame plan § F6).
  *
  * The two core verbs (Move, and Investiture once The Seat brings it), then one row per
- * god card the run has revealed, each tinted by the pool that pays it, its par price on
- * line 2. The hand takes the rail's free height (Law 57): whole while every row fits,
+ * god card the run has revealed, each tinted by the pool that pays it — one line, the
+ * name on the left and its par price on the trailing edge, as in a deck list (THR-2177). The hand takes the rail's free height (Law 57): whole while every row fits,
  * grouped by paying sphere at the limit (`handFit.ts`), an open group scrolling inside
  * the hand region only. While a moment is open the rows rest — dimmed, presses
- * swallowed — under one line that says why.
+ * swallowed — under one line that says why. The hand keeps a floor of
+ * `GOD_RAIL_HAND_MIN_ROWS` rows (`data-hand-floor`): the folded rows give way first.
  *
  * A press calls `useHandPress()` (the frame's seam); the armed row's look comes from
  * `useArmedCard()`. Both are THR-1876's to fill; the default opens the Codex entry.
@@ -32,9 +33,14 @@ import { GOD_RAIL_HAND_GROUP_KEY, godRailSectionIcon } from '../../../data/frame
 import { NEWLY_REVEALED_STYLE } from '../GameView/openingReveal';
 import { CARD_DRAG_MIME, useArmedCard, useHandDragStart, useHandPress } from './HandPressContext';
 import {
+  GOD_RAIL_HAND_MIN_ROWS,
+  HAND_CHROME_EST_PX,
   HAND_REST_OPACITY,
   HAND_ROW_EST_PX,
   HAND_ROW_GAP_PX,
+  HAND_ROW_PADDING,
+  HAND_ROW_PRICE_GAP_PX,
+  handFloorPx,
   handWholeHeight,
   nextHandFitMode,
   openHandGroup,
@@ -95,6 +101,7 @@ function CardRow({ card, rest, armed }: { card: HandCardVM; rest: HandRest; arme
       data-pay-sphere={card.paySphere}
       data-payable={card.payable ? 'true' : 'false'}
       data-armed={armed ? 'true' : undefined}
+      data-row-layout="line"
       aria-pressed={dragStart ? armed : undefined}
       aria-disabled={rest ? true : undefined}
       draggable={draggable || undefined}
@@ -109,15 +116,19 @@ function CardRow({ card, rest, armed }: { card: HandCardVM; rest: HandRest; arme
       }}
       className="focus-ring"
       style={{
+        // THR-2177 (U1) — one line: name, then the price on the trailing edge. The
+        // unpayable reason wraps onto its own line under them (flexBasis 100%).
         display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'stretch',
-        gap: 0,
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        alignItems: 'baseline',
+        columnGap: HAND_ROW_PRICE_GAP_PX,
+        rowGap: 0,
         minHeight: 24,
         lineHeight: 1.25,
         width: '100%',
         textAlign: 'left',
-        padding: '4px 8px 4px 10px',
+        padding: HAND_ROW_PADDING,
         background: armed ? 'var(--bg-raised)' : 'transparent',
         // Longhands only: React warns when a shorthand and a longhand of one value change together.
         borderTop: armed ? '1px solid var(--border-accent)' : '1px solid transparent',
@@ -130,6 +141,7 @@ function CardRow({ card, rest, armed }: { card: HandCardVM; rest: HandRest; arme
       }}
     >
       {/* TODO(THR-1975): the full card face on hover (HoverCard + CardFace); the description tooltip is the interim. */}
+      <span data-testid="hand-card-name" style={{ flex: '1 1 auto', minWidth: 0 }}>
       <Tooltip label={card.name} desc={card.description} block focusable={false}>
         <span
           style={{
@@ -146,6 +158,8 @@ function CardRow({ card, rest, armed }: { card: HandCardVM; rest: HandRest; arme
           {card.name}
         </span>
       </Tooltip>
+      </span>
+      <span data-testid="hand-card-price" style={{ flexShrink: 0, marginLeft: 'auto', textAlign: 'right', whiteSpace: 'nowrap' }}>
       {card.priceTooltip ? (
         <Tooltip id="ui.hand_price" desc={card.priceTooltip} focusable={false}>
           <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }}>
@@ -153,10 +167,11 @@ function CardRow({ card, rest, armed }: { card: HandCardVM; rest: HandRest; arme
           </span>
         </Tooltip>
       ) : (
-        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>{card.line2}</span>
+        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }}>{card.line2}</span>
       )}
+      </span>
       {card.reason && (
-        <span data-testid="hand-card-reason" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+        <span data-testid="hand-card-reason" style={{ flexBasis: '100%', fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontStyle: 'italic' }}>
           {card.reason}
         </span>
       )}
@@ -167,7 +182,11 @@ function CardRow({ card, rest, armed }: { card: HandCardVM; rest: HandRest; arme
 export function HandSection({ hand, showInvestiture, investitureNewlyRevealed = false, onMove, onInvestiture, rest }: HandSectionProps) {
   const armedId = useArmedCard();
   const regionRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
   const [freePx, setFreePx] = useState<number | null>(null);
+  // THR-2177 — the hand's chrome (header, rest line, core verbs, gaps), measured on the
+  // same observer, so the floor follows the 2560 type step.
+  const [chromePx, setChromePx] = useState<number>(HAND_CHROME_EST_PX);
   const [rowPx, setRowPx] = useState<number>(HAND_ROW_EST_PX);
   const [mode, setMode] = useState<HandFitMode>('whole');
   const [groupPref, setGroupPref] = useState<string | null>(() => readGroupPref());
@@ -179,10 +198,18 @@ export function HandSection({ hand, showInvestiture, investitureNewlyRevealed = 
   useEffect(() => {
     const el = regionRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return undefined;
-    const measure = () => setFreePx(el.clientHeight);
+    const measure = () => {
+      setFreePx(el.clientHeight);
+      const section = sectionRef.current;
+      if (section && section.offsetHeight > 0) {
+        const chrome = section.offsetHeight - el.offsetHeight;
+        if (chrome >= 0) setChromePx((prev) => (Math.abs(prev - chrome) > 1 ? chrome : prev));
+      }
+    };
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
+    if (sectionRef.current) ro.observe(sectionRef.current);
     return () => ro.disconnect();
   }, []);
 
@@ -193,6 +220,10 @@ export function HandSection({ hand, showInvestiture, investitureNewlyRevealed = 
   });
 
   const neededPx = handWholeHeight(cards.length, rowPx, HAND_ROW_GAP_PX);
+  // THR-2177 (U2) — the floor: three rows, or as many as the hand holds (one at least,
+  // so the empty line and a single card show whole — THR-2176).
+  const floorRows = Math.min(GOD_RAIL_HAND_MIN_ROWS, Math.max(1, cards.length));
+  const floorPx = handFloorPx(rowPx, HAND_ROW_GAP_PX, chromePx, floorRows);
   useEffect(() => {
     setMode((prev) => nextHandFitMode(prev, neededPx, freePx));
   }, [neededPx, freePx]);
@@ -216,15 +247,17 @@ export function HandSection({ hand, showInvestiture, investitureNewlyRevealed = 
 
   return (
     <section
+      ref={sectionRef}
       data-testid="god-rail-hand"
       data-hand-mode={mode}
       data-hand-cards={cards.length}
       data-hand-open-group={openGroup ?? ''}
       data-hand-rest={rest ?? ''}
       data-hand-free-height={freePx ?? ''}
+      data-hand-floor={floorPx}
       data-armed-card={armedId ?? ''}
       aria-label={HAND_HEADER}
-      style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1, minHeight: 0 }}
+      style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1, minHeight: floorPx }}
     >
       <div style={{ display: 'flex', alignItems: 'baseline' }}>
         <Tooltip id="ui.your_cards" focusable={false}>

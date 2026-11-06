@@ -71,6 +71,8 @@ Overlay layers (centered, above everything):
 
 The god rail uses the docked Inspector's density for every block it shares (THR-2125, THR-2120 § 4): `--space-6` between sections (`.bar` gap), Legibility 1's `SectionLabel` as each section heading, and no "Label: value" strips (Law 16): the First reads "Your First is …", the primary sphere "Your primary sphere is Mind." on its own line under the Essence heading. The essence balances are Text 600 at `--text-sm`, tabular and right-aligned, a step above the captions around them so the spendable pools read first.
 
+A hand card is one line, name then price, the price on the trailing edge. The hand keeps a floor of `GOD_RAIL_HAND_MIN_ROWS` card rows: the folded rows give way first and scroll inside their own block (THR-2177).
+
 ### Inspector
 
 | Property | Value | Source |
