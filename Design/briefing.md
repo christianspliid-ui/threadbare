@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-06 02:56 local (01:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-06 03:58 local (02:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -19,6 +19,15 @@
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
 ## Decided for you
+
+From the design lane's [02:20 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-06a.md) (new). Nobody builds on these before 14:44 UTC on 6 November.
+
+- [Rival gods you can see but not answer](https://linear.app/threadbare/issue/THR-2172) — your answer to a rival is tending, and the game now says so. A place you tend (your seat, somewhere one of your threaded mortals stands, a place you claim, or a town your anointed faction holds) already shrugs off a rival's hand. Nothing ever told the player. Build ticket: [A rival's move has a place and an answer](https://linear.app/threadbare/issue/THR-2185).
+- Same ticket — a rival toast appears only when its hand actually lands, and it names the place: *"The Hollow Warden pressed Death on Iron Glade. Tend it and the next blow breaks."* or *"…pressed on Ashford, but your thread held it."* Clicking it opens the place, where your cards for it are. The old random lines ("curses your followers with plague") are gone from the toast, because none of them ever happened.
+- Same ticket — a rival starts **hostile**, not "aggressive". It grows angrier when its schemes run, and more so when you break one: *"Toward you: wrathful. You broke its scheme against Iron Glade."* It cools a little each quiet day, but never below hostile.
+- Same ticket — the rival's name stops looking like a link (there is no rival page to open). Opening it shows why it is angry, where it last pressed, and how tending stops it.
+- Same ticket — the Chronicle line that read *"actor_rival_1's hand has pressed on Iron Glade"* now names the rival god.
+- Not in this slice: a new card for fighting rivals. If warm round 4 still says "I could see them but not act", that card is the next slice.
 
 From the design lane's [23:40 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-05g.md). Nobody builds on these before 11:40 UTC on 6 November.
 
@@ -42,13 +51,6 @@ From the design lane's [17:24 UTC run](https://github.com/christianspliid-ui/thr
 - Same ticket — a chapter won with one failed step reads *"One step went wrong. The work on Heart failed, and your cards could not save that step."* Before, "could not save it" read as the whole chapter lost.
 - Same ticket — no number is shown, and Fated's colour is not touched. Grey or gold is still your open question.
 
-From the design lane's [14:44 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-05d.md). Nobody builds on these before 02:45 UTC on 6 November.
-
-- [The god-rail hand has no room](https://linear.app/threadbare/issue/THR-2177/god-rail-the-pinned-essence-block-leaves-the-hand-no-room-eight-50-px) — each card in the left-hand rail becomes one line, its name on the left and its price on the right, like a deck list. At 1920×1080 that shows six cards where today it shows two and a half.
-- Same ticket — every essence pool keeps everything you chose for it ("53 / 55", the bar, the refill dots, the trend arrow). Each row just gets a little shorter. No pool is hidden.
-- Same ticket — the hand always keeps room for three cards. Opening Reaches, Mandate, Signatures or Hooks no longer pushes the hand off the screen; that row scrolls inside its own box instead.
-- Same ticket — [the hand clips its only card](https://linear.app/threadbare/issue/THR-2176) has the same cause, so it gets built and closed with this one.
-
 Say "veto <title>" to reverse any of these.
 
 ## This week's screens
@@ -57,13 +59,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: four ready, all waiting out their veto windows; nothing being built right now. The builder's last five runs stood down for that reason only, which is correct.**
-- **Just shipped:** ["Waits for you" / "Theirs alone" on each chapter](https://linear.app/threadbare/issue/THR-2178/say-which-chapters-wait-for-the-god-a-waits-for-you-theirs-alone-word) (THR-2178) merged via [#2761](https://github.com/christianspliid-ui/threadbare/pull/2761) at 00:37 UTC and is live.
-- **Ready at 02:45 UTC on 6 Nov (next up, within the hour):** [room for the god-rail hand](https://linear.app/threadbare/issue/THR-2177/god-rail-the-pinned-essence-block-leaves-the-hand-no-room-eight-50-px) (THR-2177).
+**Healthy: one being built, four ready and waiting out their veto windows.**
+- **Being built now:** [room for the god-rail hand](https://linear.app/threadbare/issue/THR-2177/god-rail-the-pinned-essence-block-leaves-the-hand-no-room-eight-50-px) (THR-2177) — its window opened at 02:45 UTC and the builder's 02:51 UTC run took it.
 - **Ready at 05:30 UTC:** [a good-odds step that misses says so](https://linear.app/threadbare/issue/THR-2180/a-good-odds-step-that-misses-says-so-it-looked-fated-but-fate-rolled) (THR-2180).
 - **Ready at 08:45 UTC:** [the rail rows say what they are](https://linear.app/threadbare/issue/THR-2183/the-rail-rows-say-what-they-are-plain-summaries-on-the-folded-god-rail) (THR-2183).
-- **Ready at 11:40 UTC (new):** ["While you were away" recap](https://linear.app/threadbare/issue/THR-2184/while-you-were-away-the-warm-up-card-ends-on-a-five-line-recap-led-by) (THR-2184).
-- Still with the design lane, not you: [rival gods you can see but not answer](https://linear.app/threadbare/issue/THR-2172).
+- **Ready at 11:40 UTC:** ["While you were away" recap](https://linear.app/threadbare/issue/THR-2184/while-you-were-away-the-warm-up-card-ends-on-a-five-line-recap-led-by) (THR-2184).
+- **Ready at 14:44 UTC (new):** [a rival's move has a place and an answer](https://linear.app/threadbare/issue/THR-2185) (THR-2185).
 
 Items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -71,5 +72,6 @@ Items for agents, not you:
 
 ## Health
 
-- All green. The live site is serving the newest main (1c67e898). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. All 10 scheduled tasks are on time, and the worktree cleaner ran this hour. The engine's speed is normal (126 ms per tick, 19% under the weekly median of 155).
-- The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 88 commits behind main. It is the read-only mirror and catches up on its own.
+- **Engine speed reading jumped (agents' job, not yours):** tick cost 320 ms/tick steady, 107% above the 7-day median (154, 142 rows since 9c6fc808); top phase agent_decision, 638 agents. Name the merges between 9c6fc808 and cd79fc23: git log --oneline --merges 9c6fc808..cd79fc23. No game code changed since last hour's 126 ms reading (only [the rival plan doc](https://github.com/christianspliid-ui/threadbare/pull/2762) merged), and the builder was running at the same time, so this is most likely a busy machine. If the next reading is still high, it is real.
+- Everything else is green. The live site is up to date (1c67e898; since then only notes and docs changed). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. All 10 scheduled tasks are on time, and the worktree cleaner ran this hour.
+- The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 92 commits behind main. It is the read-only mirror and catches up on its own.
