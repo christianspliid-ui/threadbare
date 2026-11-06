@@ -14,9 +14,12 @@ interface RivalsButtonProps {
    * gift while the player reads it. Unmounting reports closed.
    */
   onOpenChange?: (open: boolean) => void;
+  /** THR-2185: the current tick and a place-name lookup, for the rival entry's lines. */
+  tick?: number;
+  placeName?: (placeId: string) => string | undefined;
 }
 
-export function RivalsButton({ definitions, states, onOpenChange }: RivalsButtonProps) {
+export function RivalsButton({ definitions, states, onOpenChange, tick, placeName }: RivalsButtonProps) {
   const [open, setOpen] = useState(false);
   useEffect(() => {
     onOpenChange?.(open);
@@ -64,7 +67,7 @@ export function RivalsButton({ definitions, states, onOpenChange }: RivalsButton
       onOpenChange={setOpen}
       align="right"
     >
-      <RivalPanel definitions={definitions} states={states} />
+      <RivalPanel definitions={definitions} states={states} tick={tick} placeName={placeName} />
     </Dropdown>
   );
 }

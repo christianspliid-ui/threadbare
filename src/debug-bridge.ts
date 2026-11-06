@@ -4770,6 +4770,9 @@ if (import.meta.env.DEV) {
         phase: string;
         escalationTier: number;
         status: 'active' | 'completed' | 'failed';
+        hostility: number;
+        hostilityCause?: { kind: 'scheme' | 'countered'; placeId?: string; tick: number };
+        lastPressed?: { placeId: string; tick: number };
       }> = [];
       for (const rs of state.rivalStates ?? []) {
         for (const s of rs.schemes ?? []) {
@@ -4780,6 +4783,10 @@ if (import.meta.env.DEV) {
             phase: s.phase,
             escalationTier: s.escalationTier,
             status: s.status,
+            // THR-2185: the rival's temper, its cause and its last landing.
+            hostility: rs.hostilityToPlayer,
+            ...(rs.hostilityCause ? { hostilityCause: rs.hostilityCause } : {}),
+            ...(rs.lastPressed ? { lastPressed: rs.lastPressed } : {}),
           });
         }
       }

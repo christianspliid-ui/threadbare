@@ -103,6 +103,28 @@ export const ACTION_TYPES: RivalAction['type'][] = [
   'wait',
 ];
 
+/**
+ * THR-2185 — the toast a rival's probe raises when its hand lands, in place of the
+ * flavour line below (which promised plague and broken followers that never occur).
+ * `{rival}` is the rival's name, `{Sphere}` the sphere's display word, `{place}` the
+ * place it pressed, `{tender}` the word for how the god tends it (`RIVAL_TENDER_WORDS`).
+ */
+export const RIVAL_LANDING_LINES = {
+  landed: '{rival} pressed {Sphere} on {place}. Tend it and the next blow breaks.',
+  absorbed: '{rival} pressed on {place}, but your {tender} held it.',
+} as const;
+
+/** How each way of tending a place is said in a held toast (`TendedBy`, engine/dominion.ts). */
+export const RIVAL_TENDER_WORDS: Record<'claim' | 'seat' | 'carry' | 'anointed', string> = {
+  claim: 'claim',
+  seat: 'seat',
+  carry: 'thread',
+  anointed: 'anointed faction',
+};
+
+/** Said in place of a landed place's name when it has none (the drop line's own words). */
+export const RIVAL_PLACE_FALLBACK = 'a place of yours';
+
 /** Rival action message templates — multiple variants per action type for prose variety.
  *
  * Each action type has 3-4 template variants. During narrative generation, the engine

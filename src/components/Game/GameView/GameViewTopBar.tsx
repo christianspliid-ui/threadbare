@@ -388,6 +388,8 @@ export function GameViewTopBar({
         definitions={gameState.rivalDefinitions}
         states={gameState.rivalStates}
         onOpenChange={onRivalsOpenChange}
+        tick={gameState.tick}
+        placeName={(id) => gameState.graph.getNode(id)?.name || undefined}
       />
     ),
     notables: () => <div {...ring('notables')}><NotablesButton gameState={gameState} onOpenChange={onNotablesOpenChange} /></div>,

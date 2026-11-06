@@ -54,6 +54,22 @@ export const RIVAL_ESCALATION_ADVANCEMENT_WEIGHT = 0.4;
 /** Hostility bump applied to a rival each time one of its scheme moves fires. */
 export const RIVAL_SCHEME_HOSTILITY_PER_MOVE = 0.03;
 
+// ─── Temper (THR-2185) ─────────────────────────────────────────────
+// A rival's temper toward the god (`hostilityToPlayer`) starts at "hostile",
+// rises with a cause, and cools back toward its start when nothing happens.
+
+/** A new rival's temper ("hostile" on the `hostilityLabel` ladder), and the cooling floor. */
+export const RIVAL_HOSTILITY_START = 0.3;
+
+/** Rise when the god breaks (stalls or fails) one of the rival's schemes. */
+export const RIVAL_HOSTILITY_ON_COUNTER = 0.08;
+
+/** Daily cooling on a day with no rise, floored at `RIVAL_HOSTILITY_START`. */
+export const RIVAL_HOSTILITY_COOL_PER_DAY = 0.02;
+
+/** Days without a rise before the panel's cause line says "and cooling". */
+export const RIVAL_HOSTILITY_CAUSE_STALE_DAYS = 3;
+
 /** Tier index (0-based, 0..RIVAL_MAX_ESCALATION_TIER) at or above which the more
  *  ambitious scheme families (territorial siege beats) unlock. */
 export const RIVAL_SCHEME_AMBITIOUS_FAMILY_MIN_TIER = 1;

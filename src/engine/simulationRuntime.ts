@@ -805,6 +805,8 @@ export function updateDominionDrops(
   graph: WorldGraph,
   ascendantId: string,
   tick: number,
+  /** THR-2185: rivals are run state, not graph nodes — the drop line names them from here. */
+  rivalDefinitions?: readonly { id: string; name: string }[],
 ): DominionDropBadge[] {
   if (runtime.dominionDropsReadAt === tick) return runtime.dominionDrops;
   // The clock went backwards (a cycle restart or a load without a reset): the badges
@@ -815,7 +817,9 @@ export function updateDominionDrops(
   }
   try {
     const ledger = readDominionLedger(graph, ascendantId);
-    const next = diffDominionDrops(graph, runtime.dominionPrevBands, ledger, tick, runtime.dominionDrops);
+    const rivalNames = new Map((rivalDefinitions ?? []).map(r => [r.id, r.name]));
+    const next = diffDominionDrops(graph, runtime.dominionPrevBands, ledger, tick, runtime.dominionDrops,
+      id => rivalNames.get(id) || undefined);
     // Keep the same array when nothing changed, so the map's badge layer is not rebuilt every tick.
     const same = next.length === runtime.dominionDrops.length
       && next.every((d, i) => d.placeId === runtime.dominionDrops[i].placeId && d.untilTick === runtime.dominionDrops[i].untilTick);

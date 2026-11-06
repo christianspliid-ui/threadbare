@@ -6,6 +6,14 @@ import { SectionHeading } from '../shared/SectionHeading';
 import { listHeadingIcon } from '../../data/view-content';
 import { ListRow } from '../shared/ListRow';
 import { BEHAVIOR_COLORS, BEHAVIOR_COLOR_DEFAULT, BEHAVIOR_ICONS, getHostilityColor, hostilityLabel } from '../../data/uiColorPalette';
+import { EntityLink } from '../shared/EntityLink';
+import {
+  rivalCauseSegments,
+  rivalLastPressedSegments,
+  rivalWords,
+  type PlaceNameLookup,
+  type RivalLineSegment,
+} from '../../engine/views/rivalEntry';
 
 /** The temper chip's word, sentence case (Law 14: no raw keys). */
 const BEHAVIOR_DISPLAY: Record<RivalBehavior, string> = {
@@ -15,22 +23,38 @@ const BEHAVIOR_DISPLAY: Record<RivalBehavior, string> = {
   expansionist: 'Expansionist',
 };
 
-/** The name reads as a link (the underline `EntityLink` draws) and toggles the rival's entry. */
+/**
+ * THR-2185: the name is a plain disclosure, not a link. Rivals are run state with no
+ * sheet to open, so the gold underline (the router's cross-link look) promised a page
+ * that does not exist. It stays a button (Law 21) and opens the only surface a rival has.
+ */
 const RIVAL_NAME_STYLE = {
   background: 'none',
   border: 'none',
   padding: 0,
   margin: 0,
   cursor: 'pointer',
-  color: 'var(--accent-gold, #d4af37)',
-  textDecoration: 'underline',
-  textUnderlineOffset: '2px',
+  color: 'var(--text-primary)',
+  textDecoration: 'none',
   font: 'inherit',
 } as const;
 
 interface RivalPanelProps {
   definitions: RivalDefinition[];
   states: RivalState[];
+  /** THR-2185: the current tick, for "yesterday" and for a cause gone quiet. */
+  tick?: number;
+  /** THR-2185: a place's name, undefined when it no longer resolves. */
+  placeName?: PlaceNameLookup;
+}
+
+const NO_PLACE_NAME: PlaceNameLookup = () => undefined;
+
+/** A line's runs: words as text, a place as a link through the one router (Laws 1, 21). */
+function renderSegments(segments: readonly RivalLineSegment[]): React.ReactNode {
+  return segments.map((s, i) => ('text' in s
+    ? <React.Fragment key={i}>{s.text}</React.Fragment>
+    : <EntityLink key={i} id={s.placeId} name={s.name} entityRef={{ kind: 'location', id: s.placeId }} />));
 }
 
 /** Sphere ids are lower-case in the data; the panel speaks them as names. */
@@ -38,7 +62,7 @@ function sphereWord(sphere: string): string {
   return sphere.charAt(0).toUpperCase() + sphere.slice(1);
 }
 
-export const RivalPanel = React.memo(function RivalPanel({ definitions, states }: RivalPanelProps) {
+export const RivalPanel = React.memo(function RivalPanel({ definitions, states, tick = 0, placeName = NO_PLACE_NAME }: RivalPanelProps) {
   // THR-1780: a rival god's name opens its entry in place. Rivals are run state, not graph
   // nodes, so there is no sheet for the ref router to open — the disclosure is the sheet.
   const [openRivalId, setOpenRivalId] = useState<string | null>(null);
@@ -99,6 +123,9 @@ export const RivalPanel = React.memo(function RivalPanel({ definitions, states }
                       onClick={() => setOpenRivalId((cur) => (cur === def.id ? null : def.id))}
                       style={RIVAL_NAME_STYLE}
                     >
+                      <span aria-hidden="true" style={{ color: 'var(--text-tertiary)', marginRight: '0.3em' }}>
+                        {openRivalId === def.id ? '▾' : '▸'}
+                      </span>
                       {def.name}
                     </button>
                   </ListRow.Title>
@@ -112,7 +139,20 @@ export const RivalPanel = React.memo(function RivalPanel({ definitions, states }
                       {spheres.length > 0 && (
                         <p>God of {spheres.map(sphereWord).join(' and ')}, {def.behavior} by temper.</p>
                       )}
-                      <p>Toward you: {hostilityLabel(hostility)}.</p>
+                      <p data-testid="rival-cause">
+                        Toward you:{' '}
+                        <Tooltip id="ui.rival.temper">
+                          <span>{hostilityLabel(hostility)}</span>
+                        </Tooltip>
+                        {renderSegments(rivalCauseSegments(rivalState, tick, placeName))}
+                      </p>
+                      {(() => {
+                        const last = rivalLastPressedSegments(rivalState, tick, placeName);
+                        return last ? <p data-testid="rival-last-pressed">{renderSegments(last)}</p> : null;
+                      })()}
+                      <p data-testid="rival-answer" style={{ color: 'var(--text-tertiary)' }}>
+                        {rivalWords('ui.rival.answer')}
+                      </p>
                     </div>
                   )}
                   <div

@@ -185,5 +185,37 @@ describe('RivalPanel', () => {
     fireEvent.click(name);
     expect(screen.queryByTestId('rival-detail')).toBeNull();
   });
+
+  it('THR-2185: the name is a plain disclosure — no underline, primary text, a chevron', () => {
+    render(<RivalPanel definitions={mockDefinitions} states={mockStates} />);
+    const name = screen.getByRole('button', { name: 'The Iron Tyrant' });
+    expect(getComputedStyle(name).textDecorationLine === '' || getComputedStyle(name).textDecorationLine === 'none').toBe(true);
+    expect(name.style.textDecoration).toBe('none');
+    expect(name.textContent).toContain('▸');
+    fireEvent.click(name);
+    expect(name.textContent).toContain('▾');
+  });
+
+  it('THR-2185: the open entry shows the cause, the last place pressed (a link) and the answer', () => {
+    const states: RivalState[] = mockStates.map((s, i) => (i === 0
+      ? { ...s, hostilityToPlayer: 0.8, hostilityCause: { kind: 'countered', placeId: 'loc-iron', tick: 118 }, lastPressed: { placeId: 'loc-iron', tick: 96 } }
+      : s));
+    const placeName = (id: string) => (id === 'loc-iron' ? 'Iron Glade' : undefined);
+    render(<RivalPanel definitions={mockDefinitions} states={states} tick={120} placeName={placeName} />);
+    fireEvent.click(screen.getByRole('button', { name: 'The Iron Tyrant' }));
+    expect(screen.getByTestId('rival-cause').textContent).toBe('Toward you: wrathful. You broke its scheme against Iron Glade.');
+    expect(screen.getByTestId('rival-last-pressed').textContent).toBe('Last pressed Iron Glade, two days ago.');
+    expect(screen.getByTestId('rival-answer').textContent).toBe(
+      'Places you tend shrug off its hand. Your seat, your threaded, a claim, or an anointed faction tends one.',
+    );
+    expect(screen.getByTestId('rival-detail').textContent).not.toMatch(/loc-|actor_rival_|\d/);
+  });
+
+  it('THR-2185: with no cause and no landing, the temper reads "as rival gods are" and no last-pressed line', () => {
+    render(<RivalPanel definitions={mockDefinitions} states={mockStates.map(s => ({ ...s, hostilityToPlayer: 0.3 }))} />);
+    fireEvent.click(screen.getByRole('button', { name: 'The Iron Tyrant' }));
+    expect(screen.getByTestId('rival-cause').textContent).toBe('Toward you: hostile, as rival gods are.');
+    expect(screen.queryByTestId('rival-last-pressed')).toBeNull();
+  });
 });
 

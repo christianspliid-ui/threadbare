@@ -19,6 +19,7 @@ import { enableTracing, clearTraces, getTraces } from '../traceBuffer';
 import { WorldGraph } from '../graph';
 import type { GameState } from '../../types/gameState';
 import { RIVAL_GRACE_TICKS_AFTER_BOND } from '../../data/game-config';
+import { RIVAL_HOSTILITY_ON_COUNTER } from '../../data/rival-scheme-config';
 import type { RivalDefinition, RivalState } from '../../types/rival';
 import type { GraphNode } from '../../types/graph';
 import { buildRivalInfluenceMarkers, buildRivalSchemeTargets } from '../rivalInfluenceMarkers';
@@ -286,6 +287,14 @@ describe('phaseRivalActions — scheme lifecycle', () => {
     // Scheme completed (all four phases fired).
     const completed = getTraces().filter((t) => t.category === 'rival.scheme_completed');
     expect(completed.length).toBeGreaterThanOrEqual(1);
+
+    // THR-2185: every scheme beat raised the temper with a 'scheme' cause.
+    const beatRises = getTraces()
+      .filter((t) => t.category === 'rival.hostility_changed')
+      .map((t) => t as unknown as { cause: string })
+      .filter((r) => r.cause === 'scheme');
+    expect(beatRises.length).toBeGreaterThanOrEqual(advances.length);
+    expect(['scheme', 'countered']).toContain(state.rivalStates[0].hostilityCause?.kind);
   });
 
   it('materializes without a rival graph node: no move failure, pressure pushed, scheme attributable (THR-829)', () => {
@@ -352,14 +361,17 @@ describe('phaseRivalActions — scheme lifecycle', () => {
     expect(sawSchemeMarker).toBe(true);
   });
 
-  it('emits a launch toast + sphere pressure without a seeded scheme (probe path stays alive)', () => {
+  it('the probe path stays alive without a seeded scheme, and is silent when nothing lands (THR-2185)', () => {
     const rival = makeRival('actor_rival_2', 'aggressive');
     const rs = { ...makeRivalState('actor_rival_2'), ticksSinceAction: 20 };
     const state = makeState({ rivalDefinitions: [rival], rivalStates: [rs] });
     // No location → territorial (tier-gated anyway) can't materialize; probe fallback fires.
     runTick(state);
-    // A rival_action event is emitted on the action tick.
-    expect(state.tickEvents.some((e) => e.type === 'rival_action')).toBe(true);
+    // THR-2185: the god has no turf here, so the probe lands nothing and raises no toast.
+    // It still ran: the action counter moved and the clock reset.
+    expect(state.tickEvents.some((e) => e.type === 'rival_action')).toBe(false);
+    expect(state.rivalStates[0].interventionCount).toBeGreaterThan(rs.interventionCount);
+    expect(state.rivalStates[0].ticksSinceAction).toBe(0);
   });
 });
 
@@ -401,6 +413,19 @@ describe('phaseRivalActions — counter-play', () => {
 
     // A cool-failure chronicle beat was pushed.
     expect(state.chronicleEntries.some((e) => e.title.includes('unravels'))).toBe(true);
+
+    // THR-2185: each counter angered the rival by RIVAL_HOSTILITY_ON_COUNTER, with its cause.
+    const rises = getTraces()
+      .filter((t) => t.category === 'rival.hostility_changed')
+      .map((t) => t as unknown as { cause: string; from: number; to: number; placeId?: string });
+    const counterRises = rises.filter((r) => r.cause === 'countered');
+    expect(counterRises.length).toBeGreaterThanOrEqual(2);
+    for (const r of counterRises) {
+      expect(r.to - r.from).toBeCloseTo(RIVAL_HOSTILITY_ON_COUNTER);
+      expect(r.placeId).toBe('loc-1');
+    }
+    expect(state.rivalStates[0].hostilityCause?.kind).toBe('countered');
+    expect(state.rivalStates[0].hostilityCause?.placeId).toBe('loc-1');
   });
 });
 

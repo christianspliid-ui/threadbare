@@ -8301,6 +8301,39 @@ export const CONTRACTS: readonly Contract[] = [
         'THR-2062. phaseResourceStockTiers.test.ts: a lasting famine pulls once and not again after its tug lapses; recovery to adequate clears the marker and a second fall pulls again. Census: zero livelihood repeats inside a crossing on seeds 42/99/7.',
     },
   },
+  {
+    id: 'rival-temper-cause-feeds-rival-panel',
+    producerSystem: 'Rival Gods & Schemes',
+    consumerSystem: NARRATIVE,
+    intent:
+      'A rival\'s temper says why (THR-2185). `phaseRivalActions` writes `RivalState.hostilityCause` on each rise (a scheme beat, or the god breaking a scheme, with the target place) and `lastPressed` when a probe lands (`landRivalProbe` now returns the landing; `rivalProbeMove` raises its toast only then, keeping the old flavour draw so the seeded stream is unchanged), and cools temper once a quiet day to `RIVAL_HOSTILITY_START`. The Rival gods panel reads both through `engine/views/rivalEntry.ts`: the cause sentence after the temper word, the last place pressed as a link, and the answer line. Every change emits `rival.hostility_changed`.',
+    ulTerms: ['Dominion'],
+    mechanism: { kind: 'node-prop', symbols: ['hostilityCause', 'lastPressed'] },
+    writeSites: ['src/engine/orchestrator.ts'],
+    readSites: ['src/engine/views/rivalEntry.ts'],
+  },
+  {
+    id: 'rival-definitions-name-dominion-drops',
+    producerSystem: 'Rival Gods & Schemes',
+    consumerSystem: QUINTESSENCE,
+    intent:
+      'The Chronicle names the rival (THR-2185). Rivals are run state, not graph nodes, so a raid\'s day line and the hex drop badge name the rival from `state.rivalDefinitions` (`rivalNameLookup` in `phaseDominion.ts`; `diffDominionDrops` takes the same lookup from `updateDominionDrops`). A rival it cannot name gets the untended line, never the raw id. Read only.',
+    ulTerms: ['Dominion'],
+    mechanism: { kind: 'function', symbols: ['rivalNameLookup', 'rivalNameOf'] },
+    writeSites: ['src/engine/phaseDominion.ts'],
+    readSites: ['src/engine/phaseDominion.ts', 'src/engine/dominionProjection.ts'],
+  },
+  {
+    id: 'rival-toast-location-ref-opens-place',
+    producerSystem: 'Rival Gods & Schemes',
+    consumerSystem: NARRATIVE,
+    intent:
+      'A rival toast opens the place (THR-2185). Every `rival_action` toast with a target (a landing, a scheme launch, a drain, a desecration, a crack) carries `refs: [{ kind: \'location\' }]`, and `deriveNavigationTarget` opens that place, whose Act block lists the god\'s cards for it.',
+    ulTerms: ['Dominion'],
+    mechanism: { kind: 'event', symbols: ['rival_action'] },
+    writeSites: ['src/engine/orchestrator.ts'],
+    readSites: ['src/engine/notificationRouter.ts'],
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

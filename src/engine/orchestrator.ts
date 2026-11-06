@@ -18,7 +18,7 @@ import {
   computeMaxEssence,
 } from './influence';
 import { recalcVisibility, collectLOSSources } from './visibility';
-import { RIVAL_ACTION_TEMPLATES } from '../data/rival-content';
+import { RIVAL_LANDING_LINES, RIVAL_TENDER_WORDS, RIVAL_PLACE_FALLBACK } from '../data/rival-content';
 import {
   selectRivalAction,
   computeRivalEscalationTier,
@@ -26,6 +26,7 @@ import {
   buildRivalScheme,
   schemeFlags,
   worldHasResourceStocks,
+  coolRivalHostility,
 } from './rival';
 import { getRivalSchemeFamily, type RivalSchemeFamily } from '../data/rival-schemes';
 import {
@@ -41,7 +42,7 @@ import { buildTierUpProse, eventSkipsChronicle, shouldSkipForChronicle } from '.
 import { phaseAlertChronicle } from './alertChronicle';
 import { ARCHETYPE_STAGE_NAMES } from '../data/doom-content';
 import { DOOM_ENDING_FALLBACK_TITLE, MANDATE_FALLBACK_NAME, TWILIGHT_WORDS } from '../data/twilight-content';
-import type { RivalSchemeSummary, RivalDefinition, RivalState } from '../types/rival';
+import type { RivalSchemeSummary, RivalDefinition, RivalState, RivalHostilityCause } from '../types/rival';
 import {
   RIVAL_SCHEME_PHASE_INVEST_TICKS,
   RIVAL_SCHEME_STALL_TICKS,
@@ -49,6 +50,8 @@ import {
   RIVAL_SCHEME_SPHERE_PRESSURE_PER_PHASE,
   RIVAL_SCHEME_CRACK_PRESSURE_MULTIPLIER,
   RIVAL_SCHEME_HOSTILITY_PER_MOVE,
+  RIVAL_HOSTILITY_ON_COUNTER,
+  RIVAL_HOSTILITY_START,
   RIVAL_SCHEME_STOCK_DRAIN_FRACTION,
   RIVAL_SCHEME_STOCK_DRAIN_FLOOR,
   RIVAL_SCHEME_MAX_ROUTES_SEVERED,
@@ -81,7 +84,8 @@ import { emitTrace, emitTiming, emitPhaseTiming, getTimingTraces, isProfilingEna
 import { phaseDominion, afterSpherePressure, raidAllowanceLeft, recordRaidLanding } from './phaseDominion';
 import { getLocationNodes } from './sublocationShape';
 import type { GraphNode } from '../types/graph';
-import { bandAtLeast, buildTendingIndex, computeThreadYield, dominionOf, dominionPower, isTended } from './dominion';
+import { bandAtLeast, buildTendingIndex, computeThreadYield, dominionOf, dominionPower, isTended, type TendedBy } from './dominion';
+import { TICKS_PER_DAY as RIVAL_DAY_TICKS } from '../data/attention-constants';
 import {
   DOMINION_RAID_PLACES_PER_DAILY_BURST,
   DOMINION_RAID_UNTENDED_WEIGHT,
@@ -108,6 +112,7 @@ import type {
   RivalSchemeSourceContestedTrace,
   RivalSchemeSourceDesecratedTrace,
   RivalSchemeMaterializedTrace,
+  RivalHostilityChangedTrace,
 } from '../types/trace';
 import {
   resolveEncounter,
@@ -1792,7 +1797,8 @@ type RivalTraceInput =
   | Omit<RivalSchemeRouteSeveredTrace, 'id' | 'timestamp'>
   | Omit<RivalSchemeSourceContestedTrace, 'id' | 'timestamp'>
   | Omit<RivalSchemeSourceDesecratedTrace, 'id' | 'timestamp'>
-  | Omit<RivalSchemeMaterializedTrace, 'id' | 'timestamp'>;
+  | Omit<RivalSchemeMaterializedTrace, 'id' | 'timestamp'>
+  | Omit<RivalHostilityChangedTrace, 'id' | 'timestamp'>;
 function emitRivalTrace(trace: RivalTraceInput): void {
   emitTrace(trace as unknown as Omit<TraceEntry, 'id' | 'timestamp'>);
 }
@@ -2033,15 +2039,23 @@ function makeSchemeCoolFailure(
   };
 }
 
-/** Legacy flat "probe" move — keeps rivals present between schemes. */
-function rivalProbeMove(
+/**
+ * Legacy flat "probe" move — keeps rivals present between schemes.
+ *
+ * THR-2185: the toast fires only when the rival's hand lands (`landRivalProbe`
+ * returns a landing), names the place and the sphere, says whether the god's tending
+ * held it, and carries the place as a `location` ref so a click opens it. The old
+ * flavour-line draw is kept and discarded, so every later draw in the seeded stream
+ * is unchanged (NFP 3). Returns the rival state with `lastPressed` set on a landing.
+ */
+export function rivalProbeMove(
   state: GameState,
   rival: RivalDefinition,
   rivalState: RivalState,
   rng: () => number,
   events: TickEvent[],
   spherePressures: SpherePressureEvent[],
-): void {
+): RivalState {
   const identityRivalBias = state.doomIdentityMatrix?.rivalBehaviorBias;
   const awarenessValues = Object.values(rivalState.agentAwareness ?? {}).filter(
     (v): v is number => typeof v === 'number',
@@ -2058,31 +2072,83 @@ function rivalProbeMove(
         }
       : rivalState;
   const rivalAction = selectRivalAction(rival, effectiveRivalState, rng(), identityRivalBias);
-  const templates = RIVAL_ACTION_TEMPLATES[rivalAction.type] ?? ['{rival} acts against you'];
-  const template = templates[Math.floor(rng() * templates.length)];
+  // THR-2185: the old flavour-line pick (RIVAL_ACTION_TEMPLATES) drew once here. The
+  // draw stays, discarded, so every later draw in this tick's stream is unchanged.
+  rng();
+  if (!rival.primarySphere) return rivalState;
+  const landing = landRivalProbe(state, rival, rng, spherePressures);
+  if (!landing) return rivalState; // throttled, no turf, or failed: silent (the trace records it)
   events.push({
     id: nextEventId(),
     tick: state.tick,
     type: 'rival_action',
-    message: template.replace(/{rival}/g, rival.name),
+    message: rivalLandingLine(rival.name, landing),
     significance: 0.7,
     notification: { channel: 'toast' },
+    refs: [{ kind: 'location', id: landing.placeId }],
   });
-  if (rival.primarySphere) {
-    landRivalProbe(state, rival, rng, spherePressures);
+  return { ...rivalState, lastPressed: { placeId: landing.placeId, tick: state.tick } };
+}
+
+/** What a landed probe did (THR-2185). `tendedBy` is null when the place was untended. */
+export interface RivalProbeLanding {
+  placeId: string;
+  placeName: string;
+  sphere: SphereName;
+  tendedBy: TendedBy[] | null;
+}
+
+/** The landing toast's words (THR-2185): pressed-and-tend-it, or held-by-your-tending. */
+export function rivalLandingLine(rivalName: string, landing: RivalProbeLanding): string {
+  const place = landing.placeName || RIVAL_PLACE_FALLBACK;
+  const tender = landing.tendedBy?.[0];
+  if (tender) {
+    return RIVAL_LANDING_LINES.absorbed
+      .replace('{rival}', rivalName).replace('{place}', place).replace('{tender}', RIVAL_TENDER_WORDS[tender] ?? 'tending');
   }
+  const sphereWord = landing.sphere.charAt(0).toUpperCase() + landing.sphere.slice(1);
+  return RIVAL_LANDING_LINES.landed
+    .replace('{rival}', rivalName).replace('{Sphere}', sphereWord).replace('{place}', place);
+}
+
+/**
+ * THR-2185: raise a rival's temper with its cause, and trace the change. Pure over the
+ * rival state; the trace is the only side effect.
+ */
+function raiseRivalHostility(
+  rival: RivalDefinition,
+  rivalState: RivalState,
+  by: number,
+  cause: RivalHostilityCause,
+  placeName: string | undefined,
+): RivalState {
+  // Fail-soft: a state with no temper (a hand-built fixture, a damaged save) rises from the start.
+  const from = Number.isFinite(rivalState.hostilityToPlayer) ? rivalState.hostilityToPlayer : RIVAL_HOSTILITY_START;
+  const to = Math.min(1.0, from + by);
+  emitRivalTrace({
+    category: 'rival.hostility_changed' as const,
+    tick: cause.tick,
+    rivalId: rival.id,
+    from,
+    to,
+    cause: cause.kind,
+    ...(cause.placeId ? { placeId: cause.placeId } : {}),
+    summary: `${rival.name}: ${from.toFixed(2)} → ${to.toFixed(2)} (${cause.kind}${placeName ? ` at ${placeName}` : ''})`,
+  });
+  return { ...rivalState, hostilityToPlayer: to, hostilityCause: cause };
 }
 
 /** The god's top-level places at Touched or better, split by whether they are tended. */
-function godTurf(state: GameState): { untended: GraphNode[]; tended: GraphNode[] } {
+function godTurf(state: GameState): { untended: GraphNode[]; tended: GraphNode[]; index: ReadonlyMap<string, TendedBy[]> } {
   const { graph, ascendantId } = state;
   const turf = getLocationNodes(graph).filter(p => bandAtLeast(dominionOf(graph, ascendantId, p.id).band, 'touched'));
-  if (turf.length === 0) return { untended: [], tended: [] };
+  if (turf.length === 0) return { untended: [], tended: [], index: new Map() };
   const index = buildTendingIndex(graph, ascendantId, state.controlEffects,
     placeId => dominionOf(graph, ascendantId, placeId).band);
   return {
     untended: turf.filter(p => !isTended(index, p.id)),
     tended: turf.filter(p => !!isTended(index, p.id)),
+    index,
   };
 }
 
@@ -2114,13 +2180,17 @@ function pickFromTurf(turf: { untended: GraphNode[]; tended: GraphNode[] }, rng:
  * place absorbs the burst in phaseSpherePressure (`absorbed` on the trace).
  *
  * Exported for the THR-1935 test (a slighted town lands first, inside the throttle).
+ *
+ * THR-2185: returns what landed (place, sphere, who tended it), or null when the
+ * probe was throttled, found no turf, or failed — the caller's toast fires only on a
+ * landing.
  */
 export function landRivalProbe(
   state: GameState,
   rival: RivalDefinition,
   rng: () => number,
   spherePressures: SpherePressureEvent[],
-): void {
+): RivalProbeLanding | null {
   const sphere = rival.primarySphere ?? null;
   try {
     const turf = godTurf(state);
@@ -2138,7 +2208,7 @@ export function landRivalProbe(
         magnitude: 0, absorbed: false, throttled: true,
         summary: `${rival.name}'s probe found no turf to land on (${turfCount} place(s), allowance ${allowance})`,
       });
-      return;
+      return null;
     }
     spherePressures.push({
       targetEntityId: pick.node.id,
@@ -2154,8 +2224,16 @@ export function landRivalProbe(
       magnitude: RIVAL_PRESSURE_MAGNITUDE, absorbed: pick.tended, throttled: false,
       summary: `${rival.name} pressed ${sphere} on ${displayNameOf(pick.node)}${pick.tended ? ' (tended — absorbed)' : ''}`,
     });
+    const placeName = displayNameOf(pick.node);
+    return {
+      placeId: pick.node.id,
+      placeName: placeName === pick.node.id ? '' : placeName,
+      sphere,
+      tendedBy: pick.tended ? (isTended(turf.index, pick.node.id) ?? []) : null,
+    };
   } catch {
     // Fail-soft: a failed probe lands nothing this tick.
+    return null;
   }
 }
 
@@ -2380,6 +2458,7 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
                     message: `${rival.name} has opened a drain on ${targetName ?? 'one of your sources'}.`,
                     significance: 0.8,
                     notification: { channel: 'toast' },
+                    refs: [{ kind: 'location', id: targetId }], // THR-2185: opens the place
                   });
                 }
               }
@@ -2411,6 +2490,7 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
                     message: `${rival.name} has desecrated ${targetName ?? 'one of your sources'}. Its yield is no longer yours.`,
                     significance: 0.9,
                     notification: { channel: 'toast' },
+                    refs: [{ kind: 'location', id: targetId }], // THR-2185: opens the place
                   });
                 }
               }
@@ -2434,6 +2514,8 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
                 message: `${rival.name}'s ${family.label.toLowerCase()} breaks over ${targetName ?? 'the reach'}.`,
                 significance: 0.85,
                 notification: { channel: 'toast' },
+                // THR-2185: the crack opens the place it broke over.
+                ...(targetNode && targetId ? { refs: [{ kind: 'location' as const, id: targetId }] } : {}),
               });
               // THR-1935: starving the faithful drains the target's faith in you.
               if (phaseId === 'starve-faithful' && targetNode && targetId) {
@@ -2450,13 +2532,14 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
             summary: `rival.scheme_move_failed ${compId}/${phaseId}`,
           });
         }
-        rivalState = {
-          ...rivalState,
-          hostilityToPlayer: Math.min(
-            1.0,
-            rivalState.hostilityToPlayer + RIVAL_SCHEME_HOSTILITY_PER_MOVE,
-          ),
-        };
+        // THR-2185: the rise records its cause, which the rival's panel entry says.
+        rivalState = raiseRivalHostility(
+          rival,
+          rivalState,
+          RIVAL_SCHEME_HOSTILITY_PER_MOVE,
+          { kind: 'scheme', ...(targetNode && targetId ? { placeId: targetId } : {}), tick: state.tick },
+          targetName,
+        );
         worldFlags[doneKey] = true;
         emitRivalTrace({
           category: 'rival.scheme_phase_advanced' as const,
@@ -2497,6 +2580,14 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
       }
       const counter = detectSchemeCounter(state, active, family);
       if (counter.countered) {
+        // THR-2185: breaking a rival's scheme angers it — the player-caused rise.
+        rivalState = raiseRivalHostility(
+          rival,
+          rivalState,
+          RIVAL_HOSTILITY_ON_COUNTER,
+          { kind: 'countered', ...(targetNode && targetId ? { placeId: targetId } : {}), tick: state.tick },
+          targetName,
+        );
         const counters = readSchemeNum(worldFlags, schemeFlags.counters(compId)) + 1;
         worldFlags[schemeFlags.counters(compId)] = counters;
         if (counters >= RIVAL_SCHEME_COUNTERS_TO_FAIL) {
@@ -2625,6 +2716,8 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
             message: launchMsg,
             significance: 0.75,
             notification: { channel: 'toast' },
+            // THR-2185: a scheme against a place opens that place.
+            ...(target ? { refs: [{ kind: 'location' as const, id: target.id }] } : {}),
           });
           emitRivalTrace({
             category: 'rival.scheme_launched' as const,
@@ -2642,7 +2735,7 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
       if (!launched) {
         // Probe fallback (probe roll, no eligible family, at capacity, or no target).
         rivalState = { ...rivalState, interventionCount: rivalState.interventionCount + 1 };
-        rivalProbeMove(state, rival, rivalState, rng, events, spherePressures);
+        rivalState = rivalProbeMove(state, rival, rivalState, rng, events, spherePressures);
       }
     }
 
@@ -2659,6 +2752,23 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
         drainedEssence: (rivalState.drainedEssence ?? 0) + drain.amount,
         drainedSourceIds: [...drain.contestedHostIds, ...drain.desecratedHostIds],
       };
+    }
+
+    // ── 3b. Cool the temper once a day with no rise (THR-2185) ──
+    if (state.tick > 0 && state.tick % RIVAL_DAY_TICKS === 0) {
+      const cooled = coolRivalHostility(rivalState, state.tick);
+      if (cooled !== rivalState) {
+        emitRivalTrace({
+          category: 'rival.hostility_changed' as const,
+          tick: state.tick,
+          rivalId: rival.id,
+          from: rivalState.hostilityToPlayer,
+          to: cooled.hostilityToPlayer,
+          cause: 'cooled',
+          summary: `${rival.name}: ${rivalState.hostilityToPlayer.toFixed(2)} → ${cooled.hostilityToPlayer.toFixed(2)} (cooled)`,
+        });
+        rivalState = cooled;
+      }
     }
 
     // ── 4. Rebuild UI scheme summaries + persist ──
