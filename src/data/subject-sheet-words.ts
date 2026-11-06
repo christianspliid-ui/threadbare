@@ -237,12 +237,20 @@ export const FACTION_RECENT_ACTIONS_MAX = 5;
 /** How many Reaches the row lists (the sheet's five). */
 export const FACTION_STRONGEST_REACHES_MAX = 5;
 
+/**
+ * The faction Reach ladder, low to high — THR-2182. The top word is "Foremost", not
+ * "Formidable": that word is the middle of a mortal's Iron ladder, and one word must
+ * name one place in the game.
+ */
+export const FACTION_REACH_WORDS: readonly [string, string, string, string] = ['Slight', 'Able', 'Strong', 'Foremost'];
+/** Faction score (0–100) at which each word above the lowest starts. */
+export const FACTION_REACH_THRESHOLDS: readonly [number, number, number] = [25, 50, 75];
+
 /** A faction Reach score (0–100) as a word — the bar stays, the numeral goes (Law 13). */
 export function factionReachWord(score: number): string {
-  if (score >= 75) return 'Formidable';
-  if (score >= 50) return 'Strong';
-  if (score >= 25) return 'Able';
-  return 'Slight';
+  let index = 0;
+  FACTION_REACH_THRESHOLDS.forEach((min, i) => { if (score >= min) index = i + 1; });
+  return FACTION_REACH_WORDS[index];
 }
 
 // ─── Artifact / attachment ───────────────────────────────────────────────────

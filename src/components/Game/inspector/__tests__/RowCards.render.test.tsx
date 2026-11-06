@@ -63,6 +63,15 @@ describe('RowCards (THR-1913)', () => {
     expect(container.querySelector('[data-row-cards="location:well"]')).toBeNull();
   });
 
+  it('THR-2182: the count says what it counts — "2 cards" / "1 card" as visible text', () => {
+    const { container } = mount({ rows: ROWS });
+    const visible = (id: string) => [...container.querySelectorAll(`[data-row-cards="location:${id}"] [data-chip-role="count"] span[aria-hidden="true"]`)]
+      .map(s => s.textContent).join(' ');
+    expect(visible('quarter')).toBe('2 cards');
+    expect(visible('docks')).toBe('1 card');
+    expect(container.querySelector('[data-row-cards="location:quarter"] [data-count-noun]')?.textContent).toBe('cards');
+  });
+
   it('computes counts only for rendered rows: a folded group never reads its hidden rows', () => {
     const many = Array.from({ length: 12 }, (_, i) => row('location', `p${i}`, `Place ${i}`));
     const { cardsFor, container } = mount({ rows: many, folded: true, foldAfter: 4 });

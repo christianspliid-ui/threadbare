@@ -109,6 +109,11 @@ export interface CountChipFullProps extends CountChipBase {
   showWhenZero?: boolean;
   /** THR-1875 — the tooltip's description under the spoken label (a registry entry's words). */
   desc?: string;
+  /**
+   * THR-2182 — a visible noun after the number ("4 cards"), so the count says what it
+   * counts (Law 11). `aria-hidden` like the number: `label` already speaks it.
+   */
+  noun?: string;
 }
 
 /**
@@ -381,7 +386,7 @@ function CountChip(props: CountChipFullProps | CountChipBadgeProps) {
     );
   }
 
-  const { icon, label, tint, onOpen, size = 'md', className, style, word, desc } = props;
+  const { icon, label, tint, onOpen, size = 'md', className, style, word, desc, noun } = props;
   const ink = tint === 'gold' ? inkFrom('var(--accent-gold)') : NEUTRAL_INK;
   const chip = (
     <Shell
@@ -395,6 +400,7 @@ function CountChip(props: CountChipFullProps | CountChipBadgeProps) {
       <Icon name={icon} size="chip" decorative />
       {word && <span aria-hidden="true" style={{ fontWeight: 700 }}>{word}</span>}
       {n !== null && <span aria-hidden="true">{n}</span>}
+      {n !== null && noun && <span aria-hidden="true" data-count-noun="">{noun}</span>}
     </Shell>
   );
   return <Tooltip label={label} desc={desc}>{chip}</Tooltip>;

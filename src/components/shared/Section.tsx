@@ -636,11 +636,16 @@ function CardsSectionRenderer({ section, inAside = false }: { section: CardsSect
               {tile.kindWordTooltipId ? <Tooltip id={tile.kindWordTooltipId}><span>{tile.kindWord}</span></Tooltip> : tile.kindWord}
             </div>
             <div style={{ color: 'var(--text-primary)', fontSize: 'var(--text-sm)', fontWeight: 700, overflowWrap: 'anywhere' }}>
-              {tile.ref ? <Chip role="identity" size="sm" target={tile.ref} label={tile.title} /> : tile.title}
+              {tile.ref
+                ? <Chip role="identity" size="sm" target={tile.ref} label={tile.title} />
+                : tile.titleTooltipId ? <Tooltip id={tile.titleTooltipId}><span>{tile.title}</span></Tooltip> : tile.title}
             </div>
             {tile.lines.map((line, li) => (
               <div key={li} style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', lineHeight: 1.5 }}>
-                {line}
+                {/* THR-2182: the rank word's hover lists its ladder; the ▲ mark keeps its own. */}
+                {li === 0 && tile.wordHover
+                  ? <Tooltip label={tile.wordHover.label} desc={tile.wordHover.desc}><span data-tile-word-hover="">{line}</span></Tooltip>
+                  : line}
                 {/* THR-2149: a recent gain draws the Aftermath's ▲ cluster after the first line's word,
                     at DeltaCluster's default size — the Law 11 floor, since the count is the reading. */}
                 {li === 0 && tile.mark && (
@@ -652,6 +657,7 @@ function CardsSectionRenderer({ section, inAside = false }: { section: CardsSect
                 )}
               </div>
             ))}
+            {tile.subline && <div data-tile-subline="" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)', overflowWrap: 'anywhere' }}>{tile.subline}</div>}
             {tile.clock && (
               <div data-tile-clock="" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap', marginTop: 'var(--space-1)' }}>
                 <Tooltip id={FIGHT_TOOLTIP_IDS.clock.tooltipId}>

@@ -50,6 +50,11 @@ export function rowCardsWord(n: number): string {
   return n === 1 ? INSPECTOR_WORDS.rowCards.one : INSPECTOR_WORDS.rowCards.many.replace('{n}', String(n));
 }
 
+/** THR-2182 — the count chip's visible noun: "card" / "cards". */
+export function rowCardsNoun(n: number): string {
+  return n === 1 ? INSPECTOR_WORDS.rowCardsNoun.one : INSPECTOR_WORDS.rowCardsNoun.many;
+}
+
 function useRowCards(ref: WorldRef): ActOnCardVM[] {
   const ctx = useContext(RowCardsContext);
   const cardsFor = ctx?.cardsFor;
@@ -71,6 +76,7 @@ function RowCardCount({ row, rowId }: { row: Row; rowId: string }) {
         of={ROW_CARDS_COUNT_OF}
         icon="cards"
         label={word}
+        noun={rowCardsNoun(cards.length)}
         desc={UI_TOOLTIPS[ROW_CARDS_TOOLTIP_ID]?.desc}
         onOpen={() => ctx.toggle(rowId)}
       />
