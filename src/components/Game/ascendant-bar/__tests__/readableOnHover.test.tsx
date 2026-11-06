@@ -237,7 +237,7 @@ describe('forecast words (D5)', () => {
     for (const tier of FORECAST_TIERS) {
       const desc = resolveTooltip(`ui.forecast.${tier}`)?.desc ?? '';
       // THR-1985 — Fated opens by naming its rung, so grey never reads as the worst.
-      expect(desc, tier).toMatch(tier === 'fated' ? /^The best word on the ladder: a sure thing needs no god\. As things stand/ : /^As things stand/);
+      expect(desc, tier).toMatch(tier === 'fated' ? /^The best word on the ladder: a sure thing needs no god\. Nearly sure, never certain/ : /^As things stand/);
       expect(desc, tier).toContain('{{ui.nudge_forecast}}');
     }
   });
