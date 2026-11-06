@@ -437,7 +437,7 @@ remediation ticket or the build fails.
 | `dominion-band-prices-god-casts` | Home turf is cheaper and surer (THR-1748). A god card is priced and rolled on its target's Dominion band — `dominionOf` over the target's sphere scores against the god's bought points. The preview (`getTargetActionSlots`) and the charge (`preparePlayerCast`, through `dominionScaledEssenceCost`) read the same band so the price shown is the price paid; the resolver's `sphereFactor` reads it for a player cast only, and the card forecast reads the same factor. Both read the band since THR-1750 turned `DOMINION_PRICES_LIVE` on with the card chip. | function: `castTargetBand`, `dominionScaledEssenceCost`, `dominionSphereFactor` | Essence & Divine Economy | 🔵 UNVERIFIED-OK | — |
 | `dominion-band-projected-to-hex-map` | The player sees their turf and its edge (THR-1750). Hexes are not nodes, so `dominionProjection.ts` lends each land hex the band of the nearest top-level place within `DOMINION_HEX_FILL_RADIUS` (the terrain read past it) — a runtime cache owned by `ensureDominionProjection`, never stored on a tile. `dominionLensVM` feeds the HexMapV2 lens (dim, Sovereign glow, gold frontier) behind the key-1 switch; the band-drop badge reads the ledger `phaseDominion` writes. | function: `buildDominionHexProjection`, `frontierEdges`, `ensureDominionProjection`, `dominionLensVM` | Intelligence, Knowledge & Familiarity | 🔵 UNVERIFIED-OK | — |
 | `dominion-band-scales-thread-yield-and-source-income` | Threads and sources pay by turf (THR-1748). `computeThreadYield` pays each thread `ESSENCE_PER_THREAD_BY_TIER` × its mortal's band multiplier, read by the ledger (`computeEssenceGeneration`) and the essence bar (`computeEssenceIncome`) alike; `sourceIncomeMultiplier` scales each typed source by its host's band before diminishing returns (a Hostile host pays nothing). | function: `computeThreadYield`, `sourceIncomeMultiplier` | Essence & Divine Economy | 🔵 UNVERIFIED-OK | — |
-| `dominion-bands-feed-warm-recap` | The god's places in the warm recap (THR-2184). `snapshotWarmRecap` reads `readDominionLedger(...).bands` once after the opening gifts settle and before the first warm tick; `buildWarmRecap` reads it again at arrival and names places that slipped from Touched or better, and places that rose to Held or Sovereign. The diff stands in for the day lines, which `recentEvents` has dropped by the end of a long warm-up. The rival behind a slip is never named (THR-2172). Read only. | function: `readDominionLedger` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
+| `dominion-bands-feed-warm-recap` | The god's places in the warm recap (THR-2184). `readWarmRecapBands` reads each place's band live through `dominionOf`, the read `afterSpherePressure` writes into the dominion ledger. It does not read the ledger itself, which is empty before a warm-up's first tick; the ledger is only a fallback when the live read throws. `snapshotWarmRecap` reads once after the opening gifts settle and before the first warm tick; `buildWarmRecap` reads again at arrival and names places that slipped from Touched or better, and places that rose to Held or Sovereign. The diff stands in for the day lines, which `recentEvents` has dropped by the end of a long warm-up. The rival behind a slip is never named (THR-2172). Read only. | function: `dominionOf` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `echo-lift-reads-dominion` | An earlier god's monument is raised until the new god feels it: ground already theirs when the old god was kin, ground that stands against them when it was opposed. | function: `dominionOf`, `matchOfScores` | World Generation, Terrain & Places | 🔵 UNVERIFIED-OK | — |
 | `essence-earned-unlocks-attunement-cards` | Working a sphere teaches you its deeper tricks: essence drawn through a sphere over a lifetime widens what that sphere deals you, so a god who actually uses their power ends the run holding more of it than a god who hoarded. | state-field: `essenceEarnedBySphere` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `faction-sphere-aggregate-reaches-battle-aftermath` | A faction's sphere character is what its people carry, so a sacked town is pressed toward the sphere the victors live by — and a faction with no sphere at all presses nothing. | node-prop: `computeFactionSphereAggregates`, `getFactionSphereScores`, `FactionSphereAggregate` | War, Armies & Battles | 🟢 LIVE | — |
@@ -1622,13 +1622,13 @@ exit
 
 ### `dominion-bands-feed-warm-recap` — 🔵 UNVERIFIED-OK
 
-- **Intent:** The god's places in the warm recap (THR-2184). `snapshotWarmRecap` reads `readDominionLedger(...).bands` once after the opening gifts settle and before the first warm tick; `buildWarmRecap` reads it again at arrival and names places that slipped from Touched or better, and places that rose to Held or Sovereign. The diff stands in for the day lines, which `recentEvents` has dropped by the end of a long warm-up. The rival behind a slip is never named (THR-2172). Read only.
+- **Intent:** The god's places in the warm recap (THR-2184). `readWarmRecapBands` reads each place's band live through `dominionOf`, the read `afterSpherePressure` writes into the dominion ledger. It does not read the ledger itself, which is empty before a warm-up's first tick; the ledger is only a fallback when the live read throws. `snapshotWarmRecap` reads once after the opening gifts settle and before the first warm tick; `buildWarmRecap` reads again at arrival and names places that slipped from Touched or better, and places that rose to Held or Sovereign. The diff stands in for the day lines, which `recentEvents` has dropped by the end of a long warm-up. The rival behind a slip is never named (THR-2172). Read only.
 - **Producer → Consumer:** Spheres & Quintessence → Attention, Chronicle & Narrative
 - **UL terms:** *Dominion*
-- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
-- **Write sites:** `src/engine/phaseDominion.ts`
+- **Production hits:** 12 total — 1 write, 1 read, 10 unclassified
+- **Write sites:** `src/engine/dominion.ts`
 - **Read sites:** `src/engine/views/warmRecap.ts`
-- **Other hits:** `src/engine/simulationRuntime.ts`
+- **Other hits:** `src/components/Game/debug/SphereStateTabContent.tsx`, `src/debug-bridge.ts`, `src/engine/cycleEnd.ts`, `src/engine/dominionProjection.ts`, `src/engine/dominionViewModels.ts` +5 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `doom-floor-holds-unmaking` — 🔵 UNVERIFIED-OK
@@ -1683,10 +1683,10 @@ exit
 - **Producer → Consumer:** Spheres & Quintessence → World Generation, Terrain & Places
 - **UL terms:** *Echo*, *Dominion*
 - **Module:** `src/engine/dominion.ts`
-- **Production hits:** 11 total — 1 write, 1 read, 9 unclassified
+- **Production hits:** 12 total — 1 write, 1 read, 10 unclassified
 - **Write sites:** `src/engine/dominion.ts`
 - **Read sites:** `src/engine/seedEchoes.ts`
-- **Other hits:** `src/components/Game/debug/SphereStateTabContent.tsx`, `src/debug-bridge.ts`, `src/engine/cycleEnd.ts`, `src/engine/dominionProjection.ts`, `src/engine/dominionViewModels.ts` +4 more
+- **Other hits:** `src/components/Game/debug/SphereStateTabContent.tsx`, `src/debug-bridge.ts`, `src/engine/cycleEnd.ts`, `src/engine/dominionProjection.ts`, `src/engine/dominionViewModels.ts` +5 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `echo-seeding-writes-place-scores` — 🔵 UNVERIFIED-OK
