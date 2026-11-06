@@ -103,8 +103,11 @@ import { progressActionsWithPlayerHolds } from './playerStepHold';
 import { enrichProse, gatherNarrativeContext, resolveEncounterTitle } from './proseEnrichment';
 import { stepOutcomeToOutcomeBand } from '../data/outcome-band-content';
 import { STEP_PROSE_HISTORY_MAX, type StepProseRecord } from '../types/stepProseRecord';
-import { classifyForecastTier } from './encounters/outcomeForecast';
-import { oddsMissedLine } from '../data/nudge-stage-content';
+// THR-2180 — the classifier the Stage's forecast uses (`resolutionService` keeps an
+// identical private copy), so the frozen word is the word the player saw, even at a
+// tier boundary (the encounter-forecast classifier uses `<=` there).
+import { classifyForecast } from './resolution';
+import { FORECAST_TIER_WORDS, oddsMissedLine } from '../data/nudge-stage-content';
 import {
   detectContestations,
   resolveContestationPair,
@@ -1202,13 +1205,14 @@ export function causeLineSteps(
     ));
     const liveHand = index === lastIndex && (action.activeNudges?.length ?? 0) > 0;
     // THR-2180 — the odds word frozen at the roll; absent on old saves and no-roll steps.
-    const odds = oddsMissedLine(records.find(r => r.index === index)?.forecastTier, band);
+    const tier = records.find(r => r.index === index)?.forecastTier;
+    const odds = oddsMissedLine(tier, band);
     return {
       band,
       reach,
       title: fightStepLabel(template, index),
       godTouched: handOnStep || liveHand,
-      ...(odds ? { oddsMissedLine: odds } : {}),
+      ...(odds && tier ? { oddsMissedLine: odds, oddsMissedTierWord: FORECAST_TIER_WORDS[tier] } : {}),
     };
   });
 }
@@ -2686,7 +2690,7 @@ export function executeStepResult(
       tick,
       // THR-2180 — freeze the odds word only for a step that actually rolled.
       ...(resolutionStats && !resolutionStats.fightEnd && Number.isFinite(resolutionStats.probability)
-        ? { forecastTier: classifyForecastTier(resolutionStats.probability) }
+        ? { forecastTier: classifyForecast(resolutionStats.probability) }
         : {}),
     };
     const priorRecords = (finalAction.stepProseHistory ?? []) as readonly StepProseRecord[];

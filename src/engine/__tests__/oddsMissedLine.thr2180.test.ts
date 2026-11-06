@@ -12,7 +12,7 @@ import {
 } from '../../data/nudge-stage-content';
 import { UI_TOOLTIPS } from '../../data/ui-content';
 import { buildAftermathCauseLine, type CauseLineStep } from '../aftermathWords';
-import { classifyForecastTier } from '../encounters/outcomeForecast';
+import { classifyForecast } from '../resolution';
 import { causeLineSteps, executeStepResult } from '../unifiedActionResolution';
 import { createUnifiedAction, resetUnifiedActionCounter } from '../unifiedActionLifecycle';
 import { createSimulationRuntime } from '../simulationRuntime';
@@ -83,6 +83,21 @@ describe('THR-2180 — the cause line', () => {
     expect(text.split(FATED_MISSED)).toHaveLength(2);
   });
 
+  it('a final-step miss that did not decide the ending is still named, by its step', () => {
+    const text = line('failure', [
+      { band: 'critical_failure', reach: 'iron', godTouched: false },
+      { band: 'failure', reach: 'heart', godTouched: true, oddsMissedLine: FATED_MISSED, oddsMissedTierWord: 'Fated' },
+    ]);
+    expect(text.endsWith('The work on Heart looked Fated, but fate rolled against it.')).toBe(true);
+  });
+
+  it('a final-step miss is named even when the cause line falls back to the lead', () => {
+    const text = line('success', [
+      { band: 'near_miss', reach: 'heart', godTouched: false, oddsMissedLine: FATED_MISSED, oddsMissedTierWord: 'Fated' },
+    ]);
+    expect(text).toBe('Kael won Heal the Sick. The work on Heart looked Fated, but fate rolled against it.');
+  });
+
   it('an earlier step\'s miss is not repeated on the ending', () => {
     const text = line('failure', [
       { band: 'failure', reach: 'heart', godTouched: true, oddsMissedLine: FATED_MISSED },
@@ -131,6 +146,13 @@ function makeTemplate(): UnifiedActionTemplate {
   } as UnifiedActionTemplate;
 }
 
+describe('THR-2180 — the frozen word is the Stage forecast word at a tier boundary', () => {
+  it('a probability of exactly 0.8 reads Fated and 0.6 reads Favorable, as the Stage shows', () => {
+    expect(classifyForecast(0.8)).toBe('fated');
+    expect(classifyForecast(0.6)).toBe('favorable');
+  });
+});
+
 describe('THR-2180 — executeStepResult freezes forecastTier', () => {
   beforeEach(() => {
     resetUnifiedActionCounter();
@@ -155,7 +177,7 @@ describe('THR-2180 — executeStepResult freezes forecastTier', () => {
     const records = (updatedAction.stepProseHistory ?? []) as readonly StepProseRecord[];
     expect(records).toHaveLength(1);
     expect(records[0].forecastTier).toBe('fated');
-    expect(records[0].forecastTier).toBe(classifyForecastTier(0.9));
+    expect(records[0].forecastTier).toBe(classifyForecast(0.9));
     // The cause line's step reader carries the line from the frozen record.
     expect(causeLineSteps(updatedAction, template)[0].oddsMissedLine).toBe(FATED_MISSED);
   });
