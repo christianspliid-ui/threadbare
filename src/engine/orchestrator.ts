@@ -2134,7 +2134,10 @@ function raiseRivalHostility(
     // A scheme beat that cannot lift a temper the god's counter put above the ceiling
     // leaves that counter as the reason: the rival is wrathful because you broke its scheme.
     if (rivalState.hostilityCause?.kind === 'countered' && from > ceiling) return rivalState;
-    return { ...rivalState, hostilityToPlayer: from, hostilityCause: cause };
+    // A capped beat names the current scheme but is not a rise: it keeps the last rise's
+    // tick, so a quiet day still cools and the next beat is a real rise again.
+    const lastRise = rivalState.hostilityCause?.tick;
+    return { ...rivalState, hostilityToPlayer: from, hostilityCause: { ...cause, tick: lastRise ?? cause.tick } };
   }
   emitRivalTrace({
     category: 'rival.hostility_changed' as const,
@@ -2591,14 +2594,18 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
       }
       const counter = detectSchemeCounter(state, active, family);
       if (counter.countered) {
-        // THR-2185: breaking a rival's scheme angers it — the player-caused rise.
-        rivalState = raiseRivalHostility(
-          rival,
-          rivalState,
-          RIVAL_HOSTILITY_ON_COUNTER,
-          { kind: 'countered', ...(targetNode && targetId ? { placeId: targetId } : {}), tick: state.tick },
-          targetName,
-        );
+        // THR-2185: breaking a rival's scheme angers it — the player-caused rise. Only a
+        // counter the god made (`byActorId` set) counts: a target or source that simply
+        // vanished stalls the scheme without anyone having broken it.
+        if (counter.byActorId) {
+          rivalState = raiseRivalHostility(
+            rival,
+            rivalState,
+            RIVAL_HOSTILITY_ON_COUNTER,
+            { kind: 'countered', ...(targetNode && targetId ? { placeId: targetId } : {}), tick: state.tick },
+            targetName,
+          );
+        }
         const counters = readSchemeNum(worldFlags, schemeFlags.counters(compId)) + 1;
         worldFlags[schemeFlags.counters(compId)] = counters;
         if (counters >= RIVAL_SCHEME_COUNTERS_TO_FAIL) {
