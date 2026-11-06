@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-06 05:57 local (04:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-06 06:57 local (05:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -19,6 +19,12 @@
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
 ## Decided for you
+
+From the design lane's [05:18 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-06b.md). Nobody builds on this before 17:30 UTC on 6 November.
+
+- [The mortal's own mid-game is behind a button nobody presses](https://linear.app/threadbare/issue/THR-1859) — "See the work →" on a work moment now really opens the mortal's sheet on the Journey tab, with "The work" as the first row. Before, it opened the sheet's front page, which read as "Kael's profile again". Build ticket: ["See the work" lands on the work](https://linear.app/threadbare/issue/THR-2186).
+- Same ticket — on the sheet's front page, the "Their work" and "What they want most" hovers stop saying "Opens their sheet on the Journey tab" (you are already on the sheet, and nothing opens). They now end *"The Journey tab tells it in full."*
+- Same ticket — the work gets no page of its own. If you want a mortal's work to have its own page, that is a new slice.
 
 From the design lane's [02:20 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-06a.md). Nobody builds on these before 14:44 UTC on 6 November.
 
@@ -44,13 +50,6 @@ From the design lane's [20:40 UTC run](https://github.com/christianspliid-ui/thr
 - Same ticket — the Doom panel stops showing "Counter-omens 0" and "Doom debt 0". Each row comes back as soon as it has something in it.
 - Same ticket — no word is renamed, no row opens by itself, and the rail gets no wider.
 
-From the design lane's [17:24 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-05e.md). Nobody builds on these before 05:30 UTC on 6 November.
-
-- ["Fated" fails and nothing says why](https://linear.app/threadbare/issue/THR-2171/fated-fails-and-nothing-says-why-the-top-odds-word-reads-as-certain-a) — "Fated" keeps its name and its odds, and now and then a Fated step still misses. When a step you saw as Fated or Favorable misses, the result says so once: *"It looked Fated, but fate rolled against it."* Build ticket: [THR-2180](https://linear.app/threadbare/issue/THR-2180/a-good-odds-step-that-misses-says-so-it-looked-fated-but-fate-rolled).
-- Same ticket — the odds legend now ends *"Even Fated can miss."* The Fated hover says "nearly sure, never certain" instead of "all but cannot fail".
-- Same ticket — a chapter won with one failed step reads *"One step went wrong. The work on Heart failed, and your cards could not save that step."* Before, "could not save it" read as the whole chapter lost.
-- Same ticket — no number is shown, and Fated's colour is not touched. Grey or gold is still your open question.
-
 Say "veto <title>" to reverse any of these.
 
 ## This week's screens
@@ -59,12 +58,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: four ready, all waiting out their veto windows; nothing being built right now.**
-- **Just shipped:** [room for the god-rail hand](https://linear.app/threadbare/issue/THR-2177/god-rail-the-pinned-essence-block-leaves-the-hand-no-room-eight-50-px) (THR-2177) merged via [#2763](https://github.com/christianspliid-ui/threadbare/pull/2763) and is live.
-- **Ready at 05:30 UTC (next):** [a good-odds step that misses says so](https://linear.app/threadbare/issue/THR-2180/a-good-odds-step-that-misses-says-so-it-looked-fated-but-fate-rolled) (THR-2180).
-- **Ready at 08:45 UTC:** [the rail rows say what they are](https://linear.app/threadbare/issue/THR-2183/the-rail-rows-say-what-they-are-plain-summaries-on-the-folded-god-rail) (THR-2183).
+**Healthy: one being built, four ready (all waiting out their veto windows).**
+- **Being built now:** [a good-odds step that misses says so](https://linear.app/threadbare/issue/THR-2180/a-good-odds-step-that-misses-says-so-it-looked-fated-but-fate-rolled) (THR-2180). The builder claimed it at 05:31 UTC, the minute its veto window closed.
+- **Ready at 08:45 UTC (next):** [the rail rows say what they are](https://linear.app/threadbare/issue/THR-2183/the-rail-rows-say-what-they-are-plain-summaries-on-the-folded-god-rail) (THR-2183).
 - **Ready at 11:40 UTC:** ["While you were away" recap](https://linear.app/threadbare/issue/THR-2184/while-you-were-away-the-warm-up-card-ends-on-a-five-line-recap-led-by) (THR-2184).
 - **Ready at 14:44 UTC:** [a rival's move has a place and an answer](https://linear.app/threadbare/issue/THR-2185) (THR-2185).
+- **Ready at 17:30 UTC (new):** ["See the work" lands on the work](https://linear.app/threadbare/issue/THR-2186/see-the-work-lands-on-the-work-the-inspector-opens-on-the-tab-a-link) (THR-2186).
 
 Items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -72,6 +71,6 @@ Items for agents, not you:
 
 ## Health
 
-- All green. The live site serves the latest main (d964339b, the god-rail fix). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. All 10 scheduled tasks are on time, and the worktree cleaner ran this hour. Engine speed reads 127 ms/tick, 18% below the weekly median.
-- The builder's last three runs were short because every ready ticket is inside its veto window. That is by design, not a stall.
-- The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 95 commits behind main. It is the read-only mirror and catches up on its own.
+- All green. The live site serves the latest main (d964339b). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. All 10 scheduled tasks are on time, and the worktree cleaner ran at 06:40 local. Engine speed reads 147 ms/tick, 4% below the weekly median.
+- The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask.
+- The home-folder copy of the repo is 95 commits behind main and was last updated 4 Nov 11:02. It is the read-only mirror, which normally catches up on its own, but two days is long. An agent should check the mirror's sync. Nothing is lost: the lanes work from fresh copies of main.
