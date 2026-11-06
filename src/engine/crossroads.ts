@@ -39,6 +39,7 @@ import {
   CROSSROADS_LEAN_AWAY_COST,
   CROSSROADS_HOLD_MAX_TICKS,
 } from '../data/premonition-constants';
+import { BOARD_SCORE_FLOOR } from '../data/strategic-action-constants';
 
 // ─── Shapes ─────────────────────────────────────────────────────
 
@@ -204,14 +205,17 @@ function isReach(value: unknown): value is ReachDomain {
  * How far ahead the first road is, `r = s₂ / s₁`: `torn` at or above
  * `CROSSROADS_TORN_RATIO`, `leaning` strictly above `CROSSROADS_LEANING_RATIO`, else
  * `set`. The ratios are chosen against both multipliers, so *set* means no single lean
- * in either direction turns them. `null` under two options.
+ * in either direction turns them. `null` under two options, and `null` when the first
+ * road is below `BOARD_SCORE_FLOOR` (an idle board: nothing there to be torn between —
+ * review-gate round 2).
  */
-export function settledness(snapshot: CrossroadsSnapshot | null | undefined): SettlednessWord | null {
+export function settledness(snapshot: CrossroadsSnapshot | null | undefined, floor: number = BOARD_SCORE_FLOOR): SettlednessWord | null {
   const options = snapshot?.options ?? [];
   if (options.length < 2) return null;
   const s1 = options[0].score;
   const s2 = options[1].score;
-  const r = s1 > 0 ? s2 / s1 : 1;
+  if (!(s1 >= floor)) return null;
+  const r = s2 / s1;
   if (r >= CROSSROADS_TORN_RATIO) return 'torn';
   if (r > CROSSROADS_LEANING_RATIO) return 'leaning';
   return 'set';
@@ -224,10 +228,15 @@ export function settledness(snapshot: CrossroadsSnapshot | null | undefined): Se
  * - toward: the target leads by ≥ `CROSSROADS_LIKELY_MARGIN` → `likely`; leads by less → `may`; behind → `not_enough`.
  * - away on the leader: the new leader leads by the margin → `likely`; by less → `may`; the leader holds → `not_enough`.
  * - away on a non-leader: `likely` — the leader still leads (the row only offers away on the leader).
+ *
+ * The board's floor binds as it does at the decision (review-gate round 2): a toward
+ * target whose leaned score stays below `floor` cannot win — the board idles — so it
+ * reads `not_enough`, never an infinite lead over a zero runner-up.
  */
 export function forecastLean(
   snapshot: CrossroadsSnapshot,
   lean: Pick<CrossroadsLean, 'family' | 'templateId' | 'targetId' | 'direction'>,
+  floor: number = BOARD_SCORE_FLOOR,
 ): LeanForecast {
   const options = snapshot.options;
   const targetIdx = options.findIndex(o => sameRoad(o, lean));
@@ -240,7 +249,7 @@ export function forecastLean(
   const runnerUp = ranked[1];
   const lead = !runnerUp || runnerUp.s <= 0 ? Infinity : leader.s / runnerUp.s;
   const marginWord: LeanForecast = lead >= CROSSROADS_LIKELY_MARGIN ? 'likely' : 'may';
-  if (lean.direction === 'toward') return leader.i === targetIdx ? marginWord : 'not_enough';
+  if (lean.direction === 'toward') return leader.i === targetIdx && leader.s >= floor ? marginWord : 'not_enough';
   return leader.i === targetIdx ? 'not_enough' : marginWord;
 }
 

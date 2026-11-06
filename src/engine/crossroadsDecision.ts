@@ -69,6 +69,10 @@ export function prepareCrossroadsLean(
   if (held.family === 'encounter') {
     const found = findHeldEncounter(decision, held.templateId, held.targetId ?? undefined);
     if (!found) return none;
+    // Only a toward lean may pull its road up onto the board (review-gate round 2):
+    // pulling up the road the god leans *away* from would add the very choice it paid
+    // to steer off. Off the top list, an away target is simply not on the board.
+    if (found.fromRanked && held.direction === 'away') return none;
     return {
       ...none,
       effective: { ...held, targetId: found.candidate.entry.locationId ?? null },

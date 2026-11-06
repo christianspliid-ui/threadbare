@@ -121,6 +121,12 @@ describe('crossroads — settledness', () => {
     expect(settledness(snap(1, CROSSROADS_TORN_RATIO))).toBe('torn');
     expect(settledness(snap(1, 1))).toBe('torn');
   });
+  it('an idle board (first road below the floor) reads no word, and no toward lean is likely (review-gate round 2)', () => {
+    const idle = snap(0, 0, 0);
+    expect(settledness(idle)).toBeNull();
+    expect(forecastLean(idle, { ...idle.options[0], direction: 'toward' })).toBe('not_enough');
+    expect(forecastLean(idle, { ...idle.options[1], direction: 'toward' })).toBe('not_enough');
+  });
   it('null under two options', () => {
     expect(settledness(snap(1))).toBeNull();
     expect(settledness(null)).toBeNull();

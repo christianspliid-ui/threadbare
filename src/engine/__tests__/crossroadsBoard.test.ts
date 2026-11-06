@@ -167,6 +167,14 @@ describe('a held lean resolves at the next decision (THR-1926)', () => {
     expect(snapshot.options.map(o => o.templateId)).toEqual(['B']);
   });
 
+  it('an away lean never pulls its own road up onto the board (review-gate round 2)', () => {
+    const ranked = [0.9, 0.8, 0.7, 0.6, 0.5, 0.45].map((s, i) => mk(`r${i}`, 'g', s));
+    const decision = { rankedCandidates: ranked, topCandidates: ranked.slice(0, 5) };
+    const prepared = prepareCrossroadsLean({ ...lean('r5', 'g'), direction: 'away' }, decision as never, [], 6);
+    expect(prepared.pulledUp).toBeNull();
+    expect(prepared.effective).toBeNull();
+  });
+
   it('a malformed lean is flagged for clearing and never leans the board', () => {
     const prepared = prepareCrossroadsLean({ family: 'encounter' }, { rankedCandidates: [], topCandidates: [] }, [], 6);
     expect(prepared.malformed).toBe(true);
