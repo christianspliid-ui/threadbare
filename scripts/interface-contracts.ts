@@ -2150,7 +2150,7 @@ export const CONTRACTS: readonly Contract[] = [
     intent:
       'While you were away (THR-2184). On a `?warm=<ticks>` arrival the warm-up card becomes a recap: `buildWarmRecap` (`engine/views/warmRecap.ts`) reads The First\'s non-routine `chapterArchive` records resolved inside the warm window and names the newest two in the Aftermath\'s own `outcomeSentence`, folding the rest into a count line, plus the live chapter The First is in the middle of. The newest one\'s `actionId` is where "Read it in the Ledger" opens. Read only; nothing is written.',
     ulTerms: ['Encounter', 'The First'],
-    mechanism: { kind: 'function', symbols: ['buildWarmRecap'] },
+    mechanism: { kind: 'node-prop', symbols: ['chapterArchive'] },
     writeSites: ['src/engine/chapterArchive.ts'],
     readSites: ['src/engine/views/warmRecap.ts'],
   },
