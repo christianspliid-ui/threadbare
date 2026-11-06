@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-06 16:57 local (15:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-06 17:58 local (16:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -57,10 +57,11 @@ Say "veto <title>" to reverse any of these.
 Items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (17 days; In Dev since 15 Oct, 22 days; last touched 1 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching. No pushed branch and no local worktree is named for it (checked this run).
+- **The weekly review ran at 16:01 UTC** ([report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-11-06.md)): nothing for you, no tickets filed. Merges slowed this week because ready tickets were waiting out veto windows, not because anything broke.
 
 ## Health
 
-- The live site serves the latest commit on main (5cd3c9b7, the THR-2185 merge). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time, and the worktree cleaner ran at 16:40 local. The builder is not stalled: its 15:43 UTC run claimed nothing because every ready ticket is inside its veto window, and the run before it shipped THR-2185.
-- Engine speed: 137 ms/tick steady, 7% below the 7-day median (148).
+- The live site serves the latest commit on main (5cd3c9b7, the THR-2185 merge). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time, and the worktree cleaner ran at 17:47 local. The builder is not stalled: its runs at 16:11, 16:31 and 16:51 UTC claimed nothing because every ready ticket is inside its veto window (the first opens at 17:30 UTC).
+- Engine speed: 136 ms/tick steady, 8% below the 7-day median (147).
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask.
-- The home-folder copy of the repo is 135 commits behind main; its newest commit is from 4 Nov 11:02 local, about 54 hours ago. It has one edited tracked file (`.claude/settings.local.json`), which may be what stops the mirror's sync from fast-forwarding. This is the ninth hour in a row this brief has flagged it, so an agent should check the mirror's sync. Nothing is lost, because the lanes work from fresh copies of main.
+- The home-folder copy of the repo is 135 commits behind main; its newest commit is from 4 Nov 11:02 local, about 55 hours ago. It has one edited tracked file (`.claude/settings.local.json`), which may be what stops the mirror's sync from fast-forwarding. This is the tenth hour in a row this brief has flagged it, so an agent should check the mirror's sync. Nothing is lost, because the lanes work from fresh copies of main.
