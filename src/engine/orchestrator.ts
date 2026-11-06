@@ -52,6 +52,7 @@ import {
   RIVAL_SCHEME_HOSTILITY_PER_MOVE,
   RIVAL_HOSTILITY_ON_COUNTER,
   RIVAL_HOSTILITY_START,
+  RIVAL_SCHEME_HOSTILITY_CEILING,
   RIVAL_SCHEME_STOCK_DRAIN_FRACTION,
   RIVAL_SCHEME_STOCK_DRAIN_FLOOR,
   RIVAL_SCHEME_MAX_ROUTES_SEVERED,
@@ -2112,8 +2113,11 @@ export function rivalLandingLine(rivalName: string, landing: RivalProbeLanding):
 }
 
 /**
- * THR-2185: raise a rival's temper with its cause, and trace the change. Pure over the
- * rival state; the trace is the only side effect.
+ * THR-2185: raise a rival's temper with its cause, and trace the change. A rise from
+ * the rival's own scheme stops at `RIVAL_SCHEME_HOSTILITY_CEILING` (never lowering a
+ * temper already above it); only the god breaking a scheme reaches "wrathful". The cause
+ * is recorded either way, so a capped rival still says what it is doing. Pure over the
+ * rival state; the trace (only when the number moved) is the only side effect.
  */
 function raiseRivalHostility(
   rival: RivalDefinition,
@@ -2124,7 +2128,14 @@ function raiseRivalHostility(
 ): RivalState {
   // Fail-soft: a state with no temper (a hand-built fixture, a damaged save) rises from the start.
   const from = Number.isFinite(rivalState.hostilityToPlayer) ? rivalState.hostilityToPlayer : RIVAL_HOSTILITY_START;
-  const to = Math.min(1.0, from + by);
+  const ceiling = cause.kind === 'scheme' ? RIVAL_SCHEME_HOSTILITY_CEILING : 1.0;
+  const to = Math.max(from, Math.min(ceiling, from + by));
+  if (to === from) {
+    // A scheme beat that cannot lift a temper the god's counter put above the ceiling
+    // leaves that counter as the reason: the rival is wrathful because you broke its scheme.
+    if (rivalState.hostilityCause?.kind === 'countered' && from > ceiling) return rivalState;
+    return { ...rivalState, hostilityToPlayer: from, hostilityCause: cause };
+  }
   emitRivalTrace({
     category: 'rival.hostility_changed' as const,
     tick: cause.tick,

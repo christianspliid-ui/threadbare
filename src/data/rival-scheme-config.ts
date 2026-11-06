@@ -61,6 +61,16 @@ export const RIVAL_SCHEME_HOSTILITY_PER_MOVE = 0.03;
 /** A new rival's temper ("hostile" on the `hostilityLabel` ladder), and the cooling floor. */
 export const RIVAL_HOSTILITY_START = 0.3;
 
+/**
+ * The most a rival's own scheme beats can raise its temper: "aggressive", just short of
+ * "wrathful" (0.75) and of the `> 0.7` line `selectRivalAction` reads. Only the god
+ * breaking a scheme (`RIVAL_HOSTILITY_ON_COUNTER`) carries a rival past it, so a wrathful
+ * rival always has the god's act behind it. Measured (THR-2185, warm-300 on
+ * `?seeded&size=medium`): a rival runs several schemes in a warm-up and a beat lands about
+ * once a day, so uncapped beats ratcheted every rival to 1.0 and cooling never got a quiet day.
+ */
+export const RIVAL_SCHEME_HOSTILITY_CEILING = 0.7;
+
 /** Rise when the god breaks (stalls or fails) one of the rival's schemes. */
 export const RIVAL_HOSTILITY_ON_COUNTER = 0.08;
 

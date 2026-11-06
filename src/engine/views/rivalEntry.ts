@@ -101,6 +101,20 @@ export function rivalLastPressedSegments(
   );
 }
 
+/**
+ * The place-name lookup the panel reads (the view-model seam: components never query
+ * the graph). A place with no name reads as gone, so its clause drops (fail-soft).
+ */
+export function rivalPlaceNameLookup(graph: { getNode(id: string): { name?: string } | undefined | null }): PlaceNameLookup {
+  return (placeId) => {
+    try {
+      return graph.getNode(placeId)?.name || undefined;
+    } catch {
+      return undefined;
+    }
+  };
+}
+
 /** Flatten segments to plain text (aria labels, tests). */
 export function segmentsText(segments: readonly RivalLineSegment[]): string {
   return segments.map((s) => ('text' in s ? s.text : s.name)).join('');

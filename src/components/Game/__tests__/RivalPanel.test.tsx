@@ -191,9 +191,11 @@ describe('RivalPanel', () => {
     const name = screen.getByRole('button', { name: 'The Iron Tyrant' });
     expect(getComputedStyle(name).textDecorationLine === '' || getComputedStyle(name).textDecorationLine === 'none').toBe(true);
     expect(name.style.textDecoration).toBe('none');
-    expect(name.textContent).toContain('▸');
+    expect(name.style.color).toBe('var(--text-primary)');
+    const chevron = () => name.querySelector('[data-testid="rival-disclosure"]');
+    expect(chevron()?.getAttribute('data-open')).toBe('false');
     fireEvent.click(name);
-    expect(name.textContent).toContain('▾');
+    expect(chevron()?.getAttribute('data-open')).toBe('true');
   });
 
   it('THR-2185: the open entry shows the cause, the last place pressed (a link) and the answer', () => {

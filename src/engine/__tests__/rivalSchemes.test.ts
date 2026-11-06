@@ -19,7 +19,7 @@ import { enableTracing, clearTraces, getTraces } from '../traceBuffer';
 import { WorldGraph } from '../graph';
 import type { GameState } from '../../types/gameState';
 import { RIVAL_GRACE_TICKS_AFTER_BOND } from '../../data/game-config';
-import { RIVAL_HOSTILITY_ON_COUNTER } from '../../data/rival-scheme-config';
+import { RIVAL_HOSTILITY_ON_COUNTER, RIVAL_SCHEME_HOSTILITY_CEILING } from '../../data/rival-scheme-config';
 import type { RivalDefinition, RivalState } from '../../types/rival';
 import type { GraphNode } from '../../types/graph';
 import { buildRivalInfluenceMarkers, buildRivalSchemeTargets } from '../rivalInfluenceMarkers';
@@ -288,13 +288,36 @@ describe('phaseRivalActions — scheme lifecycle', () => {
     const completed = getTraces().filter((t) => t.category === 'rival.scheme_completed');
     expect(completed.length).toBeGreaterThanOrEqual(1);
 
-    // THR-2185: every scheme beat raised the temper with a 'scheme' cause.
+    // THR-2185: scheme beats raise the temper with a 'scheme' cause, never past the ceiling.
     const beatRises = getTraces()
       .filter((t) => t.category === 'rival.hostility_changed')
-      .map((t) => t as unknown as { cause: string })
+      .map((t) => t as unknown as { cause: string; to: number })
       .filter((r) => r.cause === 'scheme');
-    expect(beatRises.length).toBeGreaterThanOrEqual(advances.length);
+    expect(beatRises.length).toBeGreaterThanOrEqual(1);
+    for (const r of beatRises) expect(r.to).toBeLessThanOrEqual(RIVAL_SCHEME_HOSTILITY_CEILING + 1e-9);
     expect(['scheme', 'countered']).toContain(state.rivalStates[0].hostilityCause?.kind);
+  });
+
+  it('THR-2185: a rival\'s own schemes never make it wrathful — only the god breaking one does', () => {
+    const state = seedSchemeState();
+    // Start just under the ceiling: the next beats must stop at it.
+    state.rivalStates = state.rivalStates.map((s) => ({ ...s, hostilityToPlayer: RIVAL_SCHEME_HOSTILITY_CEILING - 0.01 }));
+    for (let i = 0; i < 100; i++) runTick(state);
+    const countered = getTraces().some((t) => t.category === 'rival.hostility_changed'
+      && (t as unknown as { cause: string }).cause === 'countered');
+    expect(countered).toBe(false);
+    expect(state.rivalStates[0].hostilityToPlayer).toBeLessThanOrEqual(RIVAL_SCHEME_HOSTILITY_CEILING + 1e-9);
+    expect(state.rivalStates[0].hostilityCause?.kind).toBe('scheme');
+  });
+
+  it('THR-2185: a wrathful rival\'s counter cause survives its later scheme beats', () => {
+    const state = seedSchemeState();
+    const countered = { kind: 'countered' as const, placeId: 'loc-1', tick: state.tick };
+    state.rivalStates = state.rivalStates.map((s) => ({ ...s, hostilityToPlayer: 0.9, hostilityCause: countered }));
+    // Under a day of ticks: no cooling yet, so only scheme beats touch the temper.
+    for (let i = 0; i < 11; i++) runTick(state);
+    expect(state.rivalStates[0].hostilityToPlayer).toBeCloseTo(0.9);
+    expect(state.rivalStates[0].hostilityCause).toEqual(countered);
   });
 
   it('materializes without a rival graph node: no move failure, pressure pushed, scheme attributable (THR-829)', () => {

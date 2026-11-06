@@ -7,6 +7,7 @@ import { listHeadingIcon } from '../../data/view-content';
 import { ListRow } from '../shared/ListRow';
 import { BEHAVIOR_COLORS, BEHAVIOR_COLOR_DEFAULT, BEHAVIOR_ICONS, getHostilityColor, hostilityLabel } from '../../data/uiColorPalette';
 import { EntityLink } from '../shared/EntityLink';
+import { Icon } from '../shared/Icon';
 import {
   rivalCauseSegments,
   rivalLastPressedSegments,
@@ -123,8 +124,13 @@ export const RivalPanel = React.memo(function RivalPanel({ definitions, states, 
                       onClick={() => setOpenRivalId((cur) => (cur === def.id ? null : def.id))}
                       style={RIVAL_NAME_STYLE}
                     >
-                      <span aria-hidden="true" style={{ color: 'var(--text-tertiary)', marginRight: '0.3em' }}>
-                        {openRivalId === def.id ? '▾' : '▸'}
+                      {/* The Chronicle's disclosure chevron: right when shut, down when open (Laws 9–12). */}
+                      <span
+                        data-testid="rival-disclosure"
+                        data-open={openRivalId === def.id ? 'true' : 'false'}
+                        style={{ color: 'var(--text-tertiary)', marginRight: '0.3em', display: 'inline-flex', verticalAlign: 'middle' }}
+                      >
+                        <Icon name="disclosure" size="floor" decorative style={{ transform: openRivalId === def.id ? 'rotate(180deg)' : 'rotate(90deg)' }} />
                       </span>
                       {def.name}
                     </button>
