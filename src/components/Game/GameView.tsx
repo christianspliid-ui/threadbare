@@ -3432,6 +3432,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       .find(e => (e.properties as { courtPosition?: string }).courtPosition === 'the_first') ?? null;
   }, [getLiveState]);
   const warmOpenInterruptsRef = useRef<string[]>([]);
+  const warmHeldInterruptsRef = useRef<string[]>([]);
   const warmStart = useWarmStart({
     requested: warmTicks,
     ready: gameState.phase === 'playing',
@@ -3481,6 +3482,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       return { settled: result.settled, failedBeatId: result.failedBeatId };
     },
     getOpenInterrupts: () => warmOpenInterruptsRef.current,
+    getHeldInterrupts: () => warmHeldInterruptsRef.current,
     // THR-2184 — "While you were away": the band reading before tick one, the recap at arrival.
     snapshotRecap: () => snapshotWarmRecap(getLiveState(), getFirstThreadEdge()?.target ?? null),
     buildRecap: before => buildWarmRecap(getLiveState(), before),
@@ -3712,6 +3714,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     skippedKinds: skippedHomedKinds,
   });
   warmOpenInterruptsRef.current = interruptResolution.open;
+  warmHeldInterruptsRef.current = interruptResolution.held.map(h => h.surfaceId);
   const interruptOpenKey = interruptResolution.open.join('|');
   useEffect(() => {
     shownInterruptsRef.current = interruptOpenKey ? interruptOpenKey.split('|') : [];

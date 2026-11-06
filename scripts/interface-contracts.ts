@@ -2159,10 +2159,10 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: QUINTESSENCE,
     consumerSystem: NARRATIVE,
     intent:
-      'The god\'s places in the warm recap (THR-2184). `snapshotWarmRecap` reads `readDominionLedger(...).bands` once after the opening gifts settle and before the first warm tick; `buildWarmRecap` reads it again at arrival and names places that slipped from Touched or better, and places that rose to Held or Sovereign. The diff stands in for the day lines, which `recentEvents` has dropped by the end of a long warm-up. The rival behind a slip is never named (THR-2172). Read only.',
+      'The god\'s places in the warm recap (THR-2184). `readWarmRecapBands` reads each place\'s band live through `dominionOf`, the read `afterSpherePressure` writes into the dominion ledger. It does not read the ledger itself, which is empty before a warm-up\'s first tick; the ledger is only a fallback when the live read throws. `snapshotWarmRecap` reads once after the opening gifts settle and before the first warm tick; `buildWarmRecap` reads again at arrival and names places that slipped from Touched or better, and places that rose to Held or Sovereign. The diff stands in for the day lines, which `recentEvents` has dropped by the end of a long warm-up. The rival behind a slip is never named (THR-2172). Read only.',
     ulTerms: ['Dominion'],
-    mechanism: { kind: 'function', symbols: ['readDominionLedger'] },
-    writeSites: ['src/engine/phaseDominion.ts'],
+    mechanism: { kind: 'function', symbols: ['dominionOf'] },
+    writeSites: ['src/engine/dominion.ts'],
     readSites: ['src/engine/views/warmRecap.ts'],
   },
   {

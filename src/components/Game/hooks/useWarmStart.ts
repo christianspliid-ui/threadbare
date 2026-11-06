@@ -385,6 +385,8 @@ export interface UseWarmStartArgs {
   snapshotRecap?: () => WarmRecapSnapshot;
   /** THR-2184 — the recap at arrival, from the snapshot. Absent → no recap. */
   buildRecap?: (before: WarmRecapSnapshot) => WarmRecapVM;
+  /** THR-2184 — surfaces held behind the recap (they open on Begin), for the done line. */
+  getHeldInterrupts?: () => string[];
   /** THR-2184 — The First's id, for the fallback snapshot when the reading was not taken. */
   getFirstId?: () => string | null;
 }
@@ -490,15 +492,20 @@ export function useWarmStart(args: UseWarmStartArgs): UseWarmStartResult {
   }, [args.requested, args.ready, start]);
 
   // The done line is written after the arrival render, so `openInterruptsAtArrival`
-  // reads the registry with the overlay closed and suppression cleared. With a recap
-  // (THR-2184) that is after Begin: the recap holds everything else while it is up, so a
-  // read beside it would count none of the decisions that wait.
+  // reads the registry with the overlay closed and suppression cleared. With a recap up
+  // (THR-2184) it is still written at arrival — the UX-review journey and the cold-playtest
+  // harness wait for it without pressing Begin — and it counts the surfaces held behind the
+  // recap, which are the ones that open on Begin.
+  const recapUpAtArrivalRef = useRef(false);
+  recapUpAtArrivalRef.current = recap !== null;
   useEffect(() => {
-    if (!arrival || running || recap) return;
+    if (!arrival || running) return;
     const timer = setTimeout(() => {
       let openInterruptsAtArrival: string[] = [];
       try {
-        openInterruptsAtArrival = argsRef.current.getOpenInterrupts().filter(id => id !== 'WarmStartOverlay');
+        const a = argsRef.current;
+        const read = recapUpAtArrivalRef.current && a.getHeldInterrupts ? a.getHeldInterrupts() : a.getOpenInterrupts();
+        openInterruptsAtArrival = read.filter(id => id !== 'WarmStartOverlay');
       } catch { /* fail-soft: an unreadable registry logs an empty list */ }
       const line = { ...arrival, openInterruptsAtArrival };
       console.info(`${WARM_START_LOG_MARKER} ${JSON.stringify(line)}`);
@@ -508,7 +515,7 @@ export function useWarmStart(args: UseWarmStartArgs): UseWarmStartResult {
       setArrival(null);
     }, WARM_START_ARRIVAL_SETTLE_MS);
     return () => clearTimeout(timer);
-  }, [arrival, running, recap]);
+  }, [arrival, running]);
 
   return { running, progress, recap, dismissRecap };
 }
