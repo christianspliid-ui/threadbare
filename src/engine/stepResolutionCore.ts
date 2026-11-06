@@ -198,6 +198,13 @@ export interface StepCoreResult {
 // ─── Band mapping ───────────────────────────────────────────────
 
 /**
+ * THR-2180 — the odds word the Stage's forecast shows for a probability (the
+ * shared resolver's `<` thresholds). Re-exported here so an encounter caller can
+ * freeze the word the player saw without importing the resolver itself.
+ */
+export const classifyStepForecastTier = classifyForecast;
+
+/**
  * Map the shared resolver's `OutcomeType` to a `StepOutcome`, preserving the full
  * ladder instead of collapsing to binary.
  *
@@ -205,13 +212,6 @@ export interface StepCoreResult {
  * `NEAR_MISS_MARGIN` of the threshold — distinct from a shaper-shifted
  * `success_at_cost`.
  */
-/**
- * THR-2180 — the odds word the Stage's forecast shows for a probability (the
- * shared resolver's `<` thresholds). Re-exported here so an encounter caller can
- * freeze the word the player saw without importing the resolver itself.
- */
-export const classifyStepForecastTier = classifyForecast;
-
 export function mapResolverOutcomeToStep(resolverOutcome: OutcomeType, nearMiss: boolean): StepOutcome {
   switch (resolverOutcome) {
     case 'critical_success': return 'critical_success';

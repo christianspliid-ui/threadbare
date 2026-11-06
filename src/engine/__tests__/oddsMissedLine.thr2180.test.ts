@@ -27,7 +27,9 @@ const FATED_MISSED = 'It looked Fated, but fate rolled against it.';
 describe('THR-2180 — oddsMissedLine', () => {
   it('names a Fated or Favorable miss, and nothing else', () => {
     expect(oddsMissedLine('fated', 'failure')).toBe(FATED_MISSED);
-    expect(oddsMissedLine('favorable', 'near_miss')).toBe('It looked Favorable, but fate rolled against it.');
+    expect(oddsMissedLine('favorable', 'failure')).toBe('It looked Favorable, but fate rolled against it.');
+    // A near miss is a roll that passed, close to the line — not a miss.
+    expect(oddsMissedLine('fated', 'near_miss')).toBeNull();
     expect(oddsMissedLine('fated', 'critical_failure')).toBe(FATED_MISSED);
     expect(oddsMissedLine('fated', 'success_at_cost')).toBeNull();
     expect(oddsMissedLine('uncertain', 'failure')).toBeNull();
@@ -103,7 +105,7 @@ describe('THR-2180 — the cause line', () => {
 
   it('a final-step miss is named even when the cause line falls back to the lead', () => {
     const text = line('success', [
-      { band: 'near_miss', reach: 'heart', godTouched: false, oddsMissedLine: FATED_MISSED, oddsMissedTierWord: 'Fated' },
+      { band: 'failure', reach: 'heart', godTouched: false, oddsMissedLine: FATED_MISSED, oddsMissedTierWord: 'Fated' },
     ]);
     expect(text).toBe('Kael won Heal the Sick. The work on Heart looked Fated, but fate rolled against it.');
   });

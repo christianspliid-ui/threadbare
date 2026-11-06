@@ -378,11 +378,11 @@ export const CHAPTER_LAST_STEP_CHOICE_SUFFIX = ' You: {choice}';
  * | Constant | Default | Purpose |
  * |---|---|---|
  * | `ODDS_MISSED_TIERS` | favorable, fated | Odds words whose miss is named |
- * | `ODDS_MISSED_BANDS` | near_miss, failure, critical_failure | Results that count as a miss (the cause line's own "missed" test) |
+ * | `ODDS_MISSED_BANDS` | failure, critical_failure | Results that count as a miss. Not `near_miss`: that roll *passed*, just close to the line (`mapResolverOutcomeToStep`), so "fate rolled against it" would be false |
  * | `ODDS_MISSED_LINE` | "It looked {tier}, but fate rolled against it." | The one sentence |
  */
 export const ODDS_MISSED_TIERS: ReadonlySet<ForecastTier> = new Set<ForecastTier>(['favorable', 'fated']);
-export const ODDS_MISSED_BANDS: ReadonlySet<StepOutcome> = new Set<StepOutcome>(['near_miss', 'failure', 'critical_failure']);
+export const ODDS_MISSED_BANDS: ReadonlySet<StepOutcome> = new Set<StepOutcome>(['failure', 'critical_failure']);
 export const ODDS_MISSED_LINE = 'It looked {tier}, but fate rolled against it.';
 
 /** The odds-missed sentence for a step, or null when its odds were not good or it did not miss. */
