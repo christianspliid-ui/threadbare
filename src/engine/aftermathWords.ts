@@ -1188,7 +1188,9 @@ export function buildAftermathCauseLine(args: {
   const stepFailed = STEP_OUTCOMES.indexOf(step.band) >= STEP_OUTCOMES.indexOf('failure');
   const lost = CAUSE_LOST_OUTCOMES.has(args.outcome);
   // THR-2180 — a won chapter whose deciding step failed: that step is one of several.
-  const oneStepOfSeveral = !lost && stepFailed && args.steps.length > 1;
+  const failedRank = STEP_OUTCOMES.indexOf('failure');
+  const failedSteps = args.steps.filter(s => STEP_OUTCOMES.indexOf(s.band) >= failedRank).length;
+  const oneStepOfSeveral = !lost && stepFailed && failedSteps === 1 && args.steps.length > 1;
   const clause = step.godTouched
     ? (oneStepOfSeveral
         ? CAUSE_GOD_COULD_NOT_SAVE_STEP

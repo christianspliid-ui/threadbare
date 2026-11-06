@@ -66,6 +66,16 @@ describe('THR-2180 — the cause line', () => {
     expect(text).not.toContain('could not save it.');
   });
 
+  it('two failed steps in a won chapter never read "One step went wrong."', () => {
+    const text = line('success_at_cost', [
+      { band: 'failure', reach: 'iron', godTouched: false },
+      { band: 'failure', reach: 'heart', godTouched: true },
+      { band: 'success', reach: 'gold', godTouched: false },
+    ]);
+    expect(text).not.toContain('One step went wrong.');
+    expect(text).not.toContain('could not save that step');
+  });
+
   it('a lost ending is unchanged', () => {
     const text = line('failure', [
       { band: 'success', reach: 'iron', godTouched: false },
