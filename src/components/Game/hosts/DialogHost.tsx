@@ -114,6 +114,8 @@ export interface DialogHostProps {
   // Warm start
   warmStart: UseWarmStartResult;
   warmFirstName: string | null;
+  /** THR-2184 — the recap's "Read it in the Ledger" (GameView owns the Ledger opener, R4). */
+  onWarmRecapOpenLedger: () => void;
   // Chapter Ledger (its open flag and seen-count are GameScreenState)
   openAgentSheetForId: (agentId: string) => void;
   // Read the Threads
@@ -165,6 +167,7 @@ export function DialogHost({
   handleAgentSelect,
   warmStart,
   warmFirstName,
+  onWarmRecapOpenLedger,
   openAgentSheetForId,
   lastReadThreadsTick,
   setLastReadThreadsTick,
@@ -195,7 +198,6 @@ export function DialogHost({
   const {
     state: { chapterLedgerOpen, chapterLedgerInitialKey, readThreadsOpen, codexOpen, doomDetailOpen, mandateDetailOpen },
     setChapterLedgerOpen,
-    setChapterLedgerInitialKey,
     setChapterLedgerSeenCount,
     setReadThreadsOpen,
     setCodexOpen,
@@ -254,13 +256,7 @@ export function DialogHost({
             interruptResolution.held.some(h => h.kind !== 'warm-start') || interruptResolution.heldArrivals.length > 0
           }
           onBegin={warmStart.dismissRecap}
-          onOpenLedger={() => {
-            const key = warmStart.recap?.ledgerKey ?? null;
-            warmStart.dismissRecap();
-            setChapterLedgerSeenCount(countThreadedChapters(gameState));
-            setChapterLedgerInitialKey(key);
-            setChapterLedgerOpen(true);
-          }}
+          onOpenLedger={onWarmRecapOpenLedger}
         />
       );
 

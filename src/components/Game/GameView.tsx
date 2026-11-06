@@ -3486,6 +3486,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     buildRecap: before => buildWarmRecap(getLiveState(), before),
     getFirstId: () => getFirstThreadEdge()?.target ?? null,
   });
+  // THR-2184 — the recap's "Read it in the Ledger": close the card, open the Ledger at
+  // The First's newest chapter. Lives here so the Ledger keeps one set of chrome openers (R4).
+  const handleWarmRecapOpenLedger = useCallback(() => {
+    const key = warmStart.recap?.ledgerKey ?? null;
+    warmStart.dismissRecap();
+    setChapterLedgerSeenCount(countThreadedChapters(gameState));
+    gameScreen.setChapterLedgerInitialKey(key);
+    setChapterLedgerOpen(true);
+  }, [warmStart, gameState, gameScreen, setChapterLedgerSeenCount, setChapterLedgerOpen]);
   const warmFirstName = useMemo(() => {
     if (!warmStart.running) return null;
     const edge = getFirstThreadEdge();
@@ -4776,6 +4785,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         handleAgentSelect={handleAgentSelect}
         warmStart={warmStart}
         warmFirstName={warmFirstName}
+        onWarmRecapOpenLedger={handleWarmRecapOpenLedger}
         openAgentSheetForId={openAgentSheetForId}
         lastReadThreadsTick={lastReadThreadsTick}
         setLastReadThreadsTick={setLastReadThreadsTick}
