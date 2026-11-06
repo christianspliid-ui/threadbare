@@ -1027,6 +1027,67 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Choices wait',
     desc: 'Anything that needs your choice has waited for you.',
   },
+  // THR-2184: below three minutes the wait steps in half minutes; `{time}` is
+  // "2½ minutes", "1½ minutes" or "half a minute" (formatWarmRemaining).
+  'ui.warm_start.remaining_half': {
+    label: 'Time left',
+    desc: 'About {time} left.',
+  },
+  // ─── While you were away (THR-2184, slice 1 of THR-2173) ──────
+  // The warm-up card's recap at arrival (`engine/views/warmRecap.ts`). The finished-
+  // chapter lines are the Aftermath's own `outcomeSentence`, so no outcome words here.
+  'ui.warm_recap.title': {
+    label: 'While you were away',
+    desc: 'What happened in your story while the world moved on.',
+  },
+  'ui.warm_recap.first_now': {
+    label: 'In the middle of',
+    desc: '{first} is in the middle of {chapter}.',
+  },
+  'ui.warm_recap.first_more': {
+    label: 'More chapters',
+    desc: '{first} finished {count} more chapters.',
+  },
+  'ui.warm_recap.first_more_one': {
+    label: 'One more chapter',
+    desc: '{first} finished one more chapter.',
+  },
+  'ui.warm_recap.slipped_one': {
+    label: 'A place slipped',
+    desc: '{place} slipped from {from} to {to}.',
+  },
+  'ui.warm_recap.slipped_many': {
+    label: 'Places slipped',
+    desc: '{count} of your places slipped: {list}.',
+  },
+  'ui.warm_recap.grew_one': {
+    label: 'A place grew',
+    desc: '{place} is {to} now.',
+  },
+  'ui.warm_recap.grew_many': {
+    label: 'Places grew',
+    desc: '{list} are more yours now.',
+  },
+  'ui.warm_recap.empty': {
+    label: 'Nothing changed',
+    desc: 'Nothing in your story changed while you were away.',
+  },
+  'ui.warm_recap.next_held': {
+    label: 'It waits',
+    desc: 'It opens when you begin.',
+  },
+  'ui.warm_recap.next_paused': {
+    label: 'Paused',
+    desc: 'The world is paused. Press play when you are ready.',
+  },
+  'ui.warm_recap.begin': {
+    label: 'Begin',
+    desc: 'Close this and take up the world where it stands.',
+  },
+  'ui.warm_recap.open_ledger': {
+    label: 'Read it in the Ledger',
+    desc: "Open the Chapter Ledger at The First's newest chapter.",
+  },
   'ui.attention.thread_too_thin': {
     label: 'Thread too thin',
     desc: 'The thread is too thin for this mortal to stop the world. Strengthen it first.',

@@ -19,6 +19,7 @@ import {
 } from '../../engine/undertakingMoments';
 import { resolveAttentionMode } from '../../engine/attentionCadence';
 import { useWarmStart, type AttentionMode } from './hooks/useWarmStart';
+import { buildWarmRecap, snapshotWarmRecap } from '../../engine/views/warmRecap';
 import { canAfford } from '../../engine/influence';
 import { payingSphere } from '../../engine/targetActions';
 import type { UndertakingMomentRecord } from '../../types/strategicAction';
@@ -3480,6 +3481,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       return { settled: result.settled, failedBeatId: result.failedBeatId };
     },
     getOpenInterrupts: () => warmOpenInterruptsRef.current,
+    // THR-2184 — "While you were away": the band reading before tick one, the recap at arrival.
+    snapshotRecap: () => snapshotWarmRecap(getLiveState(), getFirstThreadEdge()?.target ?? null),
+    buildRecap: before => buildWarmRecap(getLiveState(), before),
+    getFirstId: () => getFirstThreadEdge()?.target ?? null,
   });
   const warmFirstName = useMemo(() => {
     if (!warmStart.running) return null;
@@ -3688,6 +3693,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     courtOpen: scryVisible,
     popupQueued: currentPopup !== null,
     warmStartRunning: warmStart.running,
+    warmRecapOpen: warmStart.recap !== null,
     playerSurfaceOpen: arrivalSurfaceOpen,
     recentInput: arrivalRecentInput,
     alreadyShown: shownInterruptsRef.current,

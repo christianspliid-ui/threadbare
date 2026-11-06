@@ -2144,6 +2144,28 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/engine/views/reachGrowthMarks.ts'],
   },
   {
+    id: 'chapter-archive-feeds-warm-recap',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      'While you were away (THR-2184). On a `?warm=<ticks>` arrival the warm-up card becomes a recap: `buildWarmRecap` (`engine/views/warmRecap.ts`) reads The First\'s non-routine `chapterArchive` records resolved inside the warm window and names the newest two in the Aftermath\'s own `outcomeSentence`, folding the rest into a count line, plus the live chapter The First is in the middle of. The newest one\'s `actionId` is where "Read it in the Ledger" opens. Read only; nothing is written.',
+    ulTerms: ['Encounter', 'The First'],
+    mechanism: { kind: 'function', symbols: ['buildWarmRecap'] },
+    writeSites: ['src/engine/chapterArchive.ts'],
+    readSites: ['src/engine/views/warmRecap.ts'],
+  },
+  {
+    id: 'dominion-bands-feed-warm-recap',
+    producerSystem: QUINTESSENCE,
+    consumerSystem: NARRATIVE,
+    intent:
+      'The god\'s places in the warm recap (THR-2184). `snapshotWarmRecap` reads `readDominionLedger(...).bands` once after the opening gifts settle and before the first warm tick; `buildWarmRecap` reads it again at arrival and names places that slipped from Touched or better, and places that rose to Held or Sovereign. The diff stands in for the day lines, which `recentEvents` has dropped by the end of a long warm-up. The rival behind a slip is never named (THR-2172). Read only.',
+    ulTerms: ['Dominion'],
+    mechanism: { kind: 'function', symbols: ['readDominionLedger'] },
+    writeSites: ['src/engine/phaseDominion.ts'],
+    readSites: ['src/engine/views/warmRecap.ts'],
+  },
+  {
     id: 'meeting-leans-on-nature',
     producerSystem: ENCOUNTERS,
     consumerSystem: TRAITS,

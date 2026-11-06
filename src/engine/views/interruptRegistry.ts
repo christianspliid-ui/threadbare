@@ -89,6 +89,8 @@ export interface InterruptSnapshot {
   popupQueued: boolean;
   /** A `?warm=<ticks>` warm-up is advancing the world behind its overlay (THR-1744). Optional: absent = false. */
   warmStartRunning?: boolean;
+  /** THR-2184 — the warm-up card is showing its arrival recap (`While you were away`). Optional: absent = false. */
+  warmRecapOpen?: boolean;
   /**
    * THR-1877 — the cycle has ended and the harvest waits (`harvestResult !== null`).
    * It takes part in the foreground but does not stop the clock. Optional: absent = false.
@@ -133,7 +135,7 @@ export interface InterruptSnapshot {
 export const HOMED_SURFACE_OPEN_WHEN: Record<HomedSurfaceKind, (s: InterruptSnapshot) => boolean> = {
   // The warm start holds the slot while it advances the world, so nothing else opens
   // over it (THR-1744). It renders first: the overlay covers the whole game.
-  'warm-start': s => s.warmStartRunning === true,
+  'warm-start': s => s.warmStartRunning === true || s.warmRecapOpen === true,
   'meet-the-first': s => s.meetingPending && s.hasAscendantIdentity,
   // The Rite of the Thread (THR-1754): every thread the god binds plays one. This is
   // the wish; `resolveInterrupts` holds it behind dialogs and the incumbent.

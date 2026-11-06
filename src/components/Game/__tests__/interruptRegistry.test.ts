@@ -59,6 +59,12 @@ describe('interruptRegistry', () => {
     expect(r.anyOpen).toBe(true);
   });
 
+  it('the warm arrival recap keeps the same card open and still holds what waits (THR-2184)', () => {
+    const r = resolveInterrupts(snap({ warmStartRunning: false, warmRecapOpen: true, momentPending: true }));
+    expect(r.open).toEqual(['WarmStartOverlay']);
+    expect(r.momentMayRender).toBe(false);
+  });
+
   it('a pending threading rite stops the world, waits behind the meeting, and holds the moment card (THR-1754)', () => {
     const rite = resolveInterrupts(snap({ threadingRitePending: true, momentPending: true, popupQueued: true }));
     expect(rite.open).toEqual(['ThreadingRite']);
