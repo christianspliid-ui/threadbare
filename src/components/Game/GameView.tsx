@@ -367,8 +367,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
    * card and sheet arms call it, and so do the selection handlers in `useAgentInteraction`;
    * a map click (`fromMap`) leaves a pinned Inspector where it is (§ D3).
    */
-  const openInspector = useCallback((subject: AnyRef, size: 'docked' | 'wide', fromMap = false) => {
-    setInspector(prev => (fromMap ? openFromMap(prev, subject, size) : openSubject(prev, subject, size)));
+  const openInspector = useCallback((subject: AnyRef, size: 'docked' | 'wide', fromMap = false, tab?: string) => {
+    // THR-2186: `tab` lands the page on the body tab a link asked for ("See the work →").
+    setInspector(prev => (fromMap ? openFromMap(prev, subject, size, tab) : openSubject(prev, subject, size, tab)));
   }, [setInspector]);
   /** Open a world ref as a link would: `card` at its row's `opensAt`, `sheet` wide. */
   const openPage = useCallback((ref: WorldRef, mode: 'card' | 'sheet' = 'card') => {

@@ -1186,14 +1186,15 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Their work turned',
     desc: 'Moments of this mortal\'s long work you have not yet read. Opening one clears nothing until you acknowledge it.',
   },
-  // THR-1963 — the thread panel's two lines and the work moments' link.
+  // THR-1963 — the thread panel's two lines and the work moments' link. THR-2186: the two
+  // rows sit on the sheet itself and open nothing, so they say where the telling lives.
   'ui.thread_work': {
     label: 'Their work',
-    desc: 'The long work this mortal is running now, and how far it has come. Opens their sheet on the Journey tab.',
+    desc: 'The long work this mortal is running now, and how far it has come. The Journey tab tells it in full.',
   },
   'ui.thread_want_most': {
     label: 'What they want most',
-    desc: 'The ambition that drives this mortal first, as far as you know them. Opens their sheet on the Journey tab.',
+    desc: 'The ambition that drives this mortal first, as far as you know them. The Journey tab tells it in full.',
   },
   'ui.moment_see_work': {
     label: 'See the work',
