@@ -52,7 +52,7 @@ export function ChapterWaitWordBadge({ word, name, style }: {
           letterSpacing: '0.04em',
           // "Waits for you" is the one that asks something of the player: gold.
           // "Theirs alone" is a quiet fact: the secondary text tone.
-          color: word === 'waits' ? 'var(--accent-gold, #d4af37)' : 'var(--text-secondary)',
+          color: word === 'waits' ? 'var(--accent-gold)' : 'var(--text-secondary)',
           marginLeft: 8,
           whiteSpace: 'nowrap',
           ...style,
