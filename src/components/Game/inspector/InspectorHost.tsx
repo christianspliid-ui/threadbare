@@ -44,6 +44,7 @@ import { Tooltip } from '../../shared/Tooltip';
 import { InspectorPage, type InspectorPageReport } from './InspectorPage';
 import type { ActCastResult } from './InspectorParts';
 import { RowCardsProvider } from './RowCards';
+import { CardActContext, type CardActHandlers } from '../../shared/CardActStrip';
 import { ArmedBanner, ArmedRowsProvider, isCardDrag, refFromDrop, useArmedCardState } from './ArmedCard';
 import {
   currentEntry,
@@ -82,6 +83,11 @@ export interface InspectorHostProps {
    * It joins a place's Act row so that cast surface is not lost with the drawer.
    */
   meetTheFirst?: { actionId: string; sphere: string } | null;
+  /**
+   * THR-1928: the act strips' handlers (the Crossroads row's lean and lift). Absent = the
+   * strips draw their words and no controls.
+   */
+  actHandlers?: CardActHandlers;
   /** The page reports what it showed (the debug bridge reads it). */
   onReport?: (report: InspectorPageReport & { subjectKey: string; pageKind: string }) => void;
 }
@@ -110,7 +116,7 @@ function ToolButton({ label, icon, onClick, disabled, active }: { label: string;
   );
 }
 
-export function InspectorHost({ gameState, runtime, extras, onCast, onShowOnMap, meetTheFirst, onReport }: InspectorHostProps) {
+export function InspectorHost({ gameState, runtime, extras, onCast, onShowOnMap, meetTheFirst, actHandlers, onReport }: InspectorHostProps) {
   const { state: screen, setInspector, setStage } = useGameScreenState();
   const inspector = screen.inspector;
   const open = isInspectorOpen(inspector);
@@ -265,6 +271,7 @@ export function InspectorHost({ gameState, runtime, extras, onCast, onShowOnMap,
 
   const pageEl = (
     <RowCardsProvider key={entry.key} cardsFor={rowCardsFor} targetNameFor={rowTargetName} cast={castOnRow}>
+      <CardActContext.Provider value={actHandlers ?? null}>
       <ArmedRowsProvider>
         <div onDragOver={onDragOver} onDrop={onDrop} style={{ height: '100%', minHeight: 0 }}>
           <InspectorPage
@@ -281,6 +288,7 @@ export function InspectorHost({ gameState, runtime, extras, onCast, onShowOnMap,
           />
         </div>
       </ArmedRowsProvider>
+      </CardActContext.Provider>
     </RowCardsProvider>
   );
 

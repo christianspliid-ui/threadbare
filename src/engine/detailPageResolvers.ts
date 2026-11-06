@@ -122,6 +122,11 @@ export interface SectionResolverContext {
    * row names the Realm as the profile does. Absent: the standing names the town and grip.
    */
   realmProjection?: RealmProjection | null;
+  /**
+   * THR-1928 (additive): the session runtime, for rows that read its caches (the Crossroads
+   * row's road lines read foreshadowing). Absent: those rows drop the line, never the row.
+   */
+  runtime?: import('./simulationRuntime').SimulationRuntime | null;
 }
 
 /** A section resolver returns 0 or 1 section. Returning null = "skip this section". */

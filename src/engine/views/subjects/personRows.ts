@@ -73,6 +73,7 @@ import {
 import { CORE_CONTINUA, CORE_NEUTRAL } from '../../../types/coreRegistry';
 import { CANONICAL_AXES, signedToCanonical01 } from '../../../types/axisRegistry';
 import { linkedProseSection, type ProsePart } from './linkedProse';
+import { crossroadsRowResolver } from './crossroadsRow';
 import {
   BLOOD_LINE,
   BOUNTY_BLOOD_LINE,
@@ -1009,6 +1010,7 @@ export const PERSON_RESOLVERS = {
   revealed_notices: revealedNotices,
   under_your_hand: underYourHand,
   intention,
+  crossroads: crossroadsRowResolver,
   current_work: currentWork,
   leading_ambition: leadingAmbition,
   who_they_are: whoTheyAre,

@@ -186,6 +186,8 @@ export function placeArt(state: GameState, node: GraphNode): Pick<SubjectHeaderV
 export interface SubjectPageExtras {
   revealedNotices?: SectionResolverContext['revealedNotices'];
   realmProjection?: RealmProjection | null;
+  /** THR-1928: the session runtime (set by `buildSubjectPage` from its own argument). */
+  runtime?: SectionResolverContext['runtime'];
 }
 
 function graphBody(state: GameState, nodeId: string, pageKind: Parameters<typeof generateDetailPage>[0]['pageKind'], extras: SubjectPageExtras = {}): Section[] {
@@ -202,6 +204,7 @@ function graphBody(state: GameState, nodeId: string, pageKind: Parameters<typeof
     state,
     ...(extras.revealedNotices ? { revealedNotices: extras.revealedNotices } : {}),
     ...(extras.realmProjection ? { realmProjection: extras.realmProjection } : {}),
+    ...(extras.runtime ? { runtime: extras.runtime } : {}),
   });
 }
 
@@ -566,8 +569,9 @@ export function buildSubjectPage(state: GameState, subject: InspectorSubject, ru
       if (node.type === 'companion') return companionPage(state, ref, node);
       // A Place is a Location node carrying `parentLocationId` — one page class for both tiers.
       if ((ref.kind === 'location' || ref.kind === 'sublocation') && node.type !== 'location') return missingPage(ref);
-      if (ref.kind === 'sublocation' && !isPlaceNode(node)) return graphPage(state, { ...ref, kind: 'location' }, node, extras);
-      return graphPage(state, ref, node, extras);
+      const withRuntime = runtime && !extras.runtime ? { ...extras, runtime } : extras;
+      if (ref.kind === 'sublocation' && !isPlaceNode(node)) return graphPage(state, { ...ref, kind: 'location' }, node, withRuntime);
+      return graphPage(state, ref, node, withRuntime);
     }
     case 'attachment':
       return attachmentPage(state, ref);

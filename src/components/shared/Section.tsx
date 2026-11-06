@@ -30,6 +30,7 @@ import {
 } from '../../contexts/DetailPageOpenerContext';
 import { Tooltip } from './Tooltip';
 import { StepDots } from './StepDots';
+import { CardActStripHead, CardActTileControls, useCardActArming } from './CardActStrip';
 import { FIGHT_CLOCK_PIP_SIZE, FIGHT_TOOLTIP_IDS } from '../../data/fight-screen-content';
 
 interface SectionLabelProps {
@@ -127,7 +128,7 @@ function SectionShell({
   children?: ReactNode;
 } & Omit<HTMLAttributes<HTMLDivElement>, 'style' | 'children'>) {
   return (
-    <div {...rest} data-section-shape={shape} style={{ marginBottom: 'var(--space-6)', ...style }}>
+    <div {...rest} data-section-shape={shape} data-section-type={section.typeId} style={{ marginBottom: 'var(--space-6)', ...style }}>
       {label && <LabelOf section={section} />}
       {children}
     </div>
@@ -622,14 +623,19 @@ function TileArt({ tile }: { tile: CardsSection['tiles'][number] }) {
 
 function CardsSectionRenderer({ section, inAside = false }: { section: CardsSection; inAside?: boolean }) {
   const columns = inAside ? `repeat(${INSPECTOR_GALLERY_COLUMNS}, minmax(0, 1fr))` : 'repeat(auto-fill, minmax(10rem, 1fr))';
+  // THR-1928: one arm state per strip, so arming one road disarms the other.
+  const { armed, setArmed, disarm } = useCardActArming();
+  const act = section.act;
   return (
     <SectionShell section={section} shape="cards">
+      {act && <CardActStripHead strip={act} />}
       <div style={{ display: 'grid', gridTemplateColumns: columns, gap: 'var(--space-2)' }}>
         {section.tiles.map((tile, index) => (
           <div
             key={`${tile.title}-${index}`}
             {...(tile.image ? { 'data-art-tile': '' } : {})}
-            style={{ border: '1px solid var(--border-gold)', borderRadius: 'var(--radius-panel)', padding: 'var(--space-2) var(--space-3)', background: 'var(--bg-raised)', minWidth: 0, overflow: 'hidden' }}
+            {...(tile.marked ? { 'data-tile-marked': '' } : {})}
+            style={{ border: tile.marked ? '2px solid var(--accent-gold)' : '1px solid var(--border-gold)', borderRadius: 'var(--radius-panel)', padding: 'var(--space-2) var(--space-3)', background: 'var(--bg-raised)', minWidth: 0, overflow: 'hidden' }}
           >
             <TileArt tile={tile} />
             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', fontWeight: 700 }}>
@@ -673,6 +679,7 @@ function CardsSectionRenderer({ section, inAside = false }: { section: CardsSect
             )}
             {tile.byLine && !tile.clock && <div><TileByLine byLine={tile.byLine} /></div>}
             {tile.durationWord && <div style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>{tile.durationWord}</div>}
+            {act && <CardActTileControls strip={act} tile={tile} armed={armed} onArm={setArmed} onDisarm={disarm} />}
             {tile.meter != null && Number.isFinite(tile.meter) && (
               // Size, not spacing: the meter's 4px height.
               <div aria-hidden="true" data-meter="" style={{ marginTop: 'var(--space-1)', height: '4px', borderRadius: 'var(--radius-control)', background: 'var(--bg-deep)', overflow: 'hidden' }}>

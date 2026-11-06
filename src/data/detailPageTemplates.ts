@@ -131,6 +131,8 @@ const ACTOR_SCHEMA: SectionSchemaEntry[] = [
   personRow('revealed_notices', 25, 'overview', DWF),
   personRow('under_your_hand', 30, 'overview', DWF),
   personRow('intention', 35, 'overview', DWF),
+  // THR-1928: the Crossroads — the next roads a threaded mortal weighs, right after what is on their mind.
+  personRow('crossroads', 35.5, 'overview', DWF, { icon: 'road' }),
   personRow('current_work', 36, 'overview', DWF),
   // The resolver sets the ambition's own idea (ICON_FOR_AMBITION); this is its fallback.
   personRow('leading_ambition', 37, 'overview', DWF, { icon: 'ambition' }),

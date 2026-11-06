@@ -20,6 +20,8 @@ import { EncounterBadge } from './EncounterBadge';
 import type { EncounterBadgeModel } from './encounterBadgeModel';
 import { ThreadTugBadge } from './ThreadTugBadge';
 import type { ThreadTugBadgeModel } from './threadTugBadgeModel';
+import { CrossroadsBadge } from './CrossroadsBadge';
+import type { CrossroadsBadgeModel } from './crossroadsBadgeModel';
 import { EntityNoticeBadge } from './EntityNoticeBadge';
 import type { EntityNoticeBadgeModel } from './entityNoticeBadgeModel';
 import { MomentBadge } from './MomentBadge';
@@ -188,6 +190,10 @@ interface ThreadsPanelProps {
   tugBadges?: Map<string, ThreadTugBadgeModel>;
   /** Attends a tug badge's primary tug and selects the agent. */
   onAttendTugBadge?: (badge: ThreadTugBadgeModel) => void;
+  /** THR-1928: threaded mortals torn between roads, keyed by agent id (the Crossroads). */
+  crossroadsBadges?: Map<string, CrossroadsBadgeModel>;
+  /** Opens the torn mortal's page at the Crossroads row. */
+  onOpenCrossroadsBadge?: (badge: CrossroadsBadgeModel) => void;
   /**
    * THR-666: per-agent beats (becomings, complications, milestones) keyed by the
    * row they anchor to. Replaces their global toasts — unthreaded agents never
@@ -263,6 +269,9 @@ interface CompactThreadRowProps {
   tugBadge?: ThreadTugBadgeModel;
   /** Attends the tug badge's primary tug and selects the agent. */
   onAttendTugBadge?: (badge: ThreadTugBadgeModel) => void;
+  /** THR-1928: the torn badge, if this mortal is torn between roads. */
+  crossroadsBadge?: CrossroadsBadgeModel;
+  onOpenCrossroadsBadge?: (badge: CrossroadsBadgeModel) => void;
   /** THR-666/THR-667: unread notices anchored to this row (agent or faction), if any. */
   noticeBadge?: EntityNoticeBadgeModel;
   /** Opens the anchor's thread and clears its pending notices. */
@@ -434,6 +443,8 @@ function CompactThreadRow({
   onOpenEncounterBadge,
   tugBadge,
   onAttendTugBadge,
+  crossroadsBadge,
+  onOpenCrossroadsBadge,
   noticeBadge,
   onOpenNoticeBadge,
   momentBadge,
@@ -636,6 +647,12 @@ function CompactThreadRow({
                 the map's tug vibration; clicking attends the tug for its stated cost. */}
             {tugBadge && onAttendTugBadge && (
               <ThreadTugBadge badge={tugBadge} onAttend={onAttendTugBadge} />
+            )}
+
+            {/* THR-1928: torn badge — this mortal is torn between roads; clicking opens
+                their page at the Crossroads row. A badge, never an interrupt (Law 15). */}
+            {crossroadsBadge && onOpenCrossroadsBadge && (
+              <CrossroadsBadge badge={crossroadsBadge} onOpen={onOpenCrossroadsBadge} />
             )}
 
             {/* THR-666: notice badge — word of this agent. Becomings, complications
@@ -1098,6 +1115,8 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
   onOpenEncounterBadge,
   tugBadges,
   onAttendTugBadge,
+  crossroadsBadges,
+  onOpenCrossroadsBadge,
   noticeBadges,
   onOpenNoticeBadge,
   momentBadges,
@@ -1269,6 +1288,8 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
                             onOpenEncounterBadge={onOpenEncounterBadge}
                             tugBadge={node.category === 'agent' ? tugBadges?.get(node.id) : undefined}
                             onAttendTugBadge={onAttendTugBadge}
+                            crossroadsBadge={node.category === 'agent' ? crossroadsBadges?.get(node.id) : undefined}
+                            onOpenCrossroadsBadge={onOpenCrossroadsBadge}
                             noticeBadge={NOTICE_BADGE_CATEGORIES.has(node.category) ? noticeBadges?.get(node.id) : undefined}
                             onOpenNoticeBadge={onOpenNoticeBadge}
                             momentBadge={node.category === 'agent' ? momentBadges?.get(node.id) : undefined}

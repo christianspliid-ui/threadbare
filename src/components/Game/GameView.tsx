@@ -117,6 +117,9 @@ import { canOpenMeetTheFirst } from './meetTheFirstCard';
 import { placeRefKind } from '../../engine/views/subjects/actOn';
 import { useInterventionAudio } from './hooks/useInterventionAudio';
 import { useCastOnTarget } from './inspector/useCastOnTarget';
+import { useCrossroadsActs } from './hooks/useCrossroadsActs';
+import { selectCrossroadsBadges, type CrossroadsBadgeModel } from './crossroadsBadgeModel';
+import { CROSSROADS_ROW_TYPE_ID } from '../../engine/views/subjects/crossroadsRow';
 import { useCardArming } from './inspector/useCardArming';
 import { FindBox } from './find/FindBox';
 import { rememberFindRecent, type FindCodexSeed } from '../../engine/views/find';
@@ -1459,6 +1462,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     [gameState.activeThreadTugs, attentionPool, attentionCapacity],
   );
 
+  // THR-1928: the torn badge — a threaded mortal torn between roads (the Crossroads). The
+  // reading and the lean are node properties written in place, so this re-derives per state.
+  const crossroadsBadges = useMemo(
+    () => selectCrossroadsBadges(gameState, threadedNodes.filter(n => n.category === 'agent').map(n => n.id)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [gameState, threadedNodes, runtime.worldVersion],
+  );
+
   // THR-666: and the same treatment for a threaded agent's own beats — becomings,
   // complications, ambition milestones. The threading gate has already dropped
   // every unthreaded agent's notifications, so whatever reaches here is someone
@@ -1570,6 +1581,19 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     markUndertakingMomentOpened(badge.primary, _gameStateRef.current.tick);
     setPendingMoment(badge.primary);
   }, []);
+
+  /**
+   * THR-1928 — the torn badge opens the person in the Inspector at Overview, scrolled to
+   * the Crossroads row. Nothing pauses and nothing is spent: the lean is the page's.
+   */
+  const handleOpenCrossroadsBadge = useCallback((badge: CrossroadsBadgeModel) => {
+    openInspector({ kind: 'agent', id: badge.agentId }, 'docked', false, 'overview');
+    // The page renders on the next frame; bring the row into view once it has.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      document.querySelector(`[data-section-type="${CROSSROADS_ROW_TYPE_ID}"]`)
+        ?.scrollIntoView({ block: 'nearest' });
+    }));
+  }, [openInspector]);
 
   /**
    * Badge click — open the encounter modal, then mark that notification read so
@@ -1906,6 +1930,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // debug levers (`useGameDebugLevers`) read it too.
   const _gameStateRef = useRef(gameState);
   useEffect(() => { _gameStateRef.current = gameState; });
+  // THR-1928 — the Crossroads row's lean and lift (the `handleCompulsionChoice` pattern).
+  const crossroadsActs = useCrossroadsActs({ gameStateRef: _gameStateRef, runtime, setGameState, pushToast: handlePushToast });
   // ── Ascendant beat: offer → enter → resolve (THR-517) ─────────────────────
   const pendingBeat = gameState.ascendantBeats?.pending ?? null;
 
@@ -4691,6 +4717,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           onCast={castOnTarget}
           onShowOnMap={(hex) => hexMapRef.current?.focusOn(hex)}
           onReport={handleInspectorReport}
+          actHandlers={crossroadsActs}
           meetTheFirst={meetTheFirstOpenable ? { actionId: MEET_THE_FIRST_SLOT_ID, sphere: archetype.sphereAlignment.primary } : null}
         />
         </div>
@@ -4757,6 +4784,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               handleOpenEncounterBadge={handleOpenEncounterBadge}
               tugBadges={tugBadges}
               attendThreadTug={attendThreadTug}
+              crossroadsBadges={crossroadsBadges}
+              handleOpenCrossroadsBadge={handleOpenCrossroadsBadge}
               noticeBadges={noticeBadges}
               handleOpenNoticeBadge={handleOpenNoticeBadge}
               momentBadges={momentBadges}
