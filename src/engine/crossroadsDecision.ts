@@ -108,20 +108,31 @@ export function resolveCrossroadsLean(
   board: { entries: readonly BoardEntry[]; winner: BoardEntry | null },
   encounterCandidates: readonly ScoredCandidate[],
   strategicCandidates: readonly ScoredStrategicCandidate[],
-  ctx: { agentId: string; agentName: string; tick: number; floor: number; reception?: BondReception },
+  ctx: {
+    agentId: string; agentName: string; tick: number; floor: number; reception?: BondReception;
+    /**
+     * The road actually taken when an override (a held Compulsion, a compelled
+     * journey) replaced the board's winner. The outcome and the toast then describe
+     * what the mortal really does, and the lean turned nothing (review-gate round 1).
+     */
+    overriddenTo?: CrossroadsIdentity;
+  },
 ): ResolvedLean | null {
   const held = prepared.held;
   if (!held) return null;
-  const winner: CrossroadsIdentity | null = board.winner
-    ? boardEntryIdentity(board.winner, encounterCandidates, strategicCandidates)
-    : null;
+  const overridden = ctx.overriddenTo !== undefined;
+  const winner: CrossroadsIdentity | null = overridden
+    ? ctx.overriddenTo!
+    : board.winner
+      ? boardEntryIdentity(board.winner, encounterCandidates, strategicCandidates)
+      : null;
   const lean = prepared.effective ?? held;
   const outcome: LeanOutcome = prepared.expired
     ? 'lapsed_expired'
     : resolveLeanOutcome(lean, winner, prepared.effective !== null, ctx.tick);
 
   let leanTurned = false;
-  if (prepared.effective) {
+  if (prepared.effective && !overridden) {
     const unleaned = boardWinnerWithoutLean(board.entries, ctx.floor);
     const unleanedId = unleaned ? boardEntryIdentity(unleaned, encounterCandidates, strategicCandidates) : null;
     leanTurned = !(unleanedId === null && winner === null)

@@ -1781,57 +1781,6 @@ export function phaseAgentDecision(
       // this far. The numerator is counted where the mortal actually idles, below.
       if (runtime) recordBoardDecision(runtime.engagementLedger);
 
-      // ── THR-1926: the held Crossroads lean resolves ─────────────────────
-      // After the live branch, before the Compulsion Override (a held legacy
-      // compulsion still wins over a lean — save-only or the veto flag). One trace,
-      // one toast (the outcome and the mortal's answer), then both handles cleared so
-      // a later `...actor.properties` spread cannot restore it and resolve it twice.
-      // A board that threw leaves an unexpired lean held for the next decision.
-      let leanTurned = false;
-      if (preparedLean && (preparedLean.malformed || preparedLean.expired || crossroadsBoard)) {
-        try {
-          if (preparedLean.held) {
-            const resolved = resolveCrossroadsLean(
-              preparedLean,
-              crossroadsBoard ?? { entries: [], winner: null },
-              decision.topCandidates, scoredStrategic,
-              {
-                agentId, agentName: actor.name, tick: state.tick, floor: BOARD_SCORE_FLOOR,
-                reception: bondReceptionOf(graph, state.ascendantId, agentId),
-              },
-            );
-            if (resolved) {
-              leanTurned = resolved.leanTurned;
-              emitTrace(resolved.trace);
-              newEvents.push({
-                id: `divine_crossroads_${agentId}_${state.tick}`,
-                tick: state.tick,
-                type: 'divine_premonition',
-                message: resolved.message,
-                significance: 0.6,
-                isInterventionBeat: true,
-                actorId: agentId,
-                notification: { channel: 'toast' },
-              });
-            }
-          } else {
-            emitTrace({
-              category: 'crossroads_lean_outcome',
-              tick: state.tick, agentId, family: 'encounter', templateId: 'unknown', targetId: null,
-              direction: 'toward', outcome: 'lapsed_unavailable', heldTicks: 0,
-              winnerFamily: 'idle', winnerId: null, leanTurned: false, forecastAtPlacement: 'not_enough',
-              summary: `Crossroads: a malformed lean on ${actor.name} was cleared`,
-            });
-          }
-        } catch {
-          // Fail-soft: a broken resolve never blocks the decision; the lean is cleared.
-        }
-        for (const handle of [graph.getNode(agentId), actor]) {
-          if (handle) handle.properties.crossroadsLean = undefined;
-        }
-        if (runtime) touchWorld(runtime);
-      }
-
       // ── Compulsion Check ──────────────────────────────────────────
       // Before committing, check if this agent is eligible for a Compulsion
       // premonition. If so, emit the event to the queue. The agent's decision
@@ -2041,6 +1990,63 @@ export function phaseAgentDecision(
         }
       }
 
+      // ── THR-1926: the held Crossroads lean resolves ─────────────────────
+      // After the live branch AND both overrides (review-gate round 1): a held legacy
+      // compulsion or a compelled journey still wins over a lean (save-only or the veto
+      // flag), and when one does, the lean resolves against what the mortal actually
+      // takes, so its toast never describes a choice that did not happen. One trace,
+      // one toast (the outcome and the mortal's answer), then both handles cleared so
+      // a later `...actor.properties` spread cannot restore it and resolve it twice.
+      // A board that threw leaves an unexpired lean held for the next decision.
+      const crossroadsOverriddenTo = compulsionOverrode && decision.selected
+        ? { family: 'encounter' as const, templateId: decision.selected.entry.templateId, targetId: decision.selected.entry.locationId ?? null }
+        : undefined;
+      let leanTurned = false;
+      if (preparedLean && (preparedLean.malformed || preparedLean.expired || crossroadsBoard)) {
+        try {
+          if (preparedLean.held) {
+            const resolved = resolveCrossroadsLean(
+              preparedLean,
+              crossroadsBoard ?? { entries: [], winner: null },
+              decision.topCandidates, scoredStrategic,
+              {
+                agentId, agentName: actor.name, tick: state.tick, floor: BOARD_SCORE_FLOOR,
+                reception: bondReceptionOf(graph, state.ascendantId, agentId),
+                ...(crossroadsOverriddenTo ? { overriddenTo: crossroadsOverriddenTo } : {}),
+              },
+            );
+            if (resolved) {
+              leanTurned = resolved.leanTurned;
+              emitTrace(resolved.trace);
+              newEvents.push({
+                id: `divine_crossroads_${agentId}_${state.tick}`,
+                tick: state.tick,
+                type: 'divine_premonition',
+                message: resolved.message,
+                significance: 0.6,
+                isInterventionBeat: true,
+                actorId: agentId,
+                notification: { channel: 'toast' },
+              });
+            }
+          } else {
+            emitTrace({
+              category: 'crossroads_lean_outcome',
+              tick: state.tick, agentId, family: 'encounter', templateId: 'unknown', targetId: null,
+              direction: 'toward', outcome: 'lapsed_unavailable', heldTicks: 0,
+              winnerFamily: 'idle', winnerId: null, leanTurned: false, forecastAtPlacement: 'not_enough',
+              summary: `Crossroads: a malformed lean on ${actor.name} was cleared`,
+            });
+          }
+        } catch {
+          // Fail-soft: a broken resolve never blocks the decision; the lean is cleared.
+        }
+        for (const handle of [graph.getNode(agentId), actor]) {
+          if (handle) handle.properties.crossroadsLean = undefined;
+        }
+        if (runtime) touchWorld(runtime);
+      }
+
       // ── THR-1926: write the Crossroads snapshot ───────────────────────────
       // For mortals the god threads, after the lean and both overrides: the board
       // this decision was made on, minus the road just taken and secret cells. An
@@ -2049,7 +2055,7 @@ export function phaseAgentDecision(
         try {
           const built = buildCrossroadsSnapshotDetailed(
             crossroadsBoard.entries, decision.topCandidates, scoredStrategic,
-            crossroadsBoard.winner, isSecretCellId, state.tick,
+            crossroadsOverriddenTo ?? crossroadsBoard.winner, isSecretCellId, state.tick,
           );
           for (const handle of [graph.getNode(agentId), actor]) {
             if (handle) handle.properties.crossroads = built.snapshot;

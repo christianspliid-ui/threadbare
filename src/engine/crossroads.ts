@@ -135,35 +135,50 @@ export interface CrossroadsSnapshotBuild {
  * minus the entry it took (it is already doing that — the lean applies to the *next*
  * choice) and minus secret cells, cut at `CROSSROADS_OPTION_COUNT`. An entry whose
  * candidate cannot be resolved (index drift) is skipped, never thrown.
+ *
+ * `taken` is the board entry the mortal took, or — when an override (a held
+ * Compulsion, a compelled journey) took something else — that road's identity.
+ *
+ * **The lean just resolved is divided back out** (review-gate round 1): it is cleared
+ * at this same decision, so the next decision will not apply it. Scores and order are
+ * the unleaned board's (the board's own comparator), so the next reading, its
+ * settledness and every forecast word are the next decision's arithmetic (Law 18).
  */
 export function buildCrossroadsSnapshotDetailed(
   entries: readonly BoardEntry[],
   encounterCandidates: readonly ScoredCandidate[],
   strategicCandidates: readonly ScoredStrategicCandidate[],
-  taken: BoardEntry | null,
+  taken: BoardEntry | CrossroadsIdentity | null,
   isSecret: (templateId: string) => boolean,
   tick: number,
 ): CrossroadsSnapshotBuild {
   const options: CrossroadsOption[] = [];
   let excludedTaken: string | null = null;
   let excludedSecret = 0;
-  for (const entry of entries) {
+  const unleaned = entries
+    .map((e, pos) => ({ e, pos, s: e.score / (e.crossroadsLean ?? 1) }))
+    .sort((a, b) => (Number(!!b.e.restlessRoadGoal) - Number(!!a.e.restlessRoadGoal))
+      || (b.s - a.s) || (a.pos - b.pos));
+  for (const { e: entry, s: score } of unleaned) {
     if (options.length >= CROSSROADS_OPTION_COUNT) break;
-    if (taken && entry.family === taken.family && entry.candidateIndex === taken.candidateIndex) {
-      excludedTaken = entry.id;
-      continue;
-    }
     if (entry.family === 'strategic_action' && isSecret(entry.id)) {
       excludedSecret++;
       continue;
     }
-    if (!Number.isFinite(entry.score)) continue;
+    if (!Number.isFinite(score)) continue;
     const identity = boardEntryIdentity(entry, encounterCandidates, strategicCandidates);
     if (!identity) continue;
+    const isTaken = taken !== null && ('candidateIndex' in taken
+      ? entry.family === taken.family && entry.candidateIndex === taken.candidateIndex
+      : sameRoad(identity, taken));
+    if (isTaken && excludedTaken === null) {
+      excludedTaken = entry.id;
+      continue;
+    }
     const reach = identity.family === 'encounter'
       ? encounterCandidates[entry.candidateIndex]?.entry.reachPrimary
       : pickPrimaryReach(getStrategicTemplate(identity.templateId));
-    options.push({ ...identity, score: entry.score, reach: isReach(reach) ? reach : 'iron' });
+    options.push({ ...identity, score, reach: isReach(reach) ? reach : 'iron' });
   }
   return { snapshot: { tick, options }, excludedTaken, excludedSecret };
 }
@@ -172,7 +187,7 @@ export function buildCrossroadsSnapshot(
   entries: readonly BoardEntry[],
   encounterCandidates: readonly ScoredCandidate[],
   strategicCandidates: readonly ScoredStrategicCandidate[],
-  taken: BoardEntry | null,
+  taken: BoardEntry | CrossroadsIdentity | null,
   isSecret: (templateId: string) => boolean,
   tick: number,
 ): CrossroadsSnapshot {

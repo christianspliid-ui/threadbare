@@ -138,6 +138,35 @@ describe('a held lean resolves at the next decision (THR-1926)', () => {
     expect(resolved?.outcome).toBe('lapsed_unavailable');
   });
 
+  it('the snapshot after a resolved lean is the unleaned board (review-gate round 1)', () => {
+    // A=1.0, B=0.4 (leaned ×2 → 0.8), C=0.5. A wins; the lean is cleared at this decision.
+    const cands = [mk('A', 'g', 1.0), mk('B', 'g', 0.4), mk('C', 'g', 0.5)];
+    const decided = board(cands, lean('B', 'g'));
+    expect(decided.winner?.id).toBe('A');
+    const snapshot = buildCrossroadsSnapshot(decided.entries, cands as never, [], decided.winner, () => false, 6);
+    expect(snapshot.options.map(o => o.templateId)).toEqual(['C', 'B']);
+    expect(snapshot.options[1].score).toBeCloseTo(0.4, 12);
+    expect(settledness(snapshot)).toBe('leaning'); // 0.4 / 0.5 = 0.8
+  });
+
+  it('an override that takes another road resolves the lean against what the mortal really does', () => {
+    const cands = [mk('A', 'g', 0.5), mk('B', 'g', 0.4)];
+    const decision = { rankedCandidates: cands, topCandidates: cands };
+    const prepared = prepareCrossroadsLean(lean('B', 'g'), decision as never, [], 6);
+    const decided = board(cands, prepared.effective ?? undefined);
+    expect(decided.winner?.id).toBe('B'); // the lean would have turned the board
+    const resolved = resolveCrossroadsLean(prepared, decided, cands as never, [], {
+      agentId: 'a', agentName: 'Kael', tick: 6, floor: 0,
+      overriddenTo: { family: 'encounter', templateId: 'A', targetId: 'g' },
+    });
+    expect(resolved?.outcome).toBe('resisted');
+    expect(resolved?.leanTurned).toBe(false);
+    expect(resolved?.trace.winnerId).toBe('A');
+    // The snapshot excludes the road actually taken, not the board's winner.
+    const snapshot = buildCrossroadsSnapshot(decided.entries, cands as never, [], { family: 'encounter', templateId: 'A', targetId: 'g' }, () => false, 6);
+    expect(snapshot.options.map(o => o.templateId)).toEqual(['B']);
+  });
+
   it('a malformed lean is flagged for clearing and never leans the board', () => {
     const prepared = prepareCrossroadsLean({ family: 'encounter' }, { rankedCandidates: [], topCandidates: [] }, [], 6);
     expect(prepared.malformed).toBe(true);
