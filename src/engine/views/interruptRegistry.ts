@@ -329,8 +329,13 @@ export function resolveInterrupts(
   if (snapshot.recentInput === true) quietHolds.push('recent_input');
   const quiet = quietHolds.length === 0;
 
+  // THR-2184 — the warm arrival recap is exclusive: while it is up, nothing else renders
+  // (a Stage encounter or a second dialog would otherwise co-render under R4). Everything
+  // else that wants the screen is held, and opens when the player begins.
+  const recapExclusive = snapshot.warmRecapOpen === true && snapshot.warmStartRunning !== true;
   // R4 — dialogs that do not wait their turn.
-  const dialogs = wish.filter(s => !isForeground(s) && !s.waitsTurn && !s.arrival);
+  const dialogs = wish.filter(s => !isForeground(s) && !s.waitsTurn && !s.arrival
+    && (!recapExclusive || s.kind === 'warm-start'));
   const momentWish = wish.some(s => s.id === MOMENT_ID);
   const popupWish = wish.find(s => s.id === POPUP_ID);
 
@@ -357,14 +362,14 @@ export function resolveInterrupts(
   // R2 — the incumbent (the first shown foreground surface in list order).
   const incumbent = foregroundWish.find(s => isShown(s) && mayHoldAsIncumbent(s));
   // R3 — the slot is free: list order.
-  const fg = incumbent ?? foregroundWish.find(mayTakeFreeSlot) ?? null;
+  const fg = recapExclusive ? null : incumbent ?? foregroundWish.find(mayTakeFreeSlot) ?? null;
 
   // R5 — the receipt waits for the foreground.
-  const afterForeground = fg ? [] : wish.filter(s => s.waitsTurn === 'foreground');
+  const afterForeground = fg || recapExclusive ? [] : wish.filter(s => s.waitsTurn === 'foreground');
 
   const renderingSet = new Set<InterruptSurface>([...dialogs, ...afterForeground, ...(fg ? [fg] : [])]);
   // R5 — the popup waits for everything, the waiting moment card included (today's rule).
-  if (popupWish && renderingSet.size === 0 && !momentWish && (shown.has(POPUP_ID) || quiet)) {
+  if (popupWish && !recapExclusive && renderingSet.size === 0 && !momentWish && (shown.has(POPUP_ID) || quiet)) {
     renderingSet.add(popupWish);
   }
   const rendering = surfaces.filter(s => renderingSet.has(s));

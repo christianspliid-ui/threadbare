@@ -12,8 +12,9 @@ import { ENCOUNTER_TEMPLATES } from '../../../data/encounter-content';
 import { isRoutineTemplate } from '../../attentionCadence';
 import { getChapterTemplateName } from '../../chapterArchive';
 import {
-  buildWarmRecap,
-  snapshotWarmRecap,
+  buildWarmRecap as buildLive,
+  snapshotWarmRecap as snapshotLive,
+  readWarmRecapBands,
   warmRecapLineText,
   WARM_RECAP_MAX_LINES,
   type WarmRecapSnapshot,
@@ -23,6 +24,11 @@ const ASC = 'asc';
 const FIRST = 'kael';
 const START = 100;
 const PLACES = { p1: 'Ashford', p2: 'Iron Glade', p3: 'Mere Hollow', p4: 'Oakrest', p5: 'Thornwick' } as const;
+
+/** Tests set bands on the ledger and read them back through the reader seam. */
+const ledgerBands = (s: GameState) => ({ ...(s.graph.getNode(ASC)?.properties[DOMINION_LEDGER_KEY] as { bands?: Record<string, DominionBand> } | undefined)?.bands });
+const snapshotWarmRecap = (s: GameState, firstId: string | null) => snapshotLive(s, firstId, { readBands: ledgerBands });
+const buildWarmRecap = (s: GameState, before: WarmRecapSnapshot) => buildLive(s, before, { readBands: ledgerBands });
 
 const STORY_TEMPLATE = ENCOUNTER_TEMPLATES.find(t => !isRoutineTemplate(t.id))!;
 
@@ -195,5 +201,15 @@ describe('buildWarmRecap (THR-2184)', () => {
     const before = snapshotWarmRecap(state, FIRST);
     state.graph.updateNode(ASC, { properties: { [DOMINION_LEDGER_KEY]: { bands: { p1: 'touched' }, rivals: { p1: 'rival-x' } } } });
     expect(texts(state, before).join(' ')).not.toMatch(/rival/i);
+  });
+
+  // Review gate, THR-2184: the ledger is only written inside a tick, so before a warm-up's
+  // first tick it is empty. The live reader must still give every place a band.
+  it('reads every place live when the dominion ledger has never been written', () => {
+    const state = world();
+    state.graph.updateNode(ASC, { properties: { [DOMINION_LEDGER_KEY]: undefined } });
+    const bands = readWarmRecapBands(state);
+    expect(Object.keys(bands).sort()).toEqual(Object.keys(PLACES).sort());
+    expect(snapshotLive(state, FIRST).bands).toEqual(bands);
   });
 });

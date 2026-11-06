@@ -30,6 +30,8 @@ import {
 } from '../../data/dominion-content';
 import { dominionBandTooltipId } from '../../data/dominion-ui-content';
 import { readDominionLedger } from '../phaseDominion';
+import { dominionOf } from '../dominion';
+import { getLocationNodes } from '../sublocationShape';
 import { activeLedgerEncounters } from '../threadedChapters';
 import { getChapterTemplateName, isRoutineChapter } from '../chapterArchive';
 import { countWord, outcomeSentence } from '../aftermathWords';
@@ -75,6 +77,11 @@ export interface WarmRecapSegment extends ChronicleSegment {
 export interface WarmRecapLine {
   kind: WarmRecapLineKind;
   segments: readonly WarmRecapSegment[];
+}
+
+/** Test seam: how the bands are read (default: live, `readWarmRecapBands`). */
+export interface WarmRecapOptions {
+  readBands?: (state: GameState) => Record<string, DominionBand>;
 }
 
 export interface WarmRecapVM {
@@ -145,18 +152,32 @@ function bandSegment(band: DominionBand): WarmRecapSegment {
 
 // ── Reads ───────────────────────────────────────────────────────────────────
 
-function readBands(state: GameState): Record<string, DominionBand> {
+/**
+ * Each top-level place's band, read live through `dominionOf` — the same read the tick's
+ * `afterSpherePressure` writes into the ledger. Not the ledger itself: the ledger is only
+ * written inside a tick, so before a warm-up's first tick it is empty and a diff against
+ * it would never name a place (review gate, THR-2184). Falls back to the ledger on a throw.
+ */
+export function readWarmRecapBands(state: GameState): Record<string, DominionBand> {
+  if (!state.ascendantId) return {};
   try {
-    if (!state.ascendantId) return {};
-    return { ...readDominionLedger(state.graph, state.ascendantId).bands };
+    const bands: Record<string, DominionBand> = {};
+    for (const place of getLocationNodes(state.graph)) {
+      bands[place.id] = dominionOf(state.graph, state.ascendantId, place.id).band;
+    }
+    return bands;
   } catch {
-    return {};
+    try {
+      return { ...readDominionLedger(state.graph, state.ascendantId).bands };
+    } catch {
+      return {};
+    }
   }
 }
 
 /** Take the "before" reading. Call after the opening gifts settle, before the first tick. */
-export function snapshotWarmRecap(state: GameState, firstId: string | null): WarmRecapSnapshot {
-  return { startTick: state.tick, firstId, bands: readBands(state) };
+export function snapshotWarmRecap(state: GameState, firstId: string | null, opts: WarmRecapOptions = {}): WarmRecapSnapshot {
+  return { startTick: state.tick, firstId, bands: (opts.readBands ?? readWarmRecapBands)(state) };
 }
 
 function nodeName(state: GameState, id: string): string | null {
@@ -209,7 +230,7 @@ function finishedLine(state: GameState, rec: ChapterRecord): WarmRecapLine {
  * The recap, from the snapshot taken before the warm-up and the state at arrival.
  * Pure over its inputs; reads in a fixed order (determinism).
  */
-export function buildWarmRecap(state: GameState, before: WarmRecapSnapshot): WarmRecapVM {
+export function buildWarmRecap(state: GameState, before: WarmRecapSnapshot, opts: WarmRecapOptions = {}): WarmRecapVM {
   const slots = new Map<WarmRecapSlot, WarmRecapLine>();
   const firstId = before.firstId;
   let ledgerKey: string | null = null;
@@ -253,7 +274,7 @@ export function buildWarmRecap(state: GameState, before: WarmRecapSnapshot): War
   // gives chapter lines only.
   const beforeBands = before.bands;
   if (Object.keys(beforeBands).length > 0) {
-    const now = readBands(state);
+    const now = (opts.readBands ?? readWarmRecapBands)(state);
     const slipped: { seg: WarmRecapSegment; from: DominionBand; to: DominionBand }[] = [];
     const grew: { seg: WarmRecapSegment; to: DominionBand }[] = [];
     for (const placeId of Object.keys(beforeBands).sort()) {

@@ -490,9 +490,11 @@ export function useWarmStart(args: UseWarmStartArgs): UseWarmStartResult {
   }, [args.requested, args.ready, start]);
 
   // The done line is written after the arrival render, so `openInterruptsAtArrival`
-  // reads the registry with the overlay closed and suppression cleared.
+  // reads the registry with the overlay closed and suppression cleared. With a recap
+  // (THR-2184) that is after Begin: the recap holds everything else while it is up, so a
+  // read beside it would count none of the decisions that wait.
   useEffect(() => {
-    if (!arrival || running) return;
+    if (!arrival || running || recap) return;
     const timer = setTimeout(() => {
       let openInterruptsAtArrival: string[] = [];
       try {
@@ -506,7 +508,7 @@ export function useWarmStart(args: UseWarmStartArgs): UseWarmStartResult {
       setArrival(null);
     }, WARM_START_ARRIVAL_SETTLE_MS);
     return () => clearTimeout(timer);
-  }, [arrival, running]);
+  }, [arrival, running, recap]);
 
   return { running, progress, recap, dismissRecap };
 }
