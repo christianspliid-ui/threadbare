@@ -103,6 +103,11 @@ import { progressActionsWithPlayerHolds } from './playerStepHold';
 import { enrichProse, gatherNarrativeContext, resolveEncounterTitle } from './proseEnrichment';
 import { stepOutcomeToOutcomeBand } from '../data/outcome-band-content';
 import { STEP_PROSE_HISTORY_MAX, type StepProseRecord } from '../types/stepProseRecord';
+// THR-2180 — the classifier the Stage's forecast uses, so the frozen word is the
+// word the player saw, even at a tier boundary (the encounter-forecast classifier
+// uses `<=` there).
+import { classifyStepForecastTier } from './stepResolutionCore';
+import { FORECAST_TIER_WORDS, oddsMissedLine } from '../data/nudge-stage-content';
 import {
   detectContestations,
   resolveContestationPair,
@@ -1180,10 +1185,11 @@ export function godTouchedEncounter(action: Pick<UnifiedAction, 'choiceHistory' 
  * {@link godTouchedEncounter}.
  */
 export function causeLineSteps(
-  action: Pick<UnifiedAction, 'stepOutcomes' | 'choiceHistory' | 'activeNudges'>,
+  action: Pick<UnifiedAction, 'stepOutcomes' | 'choiceHistory' | 'activeNudges'> & Partial<Pick<UnifiedAction, 'stepProseHistory'>>,
   template: UnifiedActionTemplate,
 ): CauseLineStep[] {
   const history = action.choiceHistory ?? [];
+  const records = (action.stepProseHistory ?? []) as readonly StepProseRecord[];
   const lastIndex = action.stepOutcomes.length - 1;
   return action.stepOutcomes.map((band, index) => {
     let reach: string | undefined;
@@ -1198,11 +1204,15 @@ export function causeLineSteps(
         || entry.handCommitted === true
     ));
     const liveHand = index === lastIndex && (action.activeNudges?.length ?? 0) > 0;
+    // THR-2180 — the odds word frozen at the roll; absent on old saves and no-roll steps.
+    const tier = records.find(r => r.index === index)?.forecastTier;
+    const odds = oddsMissedLine(tier, band);
     return {
       band,
       reach,
       title: fightStepLabel(template, index),
       godTouched: handOnStep || liveHand,
+      ...(odds && tier ? { oddsMissedLine: odds, oddsMissedTierWord: FORECAST_TIER_WORDS[tier] } : {}),
     };
   });
 }
@@ -2678,6 +2688,10 @@ export function executeStepResult(
       choiceText: choiceMemory?.choiceText,
       complicationProse: consequence.complication?.prose,
       tick,
+      // THR-2180 — freeze the odds word only for a step that actually rolled.
+      ...(resolutionStats && !resolutionStats.fightEnd && Number.isFinite(resolutionStats.probability)
+        ? { forecastTier: classifyStepForecastTier(resolutionStats.probability) }
+        : {}),
     };
     const priorRecords = (finalAction.stepProseHistory ?? []) as readonly StepProseRecord[];
     const mergedRecords = [...priorRecords, record];
@@ -2695,6 +2709,7 @@ export function executeStepResult(
       outcomeBand: stepOutcomeToOutcomeBand(outcome),
       reach: (resolutionStats?.reach ?? step.reach),
       proseLength: narrativeProse.length,
+      forecastTier: record.forecastTier,
       summary: `step_prose_recorded: ${template.name} step ${resolvedStepIndex + 1} ${outcome}`,
     } as any);
   }

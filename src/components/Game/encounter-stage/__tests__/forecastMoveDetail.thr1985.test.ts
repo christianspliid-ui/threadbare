@@ -63,7 +63,7 @@ describe('the odds legend sentence', () => {
     const words = FORECAST_TIER_LADDER.map((t) => FORECAST_TIER_WORDS[t]);
     expect(words).toEqual(['Doomed', 'Perilous', 'Uncertain', 'Favorable', 'Fated']);
     expect(NUDGE_READING_LEGEND_SENTENCE).toBe(
-      'The word is how it looks now, worst to best: Doomed, Perilous, Uncertain, Favorable, Fated. Green lines help, red lines hinder.',
+      'The word is how it looks now, worst to best: Doomed, Perilous, Uncertain, Favorable, Fated. Even Fated can miss. Green lines help, red lines hinder.',
     );
     expect(NUDGE_READING_LEGEND_ENTRIES.map((e) => e.label).join(' ')).toBe(NUDGE_READING_LEGEND_SENTENCE);
   });

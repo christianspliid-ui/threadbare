@@ -319,6 +319,12 @@ export interface EncounterStageHistoryModel {
    * answer must not credit it to the player.
    */
   choiceDecided?: boolean;
+  /**
+   * THR-2180 — "It looked Fated, but fate rolled against it." when the step's
+   * frozen odds word was Favorable or Fated and it missed. Every resolved-step
+   * reader (last-step answer, step-navigator replay) uses this one field.
+   */
+  oddsMissedLine?: string;
 }
 
 /** THR-1670 — one step's cast, as the step history renders it. */

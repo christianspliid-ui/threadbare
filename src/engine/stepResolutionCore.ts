@@ -58,7 +58,7 @@ import type { ActionScale, NudgeRider, StepOutcome } from '../types/unifiedActio
 import type { QuintessenceEvent } from '../types/quintessence';
 import { applyRider } from './encounters/nudges';
 import { isStepFailure } from '../types/unifiedAction';
-import { resolveAction as resolveActionShared } from './resolutionService';
+import { resolveAction as resolveActionShared, classifyForecast } from './resolutionService';
 import { applyScaleDifficultyAdjust, MIN_PROBABILITY_BY_SCALE } from './resolutionScaleAdjust';
 import {
   applyResistOutcome,
@@ -196,6 +196,13 @@ export interface StepCoreResult {
 }
 
 // ─── Band mapping ───────────────────────────────────────────────
+
+/**
+ * THR-2180 — the odds word the Stage's forecast shows for a probability (the
+ * shared resolver's `<` thresholds). Re-exported here so an encounter caller can
+ * freeze the word the player saw without importing the resolver itself.
+ */
+export const classifyStepForecastTier = classifyForecast;
 
 /**
  * Map the shared resolver's `OutcomeType` to a `StepOutcome`, preserving the full

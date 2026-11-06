@@ -19,6 +19,7 @@
 
 import type { StepOutcome } from './unifiedAction';
 import type { ReachDomain } from './traits';
+import type { ForecastTier } from './traces/encounter-traces';
 
 /**
  * Cap on retained step-prose records per action (drop-oldest on overflow).
@@ -48,4 +49,10 @@ export interface StepProseRecord {
   readonly complicationProse?: string;
   /** Tick the step resolved. */
   readonly tick: number;
+  /**
+   * THR-2180 — the odds word the step carried when it rolled
+   * (`classifyForecastTier(resolutionStats.probability)`). Absent on old saves,
+   * no-roll steps and fights that ended before their roll: no odds line shows.
+   */
+  readonly forecastTier?: ForecastTier;
 }

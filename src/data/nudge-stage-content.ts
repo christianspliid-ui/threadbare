@@ -17,7 +17,7 @@
 import type { ForecastTier } from '../types/traces/encounter-traces';
 import type { MotiveSource } from '../engine/encounters/motiveClassifier';
 import type { NudgeBlockedCode } from '../engine/encounters/nudges';
-import type { NudgeRider, UnifiedActionOutcome } from '../types/unifiedAction';
+import type { NudgeRider, StepOutcome, UnifiedActionOutcome } from '../types/unifiedAction';
 import { HOMED_SURFACES, type HomedSurfaceEntry } from './homed-surfaces';
 
 /**
@@ -207,11 +207,14 @@ export interface NudgeReadingLegendEntry {
  * stay two hover targets so each keeps its registry tooltip (Law 17). Built from
  * the ladder and the tier words, never typed twice.
  */
+/** THR-2180 — the legend's last words on the ladder: the best word is still a roll. */
+export const NUDGE_LEGEND_EVEN_FATED_MISSES = 'Even Fated can miss.';
+
 export const NUDGE_READING_LEGEND_ENTRIES: readonly NudgeReadingLegendEntry[] = [
   {
     id: 'forecast',
     tooltipId: 'ui.nudge_forecast',
-    label: `The word is how it looks now, worst to best: ${FORECAST_TIER_LADDER.map((t) => FORECAST_TIER_WORDS[t]).join(', ')}.`,
+    label: `The word is how it looks now, worst to best: ${FORECAST_TIER_LADDER.map((t) => FORECAST_TIER_WORDS[t]).join(', ')}. ${NUDGE_LEGEND_EVEN_FATED_MISSES}`,
   },
   // THR-1713 D6 — the key names the kind tags the lines now carry.
   { id: 'balance', tooltipId: 'ui.nudge_factors', label: 'Green lines help, red lines hinder.' },
@@ -366,6 +369,31 @@ export const CHAPTER_LAST_STEP_ANSWER_LINE = 'Step {n} {word}.';
 /** Appended when the player played on that step. `{choice}` is the hand or choice. */
 export const CHAPTER_LAST_STEP_CHOICE_SUFFIX = ' You: {choice}';
 
+/**
+ * THR-2180 — a step the player saw as good odds that missed says so, once, in
+ * one sentence, where the player first learns the result. Fated still rolls
+ * (rolls clamp at `PROBABILITY_CEILING`), so a Fated step misses now and then by
+ * design; the line names that instead of leaving it to read as a bug.
+ *
+ * | Constant | Default | Purpose |
+ * |---|---|---|
+ * | `ODDS_MISSED_TIERS` | favorable, fated | Odds words whose miss is named |
+ * | `ODDS_MISSED_BANDS` | failure, critical_failure | Results that count as a miss. Not `near_miss`: that roll *passed*, just close to the line (`mapResolverOutcomeToStep`), so "fate rolled against it" would be false |
+ * | `ODDS_MISSED_LINE` | "It looked {tier}, but fate rolled against it." | The one sentence |
+ */
+export const ODDS_MISSED_TIERS: ReadonlySet<ForecastTier> = new Set<ForecastTier>(['favorable', 'fated']);
+export const ODDS_MISSED_BANDS: ReadonlySet<StepOutcome> = new Set<StepOutcome>(['failure', 'critical_failure']);
+export const ODDS_MISSED_LINE = 'It looked {tier}, but fate rolled against it.';
+
+/** The odds-missed sentence for a step, or null when its odds were not good or it did not miss. */
+export function oddsMissedLine(tier?: ForecastTier, band?: StepOutcome): string | null {
+  if (!tier || !band) return null;
+  if (!ODDS_MISSED_TIERS.has(tier) || !ODDS_MISSED_BANDS.has(band)) return null;
+  const word = FORECAST_TIER_WORDS[tier];
+  if (!word) return null;
+  return ODDS_MISSED_LINE.replace('{tier}', word);
+}
+
 /** The slice of a step-history entry the last-step answer reads. */
 export interface LastStepAnswerSource {
   status: 'resolved' | 'current' | 'future';
@@ -375,6 +403,8 @@ export interface LastStepAnswerSource {
   choiceText?: string;
   /** The choice line is the mortal's own branch decision, not the player's play. */
   choiceDecided?: boolean;
+  /** THR-2180 — "It looked Fated, but fate rolled against it.", when a good-odds step missed. */
+  oddsMissedLine?: string;
 }
 
 /**
@@ -394,7 +424,8 @@ export function lastStepAnswer(
   const line = CHAPTER_LAST_STEP_ANSWER_LINE
     .replace('{n}', String(current))
     .replace('{word}', previous.outcomeWord)
-    + (choice ? CHAPTER_LAST_STEP_CHOICE_SUFFIX.replace('{choice}', `${choice}.`) : '');
+    + (choice ? CHAPTER_LAST_STEP_CHOICE_SUFFIX.replace('{choice}', `${choice}.`) : '')
+    + (previous.oddsMissedLine ? ` ${previous.oddsMissedLine}` : '');
   // The stage model writes a bare 'Succeeded' / 'Failed' when a step authored no
   // afterimage; the line already says how it went, so the frozen narrative reads instead.
   const afterimage = previous.afterimage?.trim();

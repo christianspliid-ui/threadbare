@@ -4091,6 +4091,22 @@ function StepReplayView({
         )}
       </div>
 
+      {/* THR-2180 — a good-odds step that missed says so, under its band word */}
+      {entry.oddsMissedLine && (
+        <p
+          data-testid="step-replay-odds-missed"
+          style={{
+            margin: 0,
+            fontFamily: FONT_PROSE,
+            fontStyle: 'italic',
+            fontSize: 'var(--text-xs)',
+            color: TEXT_GHOST,
+          }}
+        >
+          {entry.oddsMissedLine}
+        </p>
+      )}
+
       {/* Frozen narrative the player saw at this step's resolution */}
       {prose && (
         <p

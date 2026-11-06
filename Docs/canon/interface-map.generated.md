@@ -3823,10 +3823,10 @@ exit
 - **Producer → Consumer:** Strategic Projects & Control → Encounters & Dilemmas
 - **UL terms:** *Outcome Band*
 - **Module:** `src/engine/stepResolutionCore.ts`
-- **Production hits:** 13 total — 1 write, 2 read, 10 unclassified
+- **Production hits:** 14 total — 1 write, 2 read, 11 unclassified
 - **Write sites:** `src/engine/stepResolutionCore.ts`
 - **Read sites:** `src/engine/undertakingCheckpoints.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/engine/decisionBoard.ts`, `src/engine/encounter.ts`, `src/engine/encounterScoring.ts`, `src/engine/fights/fightState.ts`, `src/engine/fights/opposedRoll.ts` +5 more
+- **Other hits:** `src/data/nudge-stage-content.ts`, `src/engine/decisionBoard.ts`, `src/engine/encounter.ts`, `src/engine/encounterScoring.ts`, `src/engine/fights/fightState.ts` +6 more
 - **Verdict:** Verified 2026-08-27: stepResolutionCore.contract.test.ts pins the permitted direct-caller set and asserts the encounter entry point and a direct core call agree on band/roll/probability; the second caller is exercised in the live simulation by undertakingCheckpointLiveness.test.ts (630 rolled checkpoints across all six bands on a 150-tick seed-42 run).
 
 ### `shortlist-reaches-every-template` — 🟢 LIVE

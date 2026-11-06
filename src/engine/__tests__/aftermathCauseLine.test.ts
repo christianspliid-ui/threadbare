@@ -100,6 +100,8 @@ describe('THR-1964 — the cause line, every band × god-touched / alone × one-
             // untouched decider reads "elsewhere", never "alone".
             if (!godTouched && shape === 'many-step') expect(text).toContain(`${CAUSE_GOD_ELSEWHERE}.`);
             else if (!godTouched) expect(text).toContain('Kael faced it alone.');
+            // THR-2180 — both steps share the band here, so a failed decider is never the
+            // only failed step and the "one step went wrong" scoping does not apply.
             else if (LOST.has(outcome) || band === 'failure' || band === 'critical_failure') {
               expect(text).toContain('your cards could not save it.');
             }

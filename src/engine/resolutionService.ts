@@ -267,7 +267,7 @@ function applyTestShapers(
  * Classify a probability into a Fate Forecast tier.
  * Same logic as resolution.ts classifyForecast — kept in sync.
  */
-function classifyForecast(p: number): ForecastTier {
+export function classifyForecast(p: number): ForecastTier {
   if (p < 0.20) return 'doomed';
   if (p < 0.40) return 'perilous';
   if (p < 0.60) return 'uncertain';
