@@ -302,6 +302,11 @@ export function HandSection({ hand, showInvestiture, investitureNewlyRevealed = 
         style={{
           flex: 1,
           minHeight: 0,
+          // THR-2177 — size containment: the region's rows never count toward the hand's
+          // min-content, so the rail wrapper's automatic minimum is the floor alone. Without
+          // it the wrapper grew to the rows' height, the folded block shrank, the region's
+          // free height changed with the mode, and whole/grouped flipped every frame.
+          contain: 'size',
           overflowY: 'auto',
           overflowX: 'hidden',
           opacity: rest ? HAND_REST_OPACITY : 1,

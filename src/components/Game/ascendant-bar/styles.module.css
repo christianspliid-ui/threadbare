@@ -12,7 +12,10 @@
   padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-6); /* THR-2125 R1 — Modules § 2, docked density */
+  /* THR-2125 R1 — Modules § 2, docked density. THR-2177: --space-5, the plan's sanctioned
+     fallback (THR-2125 kill criteria): at --space-6 a grouped hand's sixth row missed
+     the 1920×1080 region by 1 px. */
+  gap: var(--space-5);
   /* THR-1894: the rail never scrolls as a page; the hand region and the open rows scroll inside their own limits (Laws 33, 57). */
   overflow: hidden;
 }
