@@ -248,6 +248,7 @@ export const ESSENCE_CAUSE_PHRASES: Record<EssenceMovementCause, { fed: string; 
   spend_nudge: { fed: 'a hand returned',             drawn: 'the hands you played' },
   spend_cast:  { fed: 'a cast returned',             drawn: 'your casts' },
   spend_other: { fed: 'a spend returned',            drawn: 'what you chose to spend' },
+  crossroads:  { fed: 'a lean returned',             drawn: 'your leans at the crossroads' },
   other:       { fed: 'other currents',              drawn: 'other costs' },
 };
 

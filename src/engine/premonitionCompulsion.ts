@@ -75,6 +75,12 @@ export function resolveCompulsionEncounterName(templateId: string): string {
   return name;
 }
 
+/**
+ * THR-1926 — the same resolver under the name the Crossroads reads it by (an encounter
+ * option's display name); `resolveCompulsionEncounterName` stays for its callers.
+ */
+export const resolveEncounterDisplayName = resolveCompulsionEncounterName;
+
 // ─── Compulsion Eligibility ─────────────────────────────────────
 
 export function isCompulsionEligible(

@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 228 |
+| 🟢 LIVE | 230 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 117 |
-| **Total** | **353** |
+| **Total** | **355** |
 
 ## Contracts by producing subsystem
 
@@ -209,6 +209,7 @@ remediation ticket or the build fails.
 | `compulsion-card-plants-agent-decision-bias` | A god can steer one mortal without seizing them: the card plants an urge, and that mortal's own next decision leans toward it — you steered them, they still chose. | function: `derivePlantedCompulsionEncounterBias`, `phasePlantedCompulsionDecay` | Encounters & Dilemmas | 🔴 LEAKED | THR-883 |
 | `content-objects-registry` | Every kind of authored content the game hands out has one name, in game words, and one registered home — the catalogs that hold it, the id prefixes its entries carry, the world object a granted entry becomes, and the machine gate that validates it — so an authoring agent and a runtime reader agree on what a piece of content IS without reading each other. The sibling of the world-object registry: that one says what the engine mints, this one says what a person writes, and instantiatesAs is the one-way join. Slice 1 of THR-1481 adds vocabulary and guards only; the tag vocabulary (slice 2) and the content query that lets content name content by kind and tags instead of by rotting literal id (slice 3) are what the registry exists to carry. Adding a kind is one PR: registry row, loader entry, UL term, canon row (THR-1485). | function: `CONTENT_OBJECT_KINDS`, `CONTENT_CATALOGS`, `entriesOfKind`, `contentKindsForId`, `contentKindsForWorldObject`, `SHARED_ID_PREFIXES` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `content-tag-vocabulary` | Every word an author may hang on a piece of content comes from one closed list, so a query can ask for content by what it IS rather than by its id. Five axes: form and family authored, reach and sphere derived from REACH_DOMAINS and SPHERE_NAMES so a ninth reach appears in the vocabulary the day it is added, polarity the two words the condition proxy-event classifier already reads. Where a kind declares a typed projection field the tag is derived and never authored, and an authored tag contradicting its projection fails. The corpus held 153 spellings, 62 of them worn by one or two entries and read by nothing; a query written against that matches whatever the last author typed, which is why the list is closed and why adding to it is a design-session decision rather than a keystroke (THR-1486). | function: `CONTENT_TAGS`, `isContentTag`, `axisOfContentTag`, `contentTagsOnAxis`, `contentTagTooltipId`, `effectiveTags`, `authoredTags`, `projectedTags` | Attachments, Items & Possessions | 🟢 LIVE | — |
+| `decision-board-crossroads-snapshot` | A threaded mortal's next roads are read off the board that actually decides (THR-1926, Law 18). At each full decision `phaseAgentDecision` writes `crossroads` on every mortal the god threads: the board's entries in order, minus the road just taken and secret cells (`isSecretCellId`), cut at `CROSSROADS_OPTION_COUNT`. `placeCrossroadsLean` validates a lean against it and prices it by rank; `settledness` and `forecastLean` read it with the decision's own multiplier. The page row and torn badge (THR-1928) will read the same field. | node-prop: `crossroads`, `buildCrossroadsSnapshot`, `settledness`, `forecastLean` | Essence & Divine Economy | 🟢 LIVE | — |
 | `decision-board-shadow-telemetry` | One ranking now decides what a mortal does with a free tick — encounter, undertaking, or nothing — and every decision it makes is on the record beside the encounter scorer’s own pick, so the decision mix the census gates is measured from behaviour rather than asserted (the shadow week that preceded the cutover was judged from the same trace, THR-1349). | event: `decision_board_comparison`, `decision_board_error`, `shadowWinnerFamily`, `shadowWinnerId`, `shadowAgreement`, `ambitionBoost` | Strategic Projects & Control | 🟢 LIVE | — |
 | `encounter-brokers-oath-of-fealty` | A won Faction Unification or a won Warlord's Tribute demand fires the faction_broker_fealty aftermath effect from the band's outcome table. It swears one faction to the realm the mortal serves (highest-ranked realm membership; that realm's own liege when it is sworn) through swearBrokeredOath, which applies every crown rule (crown on, maySwear, an unsworn realm liege, the re-swear cooldown) and writes through writeOath with brokeredBy and, for a demand, forcedBy:demand. The vassal is the warlord's company ($cast:warlord) or the best-standing present faction at the mortal's town (never the liege's enemy). The win replaces the offer score; no gift is paid. A refusal writes nothing and traces its reason. THR-2051 adds a second liege source: a won Tribute Exchange (liegeFrom: scene_town) swears the actor's own house to the crown the scene's town answers to — getLocationHolder's realm holder (or its liege), else the realm its non-realm holder is sworn to (liegeOf). | edge: `sworn_to`, `faction_broker_fealty`, `brokerOath`, `swearBrokeredOath`, `brokeredBy`, `townLiegeOf`, `liegeFrom` | Factions & Succession | 🟢 LIVE | — |
 | `encounter-hex-lights-stage` | An encounter lights its own place on the Stage (THR-1895, plan THR-1877 § D9; THR-1822 D16 step 5). Every encounter adapter (unified, simple, gate duty) writes the notification hexCol / hexRow into the stage model header; GameView hands it to the stage selector, and resolveMomentHexes lights that hex first (litSource beat), else the Location of the mortal, so the camera eases the place into the Stage window. | property: `hexCol`, `hexRow` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
@@ -295,6 +296,7 @@ remediation ticket or the build fails.
 | `compelled-work-answers-at-archive` | Compelled work always says how it ended (THR-2068). When the decision takes a paid compulsion, the created action carries `compelledByGod`; `buildChapterRecord` copies it onto the `ChapterRecord` as `compelled`, and the orchestrator's archive loop raises one `divine_steer_done_*` toast ("Your will is done. The Haggle: Morthane held.", in the chapter's own band word) via `buildCompulsionDoneEvents`. Before, a compelled chore ran as daily life and no line ever said how it ended. | node-prop: `compelledByGod` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `essence-earned-attunes-god-spheres` | Drawing essence through a bought sphere grows the god in it (THR-1748, THR-1765). Each `DOMINION_ATTUNEMENT_MARKS` mark crossed by the run-long essence-earned counter pushes progress into the god's own score through the pressure path (source `attunement`), resolved by `phaseSpherePressure`; the god's power on the Dominion read follows, capped at 2.0. THR-1811's rungs read `getAttunementMarksCrossed`. | function: `ATTUNEMENT_SPHERE_PROGRESS`, `dominionPowerRaw` | Spheres & Quintessence | 🔵 UNVERIFIED-OK | — |
 | `essence-movement-explains-the-bar` | An essence row says why it moved (THR-1713). Every phase's pool diff is filed by cause (`income`, `upkeep`, `places`, …) at the same phase-merge seam as `essenceEarnedBySphere`, and every out-of-tick spend (a played hand, an authored choice, a cast, a boost or peek, a premonition whisper or compulsion, a delve-abort refund) files itself through `withEssenceSpend` / `recordEssenceMovement` in the same state update that writes the pool. `selectEssenceRows` reads the record into a real trend arrow and the row's hover ("Ebbing. Drawn by your threads' upkeep.") — words, never rates (Law 13). Before this the arrow was a hard-coded placeholder and nothing recorded a cause. | state-field: `essenceMovement` | Spheres & Quintessence | 🟢 LIVE | — |
+| `god-leans-mortal-crossroads` | The god leans on one road a threaded mortal weighs, and the mortal still chooses (THR-1926, Law 9). `placeCrossroadsLean` writes a held lean (`crossroadsLean`: family, template, target, direction) onto the mortal without spending — the caller spends through `withEssenceSpend(…, 'crossroads')`. At the mortal's next full decision the phase pulls an encounter target onto the board (`findHeldEncounter`), `scoreUnifiedBoard` multiplies the matching entry by `crossroadsLeanMultiplier` (×2 toward, ×0.5 away), and the lean resolves followed / resisted / lapsed with one trace and one toast carrying the mortal's answer. | node-prop: `crossroadsLean`, `crossroadsLeanMultiplier`, `placeCrossroadsLean` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `god-verb-land-shock` | Blight, Bless the Harvest, Sour Mine and Reveal Vein each append a landShocks record on the target settlement's best food or stone hex, fading over SHOCK_DAYS; their existing writes stand. The phase's land yields, the cast receipt's land line and the livelihood line read it. | node-prop: `appendLandShock`, `readLandShocks` | Mortal Economy & Prosperity | 🟢 LIVE | — |
 | `gods-will-premonition-steers-next-decision` | What the god pays for in God's Will changes what the mortal does next, and the player is told how it went (THR-1781). A whisper's `whisper_*` influence is read by `applyWhisperPull` into `whisperPull` on the live board; a compulsion is held on the mortal (`compulsionTargetTemplateId` / `compulsionTargetLocationId`) until its next full decision, where `resolveCompulsion` takes it or lapses it with a reason, and a `divine_premonition` toast event reports the ending. Before, whispers were written and never read, and a compulsion lapsed three ticks after the click while The First was mid-chapter. | node-prop: `compulsionTargetTemplateId`, `whisperPull`, `compelledTarget` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `offering-respects-reach-gate` | The offering never offers a card the drawer would hide. The reach gate is one predicate, `isWithinGodReaches`, called by `getTargetActionSlots` and by `offerableCards` (THR-1811). The drawer's sphere gate still counts without hiding, so the offering does not apply it unless `OFFERING_IN_SPHERE_ONLY` is on. | function: `isWithinGodReaches` | Ascendant Beats & Progression | 🟢 LIVE | — |
@@ -1522,6 +1524,17 @@ exit
 - **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts`, `src/data/action-technical-effects.ts` +83 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
+### `decision-board-crossroads-snapshot` — 🟢 LIVE
+
+- **Intent:** A threaded mortal's next roads are read off the board that actually decides (THR-1926, Law 18). At each full decision `phaseAgentDecision` writes `crossroads` on every mortal the god threads: the board's entries in order, minus the road just taken and secret cells (`isSecretCellId`), cut at `CROSSROADS_OPTION_COUNT`. `placeCrossroadsLean` validates a lean against it and prices it by rank; `settledness` and `forecastLean` read it with the decision's own multiplier. The page row and torn badge (THR-1928) will read the same field.
+- **Producer → Consumer:** Encounters & Dilemmas → Essence & Divine Economy
+- **UL terms:** *Agent*, *Encounter*, *Undertaking*
+- **Production hits:** 57 total — 1 write, 2 read, 54 unclassified
+- **Write sites:** `src/engine/phaseAgentDecision.ts`
+- **Read sites:** `src/debug-bridge.ts`, `src/engine/crossroadsActions.ts`
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/data/agreement-reward-catalog.ts`, `src/data/ambition-templates.ts`, `src/data/archetype-content.ts` +49 more
+- **Verdict:** Verified 2026-11-06: THR-1926. crossroads.integration.test.ts (seed 42): The First's full decisions write a `crossroads` snapshot with options, and placeCrossroadsLean accepts a road from it. crossroads.test.ts: the snapshot drops the taken entry and secret cells and keeps board order; settledness boundaries (exactly 0.5 reads set, 0.85 torn); every forecastLean branch and not_enough in both directions on every set snapshot. debug-bridge.test.ts: getCrossroads returns snapshot, settledness and per-option forecasts.
+
 ### `decision-board-shadow-telemetry` — 🟢 LIVE
 
 - **Intent:** One ranking now decides what a mortal does with a free tick — encounter, undertaking, or nothing — and every decision it makes is on the record beside the encounter scorer’s own pick, so the decision mix the census gates is measured from behaviour rather than asserted (the shadow week that preceded the cutover was judged from the same trace, THR-1349).
@@ -1595,10 +1608,10 @@ exit
 - **Intent:** Home turf is cheaper and surer (THR-1748). A god card is priced and rolled on its target's Dominion band — `dominionOf` over the target's sphere scores against the god's bought points. The preview (`getTargetActionSlots`) and the charge (`preparePlayerCast`, through `dominionScaledEssenceCost`) read the same band so the price shown is the price paid; the resolver's `sphereFactor` reads it for a player cast only, and the card forecast reads the same factor. Both read the band since THR-1750 turned `DOMINION_PRICES_LIVE` on with the card chip.
 - **Producer → Consumer:** Spheres & Quintessence → Essence & Divine Economy
 - **UL terms:** *Dominion*, *Dominion Band*, *Sphere*
-- **Production hits:** 8 total — 1 write, 3 read, 4 unclassified
+- **Production hits:** 9 total — 1 write, 3 read, 5 unclassified
 - **Write sites:** `src/engine/dominion.ts`
 - **Read sites:** `src/engine/playerCastDispatch.ts`, `src/engine/targetActions.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/Game/GameView.tsx`, `src/engine/playerCastReadout.ts`, `src/engine/views/godRail.ts`, `src/engine/views/stage/momentCardModel.ts`
+- **Other hits:** `src/components/Game/GameView.tsx`, `src/engine/crossroadsActions.ts`, `src/engine/playerCastReadout.ts`, `src/engine/views/godRail.ts`, `src/engine/views/stage/momentCardModel.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `dominion-band-projected-to-hex-map` — 🔵 UNVERIFIED-OK
@@ -1998,20 +2011,20 @@ exit
 - **Producer → Consumer:** Essence & Divine Economy → Spheres & Quintessence
 - **UL terms:** *Essence*, *Sphere*
 - **Module:** `src/engine/essenceMovement.ts`
-- **Production hits:** 13 total — 1 write, 1 read, 11 unclassified
+- **Production hits:** 14 total — 1 write, 1 read, 12 unclassified
 - **Write sites:** `src/engine/essenceMovement.ts`
 - **Read sites:** `src/debug-bridge.ts`
-- **Other hits:** `src/components/Game/ascendant-bar/EssenceBlock.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useScry.ts`, `src/components/Game/hosts/DialogHost.tsx` +6 more
+- **Other hits:** `src/components/Game/ascendant-bar/EssenceBlock.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/Game/hooks/useScry.ts` +7 more
 - **Verdict:** Verified 2026-10-06: Playwright at 1920×1080 on ?view=game&seeded&size=medium after __DEBUG.tick(150): __DEBUG.getEssenceMovement() gave mind income +57.75 / upkeep −95 (net −37.25) and every other held sphere a positive net; each row's data-trend matched the sign (mind ebbing, the rest rising), and hovering the Mind bar showed "Ebbing. Fed by the cosmos's flow. Drawn by your threads' upkeep." Headless CLI seed 42 medium, 150 ticks: the one unmapped mover was delve_emergence, now filed as ruins.
 
 ### `essence-spend-moves-the-bar` — 🔵 UNVERIFIED-OK
 
 - **Intent:** A spend visibly moves the pool it drew from (THR-1607, Law 47). `commitPlayerCast` deducts a cast's price from `GameState.essencePool[sphere]`; `selectEssenceRows` reads the pool in a fixed order (identity spheres, then canonical — never by level, so a spend never reorders the list) and `EssenceBlock` draws each row against `ESSENCE_BAR_CEILING` (the starting pool) with its whole-number balance and a delta-cluster flash after a spend. Before this the bar filled against `/10` while pools start at fifty, so no spend ever moved it.
 - **Producer → Consumer:** Encounters & Dilemmas → Essence & Divine Economy
-- **Production hits:** 53 total — 1 write, 1 read, 51 unclassified
+- **Production hits:** 54 total — 1 write, 1 read, 52 unclassified
 - **Write sites:** `src/engine/playerCastDispatch.ts`
 - **Read sites:** `src/engine/views/godRail.ts`
-- **Other hits:** `src/components/Game/ascendant-bar/EssenceBlock.tsx`, `src/components/Game/contexts/ScryContext.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +46 more
+- **Other hits:** `src/components/Game/ascendant-bar/EssenceBlock.tsx`, `src/components/Game/contexts/ScryContext.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +47 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `explored-hexes-draw-minimap` — 🔵 UNVERIFIED-OK
@@ -2508,14 +2521,25 @@ exit
 - **Read sites:** `src/engine/phaseSpherePressure.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
+### `god-leans-mortal-crossroads` — 🟢 LIVE
+
+- **Intent:** The god leans on one road a threaded mortal weighs, and the mortal still chooses (THR-1926, Law 9). `placeCrossroadsLean` writes a held lean (`crossroadsLean`: family, template, target, direction) onto the mortal without spending — the caller spends through `withEssenceSpend(…, 'crossroads')`. At the mortal's next full decision the phase pulls an encounter target onto the board (`findHeldEncounter`), `scoreUnifiedBoard` multiplies the matching entry by `crossroadsLeanMultiplier` (×2 toward, ×0.5 away), and the lean resolves followed / resisted / lapsed with one trace and one toast carrying the mortal's answer.
+- **Producer → Consumer:** Essence & Divine Economy → Encounters & Dilemmas
+- **UL terms:** *Agent*, *Encounter*, *Undertaking*
+- **Production hits:** 10 total — 1 write, 4 read, 5 unclassified
+- **Write sites:** `src/engine/crossroadsActions.ts`
+- **Read sites:** `src/debug-bridge.ts`, `src/engine/crossroadsDecision.ts`, `src/engine/decisionBoard.ts`, `src/engine/phaseAgentDecision.ts`
+- **Other hits:** `src/components/Game/hooks/useGameDebugLevers.ts`, `src/data/crossroads-content.ts`, `src/engine/crossroads.ts`, `src/types/trace.ts`, `src/types/traces/crossroads-traces.ts`
+- **Verdict:** Verified 2026-11-06: THR-1926. crossroads.integration.test.ts (seed 42, generated world, the bonded First): a lean placed on The First's written snapshot resolves at the next full decision with exactly one crossroads_lean_outcome trace and one divine_crossroads toast, and the property is cleared. crossroadsBoard.test.ts: the board multiplies only the exact instance of either family and records `crossroadsLean` on the entry; an unleaned board is byte-identical; toward the second road of a leaning mortal → followed, toward the third of a set mortal → resisted, past the hold → lapsed_expired.
+
 ### `god-reads-mortal-intention` — 🟢 LIVE
 
 - **Intent:** The god reads what a mortal is set on — the ambition and the work it heads toward — through one rule everywhere: having watched them, or a followed mortal’s mark on them, or a followed network’s people near them. A mortal’s intelligence work counts as the god’s own knowledge, so running a ring or digging up a secret changes what the player can see on a sheet; and a secret work (the plot) is never read by watching alone.
 - **Producer → Consumer:** Intelligence, Knowledge & Familiarity → Attention, Chronicle & Narrative
 - **Module:** `src/engine/intentionReading.ts`
-- **Production hits:** 8 total — 3 write, 5 read, 0 unclassified
+- **Production hits:** 9 total — 3 write, 6 read, 0 unclassified
 - **Write sites:** `src/data/intention-reading-constants.ts`, `src/engine/intentionReading.ts`, `src/types/agentKnowledge.ts`
-- **Read sites:** `src/components/Game/hooks/useAgentInteraction.ts`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts`, `src/engine/foreshadowing/encounterForeshadowing.ts`, `src/engine/views/subjects/personRows.ts`
+- **Read sites:** `src/components/Game/hooks/useAgentInteraction.ts`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts`, `src/engine/crossroadsActions.ts`, `src/engine/foreshadowing/encounterForeshadowing.ts` +1 more
 - **Verdict:** Verified 2026-09-07: THR-1433. `canReadIntention` is the one predicate: familiarity at `INTENTION_KNOWLEDGE_TIER` (skipped for a secret cell), a followed mortal’s unrevealed `knows_secret_of` mark, a followed network’s living member within `NETWORK_READ_REACH_HEXES`. The hook stamps the live answer on the card (`intentionRead`) and builds the intention line; the Overview tab renders it with the door in the tooltip; the Journey and Chronicle ambition gates and the thread-card foreshadowing tooltip call the same rule. Non-vacuous by `src/engine/__tests__/intentionReading.test.ts` (each door falsified at its owning layer — out of reach, unfollowed leader, revealed mark, the plot at `transparent`), `src/components/Game/tabs/__tests__/OverviewTabIntention.test.tsx` (the line renders through each door and not at all when closed) and the browser proof on the closing PR (`__DEBUG.followAgent` + `__DEBUG.spawnMark` on a stranger, `__DEBUG.canReadIntention`).
 
 ### `god-verb-land-shock` — 🟢 LIVE
@@ -3372,10 +3396,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 478 total — 1 write, 1 read, 476 unclassified
+- **Production hits:** 479 total — 1 write, 1 read, 477 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +471 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +472 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `recovered-town-keeps-faith` — 🟢 LIVE
@@ -4418,10 +4442,10 @@ exit
 - **Intent:** A territorial_expansion or revenge ambition takes its army's conquer target as its targetNodeId (THR-1933 S1), written at the raise (aimNewArmy) and on every daily re-aim that changes it (reaimArmies). The existing abandon check in phaseFactionAmbitions reads it. A revenge army scores the towns of the faction it holds its grievance against ×WAR_AIM_REVENGE_FOCUS. Campaign ambitions (compositionId) keep their declared target.
 - **Producer → Consumer:** War, Armies & Battles → Factions & Succession
 - **UL terms:** *Faction*
-- **Production hits:** 76 total — 1 write, 1 read, 74 unclassified
+- **Production hits:** 78 total — 1 write, 1 read, 76 unclassified
 - **Write sites:** `src/engine/warAims.ts`
 - **Read sites:** `src/engine/factionAmbitions.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/ThreadsPanel.tsx`, `src/data/army-words.ts`, `src/data/detailPageTemplates.ts` +69 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/ThreadsPanel.tsx`, `src/data/army-words.ts`, `src/data/detailPageTemplates.ts` +71 more
 - **Verdict:** Verified 2026-10-17: THR-1933. warAims.test.ts: aimNewArmy writes the conquer target onto a territorial_expansion ambition the army pursues; grievanceFactionOf picks the enemy with the worst relates_to sentiment.
 
 ### `war-news-reaches-chronicle` — 🟢 LIVE

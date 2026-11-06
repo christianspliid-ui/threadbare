@@ -47,6 +47,7 @@ export type EssenceMovementCause =
   | 'spend_nudge'     // out-of-tick: a played hand (nudge commit, authored-choice spend)
   | 'spend_cast'      // out-of-tick: a cast (playerCastDispatch)
   | 'spend_other'     // out-of-tick: any other spend the player chooses (Read the Threads, a court title) — THR-2061
+  | 'crossroads'      // out-of-tick: a Crossroads lean on a threaded mortal — THR-1926
   | 'other';          // any phase not in the cause table — still counted, never dropped
 
 /** One rolling window of essence movement for one sphere. */

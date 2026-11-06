@@ -242,6 +242,10 @@ if (import.meta.env.DEV) {
   let _forcePremonitionCb:
     | ((agentId: string, kind: 'whisper' | 'compulsion') => import('./debug-bridge.d').ForcePremonitionResult)
     | null = null;
+  /** THR-1926 — place a Crossroads lean and spend for it. Registered by the debug levers hook. */
+  let _crossroadsLeanCb:
+    | ((agentId: string, optionIndex: number, direction: 'toward' | 'away') => import('./debug-bridge.d').DebugCrossroadsLeanResult)
+    | null = null;
   // Thread story provider (THR-455)
   let _threadStoryProvider: ((agentRef: string) => import('./engine/threadDigest').ThreadStoryComposition | null) | null = null;
 
@@ -1697,6 +1701,52 @@ if (import.meta.env.DEV) {
       if (!node) return { error: `No agent matching '${agentQuery}'` };
       return _forcePremonitionCb(node.id, kind);
     },
+    /**
+     * THR-1926 — a threaded mortal's Crossroads reading: the snapshot written at their
+     * last full decision, its settledness word, the held lean, and the forecast word
+     * for each option (`away` on the first option only).
+     */
+    getCrossroads: async (agentQuery: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'Game not loaded' };
+      const node = await resolveAgentNode(agentQuery);
+      if (!node) return { error: `No agent matching '${agentQuery}'` };
+      const cr = await import('./engine/crossroads');
+      const snapshot = cr.readCrossroadsSnapshot(node.properties.crossroads);
+      const lean = cr.readCrossroadsLean(node.properties.crossroadsLean);
+      const forecasts: import('./debug-bridge.d').DebugCrossroadsState['forecasts'] = {};
+      snapshot?.options.forEach((o, i) => {
+        forecasts[i] = {
+          toward: cr.forecastLean(snapshot, { ...o, direction: 'toward' }),
+          ...(i === 0 ? { away: cr.forecastLean(snapshot, { ...o, direction: 'away' }) } : {}),
+        };
+      });
+      return {
+        agentId: node.id,
+        agentName: node.name,
+        snapshot,
+        settledness: cr.settledness(snapshot),
+        lean,
+        forecasts,
+      };
+    },
+    /**
+     * THR-1926 — lean on option `optionIndex` of the mortal's current reading, through
+     * the same placement and spend the Inspector row will use. Browser-verify only.
+     */
+    leanCrossroads: async (agentQuery: string, optionIndex: number, direction: 'toward' | 'away' = 'toward') => {
+      if (direction !== 'toward' && direction !== 'away') {
+        return { error: `leanCrossroads: direction must be 'toward' or 'away', got ${String(direction)}` };
+      }
+      if (!_crossroadsLeanCb) return { error: 'Game not loaded' };
+      const node = await resolveAgentNode(agentQuery);
+      if (!node) return { error: `No agent matching '${agentQuery}'` };
+      return _crossroadsLeanCb(node.id, optionIndex, direction);
+    },
+    /** @internal the debug levers hook registers its Crossroads placer here */
+    _registerCrossroadsLean: (
+      fn: (agentId: string, optionIndex: number, direction: 'toward' | 'away') => import('./debug-bridge.d').DebugCrossroadsLeanResult,
+    ) => { _crossroadsLeanCb = fn; },
     /** @internal GameView registers its premonition stager here */
     _registerForcePremonition: (
       fn: (agentId: string, kind: 'whisper' | 'compulsion') => import('./debug-bridge.d').ForcePremonitionResult,

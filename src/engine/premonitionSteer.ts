@@ -168,6 +168,36 @@ export type CompulsionResolution =
   | { kind: 'lapsed'; reason: CompulsionLapseReason };
 
 /**
+ * Find a held steer's encounter on a decision's lists (THR-1926: shared by the
+ * Compulsion and the Crossroads lean). The paid instance first — on the board's top
+ * list, then pulled up from the full ranked list — and only then the same template at
+ * another place. `fromRanked` says the caller must append it to `topCandidates`: the
+ * board decides from the top list alone, so a target found only in the ranked list has
+ * to be put on it to be chosen. Pure — it never mutates `decision`.
+ */
+export function findHeldEncounter(
+  decision: Pick<DecisionLists, 'rankedCandidates' | 'topCandidates'>,
+  targetTemplateId: string,
+  targetLocationId: string | undefined,
+): { candidate: ScoredCandidate; fromRanked: boolean } | null {
+  const exact = (list: readonly ScoredCandidate[]): ScoredCandidate | undefined =>
+    targetLocationId
+      ? list.find(c => c.entry.templateId === targetTemplateId && c.entry.locationId === targetLocationId)
+      : undefined;
+  const anyPlace = (list: readonly ScoredCandidate[]): ScoredCandidate | undefined =>
+    list.find(c => c.entry.templateId === targetTemplateId);
+  const exactTop = exact(decision.topCandidates);
+  if (exactTop) return { candidate: exactTop, fromRanked: false };
+  const exactRanked = exact(decision.rankedCandidates);
+  if (exactRanked) return { candidate: exactRanked, fromRanked: true };
+  const looseTop = anyPlace(decision.topCandidates);
+  if (looseTop) return { candidate: looseTop, fromRanked: false };
+  const looseRanked = anyPlace(decision.rankedCandidates);
+  if (looseRanked) return { candidate: looseRanked, fromRanked: true };
+  return null;
+}
+
+/**
  * Resolve a held compulsion at a full decision. `topCandidates` may be extended in
  * place when the target is found only in the ranked list (the board decides from the
  * top list alone, so the target has to be on it to be chosen).
@@ -181,27 +211,10 @@ export function resolveCompulsion(
 ): CompulsionResolution {
   if (!targetTemplateId) return { kind: 'none' };
   if (tick - compulsionTick > COMPULSION_HOLD_MAX_TICKS) return { kind: 'lapsed', reason: 'expired' };
-  const exact = (list: readonly ScoredCandidate[]): ScoredCandidate | undefined =>
-    targetLocationId
-      ? list.find(c => c.entry.templateId === targetTemplateId && c.entry.locationId === targetLocationId)
-      : undefined;
-  const anyPlace = (list: readonly ScoredCandidate[]): ScoredCandidate | undefined =>
-    list.find(c => c.entry.templateId === targetTemplateId);
-  // The paid instance first — on the board, then pulled up from the ranked list —
-  // and only then the same template at another place.
-  const take = (candidate: ScoredCandidate, fromRanked: boolean): CompulsionResolution => {
-    if (fromRanked) decision.topCandidates = [...decision.topCandidates, candidate];
-    return { kind: 'taken', candidate, pulledFromRanked: fromRanked };
-  };
-  const exactTop = exact(decision.topCandidates);
-  if (exactTop) return take(exactTop, false);
-  const exactRanked = exact(decision.rankedCandidates);
-  if (exactRanked) return take(exactRanked, true);
-  const looseTop = anyPlace(decision.topCandidates);
-  if (looseTop) return take(looseTop, false);
-  const looseRanked = anyPlace(decision.rankedCandidates);
-  if (looseRanked) return take(looseRanked, true);
-  return { kind: 'lapsed', reason: 'unavailable' };
+  const found = findHeldEncounter(decision, targetTemplateId, targetLocationId);
+  if (!found) return { kind: 'lapsed', reason: 'unavailable' };
+  if (found.fromRanked) decision.topCandidates = [...decision.topCandidates, found.candidate];
+  return { kind: 'taken', candidate: found.candidate, pulledFromRanked: found.fromRanked };
 }
 
 /** The player-facing line for a resolved compulsion. */

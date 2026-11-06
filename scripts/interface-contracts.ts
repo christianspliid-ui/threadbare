@@ -2122,6 +2122,46 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'god-leans-mortal-crossroads',
+    producerSystem: 'Essence & Divine Economy',
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'The god leans on one road a threaded mortal weighs, and the mortal still chooses (THR-1926, Law 9). `placeCrossroadsLean` writes a held lean (`crossroadsLean`: family, template, target, direction) onto the mortal without spending — the caller spends through `withEssenceSpend(…, \'crossroads\')`. At the mortal\'s next full decision the phase pulls an encounter target onto the board (`findHeldEncounter`), `scoreUnifiedBoard` multiplies the matching entry by `crossroadsLeanMultiplier` (×2 toward, ×0.5 away), and the lean resolves followed / resisted / lapsed with one trace and one toast carrying the mortal\'s answer.',
+    ulTerms: ['Agent', 'Encounter', 'Undertaking'],
+    mechanism: { kind: 'node-prop', symbols: ['crossroadsLean', 'crossroadsLeanMultiplier', 'placeCrossroadsLean'] },
+    writeSites: ['src/engine/crossroadsActions.ts'],
+    readSites: [
+      'src/engine/phaseAgentDecision.ts',
+      'src/engine/crossroadsDecision.ts',
+      'src/engine/decisionBoard.ts',
+      'src/debug-bridge.ts',
+    ],
+    verifiedLive: {
+      date: '2026-11-06',
+      evidence:
+        'THR-1926. crossroads.integration.test.ts (seed 42, generated world, the bonded First): a lean placed on The First\'s written snapshot resolves at the next full decision with exactly one crossroads_lean_outcome trace and one divine_crossroads toast, and the property is cleared. crossroadsBoard.test.ts: the board multiplies only the exact instance of either family and records `crossroadsLean` on the entry; an unleaned board is byte-identical; toward the second road of a leaning mortal → followed, toward the third of a set mortal → resisted, past the hold → lapsed_expired.',
+    },
+  },
+  {
+    id: 'decision-board-crossroads-snapshot',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: 'Essence & Divine Economy',
+    intent:
+      'A threaded mortal\'s next roads are read off the board that actually decides (THR-1926, Law 18). At each full decision `phaseAgentDecision` writes `crossroads` on every mortal the god threads: the board\'s entries in order, minus the road just taken and secret cells (`isSecretCellId`), cut at `CROSSROADS_OPTION_COUNT`. `placeCrossroadsLean` validates a lean against it and prices it by rank; `settledness` and `forecastLean` read it with the decision\'s own multiplier. The page row and torn badge (THR-1928) will read the same field.',
+    ulTerms: ['Agent', 'Encounter', 'Undertaking'],
+    mechanism: { kind: 'node-prop', symbols: ['crossroads', 'buildCrossroadsSnapshot', 'settledness', 'forecastLean'] },
+    writeSites: ['src/engine/phaseAgentDecision.ts'],
+    readSites: [
+      'src/engine/crossroadsActions.ts',
+      'src/debug-bridge.ts',
+    ],
+    verifiedLive: {
+      date: '2026-11-06',
+      evidence:
+        'THR-1926. crossroads.integration.test.ts (seed 42): The First\'s full decisions write a `crossroads` snapshot with options, and placeCrossroadsLean accepts a road from it. crossroads.test.ts: the snapshot drops the taken entry and secret cells and keeps board order; settledness boundaries (exactly 0.5 reads set, 0.85 torn); every forecastLean branch and not_enough in both directions on every set snapshot. debug-bridge.test.ts: getCrossroads returns snapshot, settledness and per-option forecasts.',
+    },
+  },
+  {
     id: 'compelled-work-answers-at-archive',
     producerSystem: 'Essence & Divine Economy',
     consumerSystem: NARRATIVE,
@@ -4286,6 +4326,8 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/foreshadowing/encounterForeshadowing.ts',
       'src/engine/agentDetail.ts',
       'src/debug-bridge.ts',
+      // THR-1926 — the Crossroads lean is placed only on a readable mortal.
+      'src/engine/crossroadsActions.ts',
     ],
     verifiedLive: {
       date: '2026-09-07',
