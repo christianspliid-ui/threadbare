@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-06 01:56 local (00:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-06 02:56 local (01:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -57,9 +57,9 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: four ready, all waiting out their veto windows; nothing being built right now.**
+**Healthy: four ready, all waiting out their veto windows; nothing being built right now. The builder's last five runs stood down for that reason only, which is correct.**
 - **Just shipped:** ["Waits for you" / "Theirs alone" on each chapter](https://linear.app/threadbare/issue/THR-2178/say-which-chapters-wait-for-the-god-a-waits-for-you-theirs-alone-word) (THR-2178) merged via [#2761](https://github.com/christianspliid-ui/threadbare/pull/2761) at 00:37 UTC and is live.
-- **Ready at 02:45 UTC on 6 Nov (next up):** [room for the god-rail hand](https://linear.app/threadbare/issue/THR-2177/god-rail-the-pinned-essence-block-leaves-the-hand-no-room-eight-50-px) (THR-2177).
+- **Ready at 02:45 UTC on 6 Nov (next up, within the hour):** [room for the god-rail hand](https://linear.app/threadbare/issue/THR-2177/god-rail-the-pinned-essence-block-leaves-the-hand-no-room-eight-50-px) (THR-2177).
 - **Ready at 05:30 UTC:** [a good-odds step that misses says so](https://linear.app/threadbare/issue/THR-2180/a-good-odds-step-that-misses-says-so-it-looked-fated-but-fate-rolled) (THR-2180).
 - **Ready at 08:45 UTC:** [the rail rows say what they are](https://linear.app/threadbare/issue/THR-2183/the-rail-rows-say-what-they-are-plain-summaries-on-the-folded-god-rail) (THR-2183).
 - **Ready at 11:40 UTC (new):** ["While you were away" recap](https://linear.app/threadbare/issue/THR-2184/while-you-were-away-the-warm-up-card-ends-on-a-five-line-recap-led-by) (THR-2184).
@@ -67,9 +67,9 @@ Say "veto <title>" to reverse any of these.
 
 Items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (17 days; In Dev since 15 Oct). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (17 days; In Dev since 15 Oct, 22 days). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- All green. The live site is serving the newest main (1c67e898). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. All 10 scheduled tasks are on time, and the worktree cleaner ran this hour. The engine's speed is normal (125 ms per tick, 19% under the weekly median of 155).
+- All green. The live site is serving the newest main (1c67e898). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. All 10 scheduled tasks are on time, and the worktree cleaner ran this hour. The engine's speed is normal (126 ms per tick, 19% under the weekly median of 155).
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 88 commits behind main. It is the read-only mirror and catches up on its own.
