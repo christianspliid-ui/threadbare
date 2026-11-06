@@ -10,7 +10,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { WorldGraph } from '../graph';
 import { resolveHexPressureTargets } from '../hexPressureTarget';
 import { phaseSpherePressure } from '../phaseSpherePressure';
-import { hexDistance } from '../delivery';
+import { hexDistance } from '../../lib/hexMath';
 import {
   ACTION_PRESSURE_SUCCESS,
   HEX_PRESSURE_FALLBACK_RADIUS,
@@ -76,6 +76,15 @@ describe('resolveHexPressureTargets (THR-2087)', () => {
     const { pressures, traces } = resolveHexPressureTargets(graph, [castPush('hex.seed_life', 'hex_5_5')], 3);
     expect(pressures[0].targetEntityId).toBe('loc_y');
     expect(traces[0]).toMatchObject({ resolvedTo: 'loc_y', distance: 1 });
+  });
+
+  it('measures on the map\'s flat-top odd-q grid, not odd-r', () => {
+    const graph = new WorldGraph();
+    addPlace(graph, 'loc_diag', 3, 6);  // odd-q: 2 away (odd-r would say 3)
+    expect(hexDistance({ col: 5, row: 5 }, { col: 3, row: 6 })).toBe(2);
+    const { pressures, traces } = resolveHexPressureTargets(graph, [castPush('hex.seed_life', 'hex_5_5')], 3);
+    expect(pressures[0].targetEntityId).toBe('loc_diag');
+    expect(traces[0]).toMatchObject({ category: 'sphere_pressure.hex_resolved', distance: 2 });
   });
 
   it('drops a push with no place within the radius, with a hex_unanchored trace', () => {

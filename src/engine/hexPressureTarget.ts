@@ -19,7 +19,7 @@ import { HEX_PRESSURE_FALLBACK_RADIUS } from '../types/sphereAffinity';
 import type { HexPressureTrace } from '../types/traces/sphere-traces';
 import { isHexTargetId, parseHexTargetId } from './hexActionBridge';
 import { getLocationNodes } from './sublocationShape';
-import { hexDistance } from './delivery';
+import { hexDistance } from '../lib/hexMath'; // flat-top odd-q, the map's grid
 
 /** A hex-pressure trace before the buffer stamps `id` and `timestamp`. */
 export type HexPressureTraceInput = Omit<HexPressureTrace, 'id' | 'timestamp'>;
