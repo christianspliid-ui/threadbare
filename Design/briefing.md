@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-06 21:58 local (20:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-06 22:58 local (21:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -35,17 +35,18 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: nothing being built right now, two ready.**
-- **Ready now:** [rank words show their ladder](https://linear.app/threadbare/issue/THR-2182/rank-words-show-their-ladder-a-reach-tile-says-where-its-word-sits-and) (THR-2182). Its veto window closed at 20:59 UTC; the next builder run (about 21:10 UTC) should take it.
-- **Ready at 23:50 UTC:** [your cards say how they landed](https://linear.app/threadbare/issue/THR-2187/your-cards-say-how-they-landed-each-card-the-god-played-adds-its-own) (THR-2187).
+**Thin but moving: one ticket being built, one ready.**
+- **Being built now:** [The Crossroads](https://linear.app/threadbare/issue/THR-1926/the-crossroads-read-a-threaded-mortals-top-three-choices-encounters) (THR-1926), the god action you approved on 14 Oct — see a threaded mortal's top three choices and lean on one. It had sat one step short of the build queue for three weeks; the orchestrator queued it at 21:30 UTC and the builder run that started 21:51 UTC took it.
+- **Ready at 23:50 UTC:** [your cards say how they landed](https://linear.app/threadbare/issue/THR-2187/your-cards-say-how-they-landed-each-card-the-god-played-adds-its-own) (THR-2187). Its follow-up, the five chapters that ask you once ([THR-2179](https://linear.app/threadbare/issue/THR-2179)), joins the queue when it merges.
+- **Shipped this hour:** [rank words show their ladder](https://linear.app/threadbare/issue/THR-2182/rank-words-show-their-ladder-a-reach-tile-says-where-its-word-sits-and) (THR-2182), merged via [#2771](https://github.com/christianspliid-ui/threadbare/pull/2771) and live.
 
 Items for agents, not you:
-- **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq) (also checked out, clean, in local worktree `admiring-wescoff-384eb1`), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (17 days; In Dev since 15 Oct, 22 days; last touched 1 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching. No local worktree holds work for it (checked this run).
+- **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (17 days; In Dev since 15 Oct, 22 days; last touched 1 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- The live site serves the latest commit on main (79a90972, the THR-2186 merge). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time, and the worktree cleaner ran at 21:54 local. The builder is not stalled: its runs since 17:50 UTC found nothing claimable because both ready tickets were inside their veto windows.
-- Engine speed: 144 ms/tick steady, −2% against the 7-day median (147).
+- The live site serves the latest commit on main (192a06fb, the THR-2182 merge). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time, and the worktree cleaner ran at 22:51 local. The builder is working (a run is building THR-1926).
+- Engine speed: 127 ms/tick steady, −14% against the 7-day median (147).
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask.
-- The home-folder copy of the repo is 138 commits behind main; its newest commit is from 4 Nov 11:02 local, about 59 hours ago. It has one edited tracked file (`.claude/settings.local.json`), which may be what stops the mirror's sync from fast-forwarding. This is the fourteenth hour in a row this brief has flagged it, so an agent should check the mirror's sync. Nothing is lost, because the lanes work from fresh copies of main.
+- **The home-folder copy of the repo is now 144 commits behind main**; its newest commit is from 4 Nov 11:02 local, about 60 hours ago. The mirror's sync log says why, every hour: one edited tracked file (`.claude/settings.local.json`) would be overwritten, and one untracked screenshot (`Docs/evidence/thr-2125/rails-1920.png`) differs from the copy main now adds. It refuses to touch either. This is the fifteenth hour in a row this brief has flagged it; an attended agent session should set the two files aside and fast-forward. Nothing is lost, because the lanes work from fresh copies of main.
