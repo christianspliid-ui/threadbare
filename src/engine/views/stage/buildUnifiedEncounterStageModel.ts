@@ -16,6 +16,7 @@ import { enrichProse, gatherNarrativeContext, resolveEncounterTitle } from '../.
 import type { NarrativeContext } from '../../proseEnrichment';
 import type { SimulationRuntime } from '../../simulationRuntime';
 import { stepOutcomeToOutcomeBand, stepOutcomeWord } from '../../../data/outcome-band-content';
+import { oddsMissedLine } from '../../../data/nudge-stage-content';
 import { autoLinkNarrative, collectSupportBundleEntities } from './narrativeLinker';
 import { buildAftermathConsequences } from './buildAftermathConsequences';
 import { buildChipAnchorNameResolver, buildChipAnchorResolver, buildChipIconResolver, buildFightChipWorld } from './chipCollaborators';
@@ -540,6 +541,7 @@ function buildHistory(
     let replayNarrative: string | undefined;
     let choiceText: string | undefined;
     let choiceDecided = false;
+    let oddsMissed: string | null = null;
     if (isResolved) {
       outcome = activeAction.stepOutcomes[index];
       const success = isStepSuccess(outcome);
@@ -591,6 +593,8 @@ function buildHistory(
       choiceText = record?.choiceText ?? memory?.choiceText;
       choiceDecided = !record?.choiceText
         && memory?.interventionType === BRANCH_DECISION_INTERVENTION_TYPE;
+      // THR-2180 — the odds word frozen at the roll; old saves carry none.
+      oddsMissed = oddsMissedLine(record?.forecastTier, outcome);
     }
 
     return {
@@ -607,6 +611,7 @@ function buildHistory(
       replayNarrative,
       choiceText,
       ...(choiceDecided ? { choiceDecided } : {}),
+      ...(oddsMissed ? { oddsMissedLine: oddsMissed } : {}),
     };
   });
 }

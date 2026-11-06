@@ -100,6 +100,11 @@ describe('THR-1964 — the cause line, every band × god-touched / alone × one-
             // untouched decider reads "elsewhere", never "alone".
             if (!godTouched && shape === 'many-step') expect(text).toContain(`${CAUSE_GOD_ELSEWHERE}.`);
             else if (!godTouched) expect(text).toContain('Kael faced it alone.');
+            else if (!LOST.has(outcome) && shape === 'many-step' && (band === 'failure' || band === 'critical_failure')) {
+              // THR-2180 — a won chapter names its failed step as one step of several.
+              expect(text).toContain('One step went wrong.');
+              expect(text).toContain('your cards could not save that step.');
+            }
             else if (LOST.has(outcome) || band === 'failure' || band === 'critical_failure') {
               expect(text).toContain('your cards could not save it.');
             }

@@ -1054,6 +1054,14 @@ export const CAUSE_STEP_VERBS: Record<StepOutcome, string> = {
 export const CAUSE_GOD_HELD = 'your cards held it';
 /** The god clause when a hand was on the deciding step and the ending was lost. */
 export const CAUSE_GOD_COULD_NOT_SAVE = 'your cards could not save it';
+/**
+ * THR-2180 — a won chapter whose deciding step failed names it as one step of
+ * several, so "your cards could not save it" no longer reads as the whole
+ * chapter lost.
+ */
+export const CAUSE_ONE_STEP_WENT_WRONG = 'One step went wrong.';
+/** THR-2180 — the god clause on that one failed step of a won chapter. */
+export const CAUSE_GOD_COULD_NOT_SAVE_STEP = 'your cards could not save that step';
 /** The mortal-alone clause. `{name}` is the actor. */
 export const CAUSE_ALONE = (actorName: string): string => `${actorName} faced it alone`;
 /**
@@ -1083,6 +1091,8 @@ export interface CauseLineStep {
   readonly title?: string;
   /** A nudge hand was committed, or essence spent, on this step. */
   readonly godTouched: boolean;
+  /** THR-2180 — "It looked Fated, but fate rolled against it.", when a good-odds step missed. */
+  readonly oddsMissedLine?: string;
 }
 
 /**
@@ -1155,12 +1165,21 @@ export function buildAftermathCauseLine(args: {
   // A step that failed outright was not held by anyone's cards, even on an
   // ending that was won at a price; a near miss was (the ticket's example).
   const stepFailed = STEP_OUTCOMES.indexOf(step.band) >= STEP_OUTCOMES.indexOf('failure');
+  const lost = CAUSE_LOST_OUTCOMES.has(args.outcome);
+  // THR-2180 — a won chapter whose deciding step failed: that step is one of several.
+  const oneStepOfSeveral = !lost && stepFailed && args.steps.length > 1;
   const clause = step.godTouched
-    ? (CAUSE_LOST_OUTCOMES.has(args.outcome) || stepFailed ? CAUSE_GOD_COULD_NOT_SAVE : CAUSE_GOD_HELD)
+    ? (oneStepOfSeveral
+        ? CAUSE_GOD_COULD_NOT_SAVE_STEP
+        : lost || stepFailed ? CAUSE_GOD_COULD_NOT_SAVE : CAUSE_GOD_HELD)
     : args.steps.some(s => s.godTouched)
       ? CAUSE_GOD_ELSEWHERE
       : CAUSE_ALONE(args.actorName);
-  return `${lead} ${noun} ${CAUSE_STEP_VERBS[step.band]}, and ${clause}.`;
+  const scope = oneStepOfSeveral ? ` ${CAUSE_ONE_STEP_WENT_WRONG}` : '';
+  // THR-2180 — the chapter's last step has no "Step n" answer of its own, so a
+  // good-odds miss there is named here; any earlier step was named on the veil.
+  const odds = index === args.steps.length - 1 && step.oddsMissedLine ? ` ${step.oddsMissedLine}` : '';
+  return `${lead}${scope} ${noun} ${CAUSE_STEP_VERBS[step.band]}, and ${clause}.${odds}`;
 }
 
 /**
