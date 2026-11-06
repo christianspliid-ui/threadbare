@@ -36,6 +36,8 @@ import { DOMINION_CAST_CLAUSE } from '../../data/dominion-ui-content';
 import { MANDATE_TREND_WORD } from '../../data/ascendant-bar-content';
 import { essencePriceLabel, sphereWord } from '../../data/essence-format';
 import {
+  GOD_RAIL_MANDATE_SUMMARY_STEPS,
+  GOD_RAIL_REACH_SUMMARY_STEPS,
   GOD_RAIL_ROW_SUMMARIES,
   GOD_RAIL_SUMMARY_MAX_CH,
   HAND_PRICE_TIER_SCALED,
@@ -247,16 +249,32 @@ export function buildHandCards(
 
 // ─── Folded rows ─────────────────────────────────────────────────────
 
-/** "Veil · Thinning", or the tier word alone past {@link GOD_RAIL_SUMMARY_MAX_CH}. */
-export function reachSummary(reachLabel: string, tierWord: string): string {
-  const full = GOD_RAIL_ROW_SUMMARIES.reaches.replace('{reach}', reachLabel).replace('{tier}', tierWord);
-  return full.length <= GOD_RAIL_SUMMARY_MAX_CH ? full : tierWord;
+/**
+ * Fill each step in turn and return the first within {@link GOD_RAIL_SUMMARY_MAX_CH};
+ * the last step is returned even when it is long (the ellipsis is the final guard).
+ */
+function firstFittingStep(steps: readonly string[], fill: (template: string) => string): string {
+  let last = '';
+  for (const step of steps) {
+    last = fill(step);
+    if (last.length <= GOD_RAIL_SUMMARY_MAX_CH) return last;
+  }
+  return last;
 }
 
-/** The Mandate row's word — the same table the opened block reads. */
+/**
+ * "Main: Veil · Thinning", stepping down {@link GOD_RAIL_REACH_SUMMARY_STEPS} past
+ * {@link GOD_RAIL_SUMMARY_MAX_CH} — "Eye · Before It Happens", then the tier word (THR-2183).
+ */
+export function reachSummary(reachLabel: string, tierWord: string): string {
+  return firstFittingStep(GOD_RAIL_REACH_SUMMARY_STEPS, (t) => t.replace('{reach}', reachLabel).replace('{tier}', tierWord));
+}
+
+/** "Goal · Holding" — the same trend table the opened block reads (THR-2183). */
 export function mandateSummary(mandate: MandateRowView | null): string {
   if (!mandate) return '';
-  return MANDATE_TREND_WORD[mandate.trend] ?? MANDATE_TREND_WORD.steady;
+  const trend = MANDATE_TREND_WORD[mandate.trend] ?? MANDATE_TREND_WORD.steady;
+  return firstFittingStep(GOD_RAIL_MANDATE_SUMMARY_STEPS, (t) => t.replace('{trend}', trend));
 }
 
 // ─── Attention ───────────────────────────────────────────────────────
@@ -327,6 +345,8 @@ export function buildGodRail(state: GameState, rawArgs: GodRailArgs): GodRailVM 
   const signatures = selectSignaturePaths(state);
   // Count = the god's own paths; the not-this-incarnation paths are context (THR-613).
   const yourSignatures = signatures.filter((p) => p.state !== 'locked_incarnation').length;
+  // THR-2183 review — "settled" counts only earned paths; open-but-unearned ones read "to earn".
+  const settledSignatures = signatures.filter((p) => p.state === 'available').length;
   const primaryReach = reaches.find((r) => r.rank === 'primary') ?? reaches[0];
   const hookCount = Number.isFinite(args.hookCount) ? Math.max(0, Math.floor(args.hookCount)) : 0;
 
@@ -358,7 +378,9 @@ export function buildGodRail(state: GameState, rawArgs: GodRailArgs): GodRailVM 
       reaches: { id: 'reaches', renders: true, summary: primaryReach ? reachSummary(primaryReach.label, primaryReach.tierWord) : '' },
       mandate: { id: 'mandate', renders: true, summary: mandateSummary(mandate) },
       covenants: { id: 'covenants', renders: covenants.length > 0, summary: countWords(covenants.length, GOD_RAIL_ROW_SUMMARIES.covenants) },
-      signatures: { id: 'signatures', renders: yourSignatures > 0, summary: countWords(yourSignatures, GOD_RAIL_ROW_SUMMARIES.signatures) },
+      signatures: { id: 'signatures', renders: yourSignatures > 0, summary: settledSignatures > 0
+        ? countWords(settledSignatures, GOD_RAIL_ROW_SUMMARIES.signatures)
+        : countWords(yourSignatures, GOD_RAIL_ROW_SUMMARIES.signaturesToEarn) },
       hooks: { id: 'hooks', renders: hookCount > 0, summary: countWords(hookCount, GOD_RAIL_ROW_SUMMARIES.hooks) },
     },
     bodies: { reaches, mandate, covenants, signatures },

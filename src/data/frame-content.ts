@@ -125,13 +125,31 @@ export const HAND_CORE_VERBS = {
 
 /** The longest folded-row summary; longer falls back to the shorter form. */
 export const GOD_RAIL_SUMMARY_MAX_CH = 24;
-/** Folded-row summaries. Reaches is "{reach} · {tier}", falling back to "{tier}". */
+/**
+ * Folded-row summaries — each says in words what the row counts (THR-2183).
+ * Reaches and Mandate step down their `*_SUMMARY_STEPS` lists past
+ * {@link GOD_RAIL_SUMMARY_MAX_CH}; the first entry of each list is the full form.
+ */
 export const GOD_RAIL_ROW_SUMMARIES = {
-  reaches: '{reach} · {tier}',
-  covenants: { one: '{n} held', other: '{n} held' } as CountPair,
-  signatures: { one: '{n} yours', other: '{n} yours' } as CountPair,
-  hooks: { one: '{n} on you', other: '{n} on you' } as CountPair,
+  reaches: 'Main: {reach} · {tier}',
+  mandate: 'Goal · {trend}',
+  covenants: { one: '{n} held · upkeep', other: '{n} held · upkeep' } as CountPair,
+  signatures: { one: '{n} settled', other: '{n} settled' } as CountPair,
+  /** Signatures while none has settled yet: the paths are open, not earned (THR-2183 review). */
+  signaturesToEarn: { one: '{n} to earn', other: '{n} to earn' } as CountPair,
+  hooks: { one: '{n} unfinished', other: '{n} unfinished' } as CountPair,
 } as const;
+/** The Reaches summary, longest form first; the first that fits wins (THR-2183). */
+export const GOD_RAIL_REACH_SUMMARY_STEPS: readonly string[] = [
+  GOD_RAIL_ROW_SUMMARIES.reaches,
+  '{reach} · {tier}',
+  '{tier}',
+];
+/** The Mandate summary, longest form first; the first that fits wins (THR-2183). */
+export const GOD_RAIL_MANDATE_SUMMARY_STEPS: readonly string[] = [
+  GOD_RAIL_ROW_SUMMARIES.mandate,
+  '{trend}',
+];
 /** The god rail's section labels. */
 export const GOD_RAIL_LABELS = {
   identity: 'Identity',

@@ -83,4 +83,29 @@ describe('the god rail from GOD_RAIL_SECTIONS', () => {
     expect(summary.length).toBeGreaterThan(0);
     expect(summary.length).toBeLessThanOrEqual(24);
   });
+
+  // THR-2183 U2 — an opened row starts with its hover's first sentence.
+  it('an opened Mandate row starts with its definition line, and the summary says "Goal · …"', () => {
+    renderBar();
+    expect(screen.queryByTestId('god-rail-row-definition-mandate')).toBeNull();
+    expect(screen.getByTestId('god-rail-row-summary-mandate').textContent).toMatch(/^Goal · /);
+    fireEvent.click(screen.getByTestId('god-rail-row-mandate'));
+    const body = screen.queryByTestId('god-rail-row-body-mandate');
+    if (!body) return; // no Mandate body on this world — nothing opens, nothing to define
+    const line = screen.getByTestId('god-rail-row-definition-mandate');
+    expect(line.textContent).toBe('What you are working toward, racing the doom.');
+    expect(body.firstElementChild).toBe(line);
+  });
+
+  it('the Reaches definition line steps aside while its own first-use caption shows', () => {
+    renderBar();
+    fireEvent.click(screen.getByTestId('god-rail-row-reaches'));
+    const body = screen.getByTestId('god-rail-row-body-reaches');
+    const captionShowing = !!body.querySelector('[data-first-use-caption="reaches"], [data-testid="first-use-caption-reaches"]');
+    const line = screen.queryByTestId('god-rail-row-definition-reaches');
+    if (captionShowing) expect(line).toBeNull();
+    else expect(line?.textContent).toBeTruthy();
+    // Never both: the same idea is not drawn twice.
+    expect(captionShowing && !!line).toBe(false);
+  });
 });
