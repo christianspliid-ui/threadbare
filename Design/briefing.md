@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-06 23:59 local (22:59 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-07 00:57 local (23:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -18,17 +18,6 @@
 
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
-## Decided for you
-
-From the design lane's [11:51 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-06d.md), on [which of the mortal's own chapters should give the god a hand](https://linear.app/threadbare/issue/THR-2179). Nobody builds on these before 23:50 UTC on 6 November.
-
-- **Your cards now say how they landed.** Every card carries a line for each result, such as *"The odds had been quietly widened, and Kael walked through the gap."* No screen has ever shown one. The only answer a played card got was "your cards held it". Each card you play now adds its line under how the step went, on the encounter screen and in the Ledger: *"Press The Odds — The odds had been quietly widened, and Kael walked through the gap."* At most two lines per step. Build ticket: [Your cards say how they landed](https://linear.app/threadbare/issue/THR-2187).
-- Same ticket — when a card has no line for a critical failure (31 of the 38 library cards don't), it uses its plain failure line. So the god's card is never missing from the worst roll.
-- **Five quiet chapters now ask you once.** Measured live over four worlds, 70% of The First's story chapters already wait for your cards. The ones that play out alone are mostly five: Consecrate the Ground, The Haggle, Tend the Shrine, The Market Haggle and Heal the Sick. Each gets a hand dealt from your cards on its **first step only**. That makes the world stop about a fifth more often for The First, against nearly half more if every step asked. How often The First starts a chapter does not change. This builds after the card lines, so the new hands pay off.
-- Same ticket — the other seven quiet chapters stay as they are. Together they are a quarter of the alone chapters, and they are rare.
-
-Say "veto <title>" to reverse any of these.
-
 ## This week's screens
 
 [Contact sheet — this week next to last week](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/ux-review/2026-11-02/contact-sheet.jpg) — better: all three of last week's faults are fixed, and for the first time the review reached a real mid-game, where one new overlap shows.
@@ -36,16 +25,16 @@ Say "veto <title>" to reverse any of these.
 ## Queue
 
 **Thin but moving: one ticket being built, one ready.**
-- **Shipped this hour:** [The Crossroads](https://linear.app/threadbare/issue/THR-1926/the-crossroads-read-a-threaded-mortals-top-three-choices-encounters) (THR-1926), the god action you approved on 14 Oct: see a threaded mortal's top choices and lean on one. Merged via [#2772](https://github.com/christianspliid-ui/threadbare/pull/2772) at 22:43 UTC and live.
-- **Being built now:** [the map fix for hex cards' sphere push](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (THR-2091). The orchestrator put it back in the queue at 22:30 UTC (its fix was already written on 30 Oct), and the builder run that started 22:51 UTC is working.
-- **Ready at 23:50 UTC:** [your cards say how they landed](https://linear.app/threadbare/issue/THR-2187/your-cards-say-how-they-landed-each-card-the-god-played-adds-its-own) (THR-2187). Its follow-up, the five chapters that ask you once ([THR-2179](https://linear.app/threadbare/issue/THR-2179)), joins the queue when it merges.
+- **Shipped this hour:** [the map fix for hex cards' sphere push](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (THR-2091). Merged via [#2773](https://github.com/christianspliid-ui/threadbare/pull/2773) at 23:04 UTC and live.
+- **Being built now:** [The Crossroads on screen](https://linear.app/threadbare/issue/THR-1928/the-crossroads-on-screen-a-threaded-mortals-next-three-roads-as-an) (THR-1928), the screen half of the god action you approved on 14 Oct. The builder run that started 23:32 UTC is working on it.
+- **Ready now:** [your cards say how they landed](https://linear.app/threadbare/issue/THR-2187/your-cards-say-how-they-landed-each-card-the-god-played-adds-its-own) (THR-2187), open to build since 23:50 UTC. Its follow-up, the five chapters that ask you once ([THR-2179](https://linear.app/threadbare/issue/THR-2179)), joins the queue when it merges. The design lane's decisions on it have passed their veto window.
 
 Items for agents, not you:
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (17 days; In Dev since 15 Oct, 22 days; last touched 1 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (18 days; In Dev since 15 Oct, 23 days; last touched 1 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- The live site serves the latest commit on main (683afee0, the THR-1926 merge). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time. The builder is working (a run started 22:51 UTC).
-- Engine speed: 132 ms/tick steady, −10% against the 7-day median (147).
+- The live site serves the latest commit on main (7b2def36). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time. The builder is working (a run started 23:32 UTC).
+- Engine speed: 136 ms/tick steady, −8% against the 7-day median (147).
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask.
-- **The home-folder copy of the repo is now 152 commits behind main**; its newest commit is from 4 Nov 11:02 local, about 61 hours ago. The same two files still block the mirror's sync: an edited `.claude/settings.local.json` and an untracked screenshot under `Docs/evidence/thr-2125/` that main now also adds. This is the sixteenth hour in a row this brief has flagged it; an attended agent session should set the two files aside and fast-forward. Nothing is lost, because the lanes work from fresh copies of main.
+- **The home-folder copy of the repo is now 155 commits behind main**; its newest commit is from 4 Nov 11:02 local, about 62 hours ago. The same two files still block the mirror's sync: an edited `.claude/settings.local.json` and an untracked screenshot under `Docs/evidence/thr-2125/` that main now also adds. This is the seventeenth hour in a row this brief has flagged it; an attended agent session should set the two files aside and fast-forward. Nothing is lost, because the lanes work from fresh copies of main.
