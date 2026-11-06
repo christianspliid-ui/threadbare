@@ -241,14 +241,16 @@ export function AscendantBar({
         </div>
       ))}
       {fill.map((def) => (
-        <div key={def.id} data-god-rail-section={def.id} data-place="fill" {...ring(def, { flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' })}>
+        <div key={def.id} data-god-rail-section={def.id} data-place="fill" {...ring(def, { flex: 1, minHeight: 'auto', display: 'flex', flexDirection: 'column' })}>
+          {/* THR-2177 (U3) — min-height auto: the wrapper's floor is the hand's own
+              `data-hand-floor` min-height, so the folded rows give way first. */}
           {GOD_RAIL_COMPONENTS[def.id](bag)}
         </div>
       ))}
       {folded.length > 0 && (
         <div data-testid="god-rail-folded-rows" className={styles.foldedRows}>
           {folded.map((def) => (
-            <div key={def.id} {...ring(def)}>
+            <div key={def.id} {...ring(def, { flexShrink: 0 })}>
               <FoldedRow def={def} summary={summaryOf(def.id)} open={openRows.includes(def.id)} onToggle={() => toggleRow(def.id)}>
                 {GOD_RAIL_COMPONENTS[def.id](bag)}
               </FoldedRow>

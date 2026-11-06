@@ -12,7 +12,10 @@
   padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-6); /* THR-2125 R1 — Modules § 2, docked density */
+  /* THR-2125 R1 — Modules § 2, docked density. THR-2177: --space-5, the plan's sanctioned
+     fallback (THR-2125 kill criteria): at --space-6 a grouped hand's sixth row missed
+     the 1920×1080 region by 1 px. */
+  gap: var(--space-5);
   /* THR-1894: the rail never scrolls as a page; the hand region and the open rows scroll inside their own limits (Laws 33, 57). */
   overflow: hidden;
 }
@@ -22,7 +25,11 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  flex-shrink: 0;
+  /* THR-2177 (U3) — the folded block gives way before the hand's floor: it shrinks
+     (each row's wrapper keeps flex-shrink 0, so a closed header is never cut) and
+     scrolls inside itself (Law 57). */
+  flex-shrink: 1;
+  min-height: 0;
   max-height: 50%;
   overflow-y: auto;
   overflow-x: hidden;
@@ -214,6 +221,10 @@
 }
 /* THR-2153 — holds the bar and, during a spend flash, the ▼ mark over it.
    The mark is out of flow, so the sphere word and the bar keep their width. */
+/* THR-2177 (U4) — the bar line's height; the trend arrow fits it instead of making it taller. */
+.essenceRow {
+  --essence-bar-line: 8px;
+}
 .essenceFillSlot {
   position: relative;
   display: flex;
