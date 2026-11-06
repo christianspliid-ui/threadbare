@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-06 06:57 local (05:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-06 08:00 local (07:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -58,8 +58,8 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: one being built, four ready (all waiting out their veto windows).**
-- **Being built now:** [a good-odds step that misses says so](https://linear.app/threadbare/issue/THR-2180/a-good-odds-step-that-misses-says-so-it-looked-fated-but-fate-rolled) (THR-2180). The builder claimed it at 05:31 UTC, the minute its veto window closed.
+**Healthy: four ready, all waiting out their veto windows; nothing is being built until 08:45 UTC.**
+- **Just shipped:** [a good-odds step that misses says so](https://linear.app/threadbare/issue/THR-2180/a-good-odds-step-that-misses-says-so-it-looked-fated-but-fate-rolled) (THR-2180) merged at 06:29 UTC via [#2764](https://github.com/christianspliid-ui/threadbare/pull/2764) and is live.
 - **Ready at 08:45 UTC (next):** [the rail rows say what they are](https://linear.app/threadbare/issue/THR-2183/the-rail-rows-say-what-they-are-plain-summaries-on-the-folded-god-rail) (THR-2183).
 - **Ready at 11:40 UTC:** ["While you were away" recap](https://linear.app/threadbare/issue/THR-2184/while-you-were-away-the-warm-up-card-ends-on-a-five-line-recap-led-by) (THR-2184).
 - **Ready at 14:44 UTC:** [a rival's move has a place and an answer](https://linear.app/threadbare/issue/THR-2185) (THR-2185).
@@ -67,10 +67,10 @@ Say "veto <title>" to reverse any of these.
 
 Items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (17 days; In Dev since 15 Oct, 22 days). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (17 days; In Dev since 15 Oct, 22 days). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching. No pushed branch and no local worktree holds work for it, so nothing is stranded.
 
 ## Health
 
-- All green. The live site serves the latest main (d964339b). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. All 10 scheduled tasks are on time, and the worktree cleaner ran at 06:40 local. Engine speed reads 147 ms/tick, 4% below the weekly median.
+- All green. The live site serves the latest main (dd214308). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. All 10 scheduled tasks are on time, and the worktree cleaner ran at 07:40 local. Engine speed reads 144 ms/tick, 6% below the weekly median. The builder's last two short runs stood down because every ready ticket is still inside its veto window; that is idle by design, not a stall.
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask.
-- The home-folder copy of the repo is 95 commits behind main and was last updated 4 Nov 11:02. It is the read-only mirror, which normally catches up on its own, but two days is long. An agent should check the mirror's sync. Nothing is lost: the lanes work from fresh copies of main.
+- The home-folder copy of the repo is 105 commits behind main and was last updated 4 Nov 11:02. It is the read-only mirror, which normally catches up on its own, but two days is long. An agent should check the mirror's sync. Nothing is lost: the lanes work from fresh copies of main.

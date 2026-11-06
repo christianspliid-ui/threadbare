@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-06 06:57 local (05:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-06 08:00 local (07:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,6 +46,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-06: a good-odds step that misses now says so, and it is live** ([THR-2180](https://linear.app/threadbare/issue/THR-2180/a-good-odds-step-that-misses-says-so-it-looked-fated-but-fate-rolled)). Merged via [#2764](https://github.com/christianspliid-ui/threadbare/pull/2764).
 - **2026-11-06: the god-rail hand gets room — one-line card rows and a hand floor, and it is live** ([THR-2177](https://linear.app/threadbare/issue/THR-2177/god-rail-the-pinned-essence-block-leaves-the-hand-no-room-eight-50-px)). Merged via [#2763](https://github.com/christianspliid-ui/threadbare/pull/2763).
 - **2026-11-06: each chapter now says whether it waits for you ("Waits for you" / "Theirs alone"), and it is live** ([THR-2178](https://linear.app/threadbare/issue/THR-2178/say-which-chapters-wait-for-the-god-a-waits-for-you-theirs-alone-word)). Merged via [#2761](https://github.com/christianspliid-ui/threadbare/pull/2761).
 - **2026-11-05: five small faults from the returning-player playtest are fixed, and it is live** ([THR-2170](https://linear.app/threadbare/issue/THR-2170/five-small-faults-from-warm-round-3-one-scholar-cast-twice-shiaru)). Merged via [#2755](https://github.com/christianspliid-ui/threadbare/pull/2755); the last of that playtest’s screen bugs.
@@ -55,7 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-05: buttons hold still under the player's hand, and it is live** ([THR-2166](https://linear.app/threadbare/issue/THR-2166/buttons-move-just-as-the-player-clicks-them-continue-jumps-up-after-a)). Merged via [#2751](https://github.com/christianspliid-ui/threadbare/pull/2751).
 - **2026-11-05: the bonded mortal's name stays whole in the Threads rail, and it is live** ([THR-2165](https://linear.app/threadbare/issue/THR-2165)). Merged via [#2750](https://github.com/christianspliid-ui/threadbare/pull/2750); the first fix from this morning's returning-player playtest.
 - **2026-11-05: the last player picks go — the mentorship moments and the elite encounters now let the mortal decide, and it is live** ([THR-2161](https://linear.app/threadbare/issue/THR-2161/the-last-player-picks-go-the-three-mentorship-moments-and-the-two)). Merged via [#2748](https://github.com/christianspliid-ui/threadbare/pull/2748); this finishes the mortal-decides conversion.
-- **2026-11-05: Flawed Steel and the five sphere story beats now let the mortal decide, and it is live** ([THR-2157](https://linear.app/threadbare/issue/THR-2157/the-mortal-decides-flawed-steel-and-the-five-sphere-story-beats-their)). Merged via [#2746](https://github.com/christianspliid-ui/threadbare/pull/2746).
 ---
 
 Older resolved items and every earlier revision of this file: `git log -p origin/ops -- Design/user-actions.md`.
