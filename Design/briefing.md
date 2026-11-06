@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-06 19:57 local (18:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-06 21:00 local (20:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -44,7 +44,7 @@ Say "veto <title>" to reverse any of these.
 
 **Healthy: nothing being built right now, two ready and each waiting out its veto window.**
 - **Just shipped:** ["See the work" lands on the work](https://linear.app/threadbare/issue/THR-2186/see-the-work-lands-on-the-work-the-inspector-opens-on-the-tab-a-link) (THR-2186) merged via [#2770](https://github.com/christianspliid-ui/threadbare/pull/2770) and is live.
-- **Ready at 20:59 UTC:** [rank words show their ladder](https://linear.app/threadbare/issue/THR-2182/rank-words-show-their-ladder-a-reach-tile-says-where-its-word-sits-and) (THR-2182).
+- **Ready at 20:59 UTC (within the hour):** [rank words show their ladder](https://linear.app/threadbare/issue/THR-2182/rank-words-show-their-ladder-a-reach-tile-says-where-its-word-sits-and) (THR-2182).
 - **Ready at 23:50 UTC:** [your cards say how they landed](https://linear.app/threadbare/issue/THR-2187/your-cards-say-how-they-landed-each-card-the-god-played-adds-its-own) (THR-2187).
 
 Items for agents, not you:
@@ -54,7 +54,7 @@ Items for agents, not you:
 
 ## Health
 
-- The live site serves the latest commit on main (79a90972, the THR-2186 merge). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time, and the worktree cleaner ran at 19:46 local. The builder is not stalled: its 17:31 UTC run shipped THR-2186, and the runs since (latest 18:51 UTC) found nothing claimable because both ready tickets are inside their veto windows.
-- Engine speed: 146 ms/tick steady, -1% against the 7-day median (147).
+- The live site serves the latest commit on main (79a90972, the THR-2186 merge). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time, and the worktree cleaner ran at 20:40 local. The builder is not stalled: its 17:31 UTC run shipped THR-2186, and the runs since (latest 19:52 UTC) found nothing claimable because both ready tickets are inside their veto windows.
+- Engine speed: 148 ms/tick steady, +1% against the 7-day median (147).
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask.
-- The home-folder copy of the repo is 138 commits behind main; its newest commit is from 4 Nov 11:02 local, about 57 hours ago. It has one edited tracked file (`.claude/settings.local.json`), which may be what stops the mirror's sync from fast-forwarding. This is the twelfth hour in a row this brief has flagged it, so an agent should check the mirror's sync. Nothing is lost, because the lanes work from fresh copies of main.
+- The home-folder copy of the repo is 138 commits behind main; its newest commit is from 4 Nov 11:02 local, about 58 hours ago. It has one edited tracked file (`.claude/settings.local.json`), which may be what stops the mirror's sync from fast-forwarding. This is the thirteenth hour in a row this brief has flagged it, so an agent should check the mirror's sync. Nothing is lost, because the lanes work from fresh copies of main.
