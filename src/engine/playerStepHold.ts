@@ -130,15 +130,22 @@ export type ChapterWaitWord = 'waits' | 'theirs_alone';
  * thread is not a live pause-mode ("Asks you") thread. A "Lives on" thread
  * already says nothing waits, so it shows neither word. With the THR-2140
  * skip switched off every step holds, so every chapter waits.
+ *
+ * `effectiveTier` is the action's live attention tier. A `background` or
+ * `invisible` action posts no beat (`encounterVisibility` skips it), so nothing
+ * in it can hold: it reads `theirs_alone` whatever its steps author (review gate).
+ * Absent (an old record) keeps the template reading, as the poster does.
  */
 export function chapterWaitWord(
   graph: WorldGraph,
   actorId: string,
   template: UnifiedActionTemplate | undefined,
   choiceHistory?: readonly EncounterChoiceMemory[],
+  effectiveTier?: UnifiedAction['effectiveTier'],
 ): ChapterWaitWord | undefined {
   if (!template || template.routine === true) return undefined;
   if (!actorThreadIsPause(graph, actorId)) return undefined;
+  if (effectiveTier === 'background' || effectiveTier === 'invisible') return 'theirs_alone';
   if (!SKIP_STEPS_WITHOUT_PLAYER_MOVE) return 'waits';
   return chapterOffersPlayerMove(template, choiceHistory) ? 'waits' : 'theirs_alone';
 }

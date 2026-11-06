@@ -302,7 +302,7 @@ function buildHeader(
 /** THR-2178 — the chapter's wait word, spread so an absent word adds no key. Fail-soft. */
 function waitWordFor(args: BuildUnifiedEncounterStageModelArgs): { waitWord?: 'waits' | 'theirs_alone' } {
   try {
-    const word = chapterWaitWord(args.graph, args.activeAction.actorId, args.template, args.activeAction.choiceHistory);
+    const word = chapterWaitWord(args.graph, args.activeAction.actorId, args.template, args.activeAction.choiceHistory, args.activeAction.effectiveTier);
     return word ? { waitWord: word } : {};
   } catch {
     return {};

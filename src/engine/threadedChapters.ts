@@ -73,7 +73,7 @@ function liveStakesLine(gameState: GameState, action: UnifiedAction): string | u
 /** THR-2178 — the live row's wait word, spread so an absent word adds no key. Fail-soft. */
 function liveWaitWord(gameState: GameState, action: UnifiedAction): { waitWord?: ChapterWaitWord } {
   try {
-    const word = chapterWaitWord(gameState.graph, action.actorId, getUnifiedTemplateById(action.templateId), action.choiceHistory);
+    const word = chapterWaitWord(gameState.graph, action.actorId, getUnifiedTemplateById(action.templateId), action.choiceHistory, action.effectiveTier);
     return word ? { waitWord: word } : {};
   } catch {
     return {};

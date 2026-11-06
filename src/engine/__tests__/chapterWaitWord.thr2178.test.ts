@@ -153,3 +153,26 @@ describe('the Ledger rows carry the word (THR-2178)', () => {
     expect(row && 'waitWord' in row).toBe(false);
   });
 });
+
+describe('a chapter that posts no beat never says it waits (THR-2178 review gate)', () => {
+  it('a background or invisible action reads theirs_alone even when its steps author moves', () => {
+    const g = makeGraph('pause');
+    expect(chapterWaitWord(g, 'agent_1', template(GALLOWS_PARDON), undefined, 'background')).toBe('theirs_alone');
+    expect(chapterWaitWord(g, 'agent_1', template(GALLOWS_PARDON), undefined, 'invisible')).toBe('theirs_alone');
+    expect(chapterWaitWord(g, 'agent_1', template(GALLOWS_PARDON), undefined, 'story_beat')).toBe('waits');
+    expect(chapterWaitWord(g, 'agent_1', template(GALLOWS_PARDON), undefined, undefined)).toBe('waits');
+  });
+
+  it('the Ledger row reads the action\'s live tier', () => {
+    const state = {
+      graph: makeGraph('pause'), ascendantId: 'asc_1', tick: 10,
+      clock: { currentTick: 10, ticksPerSeason: 90, season: 0, year: 0 },
+      chronicleEntries: [], chapterArchive: [],
+      unifiedActions: [{
+        actionId: 'ua_1', templateId: GALLOWS_PARDON, actorId: 'agent_1', targetId: 'agent_1', scale: 'personal',
+        source: 'agent', startTick: 5, currentStep: 0, resolved: false, choiceHistory: [], effectiveTier: 'background',
+      }],
+    } as unknown as GameState;
+    expect(buildLedgerRows(state)[0]?.waitWord).toBe('theirs_alone');
+  });
+});
