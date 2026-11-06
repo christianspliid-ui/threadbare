@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-06 09:58 local (08:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-06 10:58 local (09:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -19,6 +19,13 @@
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
 ## Decided for you
+
+From the design lane's [09:00 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-06c.md). Nobody builds on these before 20:59 UTC on 6 November.
+
+- [Rank words show their ladder](https://linear.app/threadbare/issue/THR-2182) — a mortal's reach tile keeps its rank word and adds one muted line: *"Middle of the ladder · next Fearsome"*, or *"Top of the ladder"* at the top. Hovering the word lists the whole ladder: *"Iron, low to high: Meek, Trained, Formidable, Fearsome, Legendary."*
+- Same ticket — the small number testers saw beside every person, hall and resource is the count of your cards that can be cast on that thing. It now says so: *"4 cards"*, not just a card icon and "4".
+- Same ticket — the faction ladder's top word changes from "Formidable" to "Foremost". "Formidable" was also the middle of a mortal's Iron ladder, so one word named two places.
+- Same ticket — no meter, pips or "3 of 5". A small meter would be a new kind of glyph, and that is your call. Say so if you want one.
 
 From the design lane's [05:18 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-06b.md). Nobody builds on this before 17:30 UTC on 6 November.
 
@@ -50,12 +57,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: one being built, three ready and waiting out their veto windows.**
-- **Being built now:** [the rail rows say what they are](https://linear.app/threadbare/issue/THR-2183/the-rail-rows-say-what-they-are-plain-summaries-on-the-folded-god-rail) (THR-2183). Its veto window closed at 08:45 UTC and the builder took it at 08:52.
-- **Just shipped:** [a good-odds step that misses says so](https://linear.app/threadbare/issue/THR-2180/a-good-odds-step-that-misses-says-so-it-looked-fated-but-fate-rolled) (THR-2180) merged at 06:29 UTC via [#2764](https://github.com/christianspliid-ui/threadbare/pull/2764) and is live.
+**Healthy: nothing being built right now, four ready and waiting out their veto windows.**
+- **Just shipped:** [the rail rows say what they are](https://linear.app/threadbare/issue/THR-2183/the-rail-rows-say-what-they-are-plain-summaries-on-the-folded-god-rail) (THR-2183) merged at 09:25 UTC via [#2766](https://github.com/christianspliid-ui/threadbare/pull/2766) and is live.
 - **Ready at 11:40 UTC (next):** ["While you were away" recap](https://linear.app/threadbare/issue/THR-2184/while-you-were-away-the-warm-up-card-ends-on-a-five-line-recap-led-by) (THR-2184).
-- **Ready at 14:44 UTC:** [a rival's move has a place and an answer](https://linear.app/threadbare/issue/THR-2185) (THR-2185).
+- **Ready at 14:44 UTC:** [a rival's move has a place and an answer](https://linear.app/threadbare/issue/THR-2185/a-rivals-move-has-a-place-and-an-answer-the-raid-toast-names-the-place) (THR-2185).
 - **Ready at 17:30 UTC:** ["See the work" lands on the work](https://linear.app/threadbare/issue/THR-2186/see-the-work-lands-on-the-work-the-inspector-opens-on-the-tab-a-link) (THR-2186).
+- **Ready at 20:59 UTC:** [rank words show their ladder](https://linear.app/threadbare/issue/THR-2182/rank-words-show-their-ladder-a-reach-tile-says-where-its-word-sits-and) (THR-2182). Its plan merged via [#2765](https://github.com/christianspliid-ui/threadbare/pull/2765).
 
 Items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -63,7 +70,7 @@ Items for agents, not you:
 
 ## Health
 
-- The live site serves the latest main (dd214308). Checks on main and the 3 scheduled background jobs pass. One pull request, the design lane's plan for [rank words that show their ladder](https://github.com/christianspliid-ui/threadbare/pull/2765), is armed and waiting on its checks. All 10 scheduled tasks are on time, and the worktree cleaner ran at 09:40 local. The builder's short runs before 08:45 UTC stood down because every ready ticket was inside its veto window; a run is now building, so there is no stall.
-- Engine speed: tick cost 192 ms/tick steady, 27% above the 7-day median (151, 148 rows since 9c6fc808); top phase agent_decision, 638 agents. Name the merges between 9c6fc808 and dd214308: git log --oneline --merges 9c6fc808..dd214308. Last hour measured 147 ms/tick on the same commit, and a builder run was working on this computer during this measurement, so this is probably machine load. An agent should re-measure before chasing it.
+- The live site serves the latest main (f5035557). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time, and the worktree cleaner ran at 10:50 local. The builder's short runs this hour stood down because every ready ticket is inside its veto window, so there is no stall.
+- Engine speed: 128 ms/tick steady, 16% below the 7-day median (152). Last hour's 192 was machine load, as suspected.
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask.
-- The home-folder copy of the repo is 105 commits behind main and was last updated 4 Nov 11:27 local (46 hours ago). It is the read-only mirror, which normally catches up on its own, but this is the second hour this brief has flagged it. An agent should check the mirror's sync. Nothing is lost: the lanes work from fresh copies of main.
+- The home-folder copy of the repo is 114 commits behind main. Its newest commit is from 4 Nov 11:02 local, about 48 hours ago. It is the read-only mirror, which normally catches up on its own. This is the third hour in a row this brief has flagged it, so an agent should check the mirror's sync. Nothing is lost, because the lanes work from fresh copies of main.
