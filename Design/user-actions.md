@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-06 22:58 local (21:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-06 23:59 local (22:59 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,6 +46,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-06: The Crossroads is live — see a threaded mortal's top choices and lean on one** ([THR-1926](https://linear.app/threadbare/issue/THR-1926/the-crossroads-read-a-threaded-mortals-top-three-choices-encounters)), the god action you approved on 14 Oct. Merged via [#2772](https://github.com/christianspliid-ui/threadbare/pull/2772).
 - **2026-11-06: rank words on a reach tile now show where they sit on their ladder, and it is live** ([THR-2182](https://linear.app/threadbare/issue/THR-2182/rank-words-show-their-ladder-a-reach-tile-says-where-its-word-sits-and)). Merged via [#2771](https://github.com/christianspliid-ui/threadbare/pull/2771).
 - **2026-11-06: "See the work" on a work moment now opens the mortal's sheet on the work, and it is live** ([THR-2186](https://linear.app/threadbare/issue/THR-2186/see-the-work-lands-on-the-work-the-inspector-opens-on-the-tab-a-link)). Merged via [#2770](https://github.com/christianspliid-ui/threadbare/pull/2770).
 - **2026-11-06: a rival’s raid now names the place it pressed and opens it, and the Chronicle names the rival, and it is live** ([THR-2185](https://linear.app/threadbare/issue/THR-2185/a-rivals-move-has-a-place-and-an-answer-the-raid-toast-names-the-place)). Merged via [#2769](https://github.com/christianspliid-ui/threadbare/pull/2769).
@@ -55,7 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-06: the god-rail hand gets room — one-line card rows and a hand floor, and it is live** ([THR-2177](https://linear.app/threadbare/issue/THR-2177/god-rail-the-pinned-essence-block-leaves-the-hand-no-room-eight-50-px)). Merged via [#2763](https://github.com/christianspliid-ui/threadbare/pull/2763).
 - **2026-11-06: each chapter now says whether it waits for you ("Waits for you" / "Theirs alone"), and it is live** ([THR-2178](https://linear.app/threadbare/issue/THR-2178/say-which-chapters-wait-for-the-god-a-waits-for-you-theirs-alone-word)). Merged via [#2761](https://github.com/christianspliid-ui/threadbare/pull/2761).
 - **2026-11-05: five small faults from the returning-player playtest are fixed, and it is live** ([THR-2170](https://linear.app/threadbare/issue/THR-2170/five-small-faults-from-warm-round-3-one-scholar-cast-twice-shiaru)). Merged via [#2755](https://github.com/christianspliid-ui/threadbare/pull/2755); the last of that playtest’s screen bugs.
-- **2026-11-05: Escape and Space now do the right thing, and it is live** ([THR-2167](https://linear.app/threadbare/issue/THR-2167/escape-and-space-do-the-wrong-thing-a-showing-tooltip-eats-the-escape)). Merged via [#2754](https://github.com/christianspliid-ui/threadbare/pull/2754).
 ---
 
 Older resolved items and every earlier revision of this file: `git log -p origin/ops -- Design/user-actions.md`.
