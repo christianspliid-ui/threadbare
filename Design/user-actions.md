@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-06 15:57 local (14:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-06 16:57 local (15:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,6 +46,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-06: a rival’s raid now names the place it pressed and opens it, and the Chronicle names the rival, and it is live** ([THR-2185](https://linear.app/threadbare/issue/THR-2185/a-rivals-move-has-a-place-and-an-answer-the-raid-toast-names-the-place)). Merged via [#2769](https://github.com/christianspliid-ui/threadbare/pull/2769).
 - **2026-11-06: coming back to the game now opens on a "While you were away" recap, and it is live** ([THR-2184](https://linear.app/threadbare/issue/THR-2184/while-you-were-away-the-warm-up-card-ends-on-a-five-line-recap-led-by)). Merged via [#2768](https://github.com/christianspliid-ui/threadbare/pull/2768).
 - **2026-11-06: the god rail's folded rows now say what they count, and it is live** ([THR-2183](https://linear.app/threadbare/issue/THR-2183/the-rail-rows-say-what-they-are-plain-summaries-on-the-folded-god-rail)). Merged via [#2766](https://github.com/christianspliid-ui/threadbare/pull/2766).
 - **2026-11-06: a good-odds step that misses now says so, and it is live** ([THR-2180](https://linear.app/threadbare/issue/THR-2180/a-good-odds-step-that-misses-says-so-it-looked-fated-but-fate-rolled)). Merged via [#2764](https://github.com/christianspliid-ui/threadbare/pull/2764).
@@ -55,7 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-05: Escape and Space now do the right thing, and it is live** ([THR-2167](https://linear.app/threadbare/issue/THR-2167/escape-and-space-do-the-wrong-thing-a-showing-tooltip-eats-the-escape)). Merged via [#2754](https://github.com/christianspliid-ui/threadbare/pull/2754).
 - **2026-11-05: "Needs you" counts only what can be opened, and action toasts expire, and it is live** ([THR-2169](https://linear.app/threadbare/issue/THR-2169/recurs-after-fix-needs-you-counts-things-that-cannot-be-opened-and)). Merged via [#2753](https://github.com/christianspliid-ui/threadbare/pull/2753).
 - **2026-11-05: a cast's result now says one thing, and it is live** ([THR-2168](https://linear.app/threadbare/issue/THR-2168/a-casts-result-contradicts-itself-a-dream-that-took-no-hold-says-it)). Merged via [#2752](https://github.com/christianspliid-ui/threadbare/pull/2752).
-- **2026-11-05: buttons hold still under the player's hand, and it is live** ([THR-2166](https://linear.app/threadbare/issue/THR-2166/buttons-move-just-as-the-player-clicks-them-continue-jumps-up-after-a)). Merged via [#2751](https://github.com/christianspliid-ui/threadbare/pull/2751).
 ---
 
 Older resolved items and every earlier revision of this file: `git log -p origin/ops -- Design/user-actions.md`.
