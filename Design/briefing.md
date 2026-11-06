@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-06 08:00 local (07:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-06 08:58 local (07:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -42,7 +42,7 @@ From the design lane's [23:40 UTC run](https://github.com/christianspliid-ui/thr
 - Same ticket — the wait estimate stops sitting on "About 2 minutes left" for a whole minute. Below three minutes it steps every half minute.
 - Same ticket — the recap does not name the rival god behind a place that slipped; [rival gods you can see but not answer](https://linear.app/threadbare/issue/THR-2172) owns that. The recap appears only when a warm playtest arrives, because the game has no saved worlds yet.
 
-From the design lane's [20:40 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-05f.md). Nobody builds on these before 08:45 UTC on 6 November.
+From the design lane's [20:40 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-05f.md). Nobody builds on these before 08:45 UTC on 6 November — under an hour from now, so a veto here is due now.
 
 - [The mid-game words still mean nothing](https://linear.app/threadbare/issue/THR-2175) — the left-hand rail's folded rows now say what they count. "Hooks · 11 on you" becomes "Hooks · 11 unfinished". "Signatures · 3 yours" becomes "Signatures · 3 settled". "Mandate · Holding" becomes "Mandate · Goal · Holding". "Reaches · Eye · Blinkered" becomes "Reaches · Main: Eye · Blinkered". Covenants reads "2 held · upkeep". Build ticket: [THR-2183](https://linear.app/threadbare/issue/THR-2183/the-rail-rows-say-what-they-are-plain-summaries-on-the-folded-god-rail).
 - Same ticket — opening one of those rows starts with one quiet sentence saying what it is for, taken from its hover. For Hooks that is *"Marks, clues and vows that tie you to something unfinished."* Mandate gets the hover it never had.
@@ -71,6 +71,6 @@ Items for agents, not you:
 
 ## Health
 
-- All green. The live site serves the latest main (dd214308). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. All 10 scheduled tasks are on time, and the worktree cleaner ran at 07:40 local. Engine speed reads 144 ms/tick, 6% below the weekly median. The builder's last two short runs stood down because every ready ticket is still inside its veto window; that is idle by design, not a stall.
+- All green. The live site serves the latest main (dd214308). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. All 10 scheduled tasks are on time, and the worktree cleaner ran at 07:40 local. Engine speed reads 147 ms/tick, 4% below the weekly median. The builder's last three short runs stood down because every ready ticket is still inside its veto window; that is idle by design, not a stall.
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask.
 - The home-folder copy of the repo is 105 commits behind main and was last updated 4 Nov 11:02. It is the read-only mirror, which normally catches up on its own, but two days is long. An agent should check the mirror's sync. Nothing is lost: the lanes work from fresh copies of main.
