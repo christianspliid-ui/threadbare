@@ -345,6 +345,8 @@ export function buildGodRail(state: GameState, rawArgs: GodRailArgs): GodRailVM 
   const signatures = selectSignaturePaths(state);
   // Count = the god's own paths; the not-this-incarnation paths are context (THR-613).
   const yourSignatures = signatures.filter((p) => p.state !== 'locked_incarnation').length;
+  // THR-2183 review — "settled" counts only earned paths; open-but-unearned ones read "to earn".
+  const settledSignatures = signatures.filter((p) => p.state === 'available').length;
   const primaryReach = reaches.find((r) => r.rank === 'primary') ?? reaches[0];
   const hookCount = Number.isFinite(args.hookCount) ? Math.max(0, Math.floor(args.hookCount)) : 0;
 
@@ -376,7 +378,9 @@ export function buildGodRail(state: GameState, rawArgs: GodRailArgs): GodRailVM 
       reaches: { id: 'reaches', renders: true, summary: primaryReach ? reachSummary(primaryReach.label, primaryReach.tierWord) : '' },
       mandate: { id: 'mandate', renders: true, summary: mandateSummary(mandate) },
       covenants: { id: 'covenants', renders: covenants.length > 0, summary: countWords(covenants.length, GOD_RAIL_ROW_SUMMARIES.covenants) },
-      signatures: { id: 'signatures', renders: yourSignatures > 0, summary: countWords(yourSignatures, GOD_RAIL_ROW_SUMMARIES.signatures) },
+      signatures: { id: 'signatures', renders: yourSignatures > 0, summary: settledSignatures > 0
+        ? countWords(settledSignatures, GOD_RAIL_ROW_SUMMARIES.signatures)
+        : countWords(yourSignatures, GOD_RAIL_ROW_SUMMARIES.signaturesToEarn) },
       hooks: { id: 'hooks', renders: hookCount > 0, summary: countWords(hookCount, GOD_RAIL_ROW_SUMMARIES.hooks) },
     },
     bodies: { reaches, mandate, covenants, signatures },

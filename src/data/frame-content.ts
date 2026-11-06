@@ -135,6 +135,8 @@ export const GOD_RAIL_ROW_SUMMARIES = {
   mandate: 'Goal · {trend}',
   covenants: { one: '{n} held · upkeep', other: '{n} held · upkeep' } as CountPair,
   signatures: { one: '{n} settled', other: '{n} settled' } as CountPair,
+  /** Signatures while none has settled yet: the paths are open, not earned (THR-2183 review). */
+  signaturesToEarn: { one: '{n} to earn', other: '{n} to earn' } as CountPair,
   hooks: { one: '{n} unfinished', other: '{n} unfinished' } as CountPair,
 } as const;
 /** The Reaches summary, longest form first; the first that fits wins (THR-2183). */
