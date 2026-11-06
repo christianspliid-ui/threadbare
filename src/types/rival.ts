@@ -85,6 +85,21 @@ export interface RivalState {
    * `contestedBy` remains canonical.
    */
   drainedSourceIds?: string[];
+  // ── Temper cause + last landing (THR-2185) — additive/optional ──
+  /** The latest rise in `hostilityToPlayer` and what caused it. Undefined until the first rise. */
+  hostilityCause?: RivalHostilityCause;
+  /** The last place this rival's probe landed on, and when. Undefined until one lands. */
+  lastPressed?: { placeId: string; tick: number };
+}
+
+/**
+ * Why a rival's temper last rose (THR-2185): a scheme beat of its own, or the god
+ * breaking one of its schemes. `placeId` is the scheme's target when it has one.
+ */
+export interface RivalHostilityCause {
+  kind: 'scheme' | 'countered';
+  placeId?: string;
+  tick: number;
 }
 
 /** Rival archetype generation templates */

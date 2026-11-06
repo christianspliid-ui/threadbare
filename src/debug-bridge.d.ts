@@ -3933,7 +3933,13 @@ export interface DebugBridge {
     }
   >;
 
-  /** THR-66 — List active/terminal rival schemes across all rivals. */
+  /**
+   * THR-66 — List active/terminal rival schemes across all rivals.
+   *
+   * THR-2185: each row also carries its rival's temper (`hostility`), the latest rise's
+   * cause (`hostilityCause`, undefined before the first rise) and the last place its
+   * probe landed (`lastPressed`). Synchronous.
+   */
   getRivalSchemes: () => Array<{
     rivalId: string;
     compositionId: string;
@@ -3941,6 +3947,9 @@ export interface DebugBridge {
     phase: string;
     escalationTier: number;
     status: 'active' | 'completed' | 'failed';
+    hostility: number;
+    hostilityCause?: import('./types/rival').RivalHostilityCause;
+    lastPressed?: { placeId: string; tick: number };
   }>;
   /**
    * THR-621 — What each rival is bleeding out of the player's essence sources.

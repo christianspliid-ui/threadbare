@@ -635,6 +635,8 @@ export type TraceCategory =
   | 'naming.constrained_reject'
   | 'rival.scheme_phase_advanced'
   | 'rival.scheme_materialized'
+  // Rival temper (THR-2185)
+  | 'rival.hostility_changed'
   // Effect vocabulary activation (THR-1239)
   | 'effect.event_raised'
   | 'effect.charge_spent'
@@ -1319,6 +1321,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'naming.constrained_reject',
   'rival.scheme_phase_advanced',
   'rival.scheme_materialized',
+  'rival.hostility_changed',
   'effect.event_raised',
   'effect.charge_spent',
   'effect.overlay_applied',
@@ -5793,6 +5796,7 @@ export type TraceEntry =
   | RivalSchemeCounteredTrace
   | RivalSchemeCompletedTrace
   | RivalSchemeMaterializedTrace
+  | RivalHostilityChangedTrace
   // Economic scheme family traces (THR-619)
   | RivalSchemeStockDrainedTrace
   | RivalSchemeRouteSeveredTrace
@@ -7342,6 +7346,19 @@ export interface RivalSchemeMaterializedTrace extends TraceBase {
   rivalId: string;
   targetId: string;
   compositionId: string;
+}
+
+/**
+ * Trace (THR-2185): a rival's temper toward the god moved — a scheme beat of its own,
+ * the god breaking one of its schemes, or a quiet day's cooling.
+ */
+export interface RivalHostilityChangedTrace extends TraceBase {
+  category: 'rival.hostility_changed';
+  rivalId: string;
+  from: number;
+  to: number;
+  cause: 'scheme' | 'countered' | 'cooled';
+  placeId?: string;
 }
 
 // ─── Economic scheme family traces (THR-619) ─────────────────────

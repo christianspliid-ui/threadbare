@@ -404,6 +404,46 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Rival Gods',
     desc: 'Other divine powers competing for influence over the world.',
   },
+  // ─── A rival's entry (THR-2185) ─────────────────────────────────
+  // The opened entry in the Rival gods panel: why its temper is what it is, where its
+  // hand last landed, and how the god answers it. `{place}` is a place name; `{when}`
+  // is "today", "yesterday" or "two days ago".
+  'ui.rival.temper': {
+    label: 'Temper',
+    desc: 'How this god feels about you. It rises when its schemes run or you break them, and cools when nothing happens.',
+  },
+  'ui.rival.cause_scheme': {
+    label: 'Its scheme',
+    desc: 'Its scheme against {place} is under way.',
+  },
+  'ui.rival.cause_scheme_noplace': {
+    label: 'Its scheme',
+    desc: 'Its scheme is under way.',
+  },
+  'ui.rival.cause_countered': {
+    label: 'You broke its scheme',
+    desc: 'You broke its scheme against {place}.',
+  },
+  'ui.rival.cause_countered_noplace': {
+    label: 'You broke its scheme',
+    desc: 'You broke one of its schemes.',
+  },
+  'ui.rival.cause_cooling': {
+    label: 'Cooling',
+    desc: 'and cooling',
+  },
+  'ui.rival.cause_none': {
+    label: 'As rival gods are',
+    desc: 'as rival gods are',
+  },
+  'ui.rival.last_pressed': {
+    label: 'Last pressed',
+    desc: 'Last pressed {place}, {when}.',
+  },
+  'ui.rival.answer': {
+    label: 'How to answer it',
+    desc: 'Places you tend shrug off its hand. Your seat, your threaded, a claim, or an anointed faction tends one.',
+  },
   'ui.retinue_panel': {
     label: 'Retinue',
     desc: 'Mortal agents under your divine influence, ranked by tier.',

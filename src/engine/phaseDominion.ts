@@ -236,6 +236,15 @@ function strongerCause(a: DominionBandChangeCause | undefined, b: DominionBandCh
   return CAUSE_PRIORITY.indexOf(a) <= CAUSE_PRIORITY.indexOf(b) ? a : b;
 }
 
+/**
+ * THR-2185: a rival's name from `rivalDefinitions`, then the graph (a rival is run
+ * state, not a node); undefined when neither names it.
+ */
+export function rivalNameLookup(state: Pick<GameState, 'rivalDefinitions' | 'graph'>): (id: string) => string | undefined {
+  const byId = new Map((state.rivalDefinitions ?? []).map(r => [r.id, r.name]));
+  return (id) => byId.get(id) || state.graph.getNode(id)?.name || undefined;
+}
+
 function nameOf(graph: WorldGraph, id: string): string {
   const n = graph.getNode(id);
   return (typeof n?.name === 'string' && n.name) || (typeof n?.properties.name === 'string' && (n.properties.name as string)) || id;
@@ -401,10 +410,17 @@ function formatList(names: string[]): string {
   return `${shown.slice(0, -1).join(', ')} and ${shown[shown.length - 1]}`;
 }
 
-/** Today's chronicle lines from the ledger (pure over the ledger and names). */
+/**
+ * Today's chronicle lines from the ledger (pure over the ledger and names).
+ *
+ * THR-2185: `rivalName` names a rival from `state.rivalDefinitions` — rivals are run
+ * state, not graph nodes, so `name` alone printed the raw id ("actor_rival_1's hand").
+ * A rival it cannot name gets the untended line, never an id (Law 14).
+ */
 export function composeDominionChronicle(
   ledger: Pick<DominionLedger, 'dayDrops' | 'dayRises' | 'daySpheres'>,
   name: (id: string) => string,
+  rivalName: (id: string) => string | undefined = () => undefined,
 ): string[] {
   const lines: string[] = [];
   // One drop line a day (Law 49): only places that were the god's (Touched or better).
@@ -416,9 +432,10 @@ export function composeDominionChronicle(
   const real = [...drops.values()].filter(d => DOMINION_BAND_RANK[d.to] < DOMINION_BAND_RANK[d.from]);
   if (real.length === 1) {
     const d = real[0];
-    lines.push(d.cause === 'rival' && d.rivalId
+    const raider = d.cause === 'rival' && d.rivalId ? rivalName(d.rivalId) : undefined;
+    lines.push(raider
       ? DOMINION_CHRONICLE_TEMPLATES.dropRaid
-        .replace('{rival}', name(d.rivalId)).replace('{place}', name(d.placeId)).replace('{to}', DOMINION_BAND_WORDS[d.to])
+        .replace('{rival}', raider).replace('{place}', name(d.placeId)).replace('{to}', DOMINION_BAND_WORDS[d.to])
       : DOMINION_CHRONICLE_TEMPLATES.dropUntended
         .replace('{place}', name(d.placeId)).replace('{from}', DOMINION_BAND_WORDS[d.from]).replace('{to}', DOMINION_BAND_WORDS[d.to]));
   } else if (real.length > 1) {
@@ -490,7 +507,7 @@ export function afterSpherePressure(state: GameState): Partial<GameState> {
 
     let next: DominionLedger = { ...ledger, bands, causes: {}, rivals: {}, dayDrops, dayRises, godScores, daySpheres };
     if (state.tick > 0 && state.tick % TICKS_PER_DAY === 0) {
-      const lines = composeDominionChronicle(next, id => nameOf(graph, id));
+      const lines = composeDominionChronicle(next, id => nameOf(graph, id), rivalNameLookup(state));
       lines.forEach((message, i) => events.push({
         id: `dominion_evt_${state.tick}_${i}`,
         tick: state.tick,

@@ -19,6 +19,7 @@ import { enableTracing, clearTraces, getTraces } from '../traceBuffer';
 import { WorldGraph } from '../graph';
 import type { GameState } from '../../types/gameState';
 import { RIVAL_GRACE_TICKS_AFTER_BOND } from '../../data/game-config';
+import { RIVAL_HOSTILITY_ON_COUNTER, RIVAL_SCHEME_HOSTILITY_CEILING } from '../../data/rival-scheme-config';
 import type { RivalDefinition, RivalState } from '../../types/rival';
 import type { GraphNode } from '../../types/graph';
 import { buildRivalInfluenceMarkers, buildRivalSchemeTargets } from '../rivalInfluenceMarkers';
@@ -286,6 +287,37 @@ describe('phaseRivalActions — scheme lifecycle', () => {
     // Scheme completed (all four phases fired).
     const completed = getTraces().filter((t) => t.category === 'rival.scheme_completed');
     expect(completed.length).toBeGreaterThanOrEqual(1);
+
+    // THR-2185: scheme beats raise the temper with a 'scheme' cause, never past the ceiling.
+    const beatRises = getTraces()
+      .filter((t) => t.category === 'rival.hostility_changed')
+      .map((t) => t as unknown as { cause: string; to: number })
+      .filter((r) => r.cause === 'scheme');
+    expect(beatRises.length).toBeGreaterThanOrEqual(1);
+    for (const r of beatRises) expect(r.to).toBeLessThanOrEqual(RIVAL_SCHEME_HOSTILITY_CEILING + 1e-9);
+    expect(['scheme', 'countered']).toContain(state.rivalStates[0].hostilityCause?.kind);
+  });
+
+  it('THR-2185: a rival\'s own schemes never make it wrathful — only the god breaking one does', () => {
+    const state = seedSchemeState();
+    // Start just under the ceiling: the next beats must stop at it.
+    state.rivalStates = state.rivalStates.map((s) => ({ ...s, hostilityToPlayer: RIVAL_SCHEME_HOSTILITY_CEILING - 0.01 }));
+    for (let i = 0; i < 100; i++) runTick(state);
+    const countered = getTraces().some((t) => t.category === 'rival.hostility_changed'
+      && (t as unknown as { cause: string }).cause === 'countered');
+    expect(countered).toBe(false);
+    expect(state.rivalStates[0].hostilityToPlayer).toBeLessThanOrEqual(RIVAL_SCHEME_HOSTILITY_CEILING + 1e-9);
+    expect(state.rivalStates[0].hostilityCause?.kind).toBe('scheme');
+  });
+
+  it('THR-2185: a wrathful rival\'s counter cause survives its later scheme beats', () => {
+    const state = seedSchemeState();
+    const countered = { kind: 'countered' as const, placeId: 'loc-1', tick: state.tick };
+    state.rivalStates = state.rivalStates.map((s) => ({ ...s, hostilityToPlayer: 0.9, hostilityCause: countered }));
+    // Under a day of ticks: no cooling yet, so only scheme beats touch the temper.
+    for (let i = 0; i < 11; i++) runTick(state);
+    expect(state.rivalStates[0].hostilityToPlayer).toBeCloseTo(0.9);
+    expect(state.rivalStates[0].hostilityCause).toEqual(countered);
   });
 
   it('materializes without a rival graph node: no move failure, pressure pushed, scheme attributable (THR-829)', () => {
@@ -352,14 +384,17 @@ describe('phaseRivalActions — scheme lifecycle', () => {
     expect(sawSchemeMarker).toBe(true);
   });
 
-  it('emits a launch toast + sphere pressure without a seeded scheme (probe path stays alive)', () => {
+  it('the probe path stays alive without a seeded scheme, and is silent when nothing lands (THR-2185)', () => {
     const rival = makeRival('actor_rival_2', 'aggressive');
     const rs = { ...makeRivalState('actor_rival_2'), ticksSinceAction: 20 };
     const state = makeState({ rivalDefinitions: [rival], rivalStates: [rs] });
     // No location → territorial (tier-gated anyway) can't materialize; probe fallback fires.
     runTick(state);
-    // A rival_action event is emitted on the action tick.
-    expect(state.tickEvents.some((e) => e.type === 'rival_action')).toBe(true);
+    // THR-2185: the god has no turf here, so the probe lands nothing and raises no toast.
+    // It still ran: the action counter moved and the clock reset.
+    expect(state.tickEvents.some((e) => e.type === 'rival_action')).toBe(false);
+    expect(state.rivalStates[0].interventionCount).toBeGreaterThan(rs.interventionCount);
+    expect(state.rivalStates[0].ticksSinceAction).toBe(0);
   });
 });
 
@@ -401,6 +436,19 @@ describe('phaseRivalActions — counter-play', () => {
 
     // A cool-failure chronicle beat was pushed.
     expect(state.chronicleEntries.some((e) => e.title.includes('unravels'))).toBe(true);
+
+    // THR-2185: each counter angered the rival by RIVAL_HOSTILITY_ON_COUNTER, with its cause.
+    const rises = getTraces()
+      .filter((t) => t.category === 'rival.hostility_changed')
+      .map((t) => t as unknown as { cause: string; from: number; to: number; placeId?: string });
+    const counterRises = rises.filter((r) => r.cause === 'countered');
+    expect(counterRises.length).toBeGreaterThanOrEqual(2);
+    for (const r of counterRises) {
+      expect(r.to - r.from).toBeCloseTo(RIVAL_HOSTILITY_ON_COUNTER);
+      expect(r.placeId).toBe('loc-1');
+    }
+    expect(state.rivalStates[0].hostilityCause?.kind).toBe('countered');
+    expect(state.rivalStates[0].hostilityCause?.placeId).toBe('loc-1');
   });
 });
 

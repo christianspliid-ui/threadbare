@@ -515,9 +515,19 @@ describe('THR-1748 Dominion — chronicle', () => {
       .toEqual(['Hollowmere has slipped from Held to Touched. No one tends it.']);
   });
 
+  // THR-2185: rivals are run state, not graph nodes — the rival's name comes from its own
+  // lookup (`rivalDefinitions`), never the place-name lookup, which printed the raw id.
+  const rivalName = (id: string) => ({ r: 'The Pale Weaver' } as Record<string, string>)[id];
+
   it('one raid drop names the rival', () => {
-    expect(composeDominionChronicle({ dayDrops: [{ placeId: 'a', from: 'held', to: 'touched', cause: 'rival', rivalId: 'r' }], dayRises: {}, daySpheres: [] }, name))
+    expect(composeDominionChronicle({ dayDrops: [{ placeId: 'a', from: 'held', to: 'touched', cause: 'rival', rivalId: 'r' }], dayRises: {}, daySpheres: [] }, name, rivalName))
       .toEqual(["The Pale Weaver's hand has pressed on Hollowmere. It is Touched now."]);
+  });
+
+  it('THR-2185: a raid by a rival it cannot name reads as the untended line, never the id', () => {
+    const lines = composeDominionChronicle({ dayDrops: [{ placeId: 'a', from: 'held', to: 'touched', cause: 'rival', rivalId: 'actor_rival_9' }], dayRises: {}, daySpheres: [] }, name, rivalName);
+    expect(lines).toEqual(['Hollowmere has slipped from Held to Touched. No one tends it.']);
+    expect(lines.join(' ')).not.toContain('actor_rival_');
   });
 
   it('several drops coalesce into one line a day', () => {

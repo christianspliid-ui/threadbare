@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 114 |
-| **Total** | **350** |
+| 🔵 UNVERIFIED-OK | 117 |
+| **Total** | **353** |
 
 ## Contracts by producing subsystem
 
@@ -405,7 +405,10 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `rival-definitions-name-dominion-drops` | The Chronicle names the rival (THR-2185). Rivals are run state, not graph nodes, so a raid's day line and the hex drop badge name the rival from `state.rivalDefinitions` (`rivalNameLookup` in `phaseDominion.ts`; `diffDominionDrops` takes the same lookup from `updateDominionDrops`). A rival it cannot name gets the untended line, never the raw id. Read only. | function: `rivalNameLookup`, `rivalNameOf` | Spheres & Quintessence | 🔵 UNVERIFIED-OK | — |
 | `rival-presses-god-turf` | The opposing dominion pushes back (THR-1748, THR-1763). Rivals take their primary sphere from the opposites of the god's buy (`opposingSpheresOfBuy`); the probe lands on one of the god's Touched-or-better places (untended drawn 3 : 1), throttled to one landing a day per `DOMINION_RAID_PLACES_PER_DAILY_BURST` such places, and schemes prefer the same turf. Before this the probe aimed at the rival's own id, which is not a node, so it never landed. A tended place absorbs one burst in `phaseSpherePressure` (`absorbTendedRaid`). | function: `raidAllowanceLeft`, `recordRaidLanding`, `absorbTendedRaid` | Spheres & Quintessence | 🔵 UNVERIFIED-OK | — |
+| `rival-temper-cause-feeds-rival-panel` | A rival's temper says why (THR-2185). `phaseRivalActions` writes `RivalState.hostilityCause` on each rise (a scheme beat, or the god breaking a scheme, with the target place) and `lastPressed` when a probe lands (`landRivalProbe` now returns the landing; `rivalProbeMove` raises its toast only then, keeping the old flavour draw so the seeded stream is unchanged), and cools temper once a quiet day to `RIVAL_HOSTILITY_START`. The Rival gods panel reads both through `engine/views/rivalEntry.ts`: the cause sentence after the temper word, the last place pressed as a link, and the answer line. Every change emits `rival.hostility_changed`. | node-prop: `hostilityCause`, `lastPressed` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
+| `rival-toast-location-ref-opens-place` | A rival toast opens the place (THR-2185). Every `rival_action` toast with a target (a landing, a scheme launch, a drain, a desecration, a crack) carries `refs: [{ kind: 'location' }]`, and `deriveNavigationTarget` opens that place, whose Act block lists the god's cards for it. | event: `rival_action` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `starve-faithful-drains-faith` | The rival starves your faithful (THR-1935 S1). The economic scheme's starve-faithful crack drops a faithful town's sanctity by STARVE_FAITHFUL_SANCTITY_DRAIN 0.25 (trace prayer.faith_starved) and adds its chronicle line; the lapse rule then applies. A target with no faithful town changes nothing new. | function: `starveFaithful` | Essence & Divine Economy | 🟢 LIVE | — |
 
 ### Ruins, Clues & Delves
@@ -2579,10 +2582,10 @@ exit
 - **Producer → Consumer:** Companies & Group Travel → Attention, Chronicle & Narrative
 - **UL terms:** *Company*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 103 total — 1 write, 2 read, 100 unclassified
+- **Production hits:** 105 total — 1 write, 2 read, 102 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/views/subjects/personRows.ts`
-- **Other hits:** `src/components/Game/frame/frameDebugState.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/listDressing.ts` +95 more
+- **Other hits:** `src/components/Game/frame/frameDebugState.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/listDressing.ts` +97 more
 - **Verdict:** Verified 2026-07-25: Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).
 
 ### `guild-rank-gates-senior-content` — 🟢 LIVE
@@ -3484,10 +3487,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Chapter*, *Chronicle*
 - **Module:** `src/engine/restlessRoad.ts`
-- **Production hits:** 46 total — 2 write, 3 read, 41 unclassified
+- **Production hits:** 48 total — 2 write, 3 read, 43 unclassified
 - **Write sites:** `src/engine/phaseAgentDecision.ts`, `src/engine/restlessRoad.ts`
 - **Read sites:** `src/components/Game/ChronicleEntryCard.tsx`, `src/debug-bridge.ts`, `src/engine/orchestrator.ts`
-- **Other hits:** `src/components/Codex/codexConcepts.ts`, `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/encounter-stage/OpponentHeader.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/PastLineText.tsx` +36 more
+- **Other hits:** `src/components/Codex/codexConcepts.ts`, `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/encounter-stage/OpponentHeader.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/PastLineText.tsx` +38 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `reunion-reads-the-edges-not-the-roster` — 🟢 LIVE
@@ -3569,6 +3572,16 @@ exit
 - **Other hits:** `src/engine/meetingEncounter.ts`, `src/engine/threadingRiteQueue.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
+### `rival-definitions-name-dominion-drops` — 🔵 UNVERIFIED-OK
+
+- **Intent:** The Chronicle names the rival (THR-2185). Rivals are run state, not graph nodes, so a raid's day line and the hex drop badge name the rival from `state.rivalDefinitions` (`rivalNameLookup` in `phaseDominion.ts`; `diffDominionDrops` takes the same lookup from `updateDominionDrops`). A rival it cannot name gets the untended line, never the raw id. Read only.
+- **Producer → Consumer:** Rival Gods & Schemes → Spheres & Quintessence
+- **UL terms:** *Dominion*
+- **Production hits:** 2 total — 1 write, 1 read, 0 unclassified
+- **Write sites:** `src/engine/phaseDominion.ts`
+- **Read sites:** `src/engine/dominionProjection.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `rival-presses-god-turf` — 🔵 UNVERIFIED-OK
 
 - **Intent:** The opposing dominion pushes back (THR-1748, THR-1763). Rivals take their primary sphere from the opposites of the god's buy (`opposingSpheresOfBuy`); the probe lands on one of the god's Touched-or-better places (untended drawn 3 : 1), throttled to one landing a day per `DOMINION_RAID_PLACES_PER_DAILY_BURST` such places, and schemes prefer the same turf. Before this the probe aimed at the rival's own id, which is not a node, so it never landed. A tended place absorbs one burst in `phaseSpherePressure` (`absorbTendedRaid`).
@@ -3577,6 +3590,28 @@ exit
 - **Production hits:** 3 total — 2 write, 1 read, 0 unclassified
 - **Write sites:** `src/engine/phaseDominion.ts`, `src/engine/phaseSpherePressure.ts`
 - **Read sites:** `src/engine/orchestrator.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `rival-temper-cause-feeds-rival-panel` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A rival's temper says why (THR-2185). `phaseRivalActions` writes `RivalState.hostilityCause` on each rise (a scheme beat, or the god breaking a scheme, with the target place) and `lastPressed` when a probe lands (`landRivalProbe` now returns the landing; `rivalProbeMove` raises its toast only then, keeping the old flavour draw so the seeded stream is unchanged), and cools temper once a quiet day to `RIVAL_HOSTILITY_START`. The Rival gods panel reads both through `engine/views/rivalEntry.ts`: the cause sentence after the temper word, the last place pressed as a link, and the answer line. Every change emits `rival.hostility_changed`.
+- **Producer → Consumer:** Rival Gods & Schemes → Attention, Chronicle & Narrative
+- **UL terms:** *Dominion*
+- **Production hits:** 5 total — 1 write, 1 read, 3 unclassified
+- **Write sites:** `src/engine/orchestrator.ts`
+- **Read sites:** `src/engine/views/rivalEntry.ts`
+- **Other hits:** `src/debug-bridge.ts`, `src/engine/rival.ts`, `src/types/rival.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `rival-toast-location-ref-opens-place` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A rival toast opens the place (THR-2185). Every `rival_action` toast with a target (a landing, a scheme launch, a drain, a desecration, a crack) carries `refs: [{ kind: 'location' }]`, and `deriveNavigationTarget` opens that place, whose Act block lists the god's cards for it.
+- **Producer → Consumer:** Rival Gods & Schemes → Attention, Chronicle & Narrative
+- **UL terms:** *Dominion*
+- **Production hits:** 7 total — 1 write, 1 read, 5 unclassified
+- **Write sites:** `src/engine/orchestrator.ts`
+- **Read sites:** `src/engine/notificationRouter.ts`
+- **Other hits:** `src/data/uiColorPalette.ts`, `src/engine/notableAgendas.ts`, `src/engine/notificationThreadingGate.ts`, `src/types/gameState.ts`, `src/types/worldSoul.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `route-event-seed-carries-lane` — 🔵 UNVERIFIED-OK

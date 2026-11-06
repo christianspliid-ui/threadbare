@@ -254,6 +254,8 @@ export function diffDominionDrops(
   ledger: Pick<DominionLedger, 'bands' | 'dayDrops' | 'lastDayDrops'>,
   tick: number,
   existing: readonly DominionDropBadge[],
+  /** THR-2185: names a rival from `rivalDefinitions` (rivals are not graph nodes). */
+  rivalName?: (id: string) => string | undefined,
 ): DominionDropBadge[] {
   const live = existing.filter(d => d.untilTick > tick);
   if (!prevBands) return live;
@@ -272,7 +274,7 @@ export function diffDominionDrops(
       untilTick: tick + DOMINION_DROP_BADGE_TICKS,
       // Today's drops first; on a day-boundary tick the chronicle has already moved
       // them to `lastDayDrops`.
-      line: dropLine(graph, placeId, from, to, [...(ledger.lastDayDrops ?? []), ...ledger.dayDrops]),
+      line: dropLine(graph, placeId, from, to, [...(ledger.lastDayDrops ?? []), ...ledger.dayDrops], rivalName),
     });
   }
   return [...byPlace.values()].sort((a, b) => (a.placeId < b.placeId ? -1 : 1));
@@ -284,10 +286,13 @@ function dropLine(
   from: DominionBand,
   to: DominionBand,
   dayDrops: DominionLedger['dayDrops'],
+  rivalNameOf?: (id: string) => string | undefined,
 ): string {
   const name = graph.getNode(placeId)?.name || 'A place of yours';
   const drop = [...dayDrops].reverse().find(d => d.placeId === placeId);
-  const rivalName = drop?.cause === 'rival' && drop.rivalId ? graph.getNode(drop.rivalId)?.name : undefined;
+  const rivalName = drop?.cause === 'rival' && drop.rivalId
+    ? (rivalNameOf?.(drop.rivalId) ?? graph.getNode(drop.rivalId)?.name)
+    : undefined;
   if (rivalName) {
     return DOMINION_CHRONICLE_TEMPLATES.dropRaid
       .replace('{rival}', rivalName).replace('{place}', name).replace('{to}', DOMINION_BAND_WORDS[to]);

@@ -13,6 +13,7 @@ import { SimulationControls } from '../SimulationControls';
 import { DoomBar } from '../DoomBar';
 import { OmenIndicator } from '../OmenIndicator';
 import { RivalsButton } from '../RivalsButton';
+import { rivalPlaceNameLookup } from '../../../engine/views/rivalEntry';
 import { NotablesButton } from '../NotablesButton';
 import { SettingsPanel } from '../SettingsPanel';
 import { Icon } from '../../shared/Icon';
@@ -388,6 +389,8 @@ export function GameViewTopBar({
         definitions={gameState.rivalDefinitions}
         states={gameState.rivalStates}
         onOpenChange={onRivalsOpenChange}
+        tick={gameState.tick}
+        placeName={rivalPlaceNameLookup(gameState.graph)}
       />
     ),
     notables: () => <div {...ring('notables')}><NotablesButton gameState={gameState} onOpenChange={onNotablesOpenChange} /></div>,

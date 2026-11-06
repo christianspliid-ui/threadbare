@@ -1847,8 +1847,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     [gameState.graph, gameState.ascendantId, runtime.worldVersion],
   );
   const dominionDrops = useMemo(
-    () => (gameState.ascendantId ? updateDominionDrops(runtime, gameState.graph, gameState.ascendantId, gameState.tick) : []),
-    [runtime, gameState.graph, gameState.ascendantId, gameState.tick],
+    () => (gameState.ascendantId ? updateDominionDrops(runtime, gameState.graph, gameState.ascendantId, gameState.tick, gameState.rivalDefinitions) : []),
+    [runtime, gameState.graph, gameState.ascendantId, gameState.tick, gameState.rivalDefinitions],
   );
   const dominionProjectionNow = useMemo(() => {
     if (!dominionLensOn || !gameState.ascendantId) return null;

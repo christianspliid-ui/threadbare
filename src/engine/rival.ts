@@ -29,7 +29,10 @@ import {
   RIVAL_ESCALATION_DOOM_WEIGHT,
   RIVAL_ESCALATION_ADVANCEMENT_WEIGHT,
   RIVAL_SCHEME_STOCK_SCAN_CAP,
+  RIVAL_HOSTILITY_START,
+  RIVAL_HOSTILITY_COOL_PER_DAY,
 } from '../data/rival-scheme-config';
+import { TICKS_PER_DAY } from '../data/attention-constants';
 import { readResources } from './resourceEconomy';
 import { humanizePhaseId } from './phaseComposition';
 import {
@@ -171,9 +174,26 @@ export function createRivalState(rivalId: string): RivalState {
     interventionCount: 0,
     agentsControlled: 0,
     regionsInfluenced: [],
-    hostilityToPlayer: 0.5,
+    // THR-2185: a new rival reads "hostile" — rival gods are, before they have done anything.
+    hostilityToPlayer: RIVAL_HOSTILITY_START,
     ticksSinceAction: 0,
   };
+}
+
+/**
+ * THR-2185 — the daily cooling of a rival's temper. On a day with no rise (no
+ * `hostilityCause` written in the last `TICKS_PER_DAY` ticks) temper falls by
+ * `RIVAL_HOSTILITY_COOL_PER_DAY`, never below `RIVAL_HOSTILITY_START`: a rival god
+ * is never a friend. A temper already at or below the floor is left alone (an old save
+ * never rises by cooling). Pure; returns the same object when nothing changes.
+ */
+export function coolRivalHostility(state: RivalState, tick: number): RivalState {
+  const h = state.hostilityToPlayer;
+  if (!Number.isFinite(h) || h <= RIVAL_HOSTILITY_START) return state;
+  const rose = state.hostilityCause && tick - state.hostilityCause.tick < TICKS_PER_DAY;
+  if (rose) return state;
+  const next = Math.max(RIVAL_HOSTILITY_START, h - RIVAL_HOSTILITY_COOL_PER_DAY);
+  return next === h ? state : { ...state, hostilityToPlayer: next };
 }
 
 // ─── Rival AI Decision Loop ──────────────────────────────────────

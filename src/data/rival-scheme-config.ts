@@ -54,6 +54,32 @@ export const RIVAL_ESCALATION_ADVANCEMENT_WEIGHT = 0.4;
 /** Hostility bump applied to a rival each time one of its scheme moves fires. */
 export const RIVAL_SCHEME_HOSTILITY_PER_MOVE = 0.03;
 
+// ─── Temper (THR-2185) ─────────────────────────────────────────────
+// A rival's temper toward the god (`hostilityToPlayer`) starts at "hostile",
+// rises with a cause, and cools back toward its start when nothing happens.
+
+/** A new rival's temper ("hostile" on the `hostilityLabel` ladder), and the cooling floor. */
+export const RIVAL_HOSTILITY_START = 0.3;
+
+/**
+ * The most a rival's own scheme beats can raise its temper: "aggressive", just short of
+ * "wrathful" (0.75) and of the `> 0.7` line `selectRivalAction` reads. Only the god
+ * breaking a scheme (`RIVAL_HOSTILITY_ON_COUNTER`) carries a rival past it, so a wrathful
+ * rival always has the god's act behind it. Measured (THR-2185, warm-300 on
+ * `?seeded&size=medium`): a rival runs several schemes in a warm-up and a beat lands about
+ * once a day, so uncapped beats ratcheted every rival to 1.0 and cooling never got a quiet day.
+ */
+export const RIVAL_SCHEME_HOSTILITY_CEILING = 0.7;
+
+/** Rise when the god breaks (stalls or fails) one of the rival's schemes. */
+export const RIVAL_HOSTILITY_ON_COUNTER = 0.08;
+
+/** Daily cooling on a day with no rise, floored at `RIVAL_HOSTILITY_START`. */
+export const RIVAL_HOSTILITY_COOL_PER_DAY = 0.02;
+
+/** Days without a rise before the panel's cause line says "and cooling". */
+export const RIVAL_HOSTILITY_CAUSE_STALE_DAYS = 3;
+
 /** Tier index (0-based, 0..RIVAL_MAX_ESCALATION_TIER) at or above which the more
  *  ambitious scheme families (territorial siege beats) unlock. */
 export const RIVAL_SCHEME_AMBITIOUS_FAMILY_MIN_TIER = 1;
