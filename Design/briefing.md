@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-06 17:58 local (16:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-06 18:58 local (17:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -34,12 +34,6 @@ From the design lane's [09:00 UTC run](https://github.com/christianspliid-ui/thr
 - Same ticket — the faction ladder's top word changes from "Formidable" to "Foremost". "Formidable" was also the middle of a mortal's Iron ladder, so one word named two places.
 - Same ticket — no meter, pips or "3 of 5". A small meter would be a new kind of glyph, and that is your call. Say so if you want one.
 
-From the design lane's [05:18 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-06b.md). Nobody builds on this before 17:30 UTC on 6 November.
-
-- [The mortal's own mid-game is behind a button nobody presses](https://linear.app/threadbare/issue/THR-1859) — "See the work →" on a work moment now really opens the mortal's sheet on the Journey tab, with "The work" as the first row. Before, it opened the sheet's front page, which read as "Kael's profile again". Build ticket: ["See the work" lands on the work](https://linear.app/threadbare/issue/THR-2186).
-- Same ticket — on the sheet's front page, the "Their work" and "What they want most" hovers stop saying "Opens their sheet on the Journey tab" (you are already on the sheet, and nothing opens). They now end *"The Journey tab tells it in full."*
-- Same ticket — the work gets no page of its own. If you want a mortal's work to have its own page, that is a new slice.
-
 Say "veto <title>" to reverse any of these.
 
 ## This week's screens
@@ -48,20 +42,19 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: nothing being built right now, three ready and each waiting out its veto window.**
-- **Just shipped:** [a rival's move has a place and an answer](https://linear.app/threadbare/issue/THR-2185/a-rivals-move-has-a-place-and-an-answer-the-raid-toast-names-the-place) (THR-2185) merged via [#2769](https://github.com/christianspliid-ui/threadbare/pull/2769) at 15:46 UTC and is live.
-- **Ready at 17:30 UTC:** ["See the work" lands on the work](https://linear.app/threadbare/issue/THR-2186/see-the-work-lands-on-the-work-the-inspector-opens-on-the-tab-a-link) (THR-2186).
+**Healthy: nothing being built right now, two ready and each waiting out its veto window.**
+- **Just shipped:** ["See the work" lands on the work](https://linear.app/threadbare/issue/THR-2186/see-the-work-lands-on-the-work-the-inspector-opens-on-the-tab-a-link) (THR-2186) merged via [#2770](https://github.com/christianspliid-ui/threadbare/pull/2770) and is live.
 - **Ready at 20:59 UTC:** [rank words show their ladder](https://linear.app/threadbare/issue/THR-2182/rank-words-show-their-ladder-a-reach-tile-says-where-its-word-sits-and) (THR-2182).
 - **Ready at 23:50 UTC:** [your cards say how they landed](https://linear.app/threadbare/issue/THR-2187/your-cards-say-how-they-landed-each-card-the-god-played-adds-its-own) (THR-2187).
 
 Items for agents, not you:
-- **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
+- **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq) (also checked out in local worktree `admiring-wescoff-384eb1`), but the ticket is still in Idea, so no builder run will take it.
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (17 days; In Dev since 15 Oct, 22 days; last touched 1 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching. No pushed branch and no local worktree is named for it (checked this run).
-- **The weekly review ran at 16:01 UTC** ([report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-11-06.md)): nothing for you, no tickets filed. Merges slowed this week because ready tickets were waiting out veto windows, not because anything broke.
+- **The weekly review ran at 16:01 UTC** ([report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-11-06.md)): nothing for you, no tickets filed.
 
 ## Health
 
-- The live site serves the latest commit on main (5cd3c9b7, the THR-2185 merge). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time, and the worktree cleaner ran at 17:47 local. The builder is not stalled: its runs at 16:11, 16:31 and 16:51 UTC claimed nothing because every ready ticket is inside its veto window (the first opens at 17:30 UTC).
-- Engine speed: 136 ms/tick steady, 8% below the 7-day median (147).
+- The live site serves the latest commit on main (79a90972, the THR-2186 merge). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time, and the worktree cleaner ran at 18:54 local. The builder is not stalled: its 17:31 UTC run shipped THR-2186, and the 17:50 run found nothing claimable because both ready tickets are inside their veto windows.
+- Engine speed: 146 ms/tick steady, level with the 7-day median (147).
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask.
-- The home-folder copy of the repo is 135 commits behind main; its newest commit is from 4 Nov 11:02 local, about 55 hours ago. It has one edited tracked file (`.claude/settings.local.json`), which may be what stops the mirror's sync from fast-forwarding. This is the tenth hour in a row this brief has flagged it, so an agent should check the mirror's sync. Nothing is lost, because the lanes work from fresh copies of main.
+- The home-folder copy of the repo is 138 commits behind main; its newest commit is from 4 Nov 11:02 local, about 56 hours ago. It has one edited tracked file (`.claude/settings.local.json`), which may be what stops the mirror's sync from fast-forwarding. This is the eleventh hour in a row this brief has flagged it, so an agent should check the mirror's sync. Nothing is lost, because the lanes work from fresh copies of main.
