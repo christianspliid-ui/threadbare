@@ -134,17 +134,24 @@ describe('godRail view model', () => {
     expect(buildHandCard(makeState(), tpl('divine.self.focus'), 'spirit').priceTooltip).not.toContain('A rarer target costs more.');
   });
 
-  it('every folded-row summary fits GOD_RAIL_SUMMARY_MAX_CH, falling back to the tier word past it', () => {
+  it('every folded-row summary fits GOD_RAIL_SUMMARY_MAX_CH, stepping down its list past it', () => {
     for (const [reach, rungs] of Object.entries(ASCENDANT_REACH_REGISTER)) {
       const label = REACH_COPY[reach as keyof typeof REACH_COPY]?.label ?? reach;
       for (const rung of rungs.tierWords) {
         const s = reachSummary(label, rung);
         expect(s.length, `${label} · ${rung}`).toBeLessThanOrEqual(GOD_RAIL_SUMMARY_MAX_CH);
+        // THR-2183 — every real Reach×tier pair keeps its reach name.
+        expect(s, `${label} · ${rung}`).toContain(label);
       }
     }
+    expect(reachSummary('Eye', 'Blinkered')).toBe('Main: Eye · Blinkered');
     expect(reachSummary('Eye', 'Before It Happens')).toBe('Eye · Before It Happens');
     expect(reachSummary('A Very Long Reach Name', 'Thinning')).toBe('Thinning');
-    for (const word of Object.values(MANDATE_TREND_WORD)) expect(word.length).toBeLessThanOrEqual(GOD_RAIL_SUMMARY_MAX_CH);
+    for (const [trend, word] of Object.entries(MANDATE_TREND_WORD)) {
+      const s = mandateSummary({ trend } as unknown as Parameters<typeof mandateSummary>[0]);
+      expect(s).toBe(`Goal · ${word}`);
+      expect(s.length).toBeLessThanOrEqual(GOD_RAIL_SUMMARY_MAX_CH);
+    }
     expect(mandateSummary(null)).toBe('');
   });
 
@@ -153,8 +160,10 @@ describe('godRail view model', () => {
     expect(vm.rows.covenants.renders).toBe(false);
     expect(vm.rows.hooks.renders).toBe(false);
     const withHooks = buildGodRail(makeState(), { ...ARGS, hookCount: 3 });
-    expect(withHooks.rows.hooks).toMatchObject({ renders: true, summary: '3 on you' });
-    expect(buildGodRail(makeState(), { ...ARGS, hookCount: 1 }).rows.hooks.summary).toBe('1 on you');
+    expect(withHooks.rows.hooks).toMatchObject({ renders: true, summary: '3 unfinished' });
+    expect(buildGodRail(makeState(), { ...ARGS, hookCount: 1 }).rows.hooks.summary).toBe('1 unfinished');
+    expect(vm.rows.mandate.summary === '' || vm.rows.mandate.summary.startsWith('Goal · ')).toBe(true);
+    expect(vm.rows.reaches.summary === '' || vm.rows.reaches.summary.length <= GOD_RAIL_SUMMARY_MAX_CH).toBe(true);
   });
 
   it('Attention carries a word, a fill for the bar, and the balance for the meter', () => {

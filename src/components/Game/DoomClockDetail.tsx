@@ -199,18 +199,23 @@ export function DoomClockDetail({
               {journeyLabel && (
                 <StatRow label="The First" value={journeyLabel} color={color} />
               )}
-              <StatRow
-                label="Counter-omens"
-                tooltipId="ui.counter_omens"
-                value={`${state.counterOmens}`}
-                color={state.counterOmens > 0 ? '#22c55e' : undefined}
-              />
-              <StatRow
-                label="Doom debt"
-                tooltipId="ui.doom_debt"
-                value={state.nextEscalationSeverityModifier > 0 ? `+${state.nextEscalationSeverityModifier.toFixed(1)}` : '0'}
-                color={state.nextEscalationSeverityModifier > 0 ? '#f97316' : undefined}
-              />
+              {/* THR-2183 — a zero modifier is not news: both rows hide at 0, as Speed modifier does at ×1.00. */}
+              {state.counterOmens > 0 && (
+                <StatRow
+                  label="Counter-omens"
+                  tooltipId="ui.counter_omens"
+                  value={`${state.counterOmens}`}
+                  color="#22c55e"
+                />
+              )}
+              {state.nextEscalationSeverityModifier > 0 && (
+                <StatRow
+                  label="Doom debt"
+                  tooltipId="ui.doom_debt"
+                  value={`+${state.nextEscalationSeverityModifier.toFixed(1)}`}
+                  color="#f97316"
+                />
+              )}
               {state.tickModifier !== 1.0 && (
                 <StatRow
                   label="Speed modifier"

@@ -325,7 +325,12 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   },
   'ui.hooks': {
     label: 'Hooks',
-    desc: 'Marks, clues and vows that tie you to something unfinished. Each one points at a thread you can still pull.',
+    desc: 'Marks, clues and vows that tie you to something unfinished. Each one points at something you can still finish.',
+  },
+  // THR-2183 — the god rail's Mandate row had no hover (Law 1).
+  'ui.mandate': {
+    label: 'Mandate',
+    desc: "What you are working toward, racing the doom. Keep a checkpoint well and you blunt the doom's next blow.",
   },
   // THR-1814 — the TIME readout while something holds the clock.
   'ui.clock_held': {

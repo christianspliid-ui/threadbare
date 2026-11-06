@@ -73,6 +73,8 @@ The god rail uses the docked Inspector's density for every block it shares (THR-
 
 A hand card is one line, name then price, the price on the trailing edge. The hand keeps a floor of `GOD_RAIL_HAND_MIN_ROWS` card rows: the folded rows give way first and scroll inside their own block (THR-2177).
 
+A folded row's summary names what it counts in words, and an opened row starts with its definition line from the row's hover entry (THR-2175).
+
 ### Inspector
 
 | Property | Value | Source |

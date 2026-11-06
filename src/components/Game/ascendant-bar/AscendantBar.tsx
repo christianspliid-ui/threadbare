@@ -31,6 +31,15 @@ import { GOD_RAIL_COMPONENTS, type GodRailBag } from '../frame/godRailComponents
 import type { HandRest } from '../frame/HandSection';
 import { Tooltip } from '../../shared/Tooltip';
 import { Icon } from '../../shared/Icon';
+import { useFirstUseCaptionVisible } from '../../shared/FirstUseCaption';
+import { GOD_RAIL_DEFINITION_LINE_STYLE, godRailDefinitionLine } from '../frame/godRailDefinitions';
+
+/**
+ * THR-2183 — the first-use caption each folded row draws inside its own body. While it
+ * shows, the row's definition line steps aside so the same idea never appears twice.
+ * Only the Reaches body renders captions inside the row (`godRailComponents.tsx`).
+ */
+const FOLDED_ROW_OWN_CAPTION: Partial<Record<GodRailSectionId, string>> = { reaches: 'reaches' };
 
 interface AscendantBarProps {
   gameState: GameState;
@@ -109,6 +118,11 @@ function FoldedRow({
   onToggle: () => void;
   children: ReactElement | null;
 }) {
+  const ownCaption = FOLDED_ROW_OWN_CAPTION[def.id];
+  const ownCaptionShowing = useFirstUseCaptionVisible(ownCaption ?? '');
+  // THR-2183 — the opened row's definition line: its hover's first sentence.
+  const definition = useMemo(() => godRailDefinitionLine(def.tooltipId), [def.tooltipId]);
+  const showDefinition = definition !== null && !(ownCaption && ownCaptionShowing);
   // THR-2099 (R2) — the row's carved shape before its word, in the word's colour.
   const label = (
     <span style={{ fontWeight: 700, color: 'var(--text-tertiary)', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
@@ -120,6 +134,11 @@ function FoldedRow({
     <div data-god-rail-section={def.id} data-place="folded" data-open={open ? 'true' : 'false'} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       {open && children && (
         <div data-testid={`god-rail-row-body-${def.id}`} style={{ maxHeight: `${GOD_RAIL_OPEN_ROW_MAX_VH}vh`, overflowY: 'auto', minHeight: 0 }}>
+          {showDefinition && (
+            <p data-testid={`god-rail-row-definition-${def.id}`} style={GOD_RAIL_DEFINITION_LINE_STYLE}>
+              {definition}
+            </p>
+          )}
           {children}
         </div>
       )}

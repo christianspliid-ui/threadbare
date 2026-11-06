@@ -59,7 +59,7 @@ export const FIRST_USE_CAPTIONS: readonly FirstUseCaptionEntry[] = [
   { id: 'asks_you', text: "{name}'s chapters keep happening either way. This only decides if they pause the world." },
   { id: 'chapter_ledger', text: 'Every chapter The First has closed, kept to read again.' },
   { id: 'attention', text: 'Your free notice. Looking in on a mortal who lives on spends it; it refills.' },
-  { id: 'dominion', text: 'How much a place or person is already yours. Your own ground costs less.' },
+  { id: 'dominion', text: 'Dominion: how much a place or person is already yours. Your own ground costs less.' },
   { id: 'doom', text: "A slow clock toward the world's end. It cannot end the world early." },
   { id: 'reaches', text: 'What you can do, and how well. Each Reach grows as you use it.' },
   { id: 'world_soul', text: "The world's mood right now. You read it; you do not spend it." },
