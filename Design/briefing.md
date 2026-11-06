@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-06 18:58 local (17:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-06 19:57 local (18:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -54,7 +54,7 @@ Items for agents, not you:
 
 ## Health
 
-- The live site serves the latest commit on main (79a90972, the THR-2186 merge). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time, and the worktree cleaner ran at 18:54 local. The builder is not stalled: its 17:31 UTC run shipped THR-2186, and the 17:50 run found nothing claimable because both ready tickets are inside their veto windows.
-- Engine speed: 146 ms/tick steady, level with the 7-day median (147).
+- The live site serves the latest commit on main (79a90972, the THR-2186 merge). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time, and the worktree cleaner ran at 19:46 local. The builder is not stalled: its 17:31 UTC run shipped THR-2186, and the runs since (latest 18:51 UTC) found nothing claimable because both ready tickets are inside their veto windows.
+- Engine speed: 146 ms/tick steady, -1% against the 7-day median (147).
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask.
-- The home-folder copy of the repo is 138 commits behind main; its newest commit is from 4 Nov 11:02 local, about 56 hours ago. It has one edited tracked file (`.claude/settings.local.json`), which may be what stops the mirror's sync from fast-forwarding. This is the eleventh hour in a row this brief has flagged it, so an agent should check the mirror's sync. Nothing is lost, because the lanes work from fresh copies of main.
+- The home-folder copy of the repo is 138 commits behind main; its newest commit is from 4 Nov 11:02 local, about 57 hours ago. It has one edited tracked file (`.claude/settings.local.json`), which may be what stops the mirror's sync from fast-forwarding. This is the twelfth hour in a row this brief has flagged it, so an agent should check the mirror's sync. Nothing is lost, because the lanes work from fresh copies of main.
