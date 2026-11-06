@@ -394,7 +394,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `place` (1) | `placeConditions.ts` | `THR-1143`, `THR-1910`, `THR-790` |
 | `planner` (1) | `plannerForecast.ts` | `Phase 4` |
 | `planted` (1) | `plantedCompulsion.ts` | `THR-886` |
-| `player` (5) | `playerActs.ts`, `playerCastDispatch.ts`, `playerCastReadout.ts`, `playerReceipts.ts`, `playerStepHold.ts` | `Phase 1`, `THR-1581`, `THR-1647`, `THR-1730`, `THR-2052`, `THR-2140`, `THR-727`, `THR-739`, `THR-998` |
+| `player` (5) | `playerActs.ts`, `playerCastDispatch.ts`, `playerCastReadout.ts`, `playerReceipts.ts`, `playerStepHold.ts` | `Phase 1`, `THR-1581`, `THR-1647`, `THR-1730`, `THR-2052`, `THR-2140`, `THR-2174`, `THR-2178`, `THR-727`, `THR-739`, `THR-998` |
 | `portfolio` (1) | `portfolioManager.ts` | — |
 | `prayers` (1) | `prayers.ts` | `THR-1935` |
 | `premonition` (3) | `premonitionActions.ts`, `premonitionCompulsion.ts`, `premonitionSteer.ts` | `THR-1781`, `THR-1783` |
@@ -452,7 +452,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `temporal` (1) | `temporal.ts` | `THR-1452` |
 | `terrain` (1) | `terrain.ts` | — |
 | `thread` (1) | `threadDigest.ts` | — |
-| `threaded` (1) | `threadedChapters.ts` | `THR-1604`, `THR-1715`, `THR-1727`, `THR-1893`, `THR-603` |
+| `threaded` (1) | `threadedChapters.ts` | `THR-1604`, `THR-1715`, `THR-1893`, `THR-603` |
 | `threading` (2) | `threadingRite.ts`, `threadingRiteQueue.ts` | `THR-1644` |
 | `threat` (1) | `threatRating.ts` | — |
 | `tick` (1) | `tickHealthMonitor.ts` | — |

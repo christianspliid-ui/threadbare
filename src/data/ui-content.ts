@@ -133,6 +133,13 @@ export const REMEMBRANCE_MOVING_ON = 'Moving on';
 export const CHAPTER_LEDGER_NO_RECORD = 'This chapter has no record to show yet.';
 
 /**
+ * THR-2178 — the Aftermath's opening line on a chapter no step of which offered the
+ * god a move (`chapterWaitWord` → `theirs_alone`). Never on a chapter where a step
+ * offered one and the player let fate decide: that case has its own words (THR-2139).
+ */
+export const CHAPTER_ALONE_AFTERMATH_LINE = "This chapter was {name}'s alone. Nothing in it waited on your hand.";
+
+/**
  * THR-1809 — the offer pill's wording while a ready opening gift waits for a quiet
  * moment (`ui.gift.waits.eyebrow` / `.cta` / `.tooltip`). The pill's middle line is
  * the gift's own eyebrow from `SPINE_BEAT_PRESENTATION`.
@@ -966,6 +973,18 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   'ui.attention.switch_hint': {
     label: 'Click to switch',
     desc: 'Click to switch to {other}.',
+  },
+  // THR-2178 — the chapter's wait word, after its title on the Ledger row and the
+  // Stage header (R7: badge after its word). One predicate decides it
+  // (`chapterWaitWord`, engine/playerStepHold.ts), the same one the hold reads.
+  // Shown only on an "Asks you" thread. `{name}` is the mortal's name.
+  'ui.chapter.waits': {
+    label: 'Waits for you',
+    desc: 'A moment in this chapter stops the world and waits for your hand.',
+  },
+  'ui.chapter.theirs_alone': {
+    label: 'Theirs alone',
+    desc: "This chapter is {name}'s own. It plays out without asking you; you can read it afterwards.",
   },
   // ─── Warm start (THR-1744) ────────────────────────────────────
   // The `?warm=<ticks>` overlay. `{now}` / `{target}` are season words from the

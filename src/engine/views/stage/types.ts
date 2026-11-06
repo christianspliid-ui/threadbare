@@ -78,6 +78,11 @@ export interface EncounterStageHeaderModel {
    */
   opponentLine?: { readonly text: string; readonly name: string; readonly opponentId: string | null; readonly clockWord: string };
   threadTier: ThreadTier;
+  /**
+   * THR-2178 — "Waits for you" / "Theirs alone" after the title, on an "Asks you"
+   * thread only (`chapterWaitWord`). Absent ⇒ no word.
+   */
+  waitWord?: import('../../playerStepHold').ChapterWaitWord;
   familyLabel?: string;
   // ─── Context strip (THR-636) — additive, all optional ───
   /** Focal agent name, promoted from a ghost subtitle to a primary element. */
@@ -593,6 +598,11 @@ export interface EncounterStageConsequenceIconModel {
 export interface EncounterStageAftermathModel {
   title: string;
   overview: string;
+  /**
+   * THR-2178 — the plain opening line on a chapter no step of which offered the god
+   * a move ("This chapter was {name}'s alone…"). Rendered above the overview.
+   */
+  aloneLine?: string;
   actorMoments?: EncounterStageAftermathActorModel[];
   highlights?: EncounterStageAftermathHighlightModel[];
   changes?: EncounterStageAftermathChangeModel[];
