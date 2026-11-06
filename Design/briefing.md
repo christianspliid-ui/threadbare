@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-06 04:57 local (03:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-06 05:57 local (04:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -72,6 +72,6 @@ Items for agents, not you:
 
 ## Health
 
-- All green. The live site serves the latest main (d964339b, the god-rail fix). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. All 10 scheduled tasks are on time, and the worktree cleaner ran this hour. Last hour's engine-speed jump was a busy machine: this hour reads 129 ms/tick, below the weekly median.
+- All green. The live site serves the latest main (d964339b, the god-rail fix). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. All 10 scheduled tasks are on time, and the worktree cleaner ran this hour. Engine speed reads 127 ms/tick, 18% below the weekly median.
 - The builder's last three runs were short because every ready ticket is inside its veto window. That is by design, not a stall.
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask. The home-folder copy of the repo is 95 commits behind main. It is the read-only mirror and catches up on its own.
