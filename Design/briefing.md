@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-06 11:58 local (10:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-06 12:58 local (11:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -19,6 +19,13 @@
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
 ## Decided for you
+
+From the design lane's [11:51 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-06d.md), on [which of the mortal's own chapters should give the god a hand](https://linear.app/threadbare/issue/THR-2179). Nobody builds on these before 23:50 UTC on 6 November.
+
+- **Your cards now say how they landed.** Every card carries a line for each result, such as *"The odds had been quietly widened, and Kael walked through the gap."* No screen has ever shown one. The only answer a played card got was "your cards held it". Each card you play now adds its line under how the step went, on the encounter screen and in the Ledger: *"Press The Odds — The odds had been quietly widened, and Kael walked through the gap."* At most two lines per step. Build ticket: [Your cards say how they landed](https://linear.app/threadbare/issue/THR-2187).
+- Same ticket — when a card has no line for a critical failure (31 of the 38 library cards don't), it uses its plain failure line. So the god's card is never missing from the worst roll.
+- **Five quiet chapters now ask you once.** Measured live over four worlds, 70% of The First's story chapters already wait for your cards. The ones that play out alone are mostly five: Consecrate the Ground, The Haggle, Tend the Shrine, The Market Haggle and Heal the Sick. Each gets a hand dealt from your cards on its **first step only**. That makes the world stop about a fifth more often for The First, against nearly half more if every step asked. How often The First starts a chapter does not change. This builds after the card lines, so the new hands pay off.
+- Same ticket — the other seven quiet chapters stay as they are. Together they are a quarter of the alone chapters, and they are rare.
 
 From the design lane's [09:00 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-06c.md). Nobody builds on these before 20:59 UTC on 6 November.
 
@@ -42,13 +49,6 @@ From the design lane's [02:20 UTC run](https://github.com/christianspliid-ui/thr
 - Same ticket — the Chronicle line that read *"actor_rival_1's hand has pressed on Iron Glade"* now names the rival god.
 - Not in this slice: a new card for fighting rivals. If warm round 4 still says "I could see them but not act", that card is the next slice.
 
-From the design lane's [23:40 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-05g.md). Nobody builds on these before 11:40 UTC on 6 November.
-
-- [No recap when you come back](https://linear.app/threadbare/issue/THR-2173) — a returning god sees the mortal's story first, then the world as it touches them. When the warm-up ends, the "The world moves on" card stays up and becomes **"While you were away"**: at most five lines — what Kael finished (*"Kael won Bridge Toll, at a price."*), what Kael is in the middle of now, and which of your places slipped or grew (*"Iron Glade slipped from Held to Touched."*). Build ticket: [While you were away](https://linear.app/threadbare/issue/THR-2184/while-you-were-away-the-warm-up-card-ends-on-a-five-line-recap-led-by).
-- Same ticket — two buttons, **Begin** and **Read it in the Ledger**, which opens the Ledger at Kael's newest chapter. Above them, one quiet line says either *"The world is paused. Press play when you are ready."* or that a decision has waited for you.
-- Same ticket — the wait estimate stops sitting on "About 2 minutes left" for a whole minute. Below three minutes it steps every half minute.
-- Same ticket — the recap does not name the rival god behind a place that slipped; [rival gods you can see but not answer](https://linear.app/threadbare/issue/THR-2172) owns that. The recap appears only when a warm playtest arrives, because the game has no saved worlds yet.
-
 Say "veto <title>" to reverse any of these.
 
 ## This week's screens
@@ -57,12 +57,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: nothing being built right now, four ready and waiting out their veto windows. The first opens in about 40 minutes.**
-- **Just shipped:** [the rail rows say what they are](https://linear.app/threadbare/issue/THR-2183/the-rail-rows-say-what-they-are-plain-summaries-on-the-folded-god-rail) (THR-2183) merged at 09:25 UTC via [#2766](https://github.com/christianspliid-ui/threadbare/pull/2766) and is live.
-- **Ready at 11:40 UTC (next, about 40 minutes):** ["While you were away" recap](https://linear.app/threadbare/issue/THR-2184/while-you-were-away-the-warm-up-card-ends-on-a-five-line-recap-led-by) (THR-2184).
+**Healthy: one being built, four ready and waiting out their veto windows.**
+- **Being built now:** ["While you were away" recap](https://linear.app/threadbare/issue/THR-2184/while-you-were-away-the-warm-up-card-ends-on-a-five-line-recap-led-by) (THR-2184). The builder claimed it when its window opened at 11:40 UTC.
 - **Ready at 14:44 UTC:** [a rival's move has a place and an answer](https://linear.app/threadbare/issue/THR-2185/a-rivals-move-has-a-place-and-an-answer-the-raid-toast-names-the-place) (THR-2185).
 - **Ready at 17:30 UTC:** ["See the work" lands on the work](https://linear.app/threadbare/issue/THR-2186/see-the-work-lands-on-the-work-the-inspector-opens-on-the-tab-a-link) (THR-2186).
-- **Ready at 20:59 UTC:** [rank words show their ladder](https://linear.app/threadbare/issue/THR-2182/rank-words-show-their-ladder-a-reach-tile-says-where-its-word-sits-and) (THR-2182). Its plan merged via [#2765](https://github.com/christianspliid-ui/threadbare/pull/2765).
+- **Ready at 20:59 UTC:** [rank words show their ladder](https://linear.app/threadbare/issue/THR-2182/rank-words-show-their-ladder-a-reach-tile-says-where-its-word-sits-and) (THR-2182).
+- **Ready at 23:50 UTC (new):** [your cards say how they landed](https://linear.app/threadbare/issue/THR-2187/your-cards-say-how-they-landed-each-card-the-god-played-adds-its-own) (THR-2187). Its plan merged via [#2767](https://github.com/christianspliid-ui/threadbare/pull/2767).
 
 Items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -70,7 +70,7 @@ Items for agents, not you:
 
 ## Health
 
-- The live site serves the latest main (f5035557). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time, and the worktree cleaner ran at 11:45 local. The builder's short runs this hour stood down because every ready ticket is inside its veto window, so there is no stall.
-- Engine speed: 126 ms/tick steady, 17% below the 7-day median (151).
+- The live site serves the latest game build (f5035557); everything merged since touched only notes and plans. Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time, and the worktree cleaner ran at 12:51 local. A builder run is working now, so there is no stall.
+- Engine speed: 135 ms/tick steady, 10% below the 7-day median (150).
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask.
-- The home-folder copy of the repo is 114 commits behind main. Its newest commit is from 4 Nov 11:02 local, about 48 hours ago. It is the read-only mirror, which normally catches up on its own. This is the fourth hour in a row this brief has flagged it, so an agent should check the mirror's sync. Nothing is lost, because the lanes work from fresh copies of main.
+- The home-folder copy of the repo is 117 commits behind main. Its newest commit is from 4 Nov 11:02 local, about 50 hours ago. It is the read-only mirror, which normally catches up on its own. This is the fifth hour in a row this brief has flagged it, so an agent should check the mirror's sync. Nothing is lost, because the lanes work from fresh copies of main.
