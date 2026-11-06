@@ -103,10 +103,10 @@ import { progressActionsWithPlayerHolds } from './playerStepHold';
 import { enrichProse, gatherNarrativeContext, resolveEncounterTitle } from './proseEnrichment';
 import { stepOutcomeToOutcomeBand } from '../data/outcome-band-content';
 import { STEP_PROSE_HISTORY_MAX, type StepProseRecord } from '../types/stepProseRecord';
-// THR-2180 — the classifier the Stage's forecast uses (`resolutionService` keeps an
-// identical private copy), so the frozen word is the word the player saw, even at a
-// tier boundary (the encounter-forecast classifier uses `<=` there).
-import { classifyForecast } from './resolution';
+// THR-2180 — the classifier the Stage's forecast uses, so the frozen word is the
+// word the player saw, even at a tier boundary (the encounter-forecast classifier
+// uses `<=` there).
+import { classifyStepForecastTier } from './stepResolutionCore';
 import { FORECAST_TIER_WORDS, oddsMissedLine } from '../data/nudge-stage-content';
 import {
   detectContestations,
@@ -2690,7 +2690,7 @@ export function executeStepResult(
       tick,
       // THR-2180 — freeze the odds word only for a step that actually rolled.
       ...(resolutionStats && !resolutionStats.fightEnd && Number.isFinite(resolutionStats.probability)
-        ? { forecastTier: classifyForecast(resolutionStats.probability) }
+        ? { forecastTier: classifyStepForecastTier(resolutionStats.probability) }
         : {}),
     };
     const priorRecords = (finalAction.stepProseHistory ?? []) as readonly StepProseRecord[];

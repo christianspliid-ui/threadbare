@@ -12,7 +12,7 @@ import {
 } from '../../data/nudge-stage-content';
 import { UI_TOOLTIPS } from '../../data/ui-content';
 import { buildAftermathCauseLine, type CauseLineStep } from '../aftermathWords';
-import { classifyForecast } from '../resolution';
+import { classifyStepForecastTier as classifyForecast } from '../stepResolutionCore';
 import { causeLineSteps, executeStepResult } from '../unifiedActionResolution';
 import { createUnifiedAction, resetUnifiedActionCounter } from '../unifiedActionLifecycle';
 import { createSimulationRuntime } from '../simulationRuntime';
