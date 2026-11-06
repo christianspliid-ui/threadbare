@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-06 12:58 local (11:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-06 13:58 local (12:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -57,20 +57,20 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: one being built, four ready and waiting out their veto windows.**
-- **Being built now:** ["While you were away" recap](https://linear.app/threadbare/issue/THR-2184/while-you-were-away-the-warm-up-card-ends-on-a-five-line-recap-led-by) (THR-2184). The builder claimed it when its window opened at 11:40 UTC.
+**Healthy: four ready, each waiting out its veto window. Nothing is being built until 14:44 UTC.**
+- **Just shipped and live:** ["While you were away" recap](https://linear.app/threadbare/issue/THR-2184/while-you-were-away-the-warm-up-card-ends-on-a-five-line-recap-led-by) (THR-2184), merged via [#2768](https://github.com/christianspliid-ui/threadbare/pull/2768).
 - **Ready at 14:44 UTC:** [a rival's move has a place and an answer](https://linear.app/threadbare/issue/THR-2185/a-rivals-move-has-a-place-and-an-answer-the-raid-toast-names-the-place) (THR-2185).
 - **Ready at 17:30 UTC:** ["See the work" lands on the work](https://linear.app/threadbare/issue/THR-2186/see-the-work-lands-on-the-work-the-inspector-opens-on-the-tab-a-link) (THR-2186).
 - **Ready at 20:59 UTC:** [rank words show their ladder](https://linear.app/threadbare/issue/THR-2182/rank-words-show-their-ladder-a-reach-tile-says-where-its-word-sits-and) (THR-2182).
-- **Ready at 23:50 UTC (new):** [your cards say how they landed](https://linear.app/threadbare/issue/THR-2187/your-cards-say-how-they-landed-each-card-the-god-played-adds-its-own) (THR-2187). Its plan merged via [#2767](https://github.com/christianspliid-ui/threadbare/pull/2767).
+- **Ready at 23:50 UTC:** [your cards say how they landed](https://linear.app/threadbare/issue/THR-2187/your-cards-say-how-they-landed-each-card-the-god-played-adds-its-own) (THR-2187). Its plan merged via [#2767](https://github.com/christianspliid-ui/threadbare/pull/2767).
 
 Items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (17 days; In Dev since 15 Oct, 22 days). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching. No pushed branch and no local worktree holds work for it, so nothing is stranded.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (17 days; In Dev since 15 Oct, 22 days; last touched 1 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching. No pushed branch and no local worktree holds work for it, so nothing is stranded.
 
 ## Health
 
-- The live site serves the latest game build (f5035557); everything merged since touched only notes and plans. Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time, and the worktree cleaner ran at 12:51 local. A builder run is working now, so there is no stall.
-- Engine speed: 135 ms/tick steady, 10% below the 7-day median (150).
+- The live site serves the latest commit on main (501ce947, the THR-2184 recap). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time, and the worktree cleaner ran at 13:40 local. The builder's last three short runs were either waiting on the THR-2184 build or on veto windows, so there is no stall.
+- Engine speed: 131 ms/tick steady, 12% below the 7-day median (149).
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask.
-- The home-folder copy of the repo is 117 commits behind main. Its newest commit is from 4 Nov 11:02 local, about 50 hours ago. It is the read-only mirror, which normally catches up on its own. This is the fifth hour in a row this brief has flagged it, so an agent should check the mirror's sync. Nothing is lost, because the lanes work from fresh copies of main.
+- The home-folder copy of the repo is 127 commits behind main. Its newest commit is from 4 Nov 11:02 local, about 51 hours ago. It is the read-only mirror, which normally catches up on its own. This is the sixth hour in a row this brief has flagged it, so an agent should check the mirror's sync. Nothing is lost, because the lanes work from fresh copies of main.
