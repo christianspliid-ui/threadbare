@@ -209,9 +209,12 @@ describe('the rival entry\'s lines (decision 5)', () => {
     expect(segmentsText(rivalCauseSegments(rs, tick, names))).toBe('. Its scheme is under way.');
   });
 
-  it('a stale cause reads "and cooling"', () => {
-    const rs: RivalState = { ...createRivalState('x'), hostilityCause: { kind: 'scheme', placeId: 'ash', tick: tick - RIVAL_HOSTILITY_CAUSE_STALE_DAYS * DAY } };
-    expect(segmentsText(rivalCauseSegments(rs, tick, names))).toBe(', and cooling.');
+  it('a stale cause reads "and cooling" while above the floor, and "as rival gods are" once back at it', () => {
+    const stale = { kind: 'scheme' as const, placeId: 'ash', tick: tick - RIVAL_HOSTILITY_CAUSE_STALE_DAYS * DAY };
+    const warm: RivalState = { ...createRivalState('x'), hostilityToPlayer: 0.6, hostilityCause: stale };
+    expect(segmentsText(rivalCauseSegments(warm, tick, names))).toBe(', and cooling.');
+    const cooled: RivalState = { ...createRivalState('x'), hostilityToPlayer: RIVAL_HOSTILITY_START, hostilityCause: stale };
+    expect(segmentsText(rivalCauseSegments(cooled, tick, names))).toBe(', as rival gods are.');
   });
 
   it('last pressed reads in words, and hides when the place is gone', () => {

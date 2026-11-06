@@ -14,7 +14,7 @@ import type { RivalState } from '../../types/rival';
 import { resolveTooltip } from '../tooltipResolver';
 import { countWord } from '../aftermathWords';
 import { TICKS_PER_DAY } from '../../data/attention-constants';
-import { RIVAL_HOSTILITY_CAUSE_STALE_DAYS } from '../../data/rival-scheme-config';
+import { RIVAL_HOSTILITY_CAUSE_STALE_DAYS, RIVAL_HOSTILITY_START } from '../../data/rival-scheme-config';
 
 /** One run of an entry line: words, or a place that links. */
 export type RivalLineSegment = { text: string } | { placeId: string; name: string };
@@ -68,7 +68,10 @@ export function rivalCauseSegments(
   const cause = state?.hostilityCause;
   if (!cause) return [{ text: `, ${rivalWords('ui.rival.cause_none')}.` }];
   if (tick - cause.tick >= RIVAL_HOSTILITY_CAUSE_STALE_DAYS * TICKS_PER_DAY) {
-    return [{ text: `, ${rivalWords('ui.rival.cause_cooling')}.` }];
+    // A rival already back at its floor has nothing left to cool: it reads as rival gods do.
+    const h = state?.hostilityToPlayer;
+    const atFloor = typeof h !== 'number' || !Number.isFinite(h) || h <= RIVAL_HOSTILITY_START;
+    return [{ text: `, ${rivalWords(atFloor ? 'ui.rival.cause_none' : 'ui.rival.cause_cooling')}.` }];
   }
   const name = cause.placeId ? placeName(cause.placeId) : undefined;
   const place = cause.placeId && name ? { placeId: cause.placeId, name } : null;
