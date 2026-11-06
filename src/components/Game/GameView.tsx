@@ -19,6 +19,7 @@ import {
 } from '../../engine/undertakingMoments';
 import { resolveAttentionMode } from '../../engine/attentionCadence';
 import { useWarmStart, type AttentionMode } from './hooks/useWarmStart';
+import { buildWarmRecap, snapshotWarmRecap } from '../../engine/views/warmRecap';
 import { canAfford } from '../../engine/influence';
 import { payingSphere } from '../../engine/targetActions';
 import type { UndertakingMomentRecord } from '../../types/strategicAction';
@@ -3431,6 +3432,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       .find(e => (e.properties as { courtPosition?: string }).courtPosition === 'the_first') ?? null;
   }, [getLiveState]);
   const warmOpenInterruptsRef = useRef<string[]>([]);
+  const warmHeldInterruptsRef = useRef<string[]>([]);
   const warmStart = useWarmStart({
     requested: warmTicks,
     ready: gameState.phase === 'playing',
@@ -3480,7 +3482,21 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       return { settled: result.settled, failedBeatId: result.failedBeatId };
     },
     getOpenInterrupts: () => warmOpenInterruptsRef.current,
+    getHeldInterrupts: () => warmHeldInterruptsRef.current,
+    // THR-2184 — "While you were away": the band reading before tick one, the recap at arrival.
+    snapshotRecap: () => snapshotWarmRecap(getLiveState(), getFirstThreadEdge()?.target ?? null),
+    buildRecap: before => buildWarmRecap(getLiveState(), before),
+    getFirstId: () => getFirstThreadEdge()?.target ?? null,
   });
+  // THR-2184 — the recap's "Read it in the Ledger": close the card, open the Ledger at
+  // The First's newest chapter. Lives here so the Ledger keeps one set of chrome openers (R4).
+  const handleWarmRecapOpenLedger = useCallback(() => {
+    const key = warmStart.recap?.ledgerKey ?? null;
+    warmStart.dismissRecap();
+    setChapterLedgerSeenCount(countThreadedChapters(gameState));
+    gameScreen.setChapterLedgerInitialKey(key);
+    setChapterLedgerOpen(true);
+  }, [warmStart, gameState, gameScreen, setChapterLedgerSeenCount, setChapterLedgerOpen]);
   const warmFirstName = useMemo(() => {
     if (!warmStart.running) return null;
     const edge = getFirstThreadEdge();
@@ -3688,6 +3704,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     courtOpen: scryVisible,
     popupQueued: currentPopup !== null,
     warmStartRunning: warmStart.running,
+    warmRecapOpen: warmStart.recap !== null,
     playerSurfaceOpen: arrivalSurfaceOpen,
     recentInput: arrivalRecentInput,
     alreadyShown: shownInterruptsRef.current,
@@ -3697,6 +3714,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     skippedKinds: skippedHomedKinds,
   });
   warmOpenInterruptsRef.current = interruptResolution.open;
+  warmHeldInterruptsRef.current = interruptResolution.held.map(h => h.surfaceId);
   const interruptOpenKey = interruptResolution.open.join('|');
   useEffect(() => {
     shownInterruptsRef.current = interruptOpenKey ? interruptOpenKey.split('|') : [];
@@ -4770,6 +4788,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         handleAgentSelect={handleAgentSelect}
         warmStart={warmStart}
         warmFirstName={warmFirstName}
+        onWarmRecapOpenLedger={handleWarmRecapOpenLedger}
         openAgentSheetForId={openAgentSheetForId}
         lastReadThreadsTick={lastReadThreadsTick}
         setLastReadThreadsTick={setLastReadThreadsTick}

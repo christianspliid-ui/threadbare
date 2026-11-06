@@ -59,6 +59,21 @@ describe('interruptRegistry', () => {
     expect(r.anyOpen).toBe(true);
   });
 
+  it('the warm arrival recap keeps the same card open and still holds what waits (THR-2184)', () => {
+    const r = resolveInterrupts(snap({ warmStartRunning: false, warmRecapOpen: true, momentPending: true }));
+    expect(r.open).toEqual(['WarmStartOverlay']);
+    expect(r.momentMayRender).toBe(false);
+  });
+
+  it('the warm recap is exclusive: an encounter or a second dialog waits as held, not beside it (THR-2184 review)', () => {
+    const r = resolveInterrupts(snap({ warmRecapOpen: true, encounterOpen: true, choiceSetPending: true }));
+    expect(r.rendering).toEqual(['warm-start']);
+    expect(r.held.map(h => h.kind)).toEqual(expect.arrayContaining(['encounter', 'choice-set']));
+    // Begin: the recap closes and the encounter takes the screen again.
+    const after = resolveInterrupts(snap({ warmRecapOpen: false, encounterOpen: true }));
+    expect(after.rendering).toContain('encounter');
+  });
+
   it('a pending threading rite stops the world, waits behind the meeting, and holds the moment card (THR-1754)', () => {
     const rite = resolveInterrupts(snap({ threadingRitePending: true, momentPending: true, popupQueued: true }));
     expect(rite.open).toEqual(['ThreadingRite']);

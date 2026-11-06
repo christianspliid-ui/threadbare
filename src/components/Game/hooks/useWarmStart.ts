@@ -32,6 +32,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { deriveSeasonAndYear, TICKS_PER_SEASON } from '../../../types/temporal';
 import type { DebugTickStopReason } from '../../../engine/debugTickBatch';
+import type { WarmRecapLineKind, WarmRecapSnapshot, WarmRecapVM } from '../../../engine/views/warmRecap';
 
 // ── Constants (NFP #1) ──────────────────────────────────────────────────────
 
@@ -85,6 +86,10 @@ export const WARM_START_SETTLE_MOMENTS = true;
  * from an effect), so reading on the arrival render itself undercounts them.
  */
 export const WARM_START_ARRIVAL_SETTLE_MS = 500;
+/** THR-2184 — below this many milliseconds left, the time-left line steps in half minutes. */
+export const WARM_START_FINE_BELOW_MS = 180_000;
+/** THR-2184 — the half-minute step. */
+export const WARM_START_FINE_STEP_MS = 30_000;
 /** The console marker `scripts/cold-playtest/extract.mjs` looks for. */
 export const WARM_START_LOG_MARKER = '[warm-start] done';
 
@@ -173,8 +178,19 @@ export function smoothWarmRemainingMs(
   return estimateMs === null ? floor : Math.max(estimateMs, floor);
 }
 
-/** "a minute" / "6 minutes" — whole minutes, rounded up so the wait never overruns its words. */
+/**
+ * "6 minutes" / "2½ minutes" / "half a minute" — rounded up so the wait never overruns
+ * its words. Whole minutes at three minutes and above; below that, half-minute steps
+ * (THR-2184), so the line no longer sits on "About 2 minutes" for a whole minute.
+ */
 export function formatWarmRemaining(ms: number): string {
+  if (ms < WARM_START_FINE_BELOW_MS) {
+    const halves = Math.max(1, Math.ceil(ms / WARM_START_FINE_STEP_MS));
+    if (halves === 1) return 'half a minute';
+    if (halves === 2) return 'a minute';
+    const whole = Math.floor(halves / 2);
+    return halves % 2 === 1 ? `${whole}½ minutes` : `${whole} minutes`;
+  }
   const minutes = Math.max(1, Math.ceil(ms / 60_000));
   return minutes === 1 ? 'a minute' : `${minutes} minutes`;
 }
@@ -206,6 +222,11 @@ export interface WarmStartDeps {
    * (THR-1787). Returns what settled and the first that did not. Absent → skipped.
    */
   settleOpening?: (beatIds: readonly string[]) => { settled: string[]; failedBeatId: string | null };
+  /**
+   * THR-2184 — called once after the opening gifts settle and before the first chunk,
+   * so the recap's "before" reading does not count the gifts as news. A throw is logged.
+   */
+  onOpeningSettled?: () => void;
   onProgress?: (tick: number) => void;
   yieldToBrowser?: () => Promise<void>;
   now?: () => number;
@@ -223,6 +244,14 @@ export interface WarmStartResult {
   openingSettled: string[];
   /** The first listed gift that did not settle; it is offered normally after arrival. */
   openingSettleFailed: string | null;
+}
+
+/** The done line's arrival record: the run's result plus the recap's shape (THR-2184, additive). */
+interface WarmArrivalRecord extends WarmStartResult {
+  /** Lines the recap showed (0 = no recap). */
+  recapLines: number;
+  /** Line kinds the recap's cap dropped. */
+  recapCut: WarmRecapLineKind[];
 }
 
 const defaultYield = () => new Promise<void>(resolve => setTimeout(resolve, 0));
@@ -262,6 +291,12 @@ export async function runWarmStart(deps: WarmStartDeps): Promise<WarmStartResult
         openingSettleFailed = WARM_START_SETTLED_SPINE_BEATS[0] ?? null;
         console.error('[warm-start] settling the opening gifts failed', err);
       }
+    }
+
+    try {
+      deps.onOpeningSettled?.();
+    } catch (err) {
+      console.error('[warm-start] the recap snapshot failed', err);
     }
 
     while (advanced < deps.requested) {
@@ -346,11 +381,48 @@ export interface UseWarmStartArgs {
   settleOpening: NonNullable<WarmStartDeps['settleOpening']>;
   /** Interrupt surfaces open once suppression clears — read after the arrival render. */
   getOpenInterrupts: () => string[];
+  /** THR-2184 — the recap's "before" reading (after the opening gifts, before tick one). Absent → no recap. */
+  snapshotRecap?: () => WarmRecapSnapshot;
+  /** THR-2184 — the recap at arrival, from the snapshot. Absent → no recap. */
+  buildRecap?: (before: WarmRecapSnapshot) => WarmRecapVM;
+  /** THR-2184 — surfaces held behind the recap (they open on Begin), for the done line. */
+  getHeldInterrupts?: () => string[];
+  /** THR-2184 — The First's id, for the fallback snapshot when the reading was not taken. */
+  getFirstId?: () => string | null;
 }
 
 export interface UseWarmStartResult {
   running: boolean;
   progress: WarmStartProgress | null;
+  /** THR-2184 — the arrival recap while the card shows it; null otherwise. */
+  recap: WarmRecapVM | null;
+  /** THR-2184 — close the recap (Begin, Escape, the Ledger button, a name link). */
+  dismissRecap: () => void;
+}
+
+/**
+ * THR-2184 — build the recap at arrival. Fail-soft: a missing snapshot falls back to the
+ * warm-up's own start tick with no bands (chapter lines only); a throw returns null, so
+ * the card closes as it did before the recap existed.
+ */
+export function buildArrivalRecap(
+  args: Pick<UseWarmStartArgs, 'buildRecap' | 'getFirstId'>,
+  snapshot: WarmRecapSnapshot | null,
+  startTick: number,
+): WarmRecapVM | null {
+  if (!args.buildRecap) return null;
+  try {
+    let before = snapshot;
+    if (!before) {
+      let firstId: string | null = null;
+      try { firstId = args.getFirstId?.() ?? null; } catch { firstId = null; }
+      before = { startTick, firstId, bands: {} };
+    }
+    return args.buildRecap(before);
+  } catch (err) {
+    console.error('[warm-start] building the recap failed; closing the card', err);
+    return null;
+  }
 }
 
 export function useWarmStart(args: UseWarmStartArgs): UseWarmStartResult {
@@ -361,7 +433,9 @@ export function useWarmStart(args: UseWarmStartArgs): UseWarmStartResult {
   const startedRef = useRef(false);
   const [running, setRunningState] = useState(false);
   const [progress, setProgress] = useState<WarmStartProgress | null>(null);
-  const [arrival, setArrival] = useState<WarmStartResult | null>(null);
+  const [arrival, setArrival] = useState<WarmArrivalRecord | null>(null);
+  const [recap, setRecap] = useState<WarmRecapVM | null>(null);
+  const dismissRecap = useCallback(() => setRecap(null), []);
 
   const start = useCallback(async () => {
     const a = argsRef.current;
@@ -375,6 +449,7 @@ export function useWarmStart(args: UseWarmStartArgs): UseWarmStartResult {
     const stamps: number[] = [];
     let shown: number | null = null;
     let shownAt = 0;
+    let recapSnapshot: WarmRecapSnapshot | null = null;
     const result = await runWarmStart({
       requested: a.requested,
       startTick,
@@ -384,6 +459,10 @@ export function useWarmStart(args: UseWarmStartArgs): UseWarmStartResult {
       setSuppressedUntil: t => argsRef.current.setSuppressedUntil(t),
       settleMoments: since => argsRef.current.settleMoments(since),
       settleOpening: ids => argsRef.current.settleOpening(ids),
+      onOpeningSettled: () => {
+        const snap = argsRef.current.snapshotRecap;
+        if (snap) recapSnapshot = snap();
+      },
       onProgress: tick => {
         const elapsedMs = Date.now() - t0;
         stamps.push(elapsedMs);
@@ -400,7 +479,9 @@ export function useWarmStart(args: UseWarmStartArgs): UseWarmStartResult {
         setProgress(p => (p ? { ...p, currentTick: tick, remainingMs } : p));
       },
     });
-    setArrival(result);
+    const built = buildArrivalRecap(argsRef.current, recapSnapshot, startTick);
+    if (built) setRecap(built);
+    setArrival({ ...result, recapLines: built?.lines.length ?? 0, recapCut: [...(built?.cut ?? [])] });
     setRunningState(false);
   }, []);
 
@@ -411,13 +492,20 @@ export function useWarmStart(args: UseWarmStartArgs): UseWarmStartResult {
   }, [args.requested, args.ready, start]);
 
   // The done line is written after the arrival render, so `openInterruptsAtArrival`
-  // reads the registry with the overlay closed and suppression cleared.
+  // reads the registry with the overlay closed and suppression cleared. With a recap up
+  // (THR-2184) it is still written at arrival — the UX-review journey and the cold-playtest
+  // harness wait for it without pressing Begin — and it counts the surfaces held behind the
+  // recap, which are the ones that open on Begin.
+  const recapUpAtArrivalRef = useRef(false);
+  recapUpAtArrivalRef.current = recap !== null;
   useEffect(() => {
     if (!arrival || running) return;
     const timer = setTimeout(() => {
       let openInterruptsAtArrival: string[] = [];
       try {
-        openInterruptsAtArrival = argsRef.current.getOpenInterrupts().filter(id => id !== 'WarmStartOverlay');
+        const a = argsRef.current;
+        const read = recapUpAtArrivalRef.current && a.getHeldInterrupts ? a.getHeldInterrupts() : a.getOpenInterrupts();
+        openInterruptsAtArrival = read.filter(id => id !== 'WarmStartOverlay');
       } catch { /* fail-soft: an unreadable registry logs an empty list */ }
       const line = { ...arrival, openInterruptsAtArrival };
       console.info(`${WARM_START_LOG_MARKER} ${JSON.stringify(line)}`);
@@ -429,5 +517,5 @@ export function useWarmStart(args: UseWarmStartArgs): UseWarmStartResult {
     return () => clearTimeout(timer);
   }, [arrival, running]);
 
-  return { running, progress };
+  return { running, progress, recap, dismissRecap };
 }

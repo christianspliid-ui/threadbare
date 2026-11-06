@@ -115,7 +115,8 @@ export const DIALOG_SIZE_SURFACES: ReadonlyArray<DialogSizeSurface> = [
   { surface: 'HomedSurfaceFallback', file: 'Game/hosts/HomedSurfaceFallback.tsx', sizes: ['s'] },
   // Slice 2 (THR-1880) — the hand-built dialogs, each on its tier. The warm-start card
   // is an owner-drawn panel on an `Overlay` (its cover stays heavy), sized by `dialogSizeStyle`.
-  { surface: 'WarmStartOverlay', file: 'Game/WarmStartOverlay.tsx', sizes: ['s'] },
+  // THR-2184: the arrival recap (`While you were away`) takes the M tier.
+  { surface: 'WarmStartOverlay', file: 'Game/WarmStartOverlay.tsx', sizes: ['s', 'm'] },
   { surface: 'ChoiceSetModal', file: 'Game/ChoiceSetModal.tsx', sizes: ['s'] },
   { surface: 'ScryOverlay', file: 'Game/ScryOverlay.tsx', sizes: ['l'] },
   { surface: 'SettingsPanel', file: 'Game/SettingsPanel.tsx', sizes: ['m'] },

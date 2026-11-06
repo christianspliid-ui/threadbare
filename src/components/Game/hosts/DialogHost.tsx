@@ -114,6 +114,8 @@ export interface DialogHostProps {
   // Warm start
   warmStart: UseWarmStartResult;
   warmFirstName: string | null;
+  /** THR-2184 — the recap's "Read it in the Ledger" (GameView owns the Ledger opener, R4). */
+  onWarmRecapOpenLedger: () => void;
   // Chapter Ledger (its open flag and seen-count are GameScreenState)
   openAgentSheetForId: (agentId: string) => void;
   // Read the Threads
@@ -165,6 +167,7 @@ export function DialogHost({
   handleAgentSelect,
   warmStart,
   warmFirstName,
+  onWarmRecapOpenLedger,
   openAgentSheetForId,
   lastReadThreadsTick,
   setLastReadThreadsTick,
@@ -242,11 +245,18 @@ export function DialogHost({
       );
 
       /* Warm start overlay (THR-1744) — covers the game while the warm-up runs */
-    case 'warm-start': return renders.has(kind) && warmStart.running && warmStart.progress && (
+      /* THR-2184 — on arrival the same card becomes "While you were away" until Begin */
+    case 'warm-start': return renders.has(kind) && ((warmStart.running && warmStart.progress) || warmStart.recap) && (
         <WarmStartOverlay
-          progress={warmStart.progress}
+          progress={warmStart.running ? warmStart.progress : null}
           ticksPerSeason={gameState.clock?.ticksPerSeason}
           firstName={warmFirstName}
+          recap={warmStart.running ? null : warmStart.recap}
+          heldDecisionWaiting={
+            interruptResolution.held.some(h => h.kind !== 'warm-start') || interruptResolution.heldArrivals.length > 0
+          }
+          onBegin={warmStart.dismissRecap}
+          onOpenLedger={onWarmRecapOpenLedger}
         />
       );
 

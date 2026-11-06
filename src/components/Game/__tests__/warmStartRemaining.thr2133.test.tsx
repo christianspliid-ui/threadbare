@@ -71,11 +71,20 @@ describe('smoothWarmRemainingMs', () => {
 });
 
 describe('formatWarmRemaining', () => {
-  it('rounds up to whole minutes', () => {
-    expect(formatWarmRemaining(1)).toBe('a minute');
-    expect(formatWarmRemaining(60_000)).toBe('a minute');
-    expect(formatWarmRemaining(60_001)).toBe('2 minutes');
+  it('rounds up to whole minutes at three minutes and above', () => {
+    expect(formatWarmRemaining(180_000)).toBe('3 minutes');
+    expect(formatWarmRemaining(180_001)).toBe('4 minutes');
     expect(formatWarmRemaining(319_000)).toBe('6 minutes');
+  });
+
+  // THR-2184: below three minutes the wait steps in half minutes, still rounding up.
+  it('steps in half minutes below three minutes', () => {
+    expect(formatWarmRemaining(150_000)).toBe('2½ minutes');
+    expect(formatWarmRemaining(120_000)).toBe('2 minutes');
+    expect(formatWarmRemaining(61_000)).toBe('1½ minutes');
+    expect(formatWarmRemaining(60_000)).toBe('a minute');
+    expect(formatWarmRemaining(25_000)).toBe('half a minute');
+    expect(formatWarmRemaining(1)).toBe('half a minute');
   });
 });
 
@@ -83,6 +92,8 @@ describe('formatRemainingLine', () => {
   it('reads measuring, then minutes, then almost there', () => {
     expect(formatRemainingLine(null)).toMatch(/how long/i);
     expect(formatRemainingLine(319_000)).toBe('About 6 minutes left.');
+    expect(formatRemainingLine(150_000)).toBe('About 2½ minutes left.');
+    expect(formatRemainingLine(25_000)).toBe('About half a minute left.');
     expect(formatRemainingLine(WARM_START_ALMOST_DONE_MS - 1)).toBe('Almost there.');
   });
 });
