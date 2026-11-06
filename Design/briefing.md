@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-06 08:58 local (07:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-06 09:58 local (08:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -42,14 +42,6 @@ From the design lane's [23:40 UTC run](https://github.com/christianspliid-ui/thr
 - Same ticket — the wait estimate stops sitting on "About 2 minutes left" for a whole minute. Below three minutes it steps every half minute.
 - Same ticket — the recap does not name the rival god behind a place that slipped; [rival gods you can see but not answer](https://linear.app/threadbare/issue/THR-2172) owns that. The recap appears only when a warm playtest arrives, because the game has no saved worlds yet.
 
-From the design lane's [20:40 UTC run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-05f.md). Nobody builds on these before 08:45 UTC on 6 November — under an hour from now, so a veto here is due now.
-
-- [The mid-game words still mean nothing](https://linear.app/threadbare/issue/THR-2175) — the left-hand rail's folded rows now say what they count. "Hooks · 11 on you" becomes "Hooks · 11 unfinished". "Signatures · 3 yours" becomes "Signatures · 3 settled". "Mandate · Holding" becomes "Mandate · Goal · Holding". "Reaches · Eye · Blinkered" becomes "Reaches · Main: Eye · Blinkered". Covenants reads "2 held · upkeep". Build ticket: [THR-2183](https://linear.app/threadbare/issue/THR-2183/the-rail-rows-say-what-they-are-plain-summaries-on-the-folded-god-rail).
-- Same ticket — opening one of those rows starts with one quiet sentence saying what it is for, taken from its hover. For Hooks that is *"Marks, clues and vows that tie you to something unfinished."* Mandate gets the hover it never had.
-- Same ticket — the caption that tester read as a second meaning of "Reach" now starts with its own word: *"Dominion: how much a place or person is already yours."* Reach stays "what you do".
-- Same ticket — the Doom panel stops showing "Counter-omens 0" and "Doom debt 0". Each row comes back as soon as it has something in it.
-- Same ticket — no word is renamed, no row opens by itself, and the rail gets no wider.
-
 Say "veto <title>" to reverse any of these.
 
 ## This week's screens
@@ -58,12 +50,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: four ready, all waiting out their veto windows; nothing is being built until 08:45 UTC.**
+**Healthy: one being built, three ready and waiting out their veto windows.**
+- **Being built now:** [the rail rows say what they are](https://linear.app/threadbare/issue/THR-2183/the-rail-rows-say-what-they-are-plain-summaries-on-the-folded-god-rail) (THR-2183). Its veto window closed at 08:45 UTC and the builder took it at 08:52.
 - **Just shipped:** [a good-odds step that misses says so](https://linear.app/threadbare/issue/THR-2180/a-good-odds-step-that-misses-says-so-it-looked-fated-but-fate-rolled) (THR-2180) merged at 06:29 UTC via [#2764](https://github.com/christianspliid-ui/threadbare/pull/2764) and is live.
-- **Ready at 08:45 UTC (next):** [the rail rows say what they are](https://linear.app/threadbare/issue/THR-2183/the-rail-rows-say-what-they-are-plain-summaries-on-the-folded-god-rail) (THR-2183).
-- **Ready at 11:40 UTC:** ["While you were away" recap](https://linear.app/threadbare/issue/THR-2184/while-you-were-away-the-warm-up-card-ends-on-a-five-line-recap-led-by) (THR-2184).
+- **Ready at 11:40 UTC (next):** ["While you were away" recap](https://linear.app/threadbare/issue/THR-2184/while-you-were-away-the-warm-up-card-ends-on-a-five-line-recap-led-by) (THR-2184).
 - **Ready at 14:44 UTC:** [a rival's move has a place and an answer](https://linear.app/threadbare/issue/THR-2185) (THR-2185).
-- **Ready at 17:30 UTC (new):** ["See the work" lands on the work](https://linear.app/threadbare/issue/THR-2186/see-the-work-lands-on-the-work-the-inspector-opens-on-the-tab-a-link) (THR-2186).
+- **Ready at 17:30 UTC:** ["See the work" lands on the work](https://linear.app/threadbare/issue/THR-2186/see-the-work-lands-on-the-work-the-inspector-opens-on-the-tab-a-link) (THR-2186).
 
 Items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -71,6 +63,7 @@ Items for agents, not you:
 
 ## Health
 
-- All green. The live site serves the latest main (dd214308). Checks on main and the 3 scheduled background jobs pass, and no pull request is waiting. All 10 scheduled tasks are on time, and the worktree cleaner ran at 07:40 local. Engine speed reads 147 ms/tick, 4% below the weekly median. The builder's last three short runs stood down because every ready ticket is still inside its veto window; that is idle by design, not a stall.
+- The live site serves the latest main (dd214308). Checks on main and the 3 scheduled background jobs pass. One pull request, the design lane's plan for [rank words that show their ladder](https://github.com/christianspliid-ui/threadbare/pull/2765), is armed and waiting on its checks. All 10 scheduled tasks are on time, and the worktree cleaner ran at 09:40 local. The builder's short runs before 08:45 UTC stood down because every ready ticket was inside its veto window; a run is now building, so there is no stall.
+- Engine speed: tick cost 192 ms/tick steady, 27% above the 7-day median (151, 148 rows since 9c6fc808); top phase agent_decision, 638 agents. Name the merges between 9c6fc808 and dd214308: git log --oneline --merges 9c6fc808..dd214308. Last hour measured 147 ms/tick on the same commit, and a builder run was working on this computer during this measurement, so this is probably machine load. An agent should re-measure before chasing it.
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask.
-- The home-folder copy of the repo is 105 commits behind main and was last updated 4 Nov 11:02. It is the read-only mirror, which normally catches up on its own, but two days is long. An agent should check the mirror's sync. Nothing is lost: the lanes work from fresh copies of main.
+- The home-folder copy of the repo is 105 commits behind main and was last updated 4 Nov 11:27 local (46 hours ago). It is the read-only mirror, which normally catches up on its own, but this is the second hour this brief has flagged it. An agent should check the mirror's sync. Nothing is lost: the lanes work from fresh copies of main.
