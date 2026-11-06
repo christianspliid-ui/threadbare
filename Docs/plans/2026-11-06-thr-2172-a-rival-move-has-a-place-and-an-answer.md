@@ -225,7 +225,7 @@ Emitted through `emitRivalTrace`. The existing `dominion.raid` trace is unchange
 
 **Suggested model:** opus. It edits the 163-importer orchestrator, and the stream-preserving draw is easy to get wrong.
 **Parallel-safe with:** [the rail rows say what they are](https://linear.app/threadbare/issue/THR-2183), [room for the god-rail hand](https://linear.app/threadbare/issue/THR-2177) and [a good-odds step that misses says so](https://linear.app/threadbare/issue/THR-2180). None touches the rival phase, the rival panel or the dominion chronicle.
-**Mutex with:** ["While you were away"](https://linear.app/threadbare/issue/THR-2184), because both read the dominion drop records and that plan says not to name the rival until this lands. Build this one after it, then the recap may name rivals in a later pass.
+**Mutex with:** ["While you were away"](https://linear.app/threadbare/issue/THR-2184), for awareness only, not a blocker. The recap reads the band table, and this slice edits the drop-line wording, so the files do not overlap. The recap's "do not name the rival" note stays true until this lands, and naming rivals in the recap is a later pass.
 
 **Files to touch:** `src/engine/orchestrator.ts`, `src/engine/rival.ts`, `src/types/rival.ts`, `src/data/rival-scheme-config.ts`, `src/data/rival-content.ts`, `src/data/ui-content.ts`, `src/engine/notificationRouter.ts`, `src/engine/phaseDominion.ts`, `src/engine/dominionProjection.ts`, `src/engine/simulationRuntime.ts`, `src/components/Game/RivalPanel.tsx`, `src/debug-bridge.d.ts` + its implementation, their tests, `Docs/canon/rulebook.md`, `Docs/canon/interface-map.md`, `scripts/interface-contracts.ts`, `Docs/plans/2026-04-16-systemic-wiring-guide.md`.
 
