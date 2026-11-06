@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-06 00:59 local (23:59 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-06 01:56 local (00:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,6 +46,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-06: each chapter now says whether it waits for you ("Waits for you" / "Theirs alone"), and it is live** ([THR-2178](https://linear.app/threadbare/issue/THR-2178/say-which-chapters-wait-for-the-god-a-waits-for-you-theirs-alone-word)). Merged via [#2761](https://github.com/christianspliid-ui/threadbare/pull/2761).
 - **2026-11-05: five small faults from the returning-player playtest are fixed, and it is live** ([THR-2170](https://linear.app/threadbare/issue/THR-2170/five-small-faults-from-warm-round-3-one-scholar-cast-twice-shiaru)). Merged via [#2755](https://github.com/christianspliid-ui/threadbare/pull/2755); the last of that playtest’s screen bugs.
 - **2026-11-05: Escape and Space now do the right thing, and it is live** ([THR-2167](https://linear.app/threadbare/issue/THR-2167/escape-and-space-do-the-wrong-thing-a-showing-tooltip-eats-the-escape)). Merged via [#2754](https://github.com/christianspliid-ui/threadbare/pull/2754).
 - **2026-11-05: "Needs you" counts only what can be opened, and action toasts expire, and it is live** ([THR-2169](https://linear.app/threadbare/issue/THR-2169/recurs-after-fix-needs-you-counts-things-that-cannot-be-opened-and)). Merged via [#2753](https://github.com/christianspliid-ui/threadbare/pull/2753).
@@ -55,7 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-05: the last player picks go — the mentorship moments and the elite encounters now let the mortal decide, and it is live** ([THR-2161](https://linear.app/threadbare/issue/THR-2161/the-last-player-picks-go-the-three-mentorship-moments-and-the-two)). Merged via [#2748](https://github.com/christianspliid-ui/threadbare/pull/2748); this finishes the mortal-decides conversion.
 - **2026-11-05: Flawed Steel and the five sphere story beats now let the mortal decide, and it is live** ([THR-2157](https://linear.app/threadbare/issue/THR-2157/the-mortal-decides-flawed-steel-and-the-five-sphere-story-beats-their)). Merged via [#2746](https://github.com/christianspliid-ui/threadbare/pull/2746).
 - **2026-11-04: Legibility 4 is live: the god rail, the Ledger rail, list rows and the hover card read cleaner** ([THR-2125](https://linear.app/threadbare/issue/THR-2125/plan-doc-legibility-4-the-god-rail-the-ledger-rail-lists-and-the-hover)). Merged via [#2741](https://github.com/christianspliid-ui/threadbare/pull/2741).
-- **2026-11-04: half two of the reputation encounters now lets the mortal decide, and it is live** ([THR-2160](https://linear.app/threadbare/issue/THR-2160)). Merged via [#2740](https://github.com/christianspliid-ui/threadbare/pull/2740).
 ---
 
 Older resolved items and every earlier revision of this file: `git log -p origin/ops -- Design/user-actions.md`.
