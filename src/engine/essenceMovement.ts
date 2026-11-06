@@ -182,7 +182,7 @@ export function readEssenceMovement(
  * so every `premonition` movement is a whisper or compulsion the player paid for
  * (GameView's premonition handlers).
  */
-export const PLAYER_SPEND_CAUSES: readonly EssenceMovementCause[] = ['spend_nudge', 'spend_cast', 'spend_other', 'premonition'];
+export const PLAYER_SPEND_CAUSES: readonly EssenceMovementCause[] = ['spend_nudge', 'spend_cast', 'spend_other', 'premonition', 'crossroads'];
 
 /** What the player spent inside one window, as a positive magnitude (refunds net it down, never below 0). */
 function playerSpendIn(window: EssenceMovementWindow | undefined): number {

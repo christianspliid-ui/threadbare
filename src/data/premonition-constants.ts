@@ -107,6 +107,56 @@ export const WHISPER_HOLD_MAX_TICKS = 72;
 export const COMPULSION_COOLDOWN_TICKS = 24;
 
 // ═══════════════════════════════════════════════════════════════════
+// CROSSROADS — read a threaded mortal's next roads and lean on one (THR-1926)
+// @see Docs/plans/2026-10-14-thr-1926-the-crossroads.md § Constants table
+// ═══════════════════════════════════════════════════════════════════
+
+/** One-flag revert: off → no snapshot write, no lean applied. */
+export const CROSSROADS_ENABLED = true;
+
+/** God's Will emitter (the forced Compulsion pick). Slice A keeps it `true`;
+ * THR-1928 flips it to `false` in the change that ships the Crossroads row.
+ * `true` afterwards is the veto path: the forced pick beside the Crossroads.
+ * The debug force (`FORCE_COMPULSION_FLAG`) bypasses it. */
+export const COMPULSION_PREMONITION_ENABLED = true;
+
+/** How many next roads the reading shows. @range 2–5 */
+export const CROSSROADS_OPTION_COUNT = 3;
+
+/** Board multiplier on the leaned-toward entry (Whisper ×1.6, retired Compulsion ×5).
+ * Pinned by test: `CROSSROADS_LEANING_RATIO × CROSSROADS_LEAN_TOWARD_MULT === 1`.
+ * @range 1.5–3 */
+export const CROSSROADS_LEAN_TOWARD_MULT = 2.0;
+
+/** Board multiplier on the leaned-away leader. Pinned equal to
+ * `CROSSROADS_LEANING_RATIO` by test, so *set* means set in both directions.
+ * @range 0.3–0.7 */
+export const CROSSROADS_LEAN_AWAY_MULT = 0.5;
+
+/** Second ÷ first score at or above which a mortal reads *torn*. @range 0.75–0.95 */
+export const CROSSROADS_TORN_RATIO = 0.85;
+
+/** Second ÷ first score above which (strict) a mortal reads *leaning*; at or below, *set*.
+ * Pinned to `1 / CROSSROADS_LEAN_TOWARD_MULT`. @range 0.3–0.7 */
+export const CROSSROADS_LEANING_RATIO = 0.5;
+
+/** Lead the leaned target must hold to read *likely* rather than *may*. @range 1.1–1.5 */
+export const CROSSROADS_LIKELY_MARGIN = 1.25;
+
+/** Essence for leaning toward the first road, before Dominion. @range 1–3 */
+export const CROSSROADS_LEAN_COST_BASE = 2;
+
+/** Extra essence per rank below the first. @range 0–2 */
+export const CROSSROADS_LEAN_COST_PER_RANK = 1;
+
+/** Essence for leaning away from the first road. @range 1–3 */
+export const CROSSROADS_LEAN_AWAY_COST = 2;
+
+/** How long a lean waits for the next full decision; past it, it lapses aloud.
+ * Matches the THR-1781 holds. 72 ticks = 6 game days. @range 24–144 */
+export const CROSSROADS_HOLD_MAX_TICKS = 72;
+
+// ═══════════════════════════════════════════════════════════════════
 // QUEUE & ELIGIBILITY
 // ═══════════════════════════════════════════════════════════════════
 

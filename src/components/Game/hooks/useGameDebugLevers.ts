@@ -40,6 +40,10 @@ import { FORCE_COMPULSION_FLAG } from '../../../engine/premonitionCompulsion';
 import { buildWhisperPremonition } from '../../../engine/phaseDivinePremonition';
 import { mulberry32 } from '../../../lib/prng';
 import { PREMONITION_EXPIRY_TICKS } from '../../../data/premonition-constants';
+import { placeCrossroadsLean } from '../../../engine/crossroadsActions';
+import { readCrossroadsSnapshot } from '../../../engine/crossroads';
+import { spendPremonitionEssence } from '../../../engine/premonitionActions';
+import { withEssenceSpend } from '../../../engine/essenceMovement';
 import { UNIFIED_ACTION_TEMPLATES, getUnifiedTemplateById } from '../../../data/unified-action-templates';
 import { ACTION_CONTROL_VERB_WORD, ACTION_VERB_WORDS, ACTION_SCALE_WORDS } from '../../../data/action-card-display';
 import { ACTION_VERB_FALLBACK_WORD } from '../actionCardModel';
@@ -523,6 +527,40 @@ export function useGameDebugLevers(ctx: GameDebugLeverContext): void {
       });
 
       return outcome;
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Debug bridge: leanCrossroads (THR-1926) ───────────────────────────────
+  // Placement runs once, against the live state ref (it writes the node in place and
+  // would refuse 'held' on a StrictMode double-invoked updater); the updater only
+  // spends, through the same seam the Inspector row will use.
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerCrossroadsLean((agentId, optionIndex, direction) => {
+      const live = _gameStateRef.current;
+      const snapshot = readCrossroadsSnapshot(live.graph.getNode(agentId)?.properties.crossroads);
+      const option = snapshot?.options[optionIndex];
+      if (!option) return { error: `No option ${optionIndex} on the current reading` };
+      const result = placeCrossroadsLean(live, agentId, option, direction);
+      // The lean is a property written in place: touch the world so memoized readers see it.
+      if (result.success) touchWorld(runtime);
+      if (result.success && result.sphere) {
+        const sphere = result.sphere;
+        const cost = result.essenceCost;
+        setGameState(prev => {
+          const pool = spendPremonitionEssence(prev.essencePool, sphere, cost);
+          return { ...prev, ...withEssenceSpend(prev, pool, 'crossroads') };
+        });
+      }
+      return {
+        success: result.success,
+        ...(result.reason ? { reason: result.reason } : {}),
+        lean: result.lean,
+        essenceCost: result.essenceCost,
+        sphere: result.sphere,
+        forecast: result.forecast,
+        message: result.message,
+      };
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

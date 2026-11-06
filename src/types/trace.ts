@@ -18,6 +18,12 @@ import type {
   MentorshipSurpassedTrace,
   MentorshipSeveredTrace,
 } from './traces/mentorship-traces';
+import type {
+  CrossroadsLeanPlacedTrace,
+  CrossroadsLeanLiftedTrace,
+  CrossroadsLeanOutcomeTrace,
+  CrossroadsSnapshotTrace,
+} from './traces/crossroads-traces';
 import type { ReachDomain } from './traits';
 import type { ValuePair } from './agent';
 import type { UiRefOpenedTrace, UiRefUnroutableTrace, ViewFallbackTrace, StageTrace, UiMapCameraJumpTrace, UiMapLensChangedTrace, UiCardArmTrace } from './traces/ui-traces';
@@ -429,6 +435,11 @@ export type TraceCategory =
   | 'mentorship_graduated'
   | 'mentorship_surpassed'
   | 'mentorship_severed'
+  // The Crossroads (THR-1926)
+  | 'crossroads_lean_placed'
+  | 'crossroads_lean_lifted'
+  | 'crossroads_lean_outcome'
+  | 'crossroads_snapshot'
   // KPI harness (THR-457)
   | 'kpi'
   // Branching encounter curator boost (THR-452)
@@ -1058,6 +1069,11 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'mentorship_graduated',
   'mentorship_surpassed',
   'mentorship_severed',
+  // The Crossroads (THR-1926)
+  'crossroads_lean_placed',
+  'crossroads_lean_lifted',
+  'crossroads_lean_outcome',
+  'crossroads_snapshot',
   // KPI harness (THR-457)
   'kpi',
   // Branching encounter curator boost (THR-452)
@@ -4303,6 +4319,8 @@ export interface DecisionBoardComparisonTrace extends TraceBase {
     appointmentDiscount?: number;
     /** THR-1781 — the pull of the god's live whispers on an encounter (already in `score`). */
     whisperPull?: number;
+    /** THR-1926 — the god's held Crossroads lean on this exact road (already in `score`). */
+    crossroadsLean?: number;
     /** THR-2067 — the trade's lean on an encounter of the mortal's role reach (already in `score`). */
     roleAffinityPull?: number;
     /** THR-2068 — The First's chosen path's lean on an encounter of its two Reaches (already in `score`). */
@@ -6048,7 +6066,11 @@ export type TraceEntry =
   | MentorshipSurpassedTrace
   | MentorshipSeveredTrace
   | CompulsionOutcomeTrace
-  | WhisperOutcomeTrace;
+  | WhisperOutcomeTrace
+  | CrossroadsLeanPlacedTrace
+  | CrossroadsLeanLiftedTrace
+  | CrossroadsLeanOutcomeTrace
+  | CrossroadsSnapshotTrace;
 
 /**
  * Trace: a paid God's Will compulsion resolved at the mortal's next full decision

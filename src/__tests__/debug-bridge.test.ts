@@ -292,6 +292,54 @@ describe('debug bridge scene snapshot contract', () => {
     expect(locked.some((entry) => entry.id === 'divine.inspire')).toBe(false);
   });
 
+  it('getCrossroads reads the snapshot, settledness, lean and per-option forecasts (THR-1926)', async () => {
+    const debug = requireDebugBridge();
+    const kael = {
+      id: 'ind_kael', type: 'actor', name: 'Kael',
+      properties: {
+        crossroads: {
+          tick: 9,
+          options: [
+            { family: 'encounter', templateId: 'duel', targetId: 'g', score: 1, reach: 'iron' },
+            { family: 'encounter', templateId: 'feast', targetId: 'g', score: 0.9, reach: 'gold' },
+          ],
+        },
+      },
+    };
+    debug._registerGameStateProvider(() => ({
+      graph: { getNodesByType: () => [kael] },
+      ascendantId: 'god',
+    } as unknown as import('../types/gameState').GameState));
+
+    const result = await debug.getCrossroads('Kael');
+    expect(result).toMatchObject({
+      agentId: 'ind_kael',
+      agentName: 'Kael',
+      settledness: 'torn',
+      lean: null,
+      forecasts: { 0: { toward: 'likely', away: 'likely' }, 1: { toward: 'likely' } },
+    });
+    expect('error' in result ? null : result.snapshot?.options).toHaveLength(2);
+    await expect(debug.getCrossroads('nobody')).resolves.toEqual({ error: "No agent matching 'nobody'" });
+  });
+
+  it('leanCrossroads validates direction and delegates to the registered placer (THR-1926)', async () => {
+    const debug = requireDebugBridge();
+    debug._registerGameStateProvider(() => ({
+      graph: { getNodesByType: () => [{ id: 'ind_kael', type: 'actor', name: 'Kael', properties: {} }] },
+      ascendantId: 'god',
+    } as unknown as import('../types/gameState').GameState));
+    await expect(debug.leanCrossroads('Kael', 0, 'sideways' as never)).resolves.toMatchObject({ error: expect.stringContaining('direction') });
+
+    const calls: unknown[] = [];
+    debug._registerCrossroadsLean((agentId, optionIndex, direction) => {
+      calls.push([agentId, optionIndex, direction]);
+      return { success: true, lean: null, essenceCost: 3, sphere: 'life', forecast: 'may', message: 'ok' };
+    });
+    await expect(debug.leanCrossroads('Kael', 1)).resolves.toMatchObject({ success: true, essenceCost: 3 });
+    expect(calls).toEqual([['ind_kael', 1, 'toward']]);
+  });
+
   it('grantAction delegates to action bridge callback', async () => {
     const debug = requireDebugBridge();
     debug._registerActionBridge({

@@ -126,6 +126,10 @@ import type { StrategicCandidateBoardTrace, StrategicActionStartedTrace } from '
 import type { DecisionFamily, UndertakingMomentRecord } from '../types/strategicAction';
 import type { BalanceEvent } from '../types/balanceEval';
 import { scoreUnifiedBoard, type BoardEntry } from './decisionBoard';
+import { buildCrossroadsSnapshotDetailed, settledness as crossroadsSettledness } from './crossroads';
+import { prepareCrossroadsLean, resolveCrossroadsLean, bondReceptionOf, isThreadedByGod, type PreparedLean } from './crossroadsDecision';
+import { isSecretCellId } from './intentionReading';
+import { CROSSROADS_ENABLED, COMPULSION_PREMONITION_ENABLED } from '../data/premonition-constants';
 import { UNIFIED_DECISION_BOARD_MODE, BOARD_SCORE_FLOOR } from '../data/strategic-action-constants';
 import { computeSurfaceKey } from './encounterSurface';
 import { resolveTemplateFragments } from './fragmentResolution';
@@ -1567,6 +1571,23 @@ export function phaseAgentDecision(
         BalanceEvent, 'shadowWinnerFamily' | 'shadowWinnerId' | 'shadowAgreement'
       > = {};
 
+      // ── THR-1926: a held Crossroads lean, before the board ──────────────
+      // Read the god's held lean, check its hold, and make sure an encounter target
+      // can reach the board (the Compulsion's pull, shared via `findHeldEncounter`):
+      // without it a lean toward the third road dies whenever the scorer's five shift.
+      let preparedLean: PreparedLean | null = null;
+      if (CROSSROADS_ENABLED && actor.properties?.crossroadsLean !== undefined) {
+        try {
+          preparedLean = prepareCrossroadsLean(actor.properties.crossroadsLean, decision, scoredStrategic, state.tick);
+          if (preparedLean.pulledUp) decision.topCandidates = [...decision.topCandidates, preparedLean.pulledUp];
+        } catch {
+          // Fail-soft: the decision proceeds unleaned; the lean is cleared below with a trace.
+          preparedLean = { held: null, malformed: true, expired: false, effective: null, pulledUp: null };
+        }
+      }
+      // The board this decision was made on, for the lean's resolution and the snapshot.
+      let crossroadsBoard: { entries: readonly BoardEntry[]; winner: BoardEntry | null } | null = null;
+
       if (UNIFIED_DECISION_BOARD_MODE !== 'off') {
         try {
           const board = scoreUnifiedBoard({
@@ -1583,6 +1604,7 @@ export function phaseAgentDecision(
             paysActor: (templateId: string) => templatePaysActor(
               templateId, runtime?.meansPaysActorCache, getUnifiedTemplateById,
             ),
+            ...(preparedLean?.effective ? { crossroadsLean: preparedLean.effective } : {}),
           });
 
           // An empty board is a real verdict, not a missing one: it is what the
@@ -1608,6 +1630,7 @@ export function phaseAgentDecision(
             ? board.winner
             : null;
           const boardFamily: DecisionFamily = boardWinner?.family ?? 'idle';
+          crossroadsBoard = { entries: board.entries, winner: boardWinner };
 
           // With contest B gone (THR-1349 slice 3), the "legacy" side of the
           // comparison is the encounter scorer's own pick — `'encounter'` with its
@@ -1663,6 +1686,7 @@ export function phaseAgentDecision(
               ...(e.leadPull !== undefined ? { leadPull: e.leadPull } : {}),
               ...(e.appointmentDiscount !== undefined ? { appointmentDiscount: e.appointmentDiscount } : {}),
               ...(e.whisperPull !== undefined ? { whisperPull: e.whisperPull } : {}),
+              ...(e.crossroadsLean !== undefined ? { crossroadsLean: e.crossroadsLean } : {}),
               ...(e.roleAffinityPull !== undefined ? { roleAffinityPull: e.roleAffinityPull } : {}),
               ...(e.firstPathPull !== undefined ? { firstPathPull: e.firstPathPull } : {}),
               ...(e.contextPull !== undefined ? { contextPull: e.contextPull } : {}),
@@ -1778,7 +1802,11 @@ export function phaseAgentDecision(
           const compulsionForced = compulsionActor?.properties?.[FORCE_COMPULSION_FLAG] === true;
           if (
             compulsionActor
-            && (compulsionForced || isCompulsionEligible(graph, state.ascendantId, agentId))
+            // THR-1926: the forced pick stops being offered when the Crossroads row
+            // ships (COMPULSION_PREMONITION_ENABLED, flipped by THR-1928). The debug
+            // force still reaches it for review while it exists.
+            && (compulsionForced
+              || (COMPULSION_PREMONITION_ENABLED && isCompulsionEligible(graph, state.ascendantId, agentId)))
             && shouldEmitCompulsion(
               compulsionActor, state.tick, state.premonitionQueue ?? [], newPremonitions,
             )
@@ -1959,6 +1987,97 @@ export function phaseAgentDecision(
         }
         for (const handle of [graph.getNode(agentId), actor]) {
           if (handle) handle.properties.compelledJourneyTemplateId = undefined;
+        }
+      }
+
+      // ── THR-1926: the held Crossroads lean resolves ─────────────────────
+      // After the live branch AND both overrides (review-gate round 1): a held legacy
+      // compulsion or a compelled journey still wins over a lean (save-only or the veto
+      // flag), and when one does, the lean resolves against what the mortal actually
+      // takes, so its toast never describes a choice that did not happen. One trace,
+      // one toast (the outcome and the mortal's answer), then both handles cleared so
+      // a later `...actor.properties` spread cannot restore it and resolve it twice.
+      // A board that threw leaves an unexpired lean held for the next decision.
+      const crossroadsOverriddenTo = compulsionOverrode && decision.selected
+        ? { family: 'encounter' as const, templateId: decision.selected.entry.templateId, targetId: decision.selected.entry.locationId ?? null }
+        : undefined;
+      let leanTurned = false;
+      if (preparedLean && (preparedLean.malformed || preparedLean.expired || crossroadsBoard)) {
+        try {
+          if (preparedLean.held) {
+            const resolved = resolveCrossroadsLean(
+              preparedLean,
+              crossroadsBoard ?? { entries: [], winner: null },
+              decision.topCandidates, scoredStrategic,
+              {
+                agentId, agentName: actor.name, tick: state.tick, floor: BOARD_SCORE_FLOOR,
+                reception: bondReceptionOf(graph, state.ascendantId, agentId),
+                ...(crossroadsOverriddenTo ? { overriddenTo: crossroadsOverriddenTo } : {}),
+              },
+            );
+            if (resolved) {
+              leanTurned = resolved.leanTurned;
+              emitTrace(resolved.trace);
+              newEvents.push({
+                id: `divine_crossroads_${agentId}_${state.tick}`,
+                tick: state.tick,
+                type: 'divine_premonition',
+                message: resolved.message,
+                significance: 0.6,
+                isInterventionBeat: true,
+                actorId: agentId,
+                notification: { channel: 'toast' },
+              });
+            }
+          } else {
+            emitTrace({
+              category: 'crossroads_lean_outcome',
+              tick: state.tick, agentId, family: 'encounter', templateId: 'unknown', targetId: null,
+              direction: 'toward', outcome: 'lapsed_unavailable', heldTicks: 0,
+              winnerFamily: 'idle', winnerId: null, leanTurned: false, forecastAtPlacement: 'not_enough',
+              summary: `Crossroads: a malformed lean on ${actor.name} was cleared`,
+            });
+          }
+        } catch {
+          // Fail-soft: a broken resolve never blocks the decision; the lean is cleared.
+        }
+        for (const handle of [graph.getNode(agentId), actor]) {
+          if (handle) handle.properties.crossroadsLean = undefined;
+        }
+        if (runtime) touchWorld(runtime);
+      }
+
+      // ── THR-1926: write the Crossroads snapshot ───────────────────────────
+      // For mortals the god threads, after the lean and both overrides: the board
+      // this decision was made on, minus the road just taken and secret cells. An
+      // idle board still writes what lay below the floor, so a torn idle mortal reads.
+      if (CROSSROADS_ENABLED && crossroadsBoard && isThreadedByGod(graph, state.ascendantId, agentId)) {
+        try {
+          const built = buildCrossroadsSnapshotDetailed(
+            crossroadsBoard.entries, decision.topCandidates, scoredStrategic,
+            crossroadsOverriddenTo ?? crossroadsBoard.winner, isSecretCellId, state.tick,
+          );
+          for (const handle of [graph.getNode(agentId), actor]) {
+            if (handle) handle.properties.crossroads = built.snapshot;
+          }
+          if (runtime) touchWorld(runtime);
+          if (isTracingEnabled()) {
+            const word = crossroadsSettledness(built.snapshot);
+            emitTrace({
+              category: 'crossroads_snapshot',
+              tick: state.tick,
+              agentId,
+              options: built.snapshot.options.map(o => ({
+                family: o.family, templateId: o.templateId, targetId: o.targetId, score: o.score,
+              })),
+              excludedTaken: built.excludedTaken,
+              excludedSecret: built.excludedSecret,
+              settledness: word,
+              summary: `Crossroads: ${actor.name} weighs ${built.snapshot.options.map(o => o.templateId).join(', ') || 'nothing'} (${word ?? 'one road'})`,
+            });
+          }
+        } catch {
+          // Fail-soft: no snapshot this decision; the last one stays.
         }
       }
 
@@ -2230,7 +2349,8 @@ export function phaseAgentDecision(
                     // THR-1582: the window judges the engagement forecast `F`, so the
                     // in-window share is measured against the same number.
                     forecast: sel.engagementForecast,
-                    freeChoice: !compulsionOverrode,
+                    // THR-1926: a lean that turned the winner is not the mortal's free choice either.
+                    freeChoice: !compulsionOverrode && !leanTurned,
                     // THR-1740: the window the scorer used (courage + setback shifts),
                     // so the gauge judges the mortal's own window. Absent when bypassed.
                     ...(Number.isFinite(sel.engagementWindowLow) && Number.isFinite(sel.engagementWindowHigh)

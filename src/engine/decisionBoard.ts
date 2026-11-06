@@ -150,6 +150,7 @@ import {
   type MeansWantBreakdown,
 } from './mortalMeans';
 import { readWealth } from './wealth';
+import { crossroadsLeanMultiplier, type CrossroadsLean } from './crossroads';
 import { MEANS_CELL_COST_ENABLED } from '../data/mortal-means-constants';
 import { isFoundingUnaffordable } from './foundingPatron';
 
@@ -441,6 +442,13 @@ export interface BoardEntry {
   readonly meansMultiplier?: number;
   /** THR-1952 — this entry is paying work: an encounter that pays its actor, or an earning cell. */
   readonly meansEarning?: boolean;
+  /**
+   * THR-1926 — the god's held Crossroads lean on this exact road (family + template +
+   * target): `CROSSROADS_LEAN_TOWARD_MULT` or `CROSSROADS_LEAN_AWAY_MULT`, already
+   * folded into `score`; absent when no lean names this entry. On `score` only, never
+   * `finalScore` (the board never reads it — `arrivalCommitment`'s lesson).
+   */
+  readonly crossroadsLean?: number;
 }
 
 export interface BoardResult {
@@ -497,6 +505,12 @@ export interface BoardInput {
    * encounter counts as paying work (the cells still do).
    */
   readonly paysActor?: (templateId: string) => boolean;
+  /**
+   * THR-1926 — the god's held Crossroads lean, resolved by the caller to the instance
+   * that reaches this board. Matching entries of either family multiply by
+   * `crossroadsLeanMultiplier`. Absent → every entry multiplies by 1.
+   */
+  readonly crossroadsLean?: Pick<CrossroadsLean, 'family' | 'templateId' | 'targetId' | 'direction'> | null;
 }
 
 // ─── Payoff ─────────────────────────────────────────────────────
@@ -852,9 +866,14 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
     // THR-1952 — an encounter whose outcome table pays its actor is paying work.
     const encEarning = input.paysActor?.(candidate.entry.templateId) ?? false;
     const encMeans = encEarning ? payingMultiplier : 1;
+    // THR-1926 — the god's held Crossroads lean on this exact instance.
+    const crossroadsLean = crossroadsLeanMultiplier(
+      { family: 'encounter', templateId: candidate.entry.templateId, targetId: candidate.entry.locationId ?? null },
+      input.crossroadsLean,
+    );
     const score = candidate.valuePerTick * candidate.desireMultiplier * forecastFit * arrivalCommitment
       * (appointmentDiscount ?? 1) * (whisperPull ?? 1) * roleAffinityPull * (firstPathPull ?? 1)
-      * contextPull * encMeans;
+      * contextPull * encMeans * crossroadsLean;
     // THR-2036: only a goal she would still take ranks first — one refused on arrival
     // (fit 0) or otherwise under the floor sorts by its score, so it cannot idle her.
     const roadGoal = isGoal && goal.restlessRoad === true && RESTLESS_ROAD_ARRIVAL_PRECEDENCE
@@ -875,6 +894,7 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       ...(roleAffinityPull !== 1 ? { roleAffinityPull } : {}),
       ...(firstPathPull !== undefined ? { firstPathPull } : {}),
       ...(contextPull !== 1 ? { contextPull } : {}),
+      ...(crossroadsLean !== 1 ? { crossroadsLean } : {}),
       // Terms ride even at weight 0, so the census can measure the off arm.
       ...(Object.keys(contextTerms).length > 0 ? { contextTerms } : {}),
       candidateIndex: index,
@@ -954,6 +974,11 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
     const varietyMultiplier = computeBoardVarietyMultiplier(
       candidate.scoreComponents?.varietyPenalty,
     );
+    // THR-1926 — the god's held Crossroads lean on this exact (template, target).
+    const crossroadsLean = crossroadsLeanMultiplier(
+      { family: 'strategic_action', templateId: candidate.templateId, targetId: candidate.targetNodeId ?? null },
+      input.crossroadsLean,
+    );
 
     entries.push({
       family: 'strategic_action',
@@ -969,7 +994,8 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       ...(cellEarning ? { meansEarning: true } : {}),
       ...(meansWant && cellEarning ? { meansMultiplier: cellMeans } : {}),
       ...(thievesGuildOffer !== 1 ? { thievesGuildOffer } : {}),
-      score: evt * desireMultiplier * temperamentWeight * varietyMultiplier * engagement.fit,
+      ...(crossroadsLean !== 1 ? { crossroadsLean } : {}),
+      score: evt * desireMultiplier * temperamentWeight * varietyMultiplier * engagement.fit * crossroadsLean,
       candidateIndex: index,
       forecast: advanceProbability,
       forecastFit: engagement.fit,

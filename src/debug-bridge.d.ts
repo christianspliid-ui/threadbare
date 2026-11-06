@@ -2817,6 +2817,26 @@ export interface DebugBridge {
     agentQuery: string,
     kind?: 'whisper' | 'compulsion',
   ): Promise<ForcePremonitionResult>;
+  /**
+   * THR-1926 — a threaded mortal's Crossroads reading: the snapshot written at their
+   * last full decision (`null` before one), its settledness word, the held lean, and
+   * the forecast word per option index (`away` on option 0 only). Async — always `await`.
+   */
+  getCrossroads(agentQuery: string): Promise<DebugCrossroadsState | { error: string }>;
+  /**
+   * THR-1926 — lean on option `optionIndex` of the current reading through the real
+   * placement (`placeCrossroadsLean`) and spend (`withEssenceSpend(…, 'crossroads')`).
+   * The lean resolves at the mortal's next full decision. Browser-verify only.
+   */
+  leanCrossroads(
+    agentQuery: string,
+    optionIndex: number,
+    direction?: 'toward' | 'away',
+  ): Promise<DebugCrossroadsLeanResult>;
+  /** @internal the debug levers hook registers its Crossroads placer here */
+  _registerCrossroadsLean(
+    fn: (agentId: string, optionIndex: number, direction: 'toward' | 'away') => DebugCrossroadsLeanResult,
+  ): void;
   /** @internal GameView registers its premonition stager here */
   _registerForcePremonition(
     fn: (agentId: string, kind: 'whisper' | 'compulsion') => ForcePremonitionResult,
@@ -4117,6 +4137,33 @@ export interface DebugBridge {
     inChronicle: boolean;
   }>;
 }
+
+/** Result of `window.__DEBUG.getCrossroads` (THR-1926). */
+export interface DebugCrossroadsState {
+  agentId: string;
+  agentName: string;
+  snapshot: import('./engine/crossroads').CrossroadsSnapshot | null;
+  settledness: import('./engine/crossroads').SettlednessWord | null;
+  lean: import('./engine/crossroads').CrossroadsLean | null;
+  forecasts: Record<number, {
+    toward: import('./engine/crossroads').LeanForecast;
+    away?: import('./engine/crossroads').LeanForecast;
+  }>;
+}
+
+/** Result of `window.__DEBUG.leanCrossroads` (THR-1926). */
+export type DebugCrossroadsLeanResult =
+  | {
+      success: boolean;
+      /** The refusal reason when `success` is false. */
+      reason?: string;
+      lean: import('./engine/crossroads').CrossroadsLean | null;
+      essenceCost: number;
+      sphere: string | null;
+      forecast: import('./engine/crossroads').LeanForecast | null;
+      message: string;
+    }
+  | { error: string };
 
 /** Result of `window.__DEBUG.forcePremonition` (THR-1414). */
 export type ForcePremonitionResult =

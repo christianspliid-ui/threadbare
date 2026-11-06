@@ -210,6 +210,31 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Dominion lens',
     desc: 'Show your ground: what is yours, where it ends, and what stands against you. Key 1.',
   },
+  // THR-1926 — The Crossroads: a threaded mortal's next roads, and the god's lean on one.
+  'ui.crossroads': {
+    label: 'The Crossroads',
+    desc: 'What a mortal you thread will weigh at their next free choice, read from how they choose. You can lean on one road.',
+  },
+  'ui.crossroads.settledness': {
+    label: 'Settledness',
+    desc: 'How far ahead their first choice is. A torn mortal can be turned by a light hand; a settled one cannot.',
+  },
+  'ui.crossroads.lean': {
+    label: 'Lean',
+    desc: 'Your weight on one road at their next free choice. They still choose. Paid now; it holds a few days, then fades.',
+  },
+  'ui.crossroads.forecast': {
+    label: 'Forecast',
+    desc: 'Read from how they weigh things now. The world may change before they choose.',
+  },
+  'ui.crossroads.torn_badge': {
+    label: 'Torn',
+    desc: 'Torn between roads. Open their page to lean.',
+  },
+  'ui.crossroads.lifted': {
+    label: 'Lift your hand',
+    desc: 'Lifting your hand frees them from your lean. The essence is not returned.',
+  },
   // THR-1913 — the Inspector's card count on a row (plan § D9 way 2).
   'ui.inspector.cards': {
     label: 'Your cards',
