@@ -27,7 +27,7 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 
 ### Cosmology
 
-- **[Reach](./Cosmology.md#reach)** — one of eight action domains (iron, gold, shadow, veil, heart, eye, stone, star); classifies *what* an actor does
+- **[Reach](./Cosmology.md#reach)** — one of eight action domains (iron, gold, shadow, veil, heart, eye, stone, star); classifies *what* an actor does; player text never says "reach" for the god's hold on a place (that is Dominion)
 - **[Sphere](./Cosmology.md#sphere)** — a cosmic energy that fuels action; orthogonal to Reaches, not a subcategory of them
 - **[Tradition](./Cosmology.md#tradition)** — the school of magic a caster belongs to; decides which spells they can learn and how that magic is paid for; a `magic-tradition` catalog id, never a graph node, and not a Sphere
 - **[Foundation](./Cosmology.md#foundation)** — root Sphere anchoring stability and permanence
@@ -180,7 +180,8 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Trait Ref](./Traits.md#trait-ref)** — how content names a trait: node id, short id, display name, or tag; resolves to a set, predicates ANY-match
 - **[TraitPredicate](./Traits.md#traitpredicate)** — the canonical gate `{ traitId, minLevel? }`; settles the ambition-key vs template-predicate `requiredTraits` collision
 - **[Trait Visibility](./Traits.md#trait-visibility)** — `public` / `discoverable` / `divine_only`; governs whether a trait is known yet, never whether a known trait is shown
-- **[Trait Hook](./Traits.md#trait-hook)** — any authored reaction to a trait: gate, variant, trait-only nudge, or trait fragment; every hook names its trait
+- **[Trait Hook](./Traits.md#trait-hook)** — any authored reaction to a trait: gate, variant, trait-only nudge, or trait fragment; every hook names its trait; authoring word only, never bare "Hook"
+- **[Hook](./Traits.md#hook)** — player-facing: a mark, clue or vow that ties the god to something unfinished, counted on the god rail's Hooks row; not a Trait Hook (THR-2181)
 - **[Selection-Competence Separation](./Traits.md#selection-competence-separation)** — selection steers through `scoringModifiers`; competence only through capped `domainContributions` and the resolution-bonus cap
 - **[Attachment](./Traits.md#attachment)** — the broad code umbrella for anything borne by a bearer that changes what it can do; eight `AttachmentCategory` members, not a player-facing word
 - **[Effect](./Traits.md#effect)** — the substrate word: the `AttachmentEffect` primitives powers and items are built from; never player-facing as a family name

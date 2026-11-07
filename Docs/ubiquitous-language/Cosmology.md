@@ -16,6 +16,8 @@ The eight Reaches are: **iron** (martial/force), **gold** (commerce/resources), 
 
 The ninth Reach, Flesh, was absorbed into the Quintessence system in TB-075. Do not reintroduce it.
 
+**Display rule (seated by delegation 2026-11-07, [THR-2181](https://linear.app/threadbare/issue/THR-2181)):** player-facing text never uses "Reach" or "reach" for the god's hold on a place, person or faction. That is **[Dominion](#dominion)**. A caption or hover that explains Dominion names the word. Why: a warm round-3 tester read "Reach" two ways, because the `dominion` first-use caption sat inside the god's Reaches row without naming itself ([THR-2175](https://linear.app/threadbare/issue/THR-2175)); since THR-2183 the caption says "Dominion:". Ordinary English "reach" in prose ("their stories reach you") is not the term and stays.
+
 ---
 
 ### Sphere
