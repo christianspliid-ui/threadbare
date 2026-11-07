@@ -141,7 +141,7 @@ function makeTemplate(nudges: StepNudge[]): UnifiedActionTemplate {
     actorAffinities: ['individual'],
     motivations: ['courage_prudence'],
     narrativeTemplates: { initiation: 'begins', success: 'succeeds', failure: 'fails' },
-  } as UnifiedActionTemplate;
+  } as unknown as UnifiedActionTemplate;
 }
 
 function archiveState(): GameState {

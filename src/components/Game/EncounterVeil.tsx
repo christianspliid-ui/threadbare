@@ -4150,7 +4150,7 @@ function StepReplayView({
             margin: '0 0 8px 0',
             fontFamily: FONT_PROSE,
             fontStyle: 'italic',
-            fontSize: 'var(--text-sm)',
+            fontSize: 'var(--text-xs)',
             lineHeight: 1.7,
             color: TEXT_WHISPER,
             maxWidth: PROSE_MEASURE,

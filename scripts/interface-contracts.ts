@@ -8376,6 +8376,17 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/orchestrator.ts'],
     readSites: ['src/engine/notificationRouter.ts'],
   },
+  {
+    id: 'step-card-lines-reach-the-reader',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      'Your cards say how they landed (THR-2187). When a step resolves, `executeStepResult` freezes `StepProseRecord.cardLines`: each committed card\'s `bandProse` line for the band, or the nearest band on its side (`CARD_BAND_FALLBACK`), at most `MAX_CARD_LINES_PER_STEP` in commit order, enriched with the step context and the seeded rng, as "<card name> — <line>" (`cardBandLines` in `encounters/nudges.ts`). The Stage step model and the chapter archive copy the frozen strings, never re-enrich; the Stage step replay and the Ledger step render them under the afterimage. Kill switch `CARD_LINES_ENABLED`.',
+    ulTerms: ['Band Fragment'],
+    mechanism: { kind: 'state-field', symbols: ['cardLines'] },
+    writeSites: ['src/engine/unifiedActionResolution.ts'],
+    readSites: ['src/engine/views/stage/buildUnifiedEncounterStageModel.ts', 'src/engine/chapterArchive.ts'],
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */
