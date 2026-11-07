@@ -603,6 +603,7 @@ export type TraceCategory =
   | 'content.query_empty'
   | 'death_site_spirit_pressure'
   | 'debug_tick_batch'
+  | 'tick_replayed'
   | 'divine_premonition'
   | 'economic_trait_acquired'
   | 'economic_trait_lost'
@@ -1304,6 +1305,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'content.query_empty',
   'death_site_spirit_pressure',
   'debug_tick_batch',
+  'tick_replayed',
   'divine_premonition',
   'economic_trait_acquired',
   'economic_trait_lost',
@@ -3268,6 +3270,19 @@ export interface DebugTickBatchTrace extends TraceBase {
   capped: boolean;
   stoppedReason: 'completed' | 'capped' | 'phase_left_playing' | 'error';
   durationMs: number;
+}
+
+/**
+ * Trace: `runTick` ran a tick number it had already run on the same graph (THR-1921).
+ * A caller ticked from a stale state — the graph is mutated in place, so the second
+ * pass steps the world twice and re-mints the same tick-event ids. Detected, never refused.
+ */
+export interface TickReplayedTrace extends TraceBase {
+  category: 'tick_replayed';
+  /** The tick number being run again. */
+  tick: number;
+  /** The highest tick this runtime already ran on this graph. */
+  lastTick: number;
 }
 
 /** Trace: hidden sublocation discovered on a hex */
@@ -5651,6 +5666,7 @@ export type TraceEntry =
   | LayerRevealedTrace
   | HiddenSiteRevealedTrace
   | DebugTickBatchTrace
+  | TickReplayedTrace
   | RevelationTrace
   | InteractionDepthTrace
   | ReputationTraitTrace

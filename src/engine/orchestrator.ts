@@ -3215,6 +3215,23 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     installBindingRemovalHook(s.graph, runtime.bindingIndex, () => s.strategicState, () => s.tick);
   }
 
+  // THR-1921 — name a replay. The graph is mutated in place, so the same graph object
+  // arriving at a tick number this runtime already ran means a caller ticked from a stale
+  // state: the world steps twice and the tick's event ids repeat. Fail-soft: trace (and a
+  // dev-build warning), then run the tick anyway — refusing would freeze the clock.
+  if (runtime) {
+    const last = runtime.lastTickRun;
+    if (last && last.graph === state.graph && s.tick <= last.tick) {
+      emitTrace({
+        category: 'tick_replayed',
+        tick: s.tick,
+        lastTick: last.tick,
+        summary: `tick_replayed: tick ${s.tick} ran again (last run ${last.tick}) — a caller ticked from a stale state`,
+      } as TraceEntry);
+      if (import.meta.env?.DEV) console.warn(`[THR-1921] tick ${s.tick} replayed from a stale state`);
+    }
+  }
+
   // Reset per-tick event counters for deterministic ID generation (NFP #3).
   // Must happen before any phase runs so all IDs use fresh sequences for this tick.
   resetEventCounters();
@@ -4596,6 +4613,9 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
       summary: `tick ${s.tick}: ${totalMs.toFixed(1)}ms total, slowest ${slowestPhase} ${slowestPhaseMs.toFixed(1)}ms`,
     });
   }
+
+  // THR-1921 — record the tick just run, last, so a mid-tick throw never advances it.
+  if (runtime) runtime.lastTickRun = { tick: s.tick, graph: s.graph };
 
   return s;
 
