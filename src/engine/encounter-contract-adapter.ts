@@ -73,8 +73,13 @@ function encodeContractMetadata(contract: EncounterContract): string {
   return `${ADAPTER_CONTRACT_METADATA_KEY}:${JSON.stringify(contract)}`;
 }
 
+/** True when an `illustrationAlt` holds an encoded contract, not prose (THR-1733). Prefix test only — never parses. */
+export function isEncounterContractMetadata(value: string | undefined): boolean {
+  return typeof value === 'string' && value.startsWith(`${ADAPTER_CONTRACT_METADATA_KEY}:`);
+}
+
 function decodeContractMetadata(value: string | undefined): EncounterContract | null {
-  if (!value || !value.startsWith(`${ADAPTER_CONTRACT_METADATA_KEY}:`)) {
+  if (!value || !isEncounterContractMetadata(value)) {
     return null;
   }
   const encoded = value.slice(ADAPTER_CONTRACT_METADATA_KEY.length + 1);
