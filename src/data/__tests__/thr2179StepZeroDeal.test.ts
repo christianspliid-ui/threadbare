@@ -10,6 +10,12 @@ import { describe, expect, it } from 'vitest';
 import { getUnifiedTemplateById } from '../unified-action-templates';
 import { chapterOffersPlayerMove } from '../../engine/playerStepHold';
 import { DEAL_DEFAULT_COUNT } from '../nudge-constants';
+import { isActionStepBranch, type ActionStep, type ActionStepOrBranch } from '../../types/unifiedAction';
+
+function plainStep(step: ActionStepOrBranch): ActionStep {
+  if (isActionStepBranch(step)) throw new Error('expected a plain step, got a branch');
+  return step;
+}
 
 const STEP_ZERO_DEAL_TEMPLATES: ReadonlyArray<readonly [string, string]> = [
   ['ts.quest.consecrate_ground', 'lore'],
@@ -23,7 +29,7 @@ describe('THR-2179 — step-0 dealt hand on the five alone chapters', () => {
   it.each(STEP_ZERO_DEAL_TEMPLATES)('%s deals a pure-fill hand on step 0', (id, tag) => {
     const template = getUnifiedTemplateById(id);
     expect(template, `${id} is registered`).toBeDefined();
-    const step0 = template!.steps![0];
+    const step0 = plainStep(template!.steps![0]);
     expect(step0.deal).toEqual({ count: DEAL_DEFAULT_COUNT, tags: [tag] });
     // Pure fill: no authored specials were added alongside the deal.
     expect(step0.nudges ?? []).toHaveLength(0);
@@ -34,7 +40,7 @@ describe('THR-2179 — step-0 dealt hand on the five alone chapters', () => {
     const later = template.steps!.slice(1);
     expect(later.length).toBeGreaterThan(0);
     for (const step of later) {
-      expect(step.deal).toBeUndefined();
+      expect(plainStep(step).deal).toBeUndefined();
     }
   });
 
