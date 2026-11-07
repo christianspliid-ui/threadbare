@@ -110,6 +110,7 @@ complete. (These phases still appear in the full wiring table below; they just l
 | `6.625b` | Companion expiry | `THR-1096` |
 | `6.625c` | Agreement expiry | `THR-1999` |
 | `6.6355` | Founded places take their people | `THR-1839`, `THR-1849` |
+| `6.6372` | Paymaster guard | `THR-2026` |
 | `6.6385` | Location Traits | `THR-790` |
 | `end` | Drift Decay — passive per-tick decay toward zero | `THR-323` |
 
@@ -192,6 +193,7 @@ registry. The wiring ground truth: if it is on the tick path, it is here.
 | `6.6355` | Founded places take their people | `THR-1839`, `THR-1849` | orchestrator |
 | `6.636` | Settlement Genome Reassessment | — | orchestrator |
 | `6.637` | Unrest — pressure toward a daily target; Restless leave, Lawless riot | `THR-1934` | orchestrator |
+| `6.6372` | Paymaster guard | `THR-2026` | orchestrator |
 | `6.638` | Magical Saturation | — | orchestrator |
 | `6.6385` | Location Traits | `THR-790` | orchestrator |
 | `6.6386` | Prayers | `THR-1935` | orchestrator |
@@ -486,4 +488,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 114 tick phases · 241 engine domains · 814 modules._
+_Counts: 28 registered subsystems (2 dormant) · 115 tick phases · 241 engine domains · 814 modules._
