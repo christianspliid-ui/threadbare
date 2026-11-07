@@ -8,15 +8,20 @@
  * 3. With `COMPULSION_PREMONITION_ENABLED` forced `false`, 30 ticks queue no
  *    `compulsion` premonition — and a save already holding `compulsionTargetTemplateId`
  *    still resolves it through the old path.
+ * 4. THR-2188: a lean whose road is on no list waits (traced `crossroads_lean_waiting`,
+ *    still held); with `CROSSROADS_LEAN_WAITS_FOR_ROAD` forced `false` it lapses
+ *    `lapsed_unavailable` at the first full decision, as before.
  */
 import { describe, it, expect, afterAll, vi } from 'vitest';
 
 const compulsionFlag = vi.hoisted(() => ({ value: undefined as boolean | undefined }));
+const waitFlag = vi.hoisted(() => ({ value: undefined as boolean | undefined }));
 vi.mock('../../data/premonition-constants', async (importOriginal) => {
   const actual = await importOriginal<Record<string, unknown>>();
   return {
     ...actual,
     get COMPULSION_PREMONITION_ENABLED() { return compulsionFlag.value ?? actual.COMPULSION_PREMONITION_ENABLED; },
+    get CROSSROADS_LEAN_WAITS_FOR_ROAD() { return waitFlag.value ?? actual.CROSSROADS_LEAN_WAITS_FOR_ROAD; },
   };
 });
 
@@ -55,7 +60,7 @@ function freshWorld() {
 interface TraceLike { category: string; agentId?: string; tick: number; outcome?: string; subtype?: string }
 
 describe('THR-1926 — The Crossroads on seed 42', () => {
-  afterAll(() => { disableTracing(); clearTraces(); compulsionFlag.value = undefined; });
+  afterAll(() => { disableTracing(); clearTraces(); compulsionFlag.value = undefined; waitFlag.value = undefined; });
 
   it('writes the snapshot, and a placed lean resolves once with one trace and one toast', () => {
     let { state, runtime } = freshWorld();
@@ -110,6 +115,55 @@ describe('THR-1926 — The Crossroads on seed 42', () => {
     expect(compulsionResolved).toBe(true);
     expect(state.graph.getNode(FIRST_ID)?.properties.compulsionTargetTemplateId).toBeUndefined();
     compulsionFlag.value = undefined;
+  }, MULTI_WORLD_SIM_TEST_TIMEOUT_MS);
+  /** A well-formed lean on a template no board will ever hold. */
+  function leanOnNothing(tick: number) {
+    return {
+      family: 'encounter', templateId: 'no_such_template_thr2188', targetId: null, direction: 'toward',
+      tick, sphere: 'Order', essencePaid: 0, rankWhenPlaced: 1, forecastAtPlacement: 'likely',
+    };
+  }
+
+  it('THR-2188: a lean whose road is on no list waits for it, and stays held', () => {
+    waitFlag.value = true;
+    let { state, runtime } = freshWorld();
+    state.graph.getNode(FIRST_ID)!.properties.crossroadsLean = leanOnNothing(state.tick);
+    let waits = 0;
+    let outcomes = 0;
+    for (let t = 0; t < 40; t++) {
+      state = unattended(runTick(state, [], runtime));
+      for (const tr of getTraces() as ReadonlyArray<TraceLike>) {
+        if (tr.agentId !== FIRST_ID) continue;
+        if (tr.category === 'crossroads_lean_waiting') waits++;
+        if (tr.category === 'crossroads_lean_outcome') outcomes++;
+      }
+      clearTraces();
+    }
+    expect(waits, 'premise: The First made a full decision with the lean held').toBeGreaterThan(0);
+    expect(outcomes).toBe(0);
+    expect(readCrossroadsLean(state.graph.getNode(FIRST_ID)?.properties.crossroadsLean)?.templateId).toBe('no_such_template_thr2188');
+    waitFlag.value = undefined;
+  }, MULTI_WORLD_SIM_TEST_TIMEOUT_MS);
+
+  it('THR-2188: with the wait off, the same lean lapses unavailable at the first decision', () => {
+    waitFlag.value = false;
+    let { state, runtime } = freshWorld();
+    state.graph.getNode(FIRST_ID)!.properties.crossroadsLean = leanOnNothing(state.tick);
+    const outcomes: TraceLike[] = [];
+    let waits = 0;
+    for (let t = 0; t < 40 && outcomes.length === 0; t++) {
+      state = unattended(runTick(state, [], runtime));
+      for (const tr of getTraces() as ReadonlyArray<TraceLike>) {
+        if (tr.agentId !== FIRST_ID) continue;
+        if (tr.category === 'crossroads_lean_waiting') waits++;
+        if (tr.category === 'crossroads_lean_outcome') outcomes.push(tr);
+      }
+      clearTraces();
+    }
+    expect(waits).toBe(0);
+    expect(outcomes.map(o => o.outcome)).toEqual(['lapsed_unavailable']);
+    expect(readCrossroadsLean(state.graph.getNode(FIRST_ID)?.properties.crossroadsLean)).toBeNull();
+    waitFlag.value = undefined;
   }, MULTI_WORLD_SIM_TEST_TIMEOUT_MS);
 });
 
