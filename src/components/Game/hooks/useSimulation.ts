@@ -203,6 +203,10 @@ export function useSimulation({
     if (prev.phase === 'playing') {
       const targets = getScryTargetHexes(scryStateRef.current, prev.graph);
       const next = runTick(prev, targets, runtimeRef.current);
+      // THR-1921: advance the ref before committing, like every other state-advancing
+      // callback here — otherwise a second tick before React re-renders (a bunched
+      // interval, or `__DEBUG.tick`) runs this tick again from `prev`.
+      gameStateRef.current = next;
       setGameState(next);
     }
     // THR-1381: in the Twilight time is stopped — the ceremony is open and runs no tick;

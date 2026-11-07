@@ -376,6 +376,12 @@ export interface SimulationRuntime {
    * playthrough is the reset, so no init hook and no reset call are needed.
    */
   incidentRecorder: IncidentRecorder;
+
+  /**
+   * THR-1921 — the last tick `runTick` produced on this runtime, and the graph it ran on
+   * (replay detection). Written only at the end of a successful tick; `null` until the first.
+   */
+  lastTickRun: { tick: number; graph: WorldGraph } | null;
 }
 
 // ─── Factory ──────────────────────────────────────────────────────
@@ -430,6 +436,7 @@ export function createSimulationRuntime(): SimulationRuntime {
     curationPhaseMultiplier: 1.0,
     aftermathEventSeq: 0,
     incidentRecorder: createIncidentRecorder(),
+    lastTickRun: null,
   };
 }
 

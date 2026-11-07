@@ -509,7 +509,7 @@
     </div>
     <div class="data-flow-item">
       <strong>Determinism</strong>
-      <span>Seeded PRNG per phase: seed + tick * N</span>
+      <span>Seeded PRNG per phase: seed + tick * N. One tick runs once (THR-1921): <code>runtime.lastTickRun</code> records the last tick and its graph; the same graph returning at a tick already run emits a <code>tick_replayed</code> trace (and a dev warning) and still runs.</span>
     </div>
   </div>
 
