@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-07 21:57 local (20:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-07 22:58 local (21:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,6 +46,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-07: a loan or favour that runs out its term no longer takes the pair's feelings for each other with it, and it is live** ([THR-2045](https://linear.app/threadbare/issue/THR-2045/an-agreement-that-runs-out-its-term-takes-the-pairs-bond-with-it)). Merged via [#2789](https://github.com/christianspliid-ui/threadbare/pull/2789).
 - **2026-11-07: a mortal's Story list now names the deed in words ("Destroy a power"), never the game's internal code, and it is live** ([THR-2145](https://linear.app/threadbare/issue/THR-2145)). Merged via [#2787](https://github.com/christianspliid-ui/threadbare/pull/2787).
 - **2026-11-07: a god's lean now waits for its road instead of lapsing, and it is live** ([THR-2188](https://linear.app/threadbare/issue/THR-2188)). Merged via [#2784](https://github.com/christianspliid-ui/threadbare/pull/2784).
 - **2026-11-07: the world no longer runs the same day twice, and it is live** ([THR-1921](https://linear.app/threadbare/issue/THR-1921/orchestrator-event-ids-collide-evt-141-10-25-duplicate-react-keys-in)). Merged via [#2783](https://github.com/christianspliid-ui/threadbare/pull/2783).
@@ -55,7 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-07: The Crossroads is on screen — a threaded mortal's next three roads, and you can lean toward one; it is live** ([THR-1928](https://linear.app/threadbare/issue/THR-1928/the-crossroads-on-screen-a-threaded-mortals-next-three-roads-as-an)). Merged via [#2774](https://github.com/christianspliid-ui/threadbare/pull/2774).
 - **2026-11-06: hex cards' sphere push now lands on the right place on the map, and it is live** ([THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid)). Merged via [#2773](https://github.com/christianspliid-ui/threadbare/pull/2773).
 - **2026-11-06: The Crossroads is live — see a threaded mortal's top choices and lean on one** ([THR-1926](https://linear.app/threadbare/issue/THR-1926/the-crossroads-read-a-threaded-mortals-top-three-choices-encounters)), the god action you approved on 14 Oct. Merged via [#2772](https://github.com/christianspliid-ui/threadbare/pull/2772).
-- **2026-11-06: rank words on a reach tile now show where they sit on their ladder, and it is live** ([THR-2182](https://linear.app/threadbare/issue/THR-2182/rank-words-show-their-ladder-a-reach-tile-says-where-its-word-sits-and)). Merged via [#2771](https://github.com/christianspliid-ui/threadbare/pull/2771).
 ---
 
 Older resolved items and every earlier revision of this file: `git log -p origin/ops -- Design/user-actions.md`.
