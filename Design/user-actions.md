@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-07 13:01 local (12:01 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-07 13:58 local (12:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,6 +46,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-07: a screen reader now reads an encounter's opening picture as "Scene from …", never the game's hidden setup data, and it is live** ([THR-1733](https://linear.app/threadbare/issue/THR-1733/the-encounter-illustrations-alt-text-is-the-whole-encoded-contract)). Merged via [#2781](https://github.com/christianspliid-ui/threadbare/pull/2781).
 - **2026-11-07: five chapters The First used to play out alone now deal you a hand on their first step, and it is live** ([THR-2179](https://linear.app/threadbare/issue/THR-2179)). Merged via [#2776](https://github.com/christianspliid-ui/threadbare/pull/2776).
 - **2026-11-07: your cards now say how they landed — each card you play adds its own line under the step's result, and it is live** ([THR-2187](https://linear.app/threadbare/issue/THR-2187/your-cards-say-how-they-landed-each-card-the-god-played-adds-its-own)). Merged via [#2775](https://github.com/christianspliid-ui/threadbare/pull/2775).
 - **2026-11-07: The Crossroads is on screen — a threaded mortal's next three roads, and you can lean toward one; it is live** ([THR-1928](https://linear.app/threadbare/issue/THR-1928/the-crossroads-on-screen-a-threaded-mortals-next-three-roads-as-an)). Merged via [#2774](https://github.com/christianspliid-ui/threadbare/pull/2774).
@@ -55,7 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-06: "See the work" on a work moment now opens the mortal's sheet on the work, and it is live** ([THR-2186](https://linear.app/threadbare/issue/THR-2186/see-the-work-lands-on-the-work-the-inspector-opens-on-the-tab-a-link)). Merged via [#2770](https://github.com/christianspliid-ui/threadbare/pull/2770).
 - **2026-11-06: a rival’s raid now names the place it pressed and opens it, and the Chronicle names the rival, and it is live** ([THR-2185](https://linear.app/threadbare/issue/THR-2185/a-rivals-move-has-a-place-and-an-answer-the-raid-toast-names-the-place)). Merged via [#2769](https://github.com/christianspliid-ui/threadbare/pull/2769).
 - **2026-11-06: coming back to the game now opens on a "While you were away" recap, and it is live** ([THR-2184](https://linear.app/threadbare/issue/THR-2184/while-you-were-away-the-warm-up-card-ends-on-a-five-line-recap-led-by)). Merged via [#2768](https://github.com/christianspliid-ui/threadbare/pull/2768).
-- **2026-11-06: the god rail's folded rows now say what they count, and it is live** ([THR-2183](https://linear.app/threadbare/issue/THR-2183/the-rail-rows-say-what-they-are-plain-summaries-on-the-folded-god-rail)). Merged via [#2766](https://github.com/christianspliid-ui/threadbare/pull/2766).
 ---
 
 Older resolved items and every earlier revision of this file: `git log -p origin/ops -- Design/user-actions.md`.
