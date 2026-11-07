@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-07 04:57 local (03:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-07 05:56 local (04:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -36,15 +36,15 @@ Say "veto A lean waits for its road" to reverse it.
 ## Queue
 
 **Starved: one ticket ready, and it is on hold until its veto window closes.**
-- [A lean waits for its road](https://linear.app/threadbare/issue/THR-2188) (THR-2188) moved to Ready for Dev this hour; its plan merged via [#2777](https://github.com/christianspliid-ui/threadbare/pull/2777). The builder takes it after 15:36 UTC today, when the veto window above closes.
-- The builder's last five runs (02:32–03:52 UTC) found nothing it was allowed to pick up: an empty shelf, then the one ticket on hold. That is correct, not a stall. Nothing here needs you.
+- [A lean waits for its road](https://linear.app/threadbare/issue/THR-2188) (THR-2188) moved to Ready for Dev at 03:36 UTC; its plan merged via [#2777](https://github.com/christianspliid-ui/threadbare/pull/2777). The builder takes it after 15:36 UTC today, when the veto window above closes.
+- The builder's last eight runs (02:32–04:52 UTC) found nothing it was allowed to pick up: an empty shelf, then the one ticket on hold. That is correct, not a stall. Nothing here needs you.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (18 days; In Dev since 15 Oct, 23 days; last touched 1 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- The live site is up to date: the commits since its last publish (9924a734) only touched notes and plans. Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time. The worktree reaper last ran 04:40 local.
+- The live site is up to date: the commits since its last publish (9924a734) only touched notes and plans. Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time. The worktree reaper last ran 05:40 local.
 - Engine speed: 130 ms/tick steady, −12% against the 7-day median (148).
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask.
-- **The home-folder copy of the repo is now 175 commits behind main**; its newest commit is from 4 Nov 11:02 local, about 66 hours ago. An edited `.claude/settings.local.json` and an untracked screenshot under `Docs/evidence/thr-2125/` that main now also adds still block the mirror's sync. This is the twenty-first hour in a row this brief has flagged it; an attended agent session should set the two files aside and fast-forward. Nothing is lost, because the lanes work from fresh copies of main.
+- **The home-folder copy of the repo is now 175 commits behind main**; its newest commit is from 4 Nov 11:02 local, about 67 hours ago. An edited `.claude/settings.local.json` and an untracked screenshot under `Docs/evidence/thr-2125/` that main now also adds still block the mirror's sync. This is the twenty-second hour in a row this brief has flagged it; an attended agent session should set the two files aside and fast-forward. Nothing is lost, because the lanes work from fresh copies of main.
