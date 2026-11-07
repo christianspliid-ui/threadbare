@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-07 19:56 local (18:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-07 20:57 local (19:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -35,7 +35,7 @@ Say "veto paid army turns at once", "veto one tick runs once", "veto scene pictu
 
 **Starved: one ticket ready, on hold until 20:30 UTC. Nothing is being built right now.**
 - [An army taken into its liege's pay keeps marching on its liege's town](https://linear.app/threadbare/issue/THR-2026/an-army-taken-into-its-lieges-pay-keeps-marching-on-its-lieges-town) is built and live ([PR #2786](https://github.com/christianspliid-ui/threadbare/pull/2786)).
-- [The sheet's Story list shows a raw key](https://linear.app/threadbare/issue/THR-2145/the-sheets-story-list-shows-a-raw-key-celldestroypower-afflicted) opens after 20:30 UTC today. The builder runs at 18:09, 18:32 and 18:51 UTC stood down correctly, because it was still inside its hold.
+- [The sheet's Story list shows a raw key](https://linear.app/threadbare/issue/THR-2145/the-sheets-story-list-shows-a-raw-key-celldestroypower-afflicted) opens after 20:30 UTC today. The builder runs at 19:11, 19:31 and 19:51 UTC stood down correctly, because it was still inside its hold. The first run after 20:30 UTC should take it.
 - Next for the design lane to plan: [away leans almost always read "work"](https://linear.app/threadbare/issue/THR-2189), now that THR-2026 is handed off. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-07f.md)*
 
 Items for agents, not you:
@@ -43,6 +43,6 @@ Items for agents, not you:
 
 ## Health
 
-- The live site is up to date (2f555386). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting. All scheduled tasks are on time. The worktree reaper ran within the hour. Engine speed is normal (133 ms/tick, 9% under the 7-day median).
+- The live site is up to date (2f555386). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting. All scheduled tasks are on time. The worktree reaper ran within the hour. Engine speed is normal (131 ms/tick, 10% under the 7-day median).
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask.
-- **The home-folder copy of the repo is 217 commits behind main** (last synced 4 Nov). An edited `.claude/settings.local.json` and untracked files under `Docs/evidence/` and `Docs/ops/` still block the mirror's sync. This is the thirty-sixth hour in a row this brief has flagged it; an attended agent session should set them aside and fast-forward. Nothing is lost, because the lanes work from fresh copies of main.
+- **The home-folder copy of the repo is 217 commits behind main** (last synced 4 Nov). An edited `.claude/settings.local.json` and untracked files under `Docs/evidence/` and `Docs/ops/` still block the mirror's sync. This is the thirty-seventh hour in a row this brief has flagged it; an attended agent session should set them aside and fast-forward. Nothing is lost, because the lanes work from fresh copies of main.
