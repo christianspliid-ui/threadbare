@@ -114,11 +114,12 @@ export const COMPULSION_COOLDOWN_TICKS = 24;
 /** One-flag revert: off → no snapshot write, no lean applied. */
 export const CROSSROADS_ENABLED = true;
 
-/** God's Will emitter (the forced Compulsion pick). Slice A keeps it `true`;
- * THR-1928 flips it to `false` in the change that ships the Crossroads row.
- * `true` afterwards is the veto path: the forced pick beside the Crossroads.
+/** God's Will emitter (the forced Compulsion pick). Slice A kept it `true`;
+ * THR-1928 flipped it to `false` in the change that ships the Crossroads row
+ * (Christian's ruling in chat 2026-10-14: "yes please replace").
+ * `true` is the veto path: the forced pick beside the Crossroads.
  * The debug force (`FORCE_COMPULSION_FLAG`) bypasses it. */
-export const COMPULSION_PREMONITION_ENABLED = true;
+export const COMPULSION_PREMONITION_ENABLED = false;
 
 /** How many next roads the reading shows. @range 2–5 */
 export const CROSSROADS_OPTION_COUNT = 3;

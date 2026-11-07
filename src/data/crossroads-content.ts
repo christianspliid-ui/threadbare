@@ -120,6 +120,30 @@ export const CROSSROADS_ANSWER_DEFAULT = {
   resisted: '{name} keeps to their own road.',
 } as const;
 
+/** The row's controls (THR-1928). Arm-then-fire: a lean button arms, "Lean" fires (Law 48). */
+export const CROSSROADS_CONTROLS = {
+  toward: 'Lean toward',
+  away: 'Lean away',
+  fire: 'Lean',
+  cancel: 'Not now',
+  lift: 'Lift your hand',
+} as const;
+
+/** The kind word on each road's tile (THR-1928). */
+export const CROSSROADS_KIND_WORD: Record<'encounter' | 'strategic_action', string> = {
+  encounter: 'A chance',
+  strategic_action: 'A work',
+};
+
+/** The word before a road's place or target link: "at Greyford". */
+export const CROSSROADS_TARGET_LEAD = 'at';
+
+/** The thread row's torn badge (THR-1928): its word and its screen-reader label. */
+export const CROSSROADS_TORN_BADGE = {
+  label: 'Torn',
+  ariaLabel: '{name} is torn between roads. Open their page to lean.',
+} as const;
+
 /** The road noun when an undertaking's template cannot be named. */
 export const CROSSROADS_UNNAMED_WORK_NOUN = 'a work nearby';
 

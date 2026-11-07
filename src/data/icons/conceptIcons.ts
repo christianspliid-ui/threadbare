@@ -254,7 +254,7 @@ export const ICON_FOR_CONSEQUENCE: Readonly<Record<EncounterAftermathCategory, I
 
 export type ThreadRowMark =
   | 'badge-encounter' | 'badge-notice' | 'champion' | 'aspect'
-  | 'appointment' | 'badge-aftermath' | 'badge-tug' | 'badge-moment';
+  | 'appointment' | 'badge-aftermath' | 'badge-tug' | 'badge-moment' | 'badge-torn';
 
 /** The thread row's badges and extras (ThreadsPanel). */
 export const ICON_FOR_THREAD_ROW_MARK: Readonly<Record<ThreadRowMark, IconName>> = {
@@ -266,6 +266,8 @@ export const ICON_FOR_THREAD_ROW_MARK: Readonly<Record<ThreadRowMark, IconName>>
   'badge-aftermath': 'new',
   'badge-tug': 'threads',
   'badge-moment': 'undertaking',
+  // THR-1928: a mortal torn between roads (the Crossroads).
+  'badge-torn': 'road',
 };
 
 // ─── Codex: undertaking kinds, card groups, resources ────────────────────────

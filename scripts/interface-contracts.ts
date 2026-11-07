@@ -2147,7 +2147,7 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: ENCOUNTERS,
     consumerSystem: 'Essence & Divine Economy',
     intent:
-      'A threaded mortal\'s next roads are read off the board that actually decides (THR-1926, Law 18). At each full decision `phaseAgentDecision` writes `crossroads` on every mortal the god threads: the board\'s entries in order, minus the road just taken and secret cells (`isSecretCellId`), cut at `CROSSROADS_OPTION_COUNT`. `placeCrossroadsLean` validates a lean against it and prices it by rank; `settledness` and `forecastLean` read it with the decision\'s own multiplier. The page row and torn badge (THR-1928) will read the same field.',
+      'A threaded mortal\'s next roads are read off the board that actually decides (THR-1926, Law 18). At each full decision `phaseAgentDecision` writes `crossroads` on every mortal the god threads: the board\'s entries in order, minus the road just taken and secret cells (`isSecretCellId`), cut at `CROSSROADS_OPTION_COUNT`. `placeCrossroadsLean` validates a lean against it and prices it by rank; `settledness` and `forecastLean` read it with the decision\'s own multiplier. The page row (`crossroadsRow.ts`) and the torn badge (`crossroadsBadgeModel.ts`, via `crossroadsTornName`) read the same field (THR-1928).',
     ulTerms: ['Agent', 'Encounter', 'Undertaking'],
     mechanism: { kind: 'node-prop', symbols: ['crossroads', 'buildCrossroadsSnapshot', 'settledness', 'forecastLean'] },
     writeSites: ['src/engine/phaseAgentDecision.ts'],

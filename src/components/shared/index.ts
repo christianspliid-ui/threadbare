@@ -75,6 +75,8 @@ export { ListHeadingIcon } from './ListHeadingIcon';
 export { QuietSlot } from './QuietSlot';
 export { SectionHeading } from './SectionHeading';
 export { Section } from './Section';
+export { CardActContext, CardActStripHead, CardActTileControls, useCardActArming } from './CardActStrip';
+export type { CardActHandlers, CardActResult } from './CardActStrip';
 export { SphereIcon, REACH_TO_SPHERE, sphereFromReach } from './SphereIcon';
 export { StepDots } from './StepDots';
 export { Tooltip } from './Tooltip';

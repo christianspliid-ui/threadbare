@@ -385,12 +385,67 @@ export interface CardTile {
   wordHover?: { label: string; desc: string };
   /** THR-2182 (additive): a registry hover on the title (ignored when the tile has a `ref`). */
   titleTooltipId?: string;
+  /**
+   * THR-1928 (additive): what the god can do to this tile, arm-then-fire (Law 48). Read only
+   * when the section carries an `act` strip; empty or absent = no control (Law 25).
+   */
+  offers?: CardActOffer[];
+  /** THR-1928 (additive): the tile the held act rests on (the leaned road). */
+  marked?: boolean;
+}
+
+/**
+ * THR-1928 — one arm-then-fire offer on a tile: the button that arms it, then what the
+ * armed strip says before paying (Law 17) — the forecast word, the price as pips (Law 15)
+ * and the confirm sentence.
+ */
+export interface CardActOffer {
+  /** The tile's position in the strip's source list (the Crossroads option index) — display only. */
+  optionIndex: number;
+  /**
+   * The road this offer acts on, by identity (review-gate round 1): arming and firing key on
+   * it, never on the position, so a reading rewritten while a tile is armed can never re-point
+   * the strip — or the spend — at a different road.
+   */
+  road: { family: 'encounter' | 'strategic_action'; templateId: string; targetId: string | null };
+  direction: 'toward' | 'away';
+  /** The arming button's word: "Lean toward". */
+  label: string;
+  labelTooltipId?: string;
+  /** The forecast line read before paying: "It may tip Kael." */
+  forecast: string;
+  forecastTooltipId?: string;
+  /** The confirm sentence; names the pool, never the price numeral. */
+  confirm: string;
+  /** The price after Dominion, drawn as pips. */
+  cost: number;
+  /** The sphere it is paid in (tints the armed strip). */
+  sphere: string;
+  /** Null when it can be paid; else the reason the fire button is dimmed with (Law 25). */
+  blockedReason: string | null;
+}
+
+/** THR-1928 — the act strip a cards section may carry (the Crossroads row). */
+export interface CardsActStrip {
+  /** Which handler fires it. */
+  kind: 'crossroads';
+  /** The subject the act lands on (the person). */
+  subjectId: string;
+  /** A sentence under the label (the settledness line), its key word explaining itself. */
+  intro?: SentencePart[];
+  /** The fire / disarm words: "Lean" / "Not now". */
+  fireLabel: string;
+  cancelLabel: string;
+  /** While an act is held: the held line and the one control that lifts it. */
+  held?: { line: string; liftLabel: string; liftTooltipId?: string };
 }
 
 /** A row of small cards — conditions, works, powers (THR-1876 § D6, new shape). */
 export interface CardsSection extends SectionBase {
   kind: 'cards';
   tiles: CardTile[];
+  /** THR-1928 (additive): an arm-then-fire strip over the tiles (plan THR-1926 § UI pillar). */
+  act?: CardsActStrip;
 }
 
 export interface PortraitSection extends SectionBase {

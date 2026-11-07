@@ -85,6 +85,9 @@ export interface LedgerRailProps {
   handleOpenEncounterBadge: ThreadsPanelProps['onOpenEncounterBadge'];
   tugBadges: ThreadsPanelProps['tugBadges'];
   attendThreadTug: ThreadsPanelProps['onAttendTugBadge'];
+  /** THR-1928: the torn badges, and what a click on one opens. */
+  crossroadsBadges?: ThreadsPanelProps['crossroadsBadges'];
+  handleOpenCrossroadsBadge?: ThreadsPanelProps['onOpenCrossroadsBadge'];
   noticeBadges: ThreadsPanelProps['noticeBadges'];
   handleOpenNoticeBadge: ThreadsPanelProps['onOpenNoticeBadge'];
   momentBadges: ThreadsPanelProps['momentBadges'];
@@ -116,6 +119,8 @@ export function LedgerRail({
   handleOpenEncounterBadge,
   tugBadges,
   attendThreadTug,
+  crossroadsBadges,
+  handleOpenCrossroadsBadge,
   noticeBadges,
   handleOpenNoticeBadge,
   momentBadges,
@@ -228,6 +233,8 @@ export function LedgerRail({
       onOpenEncounterBadge: handleOpenEncounterBadge,
       tugBadges,
       onAttendTugBadge: attendThreadTug,
+      crossroadsBadges,
+      onOpenCrossroadsBadge: handleOpenCrossroadsBadge,
       noticeBadges,
       onOpenNoticeBadge: handleOpenNoticeBadge,
       momentBadges,
