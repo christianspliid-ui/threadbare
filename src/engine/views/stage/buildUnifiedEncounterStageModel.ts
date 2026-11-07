@@ -30,7 +30,7 @@ import { supportRoleWord } from '../../supportRoleWords';
 import { isDefaultSupportSpec } from '../../../data/default-support-bundles';
 import { interventionStanceWord } from '../../interventionStanceWords';
 import { buildNudgePhaseModel } from './buildNudgePhaseModel';
-import { renderableIllustrationUrl } from './encounterIllustration';
+import { illustrationAltText, renderableIllustrationUrl } from './encounterIllustration';
 import { stakesContextFor, stakesLineForAction } from '../../encounters/stakesLine';
 import { resolveFightStepInputs } from '../../fights/fightStepInputs';
 import { buildOpponentHeaderModel, fightStepLabel } from './buildOpponentHeaderModel';
@@ -995,7 +995,7 @@ export function buildUnifiedEncounterStageModel(
   const illustration = !isAftermath && isOpeningStep && illustrationSrc
     ? {
         src: illustrationSrc,
-        alt: args.template.illustrationAlt ?? `Scene from ${args.template.name}`,
+        alt: illustrationAltText(args.template),
         caption: 'Some encounters arrive with a remembered image already clinging to them.',
       }
     : undefined;

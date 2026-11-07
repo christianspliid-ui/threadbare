@@ -37,7 +37,7 @@ import { formatEssenceLabel } from '../../../data/essence-format';
 import { interventionStanceWord } from '../../interventionStanceWords';
 import { fightRoleOf } from '../../fights/fightStepInputs';
 import { buildOpponentHeaderModel, fightStepLabel } from './buildOpponentHeaderModel';
-import { renderableIllustrationUrl } from './encounterIllustration';
+import { illustrationAltText, renderableIllustrationUrl } from './encounterIllustration';
 
 // ── Types ────────────────────────────────────────────────
 
@@ -360,7 +360,7 @@ export function buildSimpleEncounterStageModel(
   const illustration = illustrationSrc
     ? {
         src: illustrationSrc,
-        alt: template.illustrationAlt ?? `Scene from ${template.name}`,
+        alt: illustrationAltText(template),
       }
     : undefined;
 
