@@ -2360,7 +2360,8 @@ export interface WarAimReaimTrace extends TraceBase {
   armyId: string;
   from: { type: string; targetNodeId: string } | null;
   to: { type: string; targetNodeId: string } | null;
-  why: 'threat' | 'target_no_longer_enemy' | 'target_out_of_reach' | 'target_taken' | 'no_objective';
+  why: 'threat' | 'target_no_longer_enemy' | 'target_out_of_reach' | 'target_taken' | 'no_objective'
+    | 'target_on_paymaster_side'; // THR-2026: the end-of-tick paymaster guard
 }
 
 /** THR-1933 — the purse is off, so towns are priced by prosperity. */

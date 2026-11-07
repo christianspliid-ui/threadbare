@@ -35,12 +35,13 @@ import { RIVALRY_SENTIMENT_THRESHOLD } from '../types/factionAction';
 import { buildWarAimContext, hexOfActor, placeTierLocationOf, type WarAimContext } from './warAims/context';
 import { pickWarAim, stillEnemyTarget, inReach, marchableFrom, topCandidates, type WarAimPick, type ScoredTown } from './warAims/score';
 import { findThreatToDefend, type DefenceTarget } from './warAims/defence';
-import { campaignTargetOf, commanderFactionOf, isEnemyFaction } from './warAims/enemy';
-import { ownFactionOf } from './crown/wages';
+import { campaignTargetOf, commanderFactionOf, isEnemyFaction, onPaymasterSide, isPaymasterHolder } from './warAims/enemy';
+import { ownFactionOf, payingLiegeOf } from './crown/wages';
 
 export type RealmProjectionSource = () => RealmProjection;
 
-export type ReaimWhy = 'threat' | 'target_no_longer_enemy' | 'target_out_of_reach' | 'target_taken' | 'no_objective';
+export type ReaimWhy = 'threat' | 'target_no_longer_enemy' | 'target_out_of_reach' | 'target_taken' | 'no_objective'
+  | 'target_on_paymaster_side'; // THR-2026: the end-of-tick guard re-aimed a liege-paid army
 
 /** Ambition types whose army's conquer target becomes the ambition's own target. */
 const TARGETED_AMBITIONS: ReadonlySet<string> = new Set(['territorial_expansion', 'revenge']);
@@ -247,7 +248,6 @@ export function reaimArmies(state: GameState, getProjection?: RealmProjectionSou
   if (!WAR_AIMS_ENABLED) return;
   if (state.tick % WAR_AIM_REAIM_INTERVAL_TICKS !== 0) return;
   const graph = state.graph;
-  let ctx: WarAimContext | null = null;
   const armies = graph.getNodesByType('actor')
     .filter(n => n.properties.armyState != null)
     .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
@@ -262,46 +262,114 @@ export function reaimArmies(state: GameState, getProjection?: RealmProjectionSou
     });
   }
 
+  const ctxRef: { ctx: WarAimContext | null } = { ctx: null };
   for (const army of armies) {
     try {
-      const armyState = army.properties.armyState as ArmyState;
-      if (skipsReaim(graph, army.id, armyState)) continue;
-      const { own, commander: factionId } = sidesOf(graph, army.id, state.tick);
-      const armyHex = hexOfActor(graph, army.id);
-      if (!factionId || !armyHex) continue; // fail-soft: keep the objective as it was
-      const current = armyState.objective;
-
-      const defence = findThreatToDefend(graph, army.id, factionId, armyHex, state.tick);
-      if (defence) {
-        if (writeAim(graph, army.id, defence.objective, null)) {
-          traceReaim(state, army.id, current, defence.objective, 'threat');
-          traceDefend(state, army.id, own ?? factionId, defence);
-        }
-        continue;
-      }
-
-      ctx ??= contextFor(state, getProjection);
-      let why: ReaimWhy = 'no_objective';
-      if (current?.type === 'conquer') {
-        const here = placeTierLocationOf(graph, army.id);
-        if (!ctx.towns.has(current.targetNodeId)) why = 'target_taken';
-        else if (!stillEnemyTarget(ctx, factionId, current.targetNodeId, own)) why = 'target_no_longer_enemy';
-        else if (!inReach(state, ctx, factionId, armyHex, current.targetNodeId, marchableFrom(ctx, army.id))) why = 'target_out_of_reach';
-        else if (here !== current.targetNodeId) continue; // still valid, still marching: keep it
-        else why = 'target_taken';
-      }
-
-      const pick = pickFor(state, ctx, army.id, factionId, armyHex, own);
-      if (writeAim(graph, army.id, pick.objective, pick)) {
-        traceReaim(state, army.id, current, pick.objective, why);
-        tracePicked(state, army.id, own ?? factionId, pick, factionId);
-      }
-      writeAmbitionTarget(graph, army.id, pick.objective);
+      reaimOne(state, army.id, ctxRef, getProjection);
     } catch (err) {
       // fail-soft (NFP #4): this army keeps yesterday's objective; the rest re-aim.
       console.warn(`[war_aims] re-aim failed for ${army.id}; objective kept`, err);
     }
   }
+}
+
+/**
+ * One army's re-aim — the daily re-aim's per-army body, shared with the paymaster guard
+ * (THR-2026). `skipsReaim` keeps a battle/siege, `agenda` or campaign army's objective.
+ * `ctxRef` holds the lazily built war-aim context so a pass builds it at most once.
+ * `whyOverride` replaces the computed `why` on the `war.aim.reaim` trace only.
+ */
+function reaimOne(
+  state: GameState,
+  armyId: string,
+  ctxRef: { ctx: WarAimContext | null },
+  getProjection?: RealmProjectionSource,
+  whyOverride?: ReaimWhy,
+): void {
+  const graph = state.graph;
+  const army = graph.getNode(armyId);
+  if (!army) return;
+  const armyState = army.properties.armyState as ArmyState;
+  if (skipsReaim(graph, armyId, armyState)) return;
+  const { own, commander: factionId } = sidesOf(graph, armyId, state.tick);
+  const armyHex = hexOfActor(graph, armyId);
+  if (!factionId || !armyHex) return; // fail-soft: keep the objective as it was
+  const current = armyState.objective;
+
+  const defence = findThreatToDefend(graph, armyId, factionId, armyHex, state.tick);
+  if (defence) {
+    if (writeAim(graph, armyId, defence.objective, null)) {
+      traceReaim(state, armyId, current, defence.objective, 'threat');
+      traceDefend(state, armyId, own ?? factionId, defence);
+    }
+    return;
+  }
+
+  const ctx = (ctxRef.ctx ??= contextFor(state, getProjection));
+  let why: ReaimWhy = 'no_objective';
+  if (current?.type === 'conquer') {
+    const here = placeTierLocationOf(graph, armyId);
+    if (!ctx.towns.has(current.targetNodeId)) why = 'target_taken';
+    else if (!stillEnemyTarget(ctx, factionId, current.targetNodeId, own)) why = 'target_no_longer_enemy';
+    else if (!inReach(state, ctx, factionId, armyHex, current.targetNodeId, marchableFrom(ctx, armyId))) why = 'target_out_of_reach';
+    else if (here !== current.targetNodeId) return; // still valid, still marching: keep it
+    else why = 'target_taken';
+  }
+
+  const pick = pickFor(state, ctx, armyId, factionId, armyHex, own);
+  if (writeAim(graph, armyId, pick.objective, pick)) {
+    traceReaim(state, armyId, current, pick.objective, whyOverride ?? why);
+    tracePicked(state, armyId, own ?? factionId, pick, factionId);
+  }
+  writeAmbitionTarget(graph, armyId, pick.objective);
+}
+
+/**
+ * THR-2026 — the paymaster guard, every tick after every phase that moves `controls` or
+ * `sworn_to`. An army in its liege's pay (`payingLiegeOf`, checked first) whose conquer
+ * target is on the liege's side (`onPaymasterSide`) re-aims now instead of at the next
+ * daily re-aim. `skipsReaim` inside `reaimOne` keeps a sieging, `agenda` or campaign
+ * army's objective. Unpaid armies are never touched off the daily cadence.
+ * No-op with `WAR_AIMS_ENABLED` off; `payingLiegeOf` is undefined with the wages off.
+ */
+export function guardPaymasterTargets(state: GameState, getProjection?: RealmProjectionSource): void {
+  if (!WAR_AIMS_ENABLED) return;
+  const graph = state.graph;
+  const armies = graph.getNodesByType('actor')
+    .filter(n => n.properties.armyState != null)
+    .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  const ctxRef: { ctx: WarAimContext | null } = { ctx: null };
+  for (const army of armies) {
+    try {
+      if (!payingLiegeOf(graph, army.id, state.tick)) continue;
+      // The first `controls` edge (the measure's and siege start's holder) or the tax holder
+      // (the war-aim context's): either on the liege's side voids the target. reaimOne's own
+      // stillEnemyTarget reads both, so a target it keeps is never on the liege's side.
+      if (!onPaymasterSide(graph, army.id, state.tick) && !taxHolderOnPaymasterSide(state, army.id, ctxRef, getProjection)) continue;
+      reaimOne(state, army.id, ctxRef, getProjection, 'target_on_paymaster_side');
+    } catch (err) {
+      // fail-soft (NFP #4): this army keeps its objective; the rest are checked.
+      console.warn(`[war_aims] paymaster guard failed for ${army.id}; objective kept`, err);
+    }
+  }
+}
+
+/** THR-2026 — the conquer target's tax holder (war-aim context) is the paying liege's side. */
+function taxHolderOnPaymasterSide(
+  state: GameState,
+  armyId: string,
+  ctxRef: { ctx: WarAimContext | null },
+  getProjection?: RealmProjectionSource,
+): boolean {
+  const graph = state.graph;
+  const objective = (graph.getNode(armyId)?.properties.armyState as ArmyState | undefined)?.objective;
+  if (objective?.type !== 'conquer') return false;
+  const { own, commander } = sidesOf(graph, armyId, state.tick);
+  if (!own || !commander || own === commander) return false;
+  // One multi-controller check per paid army: a lone controller is the first edge, already read.
+  if (graph.getIncomingEdges(objective.targetNodeId, 'controls').length < 2) return false;
+  const ctx = (ctxRef.ctx ??= contextFor(state, getProjection));
+  return isPaymasterHolder(graph, commander, ctx.towns.get(objective.targetNodeId)?.holderId);
 }
 
 /** Debug read: the army's objective, hold reason and last scored candidates. */

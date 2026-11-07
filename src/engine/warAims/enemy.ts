@@ -36,6 +36,30 @@ export function commanderFactionOf(graph: WorldGraph, armyId: string, tick: numb
 }
 
 /**
+ * THR-2026 — true when an army fighting for another faction (its paying liege) has a
+ * conquer target held by that commander, or by a faction sworn to the commander that the
+ * commander is not at war with. The same predicate as `measure:crown-wages`'s "no march
+ * on the paymaster" check (`scripts/measure-crown-wages.ts`, `friendly`). Two edge reads,
+ * no context; fail-soft `false` on missing ids.
+ */
+export function onPaymasterSide(graph: WorldGraph, armyId: string, tick: number): boolean {
+  const as = graph.getNode(armyId)?.properties.armyState as { objective?: { type?: string; targetNodeId?: string } | null } | undefined;
+  const target = as?.objective?.type === 'conquer' ? as.objective.targetNodeId : undefined;
+  if (!target) return false;
+  const own = ownFactionOf(graph, armyId);
+  const commander = commanderFactionOf(graph, armyId, tick);
+  if (!own || !commander || own === commander) return false;
+  return isPaymasterHolder(graph, commander, graph.getIncomingEdges(target, 'controls')[0]?.source);
+}
+
+/** THR-2026 — `holder` is `commander`, or sworn to it and not its enemy. */
+export function isPaymasterHolder(graph: WorldGraph, commander: string, holder: string | null | undefined): boolean {
+  if (!holder) return false;
+  if (holder === commander) return true;
+  return graph.getOutgoingEdges(holder, 'sworn_to')[0]?.target === commander && !isEnemyFaction(graph, commander, holder);
+}
+
+/**
  * THR-1974 — the attack veto for an army fighting for `commanderId` while belonging to
  * `ownId`: the commander's own-hall bar, and, when it fights for another, its own faction's
  * hall bar and its own faction's towns (a hired company never besieges a town it keeps
