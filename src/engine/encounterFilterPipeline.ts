@@ -983,6 +983,16 @@ export function capWithDiversity(
     break;
   }
 
+  // PROTO THR-2188 (arm R): the encounter a held Crossroads lean names.
+  for (const entry of entries) {
+    if (!entry.leanedRoad) continue;
+    const key = `${entry.templateId}:${entry.locationId}`;
+    if (reservedKeys.has(key)) break;
+    reserved.push(entry);
+    reservedKeys.add(key);
+    break;
+  }
+
   // Phase 1f: preserve up to ANOMALY_SITE_CAP_RESERVE anomaly-place entries (THR-1641).
   //
   // An anomaly place stands on an otherwise-empty wilderness hex, so its encounter is

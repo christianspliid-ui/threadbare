@@ -142,7 +142,7 @@ export const CROSSROADS_TORN_RATIO = 0.85;
 export const CROSSROADS_LEANING_RATIO = 0.5;
 
 /** Lead the leaned target must hold to read *likely* rather than *may*. @range 1.1–1.5 */
-export const CROSSROADS_LIKELY_MARGIN = 1.25;
+export const CROSSROADS_LIKELY_MARGIN = Number(process.env.CR_MARGIN ?? 1.25); // PROTO THR-2188
 
 /** Essence for leaning toward the first road, before Dominion. @range 1–3 */
 export const CROSSROADS_LEAN_COST_BASE = 2;

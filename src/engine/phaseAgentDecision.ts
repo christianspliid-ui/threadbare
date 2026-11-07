@@ -1056,6 +1056,25 @@ export function phaseAgentDecision(
         }
       }
 
+      // PROTO THR-2188 (arm R): a held Crossroads lean flags its encounter for the cap.
+      const protoLean = CROSSROADS_ENABLED && process.env.CR_RESERVE === '1'
+        ? actor.properties?.crossroadsLean as { family?: string; templateId?: string; targetId?: string | null } | undefined
+        : undefined;
+      if (protoLean && protoLean.family === 'encounter' && protoLean.templateId) {
+        let idx = -1;
+        for (let i = 0; i < mergedEntries.length; i++) {
+          const e = mergedEntries[i];
+          if (e.templateId !== protoLean.templateId) continue;
+          if (idx < 0) idx = i;
+          if (e.locationId === protoLean.targetId) { idx = i; break; }
+        }
+        if (idx >= 0) {
+          const flagged = mergedEntries.slice();
+          flagged[idx] = { ...mergedEntries[idx], leanedRoad: true };
+          mergedEntries = flagged;
+        }
+      }
+
       // Run filter pipeline (hex-distance awareness with edge hex bonus)
       const filterResult = runFilterPipeline(
         mergedEntries,
@@ -2002,7 +2021,10 @@ export function phaseAgentDecision(
         ? { family: 'encounter' as const, templateId: decision.selected.entry.templateId, targetId: decision.selected.entry.locationId ?? null }
         : undefined;
       let leanTurned = false;
-      if (preparedLean && (preparedLean.malformed || preparedLean.expired || crossroadsBoard)) {
+      // PROTO THR-2188 (arm W): a lean whose road is off this board waits for the next decision.
+      const protoWaits = process.env.CR_WAIT === '1' && preparedLean !== null
+        && preparedLean.held !== null && preparedLean.effective === null && !preparedLean.expired && !preparedLean.malformed;
+      if (preparedLean && !protoWaits && (preparedLean.malformed || preparedLean.expired || crossroadsBoard)) {
         try {
           if (preparedLean.held) {
             const resolved = resolveCrossroadsLean(

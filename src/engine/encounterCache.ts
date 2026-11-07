@@ -150,6 +150,8 @@ export interface EncounterCacheEntry {
    * the board. Optional and falsy by default.
    */
   compelledTarget?: boolean;
+  /** PROTO THR-2188 — the encounter a held Crossroads lean names; claims a cap slot. */
+  leanedRoad?: boolean;
   /**
    * THR-1640 — on a guild **join** entry only: the mortal's fit for that guild, the
    * mean reach share (0–1) over the guild's primary reaches, computed per agent by
