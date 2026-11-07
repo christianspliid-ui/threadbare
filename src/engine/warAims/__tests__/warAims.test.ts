@@ -380,7 +380,7 @@ function paidWorld(target: string, paidAt?: number): WorldGraph {
 
 function guardReaims(): Array<TraceEntry & Record<string, unknown>> {
   return getTraces().filter(t => t.category === 'war.aim.reaim'
-    && (t as Record<string, unknown>).why === 'target_on_paymaster_side') as Array<TraceEntry & Record<string, unknown>>;
+    && (t as unknown as Record<string, unknown>).why === 'target_on_paymaster_side') as Array<TraceEntry & Record<string, unknown>>;
 }
 
 describe('the paid army turns at once (THR-2026)', () => {
