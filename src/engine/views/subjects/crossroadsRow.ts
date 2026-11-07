@@ -129,6 +129,18 @@ export function crossroadsReadable(state: GameState, agentId: string): boolean {
   return canReadIntention(state, state.ascendantId, agentId).readable;
 }
 
+/**
+ * THR-1928 — the torn badge's reading: the mortal's name when their reading is open to the
+ * god, no lean is held and the reading says *torn* (the row's own `settledness`); else null.
+ */
+export function crossroadsTornName(state: GameState, agentId: string): string | null {
+  if (!crossroadsReadable(state, agentId)) return null;
+  const node = state.graph.getNode(agentId);
+  if (!node) return null;
+  if (readCrossroadsLean(node.properties.crossroadsLean)) return null;
+  return settledness(readCrossroadsSnapshot(node.properties.crossroads)) === 'torn' ? node.name : null;
+}
+
 /** The section, or null when there is nothing to show (Law 25). */
 export function buildCrossroadsSection(
   state: GameState,

@@ -145,6 +145,28 @@ export function placeCrossroadsLean(
   };
 }
 
+/**
+ * THR-1928 — lean on the road at `optionIndex` of the mortal's current reading: what the
+ * Inspector row fires (its offers carry the index). An index the reading no longer holds
+ * is refused `stale_option`, in words, writing and spending nothing.
+ */
+export function placeCrossroadsLeanAt(
+  state: GameState,
+  agentId: string,
+  optionIndex: number,
+  direction: LeanDirection,
+): PlaceLeanResult {
+  const node = state.graph.getNode(agentId);
+  const option = readCrossroadsSnapshot(node?.properties.crossroads)?.options[optionIndex];
+  if (!option) {
+    return {
+      success: false, reason: 'stale_option', lean: null, essenceCost: 0, baseCost: 0, sphere: null, dominionBand: null, forecast: null,
+      message: fillCrossroadsLine(LEAN_REFUSAL.stale_option, { name: node?.name ?? 'them' }),
+    };
+  }
+  return placeCrossroadsLean(state, agentId, option, direction);
+}
+
 export interface LiftLeanResult {
   success: boolean;
   message: string;

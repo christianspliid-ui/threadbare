@@ -18,11 +18,9 @@ import type { GameState } from '../../../types/gameState';
 import type { ToastItem } from '../../../types/notification';
 import type { SimulationRuntime } from '../../../engine/simulationRuntime';
 import { touchWorld } from '../../../engine/simulationRuntime';
-import { placeCrossroadsLean, liftCrossroadsLean } from '../../../engine/crossroadsActions';
-import { readCrossroadsSnapshot } from '../../../engine/crossroads';
+import { placeCrossroadsLeanAt, liftCrossroadsLean } from '../../../engine/crossroadsActions';
 import { spendPremonitionEssence } from '../../../engine/premonitionActions';
 import { withEssenceSpend } from '../../../engine/essenceMovement';
-import { LEAN_REFUSAL, fillCrossroadsLine } from '../../../data/crossroads-content';
 import type { CardActHandlers, CardActResult } from '../../shared/CardActStrip';
 import type { CardActOffer, CardsActStrip } from '../../../types/detailPage';
 
@@ -38,14 +36,7 @@ export interface CrossroadsActsDeps {
 
 /** Lean one road of the live reading. Pure of React: the hook and the tests call it. */
 export function leanOnRoad(deps: CrossroadsActsDeps, agentId: string, optionIndex: number, direction: CardActOffer['direction']): CardActResult {
-  const live = deps.gameStateRef.current;
-  const snapshot = readCrossroadsSnapshot(live.graph.getNode(agentId)?.properties.crossroads);
-  const option = snapshot?.options[optionIndex];
-  if (!option) {
-    const name = live.graph.getNode(agentId)?.name ?? 'them';
-    return { ok: false, message: fillCrossroadsLine(LEAN_REFUSAL.stale_option, { name }) };
-  }
-  const result = placeCrossroadsLean(live, agentId, option, direction);
+  const result = placeCrossroadsLeanAt(deps.gameStateRef.current, agentId, optionIndex, direction);
   if (!result.success || !result.sphere) return { ok: false, message: result.message };
   if (deps.runtime) touchWorld(deps.runtime);
   const sphere = result.sphere;

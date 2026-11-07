@@ -86,6 +86,7 @@ import { EntityLink } from '../shared/EntityLink';
 import { HeldByLine } from '../shared/HeldByLine';
 import { HoverCard } from '../shared/HoverCard';
 import { Section } from '../shared/Section';
+import { CardActContext, type CardActHandlers } from '../shared/CardActStrip';
 import {
   type DetailPage,
   type Section as DetailPageSection,
@@ -191,6 +192,22 @@ const SECTIONS = [
 // ?view=styleguide with sample data".
 
 const SAMPLE_DETAIL_TRAIL = ['Encounter', 'Captain Veiren'];
+
+/** THR-1928 — a sample Crossroads row: the act strip's styleguide entry (Law 29). */
+const SAMPLE_CROSSROADS_SECTION: DetailPageSection = {
+  kind: 'cards', typeId: 'crossroads', label: 'Next, Kael weighs', labelTooltipId: 'ui.crossroads', gold: false, tier: 'routine', source: 'styleguide',
+  tiles: [
+    { title: "The Oath-Breaker's Rite", kindWord: 'A chance', lines: ['Kael has heard the oath-breaker will be named at dusk.'], offers: [
+      { optionIndex: 0, direction: 'toward', label: 'Lean toward', forecast: 'Kael will likely turn to it.', confirm: "Lean Kael toward The Oath-Breaker's Rite, paid now in Force essence, whatever Kael chooses.", cost: 2, sphere: 'force', blockedReason: null },
+      { optionIndex: 0, direction: 'away', label: 'Lean away', forecast: 'Kael may set it aside.', confirm: "Lean Kael away from The Oath-Breaker's Rite, paid now in Force essence, whatever Kael chooses.", cost: 2, sphere: 'force', blockedReason: null },
+    ] },
+    { title: 'Survey the ruin', kindWord: 'A work', lines: ['Choosing the stone.'], offers: [
+      { optionIndex: 1, direction: 'toward', label: 'Lean toward', forecast: 'It may tip Kael.', confirm: 'Lean Kael toward Survey the ruin, paid now in Energy essence, whatever Kael chooses.', cost: 3, sphere: 'energy', blockedReason: 'Not enough Energy essence.' },
+    ] },
+  ],
+  act: { kind: 'crossroads', subjectId: 'sample', intro: [{ text: 'Kael is torn.', tooltipId: 'ui.crossroads.settledness' }], fireLabel: 'Lean', cancelLabel: 'Not now' },
+};
+const SAMPLE_CARD_ACT_HANDLERS: CardActHandlers = { fire: () => ({ ok: true }), lift: () => ({ ok: true }) };
 
 const SAMPLE_DETAIL_SECTIONS: DetailPageSection[] = [
   {
@@ -2231,6 +2248,15 @@ export default function StyleGuide() {
                     {SAMPLE_DETAIL_SECTIONS.map((section) => (
                       <Section key={section.typeId} section={section} />
                     ))}
+                  </div>
+                </div>
+
+                <div>
+                  <Label>CardActStrip — a cards section&apos;s arm-then-fire strip (THR-1928, the Crossroads row). Press a lean to arm it.</Label>
+                  <div style={{ maxWidth: '520px', padding: '1rem', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: '4px' }}>
+                    <CardActContext.Provider value={SAMPLE_CARD_ACT_HANDLERS}>
+                      <Section section={SAMPLE_CROSSROADS_SECTION} />
+                    </CardActContext.Provider>
                   </div>
                 </div>
 
