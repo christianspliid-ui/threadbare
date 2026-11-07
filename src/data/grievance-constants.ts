@@ -199,3 +199,16 @@ export const GRIEF_BOND_MAX = 3;
  * someone they barely liked; a friend, a sibling or a mentor does.
  */
 export const GRIEF_BOND_MIN_SENTIMENT = 0.25;
+
+/**
+ * The name an undertaking outcome event node falls back to when neither the strategic
+ * registry nor the unified templates know its work (THR-2145, UI Law 14). The node's name
+ * is what a mortal's sheet → Story row reads, so it must be words, never the template id.
+ * `undertaking` should never show (it warns once per unknown id); `battle` is the normal
+ * name for a commander slain in battle, whose caller passes the literal id `'battle'`.
+ */
+export const OUTCOME_DEED_FALLBACK_NAMES: Readonly<Record<'undertaking' | 'fight' | 'battle', string>> = {
+  undertaking: 'A deed undone',
+  fight: 'A death in a fight',
+  battle: 'A commander slain in battle',
+};
