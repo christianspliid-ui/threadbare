@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-07 08:59 local (07:59 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-07 09:58 local (08:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,6 +20,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
+- [The sheet's Story list shows a raw key](https://linear.app/threadbare/issue/THR-2145) ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-07-thr-2145-story-rows-name-the-deed.md)) — **a mortal's Story list will name what happened to them in words, never in the game's internal code.** Kael's sheet showed "cell.destroy.power (afflicted)". It will now read "Destroy a power", the same words the work's card uses. A fight death reads as the fight's title ("The Beast in Its Den"), and a commander killed in battle reads "A commander slain in battle". This one place in the game named these events from their code. Fixing it there also fixes the event's own page and the region's history. Nobody builds on this before 20:30 UTC on 7 November. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-07c.md)*
 - [UL-proposal: "Reach" never names the god's hold on a place, and the player-facing Hook](https://linear.app/threadbare/issue/THR-2181) — **the game's glossary now keeps two pairs of words apart.** "Reach" is only ever what a mortal does (Iron, Heart, Eye and the rest). The god's hold on a place, person or faction is always called **Dominion**, and anything that explains it says the word. **Hooks** is now the player's word for the marks, clues and vows that tie the god to something unfinished, the row on the god rail. The writers' term for content that reacts to a trait keeps its full name, "Trait Hook", so the two never share a word. Nothing on screen changes; this keeps later text from bringing back the mix-up a warm round-3 tester hit. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-07b.md)*
 - From [A lean waits for its road](https://linear.app/threadbare/issue/THR-2188) ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-07-thr-2188-a-lean-waits-for-its-road.md)). Nobody builds on these before 15:36 UTC on 7 November. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-07a.md)*
   - **Your lean now reaches the choice you paid for.** When you lean on a mortal's road at the Crossroads, the game keeps that road in front of them. Until now, the game's shortlist of what a mortal can see often dropped the road a few hours later, and your lean ended "Your lean finds nothing to hold". That happened to more than half of all leans. The God's Will pick had this protection, and the lean lost it when it replaced God's Will.
@@ -27,7 +28,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
   - Same ticket — **"likely" means more than before.** "Kael will likely turn to it" now needs a clearer lead. Before, two kinds of lean that each worked about 4 times in 10 both said "likely". Now, leaning toward a road works about 56% of the time on "likely", 38% on "may" and 14% on "not enough".
   - Same ticket — the lean still never passes the rest a mortal takes after a chapter. If it could, the leaned road would win by default while other roads are hidden, and that would be an order, not a lean.
 
-Say "veto Reach and Hook glossary" or "veto A lean waits for its road" to reverse either.
+Say "veto Story rows name the deed", "veto Reach and Hook glossary" or "veto A lean waits for its road" to reverse any of these.
 
 ## This week's screens
 
@@ -35,16 +36,17 @@ Say "veto Reach and Hook glossary" or "veto A lean waits for its road" to revers
 
 ## Queue
 
-**Starved: one ticket ready, and it is on hold until its veto window closes.**
-- [A lean waits for its road](https://linear.app/threadbare/issue/THR-2188) (THR-2188) is the only ticket in Ready for Dev. The builder takes it after 15:36 UTC today, when the veto window above closes.
-- The builder's last ten runs (04:52–07:52 UTC) each ended in about a minute because that one ticket is on hold. That is correct, not a stall. Nothing here needs you.
+**Starved: two tickets ready, both on hold until their veto windows close.**
+- [A lean waits for its road](https://linear.app/threadbare/issue/THR-2188) opens to the builder after 15:36 UTC today.
+- [The sheet's Story list shows a raw key](https://linear.app/threadbare/issue/THR-2145/the-sheets-story-list-shows-a-raw-key-celldestroypower-afflicted) is now planned ([plan PR #2779](https://github.com/christianspliid-ui/threadbare/pull/2779) merged) and opens after 20:30 UTC today.
+- The builder's last ten runs (05:52–08:52 UTC) each ended in about a minute because both tickets are on hold. That is correct, not a stall. Nothing here needs you.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (18 days; In Dev since 15 Oct, 23 days; last touched 1 Nov). No pushed branch and no local worktree names it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- The live site serves the latest commit on main (9650a9a2). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time. The worktree reaper last ran 08:55 local.
-- Engine speed: 144 ms/tick steady, −2% against the 7-day median (147).
+- The live site is up to date (last game build 9650a9a2; the one merge since only touched docs). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time. The worktree reaper last ran 09:52 local.
+- Engine speed: 133 ms/tick steady, −10% against the 7-day median (147).
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask.
-- **The home-folder copy of the repo is still 178 commits behind main.** An edited `.claude/settings.local.json` and untracked files under `Docs/evidence/` still block the mirror's sync. This is the twenty-fifth hour in a row this brief has flagged it; an attended agent session should set them aside and fast-forward. Nothing is lost, because the lanes work from fresh copies of main.
+- **The home-folder copy of the repo is now 181 commits behind main.** An edited `.claude/settings.local.json` and untracked files under `Docs/evidence/` still block the mirror's sync. This is the twenty-sixth hour in a row this brief has flagged it; an attended agent session should set them aside and fast-forward. Nothing is lost, because the lanes work from fresh copies of main.
