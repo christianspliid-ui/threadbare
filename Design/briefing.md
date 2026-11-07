@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-07 13:58 local (12:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-07 14:59 local (13:59 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -41,15 +41,15 @@ Say "veto scene picture alt text", "veto Story rows name the deed", "veto Reach 
 - [The encounter picture's alt-text fix](https://linear.app/threadbare/issue/THR-1733/the-encounter-illustrations-alt-text-is-the-whole-encoded-contract) merged at 12:09 UTC ([PR #2781](https://github.com/christianspliid-ui/threadbare/pull/2781)) and is live.
 - [A lean waits for its road](https://linear.app/threadbare/issue/THR-2188) opens to the builder after 15:36 UTC today.
 - [The sheet's Story list shows a raw key](https://linear.app/threadbare/issue/THR-2145/the-sheets-story-list-shows-a-raw-key-celldestroypower-afflicted) opens after 20:30 UTC today.
-- The builder's three short runs since 12:04 UTC each said both ready tickets were on hold. That is correct, not a stall.
-- The orchestrator sent [Event ids collide during play](https://linear.app/threadbare/issue/THR-1921/orchestrator-event-ids-collide-evt-141-10-25-duplicate-react-keys-in) to the design lane to plan next.
+- The builder's six short runs since 12:04 UTC each said both ready tickets were on hold. That is correct, not a stall.
+- The orchestrator (13:30 local) sent [Event ids collide during play](https://linear.app/threadbare/issue/THR-1921/orchestrator-event-ids-collide-evt-141-10-25-duplicate-react-keys-in) to the design lane to plan next.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (18 days; In Dev since 15 Oct, 23 days; last touched 1 Nov). No pushed branch or local worktree names it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- The live site is up to date (ec90c06e, the alt-text fix). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time. The worktree reaper last ran 13:40 local.
-- Engine speed: 126 ms/tick steady, -14% against the 7-day median (147).
+- The live site is up to date (ec90c06e, the alt-text fix). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time. The worktree reaper last ran 14:47 local.
+- Engine speed: 127 ms/tick steady, -13% against the 7-day median (147).
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask.
-- **The home-folder copy of the repo is now 188 commits behind main** (last synced 4 Nov). An edited `.claude/settings.local.json` and untracked files under `Docs/evidence/` still block the mirror's sync. This is the thirtieth hour in a row this brief has flagged it; an attended agent session should set them aside and fast-forward. Nothing is lost, because the lanes work from fresh copies of main.
+- **The home-folder copy of the repo is now 188 commits behind main** (last synced 4 Nov). An edited `.claude/settings.local.json` and untracked files under `Docs/evidence/` still block the mirror's sync. This is the thirty-first hour in a row this brief has flagged it; an attended agent session should set them aside and fast-forward. Nothing is lost, because the lanes work from fresh copies of main.
