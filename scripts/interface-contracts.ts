@@ -2126,14 +2126,15 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: 'Essence & Divine Economy',
     consumerSystem: ENCOUNTERS,
     intent:
-      'The god leans on one road a threaded mortal weighs, and the mortal still chooses (THR-1926, Law 9). `placeCrossroadsLean` writes a held lean (`crossroadsLean`: family, template, target, direction) onto the mortal without spending — the caller spends through `withEssenceSpend(…, \'crossroads\')`. At the mortal\'s next full decision the phase pulls an encounter target onto the board (`findHeldEncounter`), `scoreUnifiedBoard` multiplies the matching entry by `crossroadsLeanMultiplier` (×2 toward, ×0.5 away), and the lean resolves followed / resisted / lapsed with one trace and one toast carrying the mortal\'s answer.',
+      'The god leans on one road a threaded mortal weighs, and the mortal still chooses (THR-1926, Law 9). `placeCrossroadsLean` writes a held lean (`crossroadsLean`: family, template, target, direction) onto the mortal without spending — the caller spends through `withEssenceSpend(…, \'crossroads\')`. At the mortal\'s next full decision the phase pulls an encounter target onto the board (`findHeldEncounter`), `scoreUnifiedBoard` multiplies the matching entry by `crossroadsLeanMultiplier` (×2 toward, ×0.5 away), and the lean resolves followed / resisted / lapsed with one trace and one toast carrying the mortal\'s answer. THR-2188: before the filter pipeline the phase also reads a held encounter lean (`readCrossroadsLean`) and flags its cache entry `leanedRoad` on a per-decision copy, so `capWithDiversity` Phase 1e-ter keeps that one road past the cap (not through the story breath). With `CROSSROADS_LEAN_WAITS_FOR_ROAD` on, a held lean whose road is on neither list waits for the next full decision (`crossroads_lean_waiting`) instead of lapsing, until `CROSSROADS_HOLD_MAX_TICKS`.',
     ulTerms: ['Agent', 'Encounter', 'Undertaking'],
-    mechanism: { kind: 'node-prop', symbols: ['crossroadsLean', 'crossroadsLeanMultiplier', 'placeCrossroadsLean'] },
+    mechanism: { kind: 'node-prop', symbols: ['crossroadsLean', 'crossroadsLeanMultiplier', 'placeCrossroadsLean', 'leanedRoad', 'CROSSROADS_LEAN_WAITS_FOR_ROAD'] },
     writeSites: ['src/engine/crossroadsActions.ts'],
     readSites: [
       'src/engine/phaseAgentDecision.ts',
       'src/engine/crossroadsDecision.ts',
       'src/engine/decisionBoard.ts',
+      'src/engine/encounterFilterPipeline.ts',
       'src/debug-bridge.ts',
     ],
     verifiedLive: {
