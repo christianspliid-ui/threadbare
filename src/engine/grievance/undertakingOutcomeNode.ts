@@ -22,7 +22,9 @@
 import type { WorldGraph } from '../graph';
 import type { StrategicProjectRuntime, UndertakingHarmClass } from '../../types/strategicAction';
 import { HARM_MAGNITUDE_BY_CLASS } from '../../data/ambition-minting-rules';
-import { GRIEF_BOND_MAX, GRIEF_BOND_MIN_SENTIMENT } from '../../data/grievance-constants';
+import { GRIEF_BOND_MAX, GRIEF_BOND_MIN_SENTIMENT, OUTCOME_DEED_FALLBACK_NAMES } from '../../data/grievance-constants';
+import { getUnifiedTemplateById } from '../../data/unified-action-templates';
+import { getStrategicTemplate } from '../strategicActionCandidates';
 import { getFactionLeaderId } from '../factionNetwork';
 import { isAgentGone } from '../groups/groupQueries';
 import { emitTrace } from '../traceBuffer';
@@ -38,6 +40,40 @@ export const UNDERTAKING_EVENT_NODE_ID_PREFIX = 'evt_und_';
  */
 export function isUndertakingOutcomeEventId(id: string | undefined | null): boolean {
   return typeof id === 'string' && id.startsWith(UNDERTAKING_EVENT_NODE_ID_PREFIX);
+}
+
+/** Unknown undertaking ids already warned about — gates logging only, holds no world data. */
+const warnedUnknownDeedIds = new Set<string>();
+
+function nonEmpty(s: string | undefined): string | undefined {
+  return typeof s === 'string' && s.trim().length > 0 ? s : undefined;
+}
+
+/**
+ * The player-facing name of an outcome's work (THR-2145, UI Law 14). Never returns an id.
+ *
+ * It is the card phrase the player saw when the work was offered ("Destroy a power",
+ * "Usurp a leader") — the strategic registry's `displayName` — or, for a fight, the
+ * fight template's own `name`. An id neither registry knows falls back to words from
+ * `OUTCOME_DEED_FALLBACK_NAMES` by source kind; an unknown undertaking id warns once.
+ * Written as the outcome node's `name` and `templateName`, which the sheet's Story rows,
+ * the record page and the hex region already prefer.
+ */
+export function outcomeDeedName(templateId: string, sourceKind?: 'fight' | 'battle'): string {
+  try {
+    const strategic = nonEmpty(getStrategicTemplate(templateId)?.displayName);
+    if (strategic) return strategic;
+  } catch { /* fail-soft: fall through to the next registry */ }
+  try {
+    const unified = nonEmpty(getUnifiedTemplateById(templateId)?.name);
+    if (unified) return unified;
+  } catch { /* fail-soft: fall through to the fallback words */ }
+  const kind = sourceKind ?? 'undertaking';
+  if (kind === 'undertaking' && !warnedUnknownDeedIds.has(templateId)) {
+    warnedUnknownDeedIds.add(templateId);
+    console.warn(`[UndertakingOutcomeNode] No player name for template "${templateId}"; using the fallback.`);
+  }
+  return OUTCOME_DEED_FALLBACK_NAMES[kind];
 }
 
 /**
@@ -224,13 +260,17 @@ export function createUndertakingOutcomeNode(
     ? nonUndertakingEventNodeId(graph, source, project.projectId, tick)
     : `${UNDERTAKING_EVENT_NODE_ID_PREFIX}${project.projectId}_${tick}`;
 
+  // THR-2145: the node's name is a Story row's text — words, never the template id.
+  const deedName = outcomeDeedName(project.templateId, source?.kind);
+
   try {
     graph.addNode({
       id: eventNodeId,
       type: 'event',
-      name: `${project.templateId} (${harmClass})`,
+      name: deedName,
       properties: {
         eventType: 'undertaking_outcome',
+        templateName: deedName,
         harmClass,
         templateId: project.templateId,
         verb: project.verb,
