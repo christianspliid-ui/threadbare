@@ -91,13 +91,17 @@ export function listDebtsOwedTo(
 
 /**
  * Bonds and agreements are both `relates_to` edges, and `bond_change` writes onto the first
- * edge between two people, which can be a debt. When the settle removes that debt, the bond
- * it carried (`sentiment`, `trust`) moves onto the edge the readers will find first once it is
- * gone — the same first-edge lookup `applyBondEdge` and the bond readers use, agreement or
- * not — or onto a new one, so paying off a debt never erases how the two feel about each other.
- * (Carrying it onto a bare bond edge behind a younger debt would hide it from those readers.)
+ * edge between two people, which can be a debt. When a remover takes that agreement edge off
+ * the graph, the bond it carried (`sentiment`, `trust`) moves onto the edge the readers will
+ * find first once it is gone — the same first-edge lookup `applyBondEdge` and the bond readers
+ * use, agreement or not — or onto a new one, so ending an agreement never erases how the two
+ * feel about each other. (Carrying it onto a bare bond edge behind a younger debt would hide it
+ * from those readers.)
+ *
+ * Shared by both agreement removers: the settle path here (THR-2023) and the term-expiry pass
+ * (`agreementExpiry.ts`, THR-2045). Call it before `removeEdge`, with the live edge.
  */
-function carryBondOffDebtEdge(graph: WorldGraph, debtEdge: GraphEdge): void {
+export function carryBondOffAgreementEdge(graph: WorldGraph, debtEdge: GraphEdge): void {
   const props = debtEdge.properties as Record<string, unknown>;
   const sentiment = typeof props.sentiment === 'number' ? props.sentiment : undefined;
   const trust = typeof props.trust === 'number' ? props.trust : undefined;
@@ -134,7 +138,7 @@ export function settleDebt(
   const [pick] = listDebtsOwedTo(graph, creditorId, tick, debtorId);
   if (!pick) return { settled: false, reason: 'no_debt_owed' };
 
-  carryBondOffDebtEdge(graph, pick.edge);
+  carryBondOffAgreementEdge(graph, pick.edge);
   graph.removeEdge(pick.edge.id);
 
   let shift: MeansShiftResult | null = null;

@@ -31,6 +31,11 @@ function vowsAt(graph: WorldGraph, tick: number) {
   return extractChips({ graph, tick, ascendantId: 'debtor' } as unknown as GameState).vows;
 }
 
+/** The first debtor → creditor `relates_to` edge — the one `applyBondEdge` and the bond readers use. */
+function firstEdge(graph: WorldGraph) {
+  return graph.getOutgoingEdges('debtor', 'relates_to').find(e => e.target === 'creditor');
+}
+
 /** Run the expiry pass once per tick, as the orchestrator does, from `from` to `to` inclusive. */
 function tickExpiry(graph: WorldGraph, from: number, to: number): void {
   for (let t = from; t <= to; t++) expireAgreements(graph, t);
@@ -94,6 +99,42 @@ describe('THR-1999: agreement edges expire at the end of their term', () => {
 
     // The inactive pact's term still ends it.
     expect(expireAgreements(graph, GRANT_TICK + 500).map(r => r.edgeId)).toEqual(['inactive']);
+  });
+
+  it('THR-2045: a bond written onto a debt edge still reads after the debt expires', () => {
+    const graph = makeWorld();
+    instantiateAgreementReward(graph, 'debtor', 'creditor', debtTemplate, GRANT_TICK);
+    // `bond_change` writes onto the first debtor → creditor edge, which is the debt.
+    const debt = firstEdge(graph)!;
+    expect(readAgreement(debt.properties as Record<string, unknown>)?.type).toBe('debt');
+    debt.properties.sentiment = -0.4;
+    debt.properties.trust = 0.2;
+
+    expect(expireAgreements(graph, GRANT_TICK + debtTemplate.ticksRemaining!)).toHaveLength(1);
+    const bond = firstEdge(graph);
+    expect(bond?.properties.agreement).toBeUndefined();
+    expect(bond?.properties).toMatchObject({ sentiment: -0.4, trust: 0.2 });
+  });
+
+  it('THR-2045: the bond moves to the next first edge, even when that is a debt expiring in the same pass', () => {
+    const graph = makeWorld();
+    instantiateAgreementReward(graph, 'debtor', 'creditor', debtTemplate, GRANT_TICK);
+    graph.addEdge({
+      id: 'second_debt', source: 'debtor', target: 'creditor', type: 'relates_to',
+      properties: { agreement: true, agreementType: 'debt', acquiredTick: GRANT_TICK, ticksRemaining: debtTemplate.ticksRemaining },
+    });
+    firstEdge(graph)!.properties.sentiment = -0.6;
+
+    expect(expireAgreements(graph, GRANT_TICK + debtTemplate.ticksRemaining!)).toHaveLength(2);
+    expect(graph.getEdge('second_debt')).toBeUndefined();
+    expect(firstEdge(graph)?.properties.sentiment).toBe(-0.6);
+  });
+
+  it('THR-2045: a debt with no bond on it leaves no bond edge behind', () => {
+    const graph = makeWorld();
+    instantiateAgreementReward(graph, 'debtor', 'creditor', debtTemplate, GRANT_TICK);
+    expireAgreements(graph, GRANT_TICK + debtTemplate.ticksRemaining!);
+    expect(firstEdge(graph)).toBeUndefined();
   });
 
   it('agreementTermRemaining counts the flat term down and passes other shapes through', () => {
