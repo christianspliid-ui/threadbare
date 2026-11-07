@@ -4141,6 +4141,25 @@ function StepReplayView({
         </p>
       )}
 
+      {/* THR-2187 — what the played cards did, frozen at the roll */}
+      {entry.cardLines?.map((line, i) => (
+        <p
+          key={`card-line-${i}`}
+          data-testid="step-replay-card-line"
+          style={{
+            margin: '0 0 8px 0',
+            fontFamily: FONT_PROSE,
+            fontStyle: 'italic',
+            fontSize: 'var(--text-sm)',
+            lineHeight: 1.7,
+            color: TEXT_WHISPER,
+            maxWidth: PROSE_MEASURE,
+          }}
+        >
+          {line}
+        </p>
+      ))}
+
       {/* The god-action taken on this step */}
       {entry.choiceText && (
         <div

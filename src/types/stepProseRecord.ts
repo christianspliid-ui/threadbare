@@ -55,4 +55,12 @@ export interface StepProseRecord {
    * no-roll steps and fights that ended before their roll: no odds line shows.
    */
   readonly forecastTier?: ForecastTier;
+  /**
+   * THR-2187 — what the god's played cards did on this step, frozen at the roll:
+   * up to `MAX_CARD_LINES_PER_STEP` lines reading "<card name> — <band line>",
+   * enriched, in commit order. Absent when no card was played, when no played
+   * card has a line for the band, and on old saves. The Stage and the Ledger
+   * both render these strings as-is, so a reread says the same thing.
+   */
+  readonly cardLines?: readonly string[];
 }

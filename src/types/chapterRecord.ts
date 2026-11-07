@@ -50,6 +50,11 @@ export interface ChapterStepRecord {
    * then the backlash line when the price bit, frozen at resolution.
    */
   readonly castProse?: string;
+  /**
+   * THR-2187 — the played cards' band lines, copied from the step's frozen
+   * `StepProseRecord.cardLines` ("<card name> — <line>"). Absent when none.
+   */
+  readonly cardLines?: readonly string[];
   /** The player's own intervention on this step, if any — rendered as a "you whispered…" beat. */
   readonly choiceText?: string;
 }

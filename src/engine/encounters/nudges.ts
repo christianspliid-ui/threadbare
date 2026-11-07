@@ -32,6 +32,9 @@ import {
   DIFFICULTY_WORD_BANDS,
   SPHERE_DISCOUNT,
   SPHERE_DISCOUNT_MIN_COST,
+  CARD_BAND_FALLBACK,
+  CARD_LINES_ENABLED,
+  MAX_CARD_LINES_PER_STEP,
 } from '../../data/nudge-constants';
 
 /** Source prefix for a nudge's named forecast modifier. */
@@ -543,6 +546,51 @@ export function collectNudgeBandProse(
     if (line) lines.push(line);
   }
   return lines;
+}
+
+/** One played card's line for a resolved step (THR-2187). */
+export interface CardBandLine {
+  /** The card's display name, as the hand showed it. */
+  readonly name: string;
+  /** The authored band line, raw (placeholders unresolved). */
+  readonly line: string;
+}
+
+/**
+ * THR-2187 — the lines the committed cards add to how a step went: each card's
+ * line for the resolved band, or for the nearest band on the same side
+ * (`CARD_BAND_FALLBACK`) when it authored none, capped at
+ * `MAX_CARD_LINES_PER_STEP` in commit order. Pure, zero PRNG.
+ *
+ * Fail-soft: a committed id not on the step (a retired card) is skipped, and a
+ * card with no line for the band or its fallback adds nothing. Returns `[]`
+ * when `enabled` is false (the `CARD_LINES_ENABLED` kill switch).
+ */
+export function cardBandLines(
+  step: Pick<ActionStep, 'nudges'>,
+  activeNudgeIds: readonly string[] | undefined,
+  outcome: StepOutcome,
+  enabled: boolean = CARD_LINES_ENABLED,
+): CardBandLine[] {
+  if (!enabled || !activeNudgeIds || activeNudgeIds.length === 0 || !step.nudges) return [];
+  const byId = new Map(step.nudges.map((n) => [n.id, n]));
+  const fallback = CARD_BAND_FALLBACK[outcome];
+  const lines: CardBandLine[] = [];
+  for (const id of activeNudgeIds) {
+    if (lines.length >= MAX_CARD_LINES_PER_STEP) break;
+    const nudge = byId.get(id);
+    if (!nudge) continue;
+    // Same lookup as collectNudgeBandProse, one card at a time, then the fallback.
+    const exact = collectNudgeBandProse(step, [id], outcome)[0];
+    const line = exact ?? (fallback ? collectNudgeBandProse(step, [id], fallback)[0] : undefined);
+    if (line && line.trim()) lines.push({ name: nudge.name, line: line.trim() });
+  }
+  return lines;
+}
+
+/** THR-2187 — how a card line reads on the Stage and in the Ledger. */
+export function formatCardLine(name: string, line: string): string {
+  return name ? `${name} — ${line}` : line;
 }
 
 /** Step difficulty → display word. Words only, never the number. */

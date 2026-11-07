@@ -315,6 +315,9 @@ function buildStepRecord(
     ? [castRecord.prose, castRecord.backlashProse].filter(Boolean).join(' ')
     : undefined;
   const choiceText = action.choiceHistory?.find(c => c.stepIndex === index)?.choiceText;
+  // THR-2187 — the played cards' lines, as the roll froze them (never re-enriched).
+  const cardLines = (action.stepProseHistory as readonly StepProseRecord[] | undefined)
+    ?.find((r) => r.index === index)?.cardLines;
 
   return {
     index,
@@ -324,6 +327,7 @@ function buildStepRecord(
     outcome,
     complicationProse,
     ...(castProse ? { castProse } : {}),
+    ...(cardLines && cardLines.length > 0 ? { cardLines: [...cardLines] } : {}),
     choiceText,
   };
 }

@@ -205,8 +205,10 @@ import { applyFlipTableTriggerWithConfig, matchesStepOutcomeTrigger } from './ef
 import { getEffectiveUnifiedActionChoiceMemory, NUDGE_COMMIT_INTERVENTION_TYPE } from './encounterChoiceMemory';
 // THR-773 (Nudge Model WS0): named forecast modifiers + pure band riders.
 import {
+  cardBandLines,
   collectHeldTraitIds,
   collectNudgeModifiers,
+  formatCardLine,
   priorStepOutcome,
   resolveTraitVariants,
   selectActiveRider,
@@ -2640,6 +2642,11 @@ export function executeStepResult(
     const resolvedStepIndex = action.currentStep;
     let narrativeProse = step.narrativeTemplate ?? '';
     let afterimageProse: string | undefined;
+    // THR-2187 — what the played cards did, each line raw until enriched below.
+    // `activeNudges` still holds this step's committed hand: the lifecycle drops
+    // it only when the step advances (unifiedActionLifecycle, THR-1801).
+    const rawCardLines = cardBandLines(step, action.activeNudges, outcome);
+    let cardLines: string[] = rawCardLines.map(c => formatCardLine(c.name, c.line));
     try {
       const proseCtx = gatherNarrativeContext(
         state.graph,
@@ -2671,6 +2678,16 @@ export function executeStepResult(
         const stepCtx = { ...proseCtx, outcomeBand: stepOutcomeToOutcomeBand(outcome) };
         afterimageProse = enrichProse(rawAfterimage, stepCtx, { runtime, rng });
       }
+      if (rawCardLines.length > 0) {
+        const cardCtx = { ...proseCtx, outcomeBand: stepOutcomeToOutcomeBand(outcome) };
+        cardLines = rawCardLines.map(c => {
+          try {
+            return formatCardLine(c.name, enrichProse(c.line, cardCtx, { runtime, rng }) || c.line);
+          } catch {
+            return formatCardLine(c.name, c.line);
+          }
+        });
+      }
     } catch {
       // narrativeProse already holds the raw template; a malformed step never sinks the tick.
     }
@@ -2692,6 +2709,7 @@ export function executeStepResult(
       ...(resolutionStats && !resolutionStats.fightEnd && Number.isFinite(resolutionStats.probability)
         ? { forecastTier: classifyStepForecastTier(resolutionStats.probability) }
         : {}),
+      ...(cardLines.length > 0 ? { cardLines } : {}),
     };
     const priorRecords = (finalAction.stepProseHistory ?? []) as readonly StepProseRecord[];
     const mergedRecords = [...priorRecords, record];
