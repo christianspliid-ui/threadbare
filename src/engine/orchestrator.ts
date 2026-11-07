@@ -146,6 +146,7 @@ import { resetAmbitionEventCounter } from './ambitionTick';
 import { recomputeCalling } from './calling';
 import { phaseArmyAttrition } from './armyAttrition';
 import { phaseArmyMovement } from './armyMovement';
+import { guardPaymasterTargets } from './warAims';
 import { phaseBattleDetection, phaseBattleTick } from './battleResolution';
 import { phaseLairEscalation, resetAdjacentLairCounter } from './lairEscalation';
 import { resetSurveyEventCounter } from './surveyProseComposer';
@@ -4177,6 +4178,23 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     }));
     s = r.next;
     phaseEventCounts['unrest'] = r.eventDelta;
+  }
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.6372: Paymaster guard (THR-2026) — after every phase that moves `controls` or
+  // `sworn_to` (battle captures, crown oaths and wages, unrest defections), an army in its
+  // liege's pay never ends the tick aimed at its liege's side.
+  try {
+    const r = runInlinePhase('paymaster_guard', s, () => {
+      guardPaymasterTargets(s, runtime
+        ? () => ensureRealmProjection(runtime, s.graph, s.tiles, s.tick)
+        : () => buildRealmProjection(s.graph, s.tiles));
+      return {};
+    });
+    s = r.next;
+    phaseEventCounts['paymaster_guard'] = r.eventDelta;
+  } catch {
+    // fail-soft: a guard never stops the world turning (NFP #4)
   }
   prevEventCount = s.tickEvents.length;
 

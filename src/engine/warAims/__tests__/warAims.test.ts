@@ -10,7 +10,7 @@ import { buildWarAimContext } from '../context';
 import { pickWarAim } from '../score';
 import { townValueFor } from '../townValue';
 import { findThreatToDefend } from '../defence';
-import { aimNewArmy, reaimArmies, grievanceFactionOf, readWarAims } from '../../warAims';
+import { aimNewArmy, reaimArmies, grievanceFactionOf, readWarAims, guardPaymasterTargets } from '../../warAims';
 import { phaseBattleDetection } from '../../battleResolution';
 import { enableTracing, getTraces, clearTraces } from '../../traceBuffer';
 import type { ArmyState } from '../../../types/army';
@@ -362,5 +362,90 @@ describe('the army sheet words (§ Player-facing text)', () => {
     expect(armyAimTemplate({ objectiveType: 'conquer' })).toBeNull();
     expect(scarceClauseOf('fish', 'The nets come up light. The fishers talk.')).toBe('the nets come up light');
     expect(ARMY_HOLD_COPY.home).toBe('Mustered at home: no enemy within reach.');
+  });
+});
+
+/**
+ * THR-2026 — warWorld plus a vassal `v` sworn to `a` (its liege). The vassal's host sits at
+ * t0 aimed at `target`; `paidAt` stamps a fresh liege wage (the take-up), so `a` commands it.
+ */
+function paidWorld(target: string, paidAt?: number): WorldGraph {
+  const graph = warWorld();
+  addFaction(graph, 'v');
+  graph.addEdge({ id: 'e_sw_v_a', source: 'v', target: 'a', type: 'sworn_to', properties: {} });
+  addArmy(graph, 'army_v', 'v', 't0', target);
+  if (paidAt !== undefined) armyState(graph, 'army_v').liegePaidTick = paidAt;
+  return graph;
+}
+
+function guardReaims(): Array<TraceEntry & Record<string, unknown>> {
+  return getTraces().filter(t => t.category === 'war.aim.reaim'
+    && (t as Record<string, unknown>).why === 'target_on_paymaster_side') as Array<TraceEntry & Record<string, unknown>>;
+}
+
+describe('the paid army turns at once (THR-2026)', () => {
+  beforeEach(() => {
+    enableTracing();
+    clearTraces();
+  });
+
+  it('an army newly in its liege\'s pay, aimed at its liege\'s town, re-aims on the take-up tick', () => {
+    const graph = paidWorld('t1', 24); // t1 is a's own town
+    guardPaymasterTargets(makeState(graph, 24), noProjection);
+    const obj = armyState(graph, 'army_v').objective;
+    expect(obj?.targetNodeId).not.toBe('t1');
+    expect(['t3', 't6']).toContain(obj?.targetNodeId); // b is a's enemy
+    expect(guardReaims()).toHaveLength(1);
+  });
+
+  it('re-aims on a non-pay tick when the target comes over to the liege\'s side', () => {
+    const graph = paidWorld('t3', 24); // b's town: a fair enemy at the take-up
+    guardPaymasterTargets(makeState(graph, 25), noProjection);
+    expect(armyState(graph, 'army_v').objective?.targetNodeId).toBe('t3');
+    expect(guardReaims()).toHaveLength(0);
+
+    graph.removeEdge('e_ctl_b_t3');
+    graph.addEdge({ id: 'e_ctl_a_t3', source: 'a', target: 't3', type: 'controls', properties: {} });
+    guardPaymasterTargets(makeState(graph, 26), noProjection);
+    expect(armyState(graph, 'army_v').objective?.targetNodeId).toBe('t6');
+    expect(guardReaims()).toHaveLength(1);
+  });
+
+  it('a fellow vassal at peace with the liege counts as the liege\'s side', () => {
+    const graph = paidWorld('t4', 24); // c holds t4
+    graph.addEdge({ id: 'e_sw_c_a', source: 'c', target: 'a', type: 'sworn_to', properties: {} });
+    guardPaymasterTargets(makeState(graph, 30), noProjection);
+    expect(armyState(graph, 'army_v').objective?.targetNodeId).not.toBe('t4');
+  });
+
+  it('an army in a siege keeps its objective', () => {
+    const graph = paidWorld('t1', 24);
+    graph.addNode({ id: 'siege_1', type: 'actor', name: 'siege', properties: { actorType: 'battle' } });
+    graph.addEdge({ id: 'e_pi', source: 'army_v', target: 'siege_1', type: 'participates_in', properties: {} });
+    guardPaymasterTargets(makeState(graph, 24), noProjection);
+    expect(armyState(graph, 'army_v').objective?.targetNodeId).toBe('t1');
+    expect(guardReaims()).toHaveLength(0);
+  });
+
+  it('an army with an agenda objective keeps it', () => {
+    const graph = paidWorld('t1', 24);
+    armyState(graph, 'army_v').objective = { type: 'conquer', targetNodeId: 't1', estimatedAttrition: 0, source: 'agenda' };
+    guardPaymasterTargets(makeState(graph, 24), noProjection);
+    expect(armyState(graph, 'army_v').objective?.targetNodeId).toBe('t1');
+  });
+
+  it('an unpaid army is not re-aimed off the daily cadence', () => {
+    const graph = paidWorld('t1'); // no wage stamp: v commands its own host
+    addArmy(graph, 'army_a', 'a', 't0', 't4'); // a's own host, aimed at c (no quarrel)
+    guardPaymasterTargets(makeState(graph, 13), noProjection);
+    expect(armyState(graph, 'army_v').objective?.targetNodeId).toBe('t1');
+    expect(armyState(graph, 'army_a').objective?.targetNodeId).toBe('t4');
+    expect(getTraces().filter(t => t.category === 'war.aim.reaim')).toHaveLength(0);
+  });
+
+  it('a stale wage no longer commands, so the guard leaves the army alone', () => {
+    const graph = paidWorld('t1', 0);
+    guardPaymasterTargets(makeState(graph, 100), noProjection);
+    expect(armyState(graph, 'army_v').objective?.targetNodeId).toBe('t1');
   });
 });
