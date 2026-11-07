@@ -609,3 +609,32 @@ export const DEAL_FAILURE_BAND_OUTCOMES: readonly StepOutcome[] = [
   'failure',
   'critical_failure',
 ];
+
+// ─── Card band lines on the step record (THR-2187) ──────────────────
+
+/**
+ * THR-2187 — kill switch for the card band lines frozen on each resolved step.
+ * `false` restores the pre-THR-2187 output: no step record carries `cardLines`.
+ */
+export const CARD_LINES_ENABLED = true;
+
+/**
+ * THR-2187 — at most this many played cards add their band line to a resolved
+ * step, in the order the hand was committed. The rest are still counted by the
+ * cause clause ("your cards held it").
+ */
+export const MAX_CARD_LINES_PER_STEP = 2;
+
+/**
+ * THR-2187 — the nearest band on the same side, for a card that authored no
+ * line for the exact band. A card that vanishes on the worst roll would make
+ * failure read as punishment (encounters canon), so a critical failure falls
+ * back to the card's failure line. `success` and `failure` have no fallback:
+ * every dealable library card authors both.
+ */
+export const CARD_BAND_FALLBACK: Readonly<Partial<Record<StepOutcome, StepOutcome>>> = {
+  critical_success: 'success',
+  success_at_cost: 'success',
+  near_miss: 'failure',
+  critical_failure: 'failure',
+};

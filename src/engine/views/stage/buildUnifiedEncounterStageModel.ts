@@ -542,6 +542,7 @@ function buildHistory(
     let choiceText: string | undefined;
     let choiceDecided = false;
     let oddsMissed: string | null = null;
+    let cardLines: string[] | undefined;
     if (isResolved) {
       outcome = activeAction.stepOutcomes[index];
       const success = isStepSuccess(outcome);
@@ -595,6 +596,8 @@ function buildHistory(
         && memory?.interventionType === BRANCH_DECISION_INTERVENTION_TYPE;
       // THR-2180 — the odds word frozen at the roll; old saves carry none.
       oddsMissed = oddsMissedLine(record?.forecastTier, outcome);
+      // THR-2187 — the played cards' lines, frozen at the roll.
+      if (record?.cardLines && record.cardLines.length > 0) cardLines = [...record.cardLines];
     }
 
     return {
@@ -612,6 +615,7 @@ function buildHistory(
       choiceText,
       ...(choiceDecided ? { choiceDecided } : {}),
       ...(oddsMissed ? { oddsMissedLine: oddsMissed } : {}),
+      ...(cardLines ? { cardLines } : {}),
     };
   });
 }

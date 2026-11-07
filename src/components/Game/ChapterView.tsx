@@ -235,6 +235,22 @@ export function ChapterView({ chapter, onOpenEntity, onBack, face }: ChapterView
               </div>
             )}
 
+            {/* THR-2187 — what the played cards did, frozen at the roll */}
+            {step.cardLines?.map((line, i) => (
+              <p
+                key={`card-line-${i}`}
+                data-testid="chapter-step-card-line"
+                style={{
+                  margin: 'var(--space-1, 4px) 0 0 0',
+                  color: 'var(--text-secondary)',
+                  fontSize: 'var(--text-sm)',
+                  fontStyle: 'italic',
+                }}
+              >
+                {line}
+              </p>
+            ))}
+
             {step.castProse && (
               <p
                 data-testid="chapter-step-cast"

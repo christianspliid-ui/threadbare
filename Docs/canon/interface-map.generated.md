@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 117 |
-| **Total** | **355** |
+| 🔵 UNVERIFIED-OK | 118 |
+| **Total** | **356** |
 
 ## Contracts by producing subsystem
 
@@ -277,6 +277,7 @@ remediation ticket or the build fails.
 | `seeded-opponent-survives-to-spawn` | A grudge planted against a named band is collected against that same band — or, if it died in the meantime, quietly becomes an ordinary encounter instead of pointing at a corpse. | node-prop: `opposingGroupId`, `resolveSeedOpposition` | Companies & Group Travel | 🟢 LIVE | — |
 | `shortlist-reaches-every-template` | Every template that survives the filters has a fair chance at a shortlist slot, so what a mortal considers is decided by scoring, not by the order the cache happened to register it in. What the mortal can start on its own hex is offered first, so a fair fill does not strand it away from the work where it stands. | function: `capWithDiversity`, `runFilterPipeline`, `CAP_FILL_ROTATE`, `CAP_FILL_LOCAL_SLOTS`, `capCutTemplates` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `spotlight-mortal-joins-guild` | A spotlight mortal who chooses a guild join and resolves it in a success band becomes a member of that guild — the unified-action resolution writes the `member_of` edge every faction reader counts, so the deciding mortals the player watches belong to the guilds whose content they are offered. | edge-prop: `processResolvedFactionLifecycleAction`, `getFactionMembershipEdges` | Factions & Succession | 🟢 LIVE | — |
+| `step-card-lines-reach-the-reader` | Your cards say how they landed (THR-2187). When a step resolves, `executeStepResult` freezes `StepProseRecord.cardLines`: each committed card's `bandProse` line for the band, or the nearest band on its side (`CARD_BAND_FALLBACK`), at most `MAX_CARD_LINES_PER_STEP` in commit order, enriched with the step context and the seeded rng, as "<card name> — <line>" (`cardBandLines` in `encounters/nudges.ts`). The Stage step model and the chapter archive copy the frozen strings, never re-enrich; the Stage step replay and the Ledger step render them under the afterimage. Kill switch `CARD_LINES_ENABLED`. | state-field: `cardLines` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `story-start-anchor-and-tellings-cap-pace-paused-mortals` | A followed mortal rarely tells the same story twice. Agent decision stamps the tick a paused mortal starts a story chapter on her thread; her story drought counts from it. Her attempt counts (familiarityRecord) cap each story at PAUSED_STORY_MAX_TELLINGS while she is not in a drought of STORY_DROUGHT_RELAX_TICKS, and the five-day repeat floor covers every paused mortal, not only The First. No count cap anywhere (Law 29). | edge-prop: `lastStoryChapterStartTick`, `applyStoryTellingsCap`, `isPausedThreadActor` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `thread-write-resolves-first` | Whoever the god threads first becomes The First: when the god holds no First, the Agent Thread card writes its thread at `the_first` with the journey fields the meeting writes, so every First perk — shaping attention, the journey, the doom wake, the gold thread — follows with no per-perk change. | function: `resolveThreadWrite` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `threaded-growth-reaches-chronicle` | The Chronicle tells growth only about mortals the god follows, in words (THR-1986, plan THR-1980 E4). Each tier-up (encounter and unified-action resolution), rarity graduation and critical success declares `chronicleGate: "threaded_only"` and a `playerProse` line with no tier number and no Q; `phaseNarrative` admits it only when `isThreadedByPlayer` holds for its actor, and reads `playerProse ?? message`. Each rarity block asks the same gate before its own direct Chronicle push. A skip is traced as `chronicle.intake.skipped`; `CHRONICLE_THREADED_GROWTH_ONLY` turns the gate off. `message` is unchanged for traces and logs. | property: `chronicleGate`, `playerProse` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
@@ -4061,6 +4062,17 @@ exit
 - **Write sites:** `src/engine/prayers.ts`
 - **Read sites:** `src/engine/orchestrator.ts`
 - **Verdict:** Verified 2026-10-17: THR-1935. prayers.test.ts: starveFaithful on a faithful town drops its sanctity by 0.25 and names the rival; on a town without faith it returns null.
+
+### `step-card-lines-reach-the-reader` — 🔵 UNVERIFIED-OK
+
+- **Intent:** Your cards say how they landed (THR-2187). When a step resolves, `executeStepResult` freezes `StepProseRecord.cardLines`: each committed card's `bandProse` line for the band, or the nearest band on its side (`CARD_BAND_FALLBACK`), at most `MAX_CARD_LINES_PER_STEP` in commit order, enriched with the step context and the seeded rng, as "<card name> — <line>" (`cardBandLines` in `encounters/nudges.ts`). The Stage step model and the chapter archive copy the frozen strings, never re-enrich; the Stage step replay and the Ledger step render them under the afterimage. Kill switch `CARD_LINES_ENABLED`.
+- **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
+- **UL terms:** *Band Fragment*
+- **Production hits:** 9 total — 1 write, 2 read, 6 unclassified
+- **Write sites:** `src/engine/unifiedActionResolution.ts`
+- **Read sites:** `src/engine/chapterArchive.ts`, `src/engine/views/stage/buildUnifiedEncounterStageModel.ts`
+- **Other hits:** `src/components/Game/ChapterView.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/data/nudge-constants.ts`, `src/engine/views/stage/types.ts`, `src/types/chapterRecord.ts` +1 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `story-breath-anchor-paces-pause-mode-chapters` — 🔵 UNVERIFIED-OK
 

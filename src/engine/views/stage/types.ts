@@ -325,6 +325,12 @@ export interface EncounterStageHistoryModel {
    * reader (last-step answer, step-navigator replay) uses this one field.
    */
   oddsMissedLine?: string;
+  /**
+   * THR-2187 — what the god's played cards did on this step, frozen at the roll
+   * ("<card name> — <band line>"). Rendered under the afterimage; the Ledger
+   * reads the same strings from the chapter archive.
+   */
+  cardLines?: readonly string[];
 }
 
 /** THR-1670 — one step's cast, as the step history renders it. */

@@ -890,6 +890,8 @@ Reference the slot from any prose field with `{frag:opening}`. That's the whole 
 
 At most one rider applies per step — the strongest wins (`NUDGE_RIDER_PRIORITY`), they never stack, and **they take zero extra dice**. A rider that re-rolled was considered and rejected: any extra draw from the resolution stream shifts every downstream consumer for that action.
 
+**`bandProse` is player-visible text (THR-2187).** Every committed card's line for the resolved band (or the nearest band on its side, `CARD_BAND_FALLBACK`) is frozen on the step record as "<card name> — <line>" and shown under the step's afterimage on the Stage and in the Chapter Ledger, at most two per step. Write it for the player, in narrator mode.
+
 **`bandProse` keys on `StepOutcome`** — the **six**-value step enum (`critical_success | success | success_at_cost | near_miss | failure | critical_failure`). Not `OutcomeBand`, not the five-band `EncounterOutcomeBand`; either would type-check while being the wrong domain.
 
 **Trait variants** are the template-level sibling — `traitVariants[]` on the template fires when the acting mortal holds a trait, and can add a forecast modifier (`trait:<id>`), shift the step's difficulty, contribute a player-facing factor line, and unlock extra nudge cards into the hand via `addNudgeIds`.
