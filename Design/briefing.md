@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-07 03:58 local (02:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-07 04:57 local (03:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -18,22 +18,33 @@
 
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
+## Decided for you
+
+From [A lean waits for its road](https://linear.app/threadbare/issue/THR-2188) ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-07-thr-2188-a-lean-waits-for-its-road.md)). Nobody builds on these before 15:36 UTC on 7 November. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-07a.md)*
+
+- **Your lean now reaches the choice you paid for.** When you lean on a mortal's road at the Crossroads, the game keeps that road in front of them. Until now, the game's shortlist of what a mortal can see often dropped the road a few hours later, and your lean ended "Your lean finds nothing to hold". That happened to more than half of all leans. The God's Will pick had this protection, and the lean lost it when it replaced God's Will.
+- Same ticket — **a lean waits for its road.** If the road is out of sight when the mortal next chooses (they moved on, or they are resting after a chapter), your hand stays on them until it comes back, for up to six days. The held line now reads *"Your hand rests on Kael, toward The Oath-Breaker's Rite. It waits until Kael next faces that road."* If it never comes back, the fade names it: *"Your lean fades: Kael never came back to The Oath-Breaker's Rite."*
+- Same ticket — **"likely" means more than before.** "Kael will likely turn to it" now needs a clearer lead. Before, two kinds of lean that each worked about 4 times in 10 both said "likely". Now, leaning toward a road works about 56% of the time on "likely", 38% on "may" and 14% on "not enough".
+- Same ticket — the lean still never passes the rest a mortal takes after a chapter. If it could, the leaned road would win by default while other roads are hidden, and that would be an order, not a lean.
+
+Say "veto A lean waits for its road" to reverse it.
+
 ## This week's screens
 
 [Contact sheet — this week next to last week](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/ux-review/2026-11-02/contact-sheet.jpg) — better: all three of last week's faults are fixed, and for the first time the review reached a real mid-game, where one new overlap shows.
 
 ## Queue
 
-**Empty shelf: nothing ready, nothing being built.**
-- **Shipped this hour:** [the quiet chapters that ask you once](https://linear.app/threadbare/issue/THR-2179) (THR-2179). Five chapters The First used to play out alone (Consecrate the Ground, The Haggle, Tend the Shrine, The Market Haggle, Heal the Sick) now deal you a hand on their first step. Merged via [#2776](https://github.com/christianspliid-ui/threadbare/pull/2776) at 02:16 UTC and live on [the deployed build](https://threadbearer.co/?view=game&seeded&size=medium).
-- The builder's last two runs (02:32 and 02:52 UTC) found nothing to pick up, which is correct with an empty shelf. The design lane holds [THR-2188](https://linear.app/threadbare/issue/THR-2188) in design; the orchestrator and design lane refill the shelf on their own (next runs 03:28 and 05:17 UTC). Nothing here needs you.
+**Starved: one ticket ready, and it is on hold until its veto window closes.**
+- [A lean waits for its road](https://linear.app/threadbare/issue/THR-2188) (THR-2188) moved to Ready for Dev this hour; its plan merged via [#2777](https://github.com/christianspliid-ui/threadbare/pull/2777). The builder takes it after 15:36 UTC today, when the veto window above closes.
+- The builder's last five runs (02:32–03:52 UTC) found nothing it was allowed to pick up: an empty shelf, then the one ticket on hold. That is correct, not a stall. Nothing here needs you.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (18 days; In Dev since 15 Oct, 23 days; last touched 1 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- The live site serves the latest commit on main (9924a734). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time. The worktree reaper last ran 03:40 local.
-- Engine speed: 155 ms/tick steady, +6% against the 7-day median (147).
+- The live site is up to date: the commits since its last publish (9924a734) only touched notes and plans. Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time. The worktree reaper last ran 04:40 local.
+- Engine speed: 130 ms/tick steady, −12% against the 7-day median (148).
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask.
-- **The home-folder copy of the repo is now 172 commits behind main**; its newest commit is from 4 Nov 11:02 local, about 65 hours ago. An edited `.claude/settings.local.json` and an untracked screenshot under `Docs/evidence/thr-2125/` that main now also adds still block the mirror's sync. This is the twentieth hour in a row this brief has flagged it; an attended agent session should set the two files aside and fast-forward. Nothing is lost, because the lanes work from fresh copies of main.
+- **The home-folder copy of the repo is now 175 commits behind main**; its newest commit is from 4 Nov 11:02 local, about 66 hours ago. An edited `.claude/settings.local.json` and an untracked screenshot under `Docs/evidence/thr-2125/` that main now also adds still block the mirror's sync. This is the twenty-first hour in a row this brief has flagged it; an attended agent session should set the two files aside and fast-forward. Nothing is lost, because the lanes work from fresh copies of main.
