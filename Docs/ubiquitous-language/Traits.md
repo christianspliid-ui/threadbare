@@ -148,13 +148,29 @@ Visibility governs **whether the trait is known yet — never whether a known tr
 
 ### Trait Hook
 
-**Aliases:** Hook
-**Also see:** `[[TraitPredicate]]`, `[[Trait Ref]]`, `[[Trait]]`, `[[Encounter]]`
+**Aliases:** trait hook (authoring docs; never bare "Hook" since 2026-11-07)
+**Also see:** `[[TraitPredicate]]`, `[[Trait Ref]]`, `[[Trait]]`, `[[Encounter]]`, `[[Hook]]`
 **Status:** canonical
+
+**Not to be confused with [Hook](#hook),** the player-facing word on the god rail for the marks, clues and vows that tie the god to something unfinished. A Trait Hook is an authoring shape; a Hook is something the player holds. Authoring docs that used bare "Hook" for this entry now write "trait hook" (THR-2181).
 
 The umbrella term for any authored place where content reacts to a trait. Four shapes ship: a **gate** (a `[[TraitPredicate]]` that shows or hides a template, option, or action), a **variant** (`TraitVariant` — a forecast or difficulty shift plus a player-facing factor line, applied when the acting agent holds the trait), a **trait-only nudge** (a `StepNudge` carrying `requiredTrait`, a card that only enters the hand for a bearer), and a **trait fragment** (prose that fires because the trait is present).
 
 **Every hook names its trait to the player.** A hook that changes an outcome without saying which trait did it is not a hook, it is a hidden modifier — the canon rule exists so the world's reaction to who you are is legible as story rather than felt as noise. A trait reaction colors the curated moment it belongs to and never raises an independent notification of its own.
+
+---
+
+### Hook
+
+**Aliases:** Hooks (the god-rail row), `ui.hooks`
+**Also see:** `[[Trait Hook]]`, `[[Attachment]]`, `[[Lead]]`
+**Status:** canonical (seated by delegation 2026-11-07, [THR-2181](https://linear.app/threadbare/issue/THR-2181))
+
+**Player-facing.** A mark, clue or vow that ties the god to something unfinished. The god rail's **Hooks** row counts them and its hover says so: *"Marks, clues and vows that tie you to something unfinished. Each one points at something you can still finish."* (`ui.hooks`). Since THR-2183 the folded row reads as a count of unfinished things ("11 unfinished"), never as a threat: a warm round-3 tester read "11 on you" as eleven dangers.
+
+What it counts: condition-, clue- and vow-subcategory traits on the god's side (`countHooks` = conditions + clues + vows, `src/components/Game/ascendant-bar/HooksBlock.tsx`). The "clue" here is a clue-subcategory trait, not a [Lead](./Encounters.md#lead) (`knows_clue_of`), which player surfaces always call a lead.
+
+**Not to be confused with [Trait Hook](#trait-hook),** the authoring umbrella for content that reacts to a trait (gate, variant, trait-only nudge, trait fragment). That one is never shown to the player by name.
 
 ---
 
