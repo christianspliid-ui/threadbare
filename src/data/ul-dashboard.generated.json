@@ -30,7 +30,7 @@
       "filename": "Traits.md",
       "title": "Traits",
       "contentAdjacent": true,
-      "termCount": 22,
+      "termCount": 23,
       "blurb": "Content-adjacent shard. Terms covering the trait layer: definitions and assignments, the twelve category contracts, how an authored ref resolves to a definition, and the hooks content authors write against — plus the parallel **attachment** layer that shares its borne-by-a-bearer shape: the Attachment umbrella, the Effect substrate, and the Power family (spell, bestowal, innate power) seated here at THR-1238 because two of the three power variants collide by name with a trait category (`bestowed`, `innate`) and are best read beside the categories they are not."
     },
     {
@@ -78,8 +78,8 @@
       ],
       "status": "canonical",
       "statusNote": null,
-      "oneLiner": "one of eight action domains (iron, gold, shadow, veil, heart, eye, stone, star); classifies *what* an actor does",
-      "body": "One of eight axes along which actors develop capability. Reaches classify *what* an actor does, not what fuels it.\n\nThe eight Reaches are: **iron** (martial/force), **gold** (commerce/resources), **shadow** (stealth/deception), **veil** (magic/perception), **heart** (social/emotional), **eye** (intelligence/knowledge), **stone** (endurance/construction), **star** (faith/divine).\n\nThe ninth Reach, Flesh, was absorbed into the Quintessence system in TB-075. Do not reintroduce it.",
+      "oneLiner": "one of eight action domains (iron, gold, shadow, veil, heart, eye, stone, star); classifies *what* an actor does; player text never says \"reach\" for the god's hold on a place (that is Dominion)",
+      "body": "One of eight axes along which actors develop capability. Reaches classify *what* an actor does, not what fuels it.\n\nThe eight Reaches are: **iron** (martial/force), **gold** (commerce/resources), **shadow** (stealth/deception), **veil** (magic/perception), **heart** (social/emotional), **eye** (intelligence/knowledge), **stone** (endurance/construction), **star** (faith/divine).\n\nThe ninth Reach, Flesh, was absorbed into the Quintessence system in TB-075. Do not reintroduce it.\n\n**Display rule (seated by delegation 2026-11-07, [THR-2181](https://linear.app/threadbare/issue/THR-2181)):** player-facing text never uses \"Reach\" or \"reach\" for the god's hold on a place, person or faction. That is **[Dominion](#dominion)**. A caption or hover that explains Dominion names the word. Why: a warm round-3 tester read \"Reach\" two ways, because the `dominion` first-use caption sat inside the god's Reaches row without naming itself ([THR-2175](https://linear.app/threadbare/issue/THR-2175)); since THR-2183 the caption says \"Dominion:\". Ordinary English \"reach\" in prose (\"their stories reach you\") is not the term and stays.",
       "seeAlso": [
         {
           "raw": "Domain Capability",
@@ -5587,12 +5587,12 @@
       "slug": "trait-hook",
       "name": "Trait Hook",
       "aliases": [
-        "Hook"
+        "trait hook (authoring docs; never bare \"Hook\" since 2026-11-07)"
       ],
       "status": "canonical",
       "statusNote": null,
-      "oneLiner": "any authored reaction to a trait: gate, variant, trait-only nudge, or trait fragment; every hook names its trait",
-      "body": "The umbrella term for any authored place where content reacts to a trait. Four shapes ship: a **gate** (a `[[TraitPredicate]]` that shows or hides a template, option, or action), a **variant** (`TraitVariant` — a forecast or difficulty shift plus a player-facing factor line, applied when the acting agent holds the trait), a **trait-only nudge** (a `StepNudge` carrying `requiredTrait`, a card that only enters the hand for a bearer), and a **trait fragment** (prose that fires because the trait is present).\n\n**Every hook names its trait to the player.** A hook that changes an outcome without saying which trait did it is not a hook, it is a hidden modifier — the canon rule exists so the world's reaction to who you are is legible as story rather than felt as noise. A trait reaction colors the curated moment it belongs to and never raises an independent notification of its own.",
+      "oneLiner": "any authored reaction to a trait: gate, variant, trait-only nudge, or trait fragment; every hook names its trait; authoring word only, never bare \"Hook\"",
+      "body": "**Not to be confused with [Hook](#hook),** the player-facing word on the god rail for the marks, clues and vows that tie the god to something unfinished. A Trait Hook is an authoring shape; a Hook is something the player holds. Authoring docs that used bare \"Hook\" for this entry now write \"trait hook\" (THR-2181).\n\nThe umbrella term for any authored place where content reacts to a trait. Four shapes ship: a **gate** (a `[[TraitPredicate]]` that shows or hides a template, option, or action), a **variant** (`TraitVariant` — a forecast or difficulty shift plus a player-facing factor line, applied when the acting agent holds the trait), a **trait-only nudge** (a `StepNudge` carrying `requiredTrait`, a card that only enters the hand for a bearer), and a **trait fragment** (prose that fires because the trait is present).\n\n**Every hook names its trait to the player.** A hook that changes an outcome without saying which trait did it is not a hook, it is a hidden modifier — the canon rule exists so the world's reaction to who you are is legible as story rather than felt as noise. A trait reaction colors the curated moment it belongs to and never raises an independent notification of its own.",
       "seeAlso": [
         {
           "raw": "TraitPredicate",
@@ -5613,9 +5613,46 @@
           "raw": "Encounter",
           "termName": "Encounter",
           "resolvedSlug": "encounters#encounter"
+        },
+        {
+          "raw": "Hook",
+          "termName": "Hook",
+          "resolvedSlug": "traits#hook"
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Traits.md#trait-hook",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "traits",
+      "slug": "hook",
+      "name": "Hook",
+      "aliases": [
+        "Hooks (the god-rail row)",
+        "`ui.hooks`"
+      ],
+      "status": "canonical",
+      "statusNote": "seated by delegation 2026-11-07, [THR-2181](https://linear.app/threadbare/issue/THR-2181)",
+      "oneLiner": "player-facing: a mark, clue or vow that ties the god to something unfinished, counted on the god rail's Hooks row; not a Trait Hook (THR-2181)",
+      "body": "**Player-facing.** A mark, clue or vow that ties the god to something unfinished. The god rail's **Hooks** row counts them and its hover says so: *\"Marks, clues and vows that tie you to something unfinished. Each one points at something you can still finish.\"* (`ui.hooks`). Since THR-2183 the folded row reads as a count of unfinished things (\"11 unfinished\"), never as a threat: a warm round-3 tester read \"11 on you\" as eleven dangers.\n\nWhat it counts: condition-, clue- and vow-subcategory traits on the god's side (`countHooks` = conditions + clues + vows, `src/components/Game/ascendant-bar/HooksBlock.tsx`). The \"clue\" here is a clue-subcategory trait, not a [Lead](./Encounters.md#lead) (`knows_clue_of`), which player surfaces always call a lead.\n\n**Not to be confused with [Trait Hook](#trait-hook),** the authoring umbrella for content that reacts to a trait (gate, variant, trait-only nudge, trait fragment). That one is never shown to the player by name.",
+      "seeAlso": [
+        {
+          "raw": "Trait Hook",
+          "termName": "Trait Hook",
+          "resolvedSlug": "traits#trait-hook"
+        },
+        {
+          "raw": "Attachment",
+          "termName": "Attachment",
+          "resolvedSlug": "traits#attachment"
+        },
+        {
+          "raw": "Lead",
+          "termName": "Lead",
+          "resolvedSlug": "encounters#lead"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Traits.md#hook",
       "contentAdjacent": true
     },
     {
