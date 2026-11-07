@@ -249,7 +249,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `aftermath` (1) | `aftermathWords.ts` | `THR-1004` |
 | `agenda` (1) | `agendaGenerator.ts` | — |
 | `agent` (10) | `agentActivity.ts`, `agentArc.ts`, `agentAttachments.ts`, `agentDetail.ts`, `agentDetection.ts`, `agentGeneration.ts`, `agentLifecycle.ts`, `agentResidence.ts`, `agentSelection.ts`, `agentValidation.ts` | `THR-1289`, `THR-1296`, `THR-1299`, `THR-1672`, `THR-1690`, `THR-719`, `THR-822` |
-| `agreement` (2) | `agreementExpiry.ts`, `agreementShape.ts` | `Phase 6`, `THR-1920`, `THR-1999` |
+| `agreement` (2) | `agreementExpiry.ts`, `agreementShape.ts` | `Phase 6`, `THR-1920`, `THR-1999`, `THR-2045` |
 | `alert` (1) | `alertChronicle.ts` | `THR-1828`, `THR-1875`, `THR-1896` |
 | `allegiance` (1) | `allegiance.ts` | `THR-1429`, `THR-1683` |
 | `ambition` (7) | `ambitionAssignment.ts`, `ambitionBoost.ts`, `ambitionLifecycle.ts`, `ambitionProse.ts`, `ambitionSelection.ts`, `ambitionShape.ts`, `ambitionTick.ts` | `THR-1277`, `THR-1285`, `THR-1779`, `THR-885` |
