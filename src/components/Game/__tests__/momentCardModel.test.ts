@@ -13,7 +13,8 @@ import type { GameState } from '../../../types/gameState';
 import type { StrategicProjectRuntime, UndertakingMomentRecord } from '../../../types/strategicAction';
 import { UNDERTAKING_EVENT_NODE_ID_PREFIX } from '../../../engine/grievance/undertakingOutcomeNode';
 import { UNDERTAKING_PROGRESS_PER_ADVANCE } from '../../../data/strategic-action-constants';
-import { buildMomentCardModel, findForwardLink } from '../momentCardModel';
+import { buildMomentCardModel, completionConsequence, findForwardLink } from '../momentCardModel';
+import { MOMENT_COMPLETION_UNMADE_CONSEQUENCE } from '../../../data/moment-card-content';
 
 function buildGraph(): WorldGraph {
   const graph = new WorldGraph();
@@ -227,5 +228,41 @@ describe('THR-1750 — the moment card prices on the target mortal\'s Dominion b
       expect(action.essenceCost).toBe(charged.cost);
       expect(action.essenceCost).toBeGreaterThan(template.essenceCost ?? 0);
     }
+  });
+});
+
+describe('THR-2075 — a finished work says what was done, not that something stands', () => {
+  const STANDS = 'It stands in the world now. Whoever it was aimed at will remember whose work it was.';
+  const ECHO = 'Kael takes up The Hollow Bell, left by a god of the last age, and carries it out of the Barrow.';
+  const done = (overrides: Partial<UndertakingMomentRecord>) => buildMomentCardModel(
+    buildState(buildGraph(), [buildProject({ status: 'completed' })]),
+    record({ momentClass: 'completion', band: undefined, effect: undefined, undertakingName: 'The Hollow Bell', ...overrides }),
+  ).consequence;
+
+  it('claim × Item reads its own echo line', () => {
+    expect(done({ templateId: 'cell.control_claim.item', label: ECHO })).toBe(ECHO);
+  });
+
+  it('a create cell keeps the line written for things that were made', () => {
+    expect(done({ templateId: 'cell.create.place', label: 'Kael raises a storehouse at the ford.' })).toBe(STANDS);
+  });
+
+  it('a non-create cell with an empty label reads the verb-neutral line', () => {
+    expect(done({ templateId: 'cell.control_claim.item', label: '   ' })).toBe(MOMENT_COMPLETION_UNMADE_CONSEQUENCE);
+  });
+
+  it('the lifecycle log form never reaches the card', () => {
+    expect(done({ templateId: 'cell.control_claim.item', label: 'Kael completes: The Hollow Bell' })).toBe(MOMENT_COMPLETION_UNMADE_CONSEQUENCE);
+  });
+
+  it('an unknown or legacy template keeps today\'s line', () => {
+    expect(done({ templateId: 'no_such_template', label: ECHO })).toBe(STANDS);
+    expect(done({ templateId: 'strategic_build_warehouse', label: ECHO })).toBe(STANDS);
+  });
+
+  it('only completion moments read the label', () => {
+    const atCost = buildMomentCardModel(buildState(buildGraph()), record({ templateId: 'cell.control_claim.item', label: ECHO }));
+    expect(atCost.consequence).not.toBe(ECHO);
+    expect(completionConsequence(record({ templateId: 'cell.control_claim.item', label: ` ${ECHO} ` }), STANDS)).toBe(ECHO);
   });
 });

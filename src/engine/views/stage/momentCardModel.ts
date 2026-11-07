@@ -38,12 +38,15 @@ import {
 import { describeWorkProgress } from '../../workProgress';
 import { stepOutcomeToOutcomeBand, stepOutcomeWord } from '../../../data/outcome-band-content';
 import {
+  MOMENT_COMPLETION_UNMADE_CONSEQUENCE,
   MOMENT_DIVINE_ACTIONS,
+  MOMENT_LOG_COMPLETION_MARKER,
   MOMENT_SEE_WORK_CLASSES,
   renderMomentLine,
   selectMomentCardTemplate,
   type MomentDivineVerb,
 } from '../../../data/moment-card-content';
+import { getCellTemplate } from '../../../data/undertaking-cells';
 import { getUnifiedTemplateById } from '../../../data/unified-action-templates';
 import { canAfford } from '../../influence';
 import { dominionScaledEssenceCost } from '../../dominion';
@@ -230,6 +233,22 @@ function buildDivineActions(state: GameState, targetId: string): MomentDivineAct
   });
 }
 
+/**
+ * THR-2075 — a finished work that made nothing says what was done, in its own cell's words.
+ *
+ * The lifecycle already writes the cell's resolved completion line onto `record.label`.
+ * A `create` cell (or a non-cell legacy work) keeps `fallback` — "It stands in the world
+ * now" is true for a work that made something. Any other verb reads its own line; an empty
+ * label or the lifecycle's log form ("<name> completes: <work>") reads the verb-neutral line.
+ */
+export function completionConsequence(record: UndertakingMomentRecord, fallback: string): string {
+  const variant = getCellTemplate(record.templateId)?.cellVariant;
+  if (!variant || variant === 'create') return fallback;
+  const own = record.label?.trim();
+  if (!own || own.includes(MOMENT_LOG_COMPLETION_MARKER)) return MOMENT_COMPLETION_UNMADE_CONSEQUENCE;
+  return own;
+}
+
 /** Build the card's read-model. Never throws — every missing input degrades to a plain field. */
 export function buildMomentCardModel(state: GameState, record: UndertakingMomentRecord): MomentCardModel {
   const graph = state.graph;
@@ -270,7 +289,9 @@ export function buildMomentCardModel(state: GameState, record: UndertakingMoment
     seeWork: !!actorNode && MOMENT_SEE_WORK_CLASSES.has(record.momentClass),
     undertakingName: record.undertakingName,
     opening: renderMomentLine(template.opening, vars),
-    consequence: renderMomentLine(template.consequence, vars),
+    consequence: record.momentClass === 'completion'
+      ? completionConsequence(record, renderMomentLine(template.consequence, vars))
+      : renderMomentLine(template.consequence, vars),
     bandWord,
     outcomeBand: record.band ? stepOutcomeToOutcomeBand(record.band) : null,
     checkpoints,

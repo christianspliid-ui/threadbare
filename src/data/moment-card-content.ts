@@ -94,6 +94,15 @@ export const MOMENT_CARD_CONTENT: Readonly<Record<UndertakingMomentClass, Moment
 };
 
 /** Fill a template line. Unknown placeholders render as their bare key, never as `undefined`. */
+/** THR-2075 — the finished-work fallback when a cell that made nothing has no line of its own. */
+export const MOMENT_COMPLETION_UNMADE_CONSEQUENCE = 'The work is done. Whoever it was aimed at will remember whose work it was.';
+
+/**
+ * THR-2075 — recognises the lifecycle's log-form completion label
+ * (`"<name> completes: <work>"`, strategicActionLifecycle.ts), which must never reach the card.
+ */
+export const MOMENT_LOG_COMPLETION_MARKER = ' completes: ';
+
 export function renderMomentLine(line: string, vars: MomentCardVars): string {
   return line.replace(/\{(actor|undertaking|band|lost)\}/g, (_m, key: keyof MomentCardVars) => {
     const value = vars[key];
