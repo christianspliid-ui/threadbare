@@ -40,7 +40,9 @@ function replayTraces() {
   }>;
 }
 
-describe('runTick names a replayed tick (THR-1921)', () => {
+// Every test here builds one or more generated worlds; a CI shard took 5.6 s for one,
+// past vitest's 5 s default (a CI timeout, not a defect). A 60 s bound for all of them.
+describe('runTick names a replayed tick (THR-1921)', { timeout: 60_000 }, () => {
   beforeEach(() => { clearTraces(); enableTracing(); });
   afterEach(() => { disableTracing(); clearTraces(); });
 
