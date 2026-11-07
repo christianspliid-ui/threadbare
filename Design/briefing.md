@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-07 00:57 local (23:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-07 01:57 local (00:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -24,17 +24,17 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Queue
 
-**Thin but moving: one ticket being built, one ready.**
-- **Shipped this hour:** [the map fix for hex cards' sphere push](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (THR-2091). Merged via [#2773](https://github.com/christianspliid-ui/threadbare/pull/2773) at 23:04 UTC and live.
-- **Being built now:** [The Crossroads on screen](https://linear.app/threadbare/issue/THR-1928/the-crossroads-on-screen-a-threaded-mortals-next-three-roads-as-an) (THR-1928), the screen half of the god action you approved on 14 Oct. The builder run that started 23:32 UTC is working on it.
-- **Ready now:** [your cards say how they landed](https://linear.app/threadbare/issue/THR-2187/your-cards-say-how-they-landed-each-card-the-god-played-adds-its-own) (THR-2187), open to build since 23:50 UTC. Its follow-up, the five chapters that ask you once ([THR-2179](https://linear.app/threadbare/issue/THR-2179)), joins the queue when it merges. The design lane's decisions on it have passed their veto window.
+**Empty shelf: one ticket being built, none ready.**
+- **Shipped this hour:** [The Crossroads on screen](https://linear.app/threadbare/issue/THR-1928/the-crossroads-on-screen-a-threaded-mortals-next-three-roads-as-an) (THR-1928), the screen half of the god action you approved on 14 Oct. Merged via [#2774](https://github.com/christianspliid-ui/threadbare/pull/2774) at 00:37 UTC and live on [the deployed build](https://threadbearer.co/?view=game&seeded&size=medium). Its engine half shipped earlier ([THR-1926](https://linear.app/threadbare/issue/THR-1926)).
+- **Being built now:** [your cards say how they landed](https://linear.app/threadbare/issue/THR-2187/your-cards-say-how-they-landed-each-card-the-god-played-adds-its-own) (THR-2187); the builder claimed it at 00:52 UTC. Its follow-up, the five chapters that ask you once ([THR-2179](https://linear.app/threadbare/issue/THR-2179)), joins the queue when it merges.
+- Nothing else is ready to build. The orchestrator and design lane refill the shelf on their own (next runs 01:28 and 02:17 UTC); nothing here needs you.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (18 days; In Dev since 15 Oct, 23 days; last touched 1 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- The live site serves the latest commit on main (7b2def36). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time. The builder is working (a run started 23:32 UTC).
-- Engine speed: 136 ms/tick steady, −8% against the 7-day median (147).
+- The live site serves the latest commit on main (d18870d3). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting to merge. All 10 scheduled tasks are on time. The builder is working (it claimed THR-2187 at 00:52 UTC).
+- Engine speed: 143 ms/tick steady, −3% against the 7-day median (147).
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local); overnight quiet is normal, so it is not an ask.
-- **The home-folder copy of the repo is now 155 commits behind main**; its newest commit is from 4 Nov 11:02 local, about 62 hours ago. The same two files still block the mirror's sync: an edited `.claude/settings.local.json` and an untracked screenshot under `Docs/evidence/thr-2125/` that main now also adds. This is the seventeenth hour in a row this brief has flagged it; an attended agent session should set the two files aside and fast-forward. Nothing is lost, because the lanes work from fresh copies of main.
+- **The home-folder copy of the repo is now 163 commits behind main**; its newest commit is from 4 Nov 11:02 local, about 63 hours ago. The same two files still block the mirror's sync: an edited `.claude/settings.local.json` and an untracked screenshot under `Docs/evidence/thr-2125/` that main now also adds. This is the eighteenth hour in a row this brief has flagged it; an attended agent session should set the two files aside and fast-forward. Nothing is lost, because the lanes work from fresh copies of main.

@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-07 00:57 local (23:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-07 01:57 local (00:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,6 +46,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-07: The Crossroads is on screen — a threaded mortal's next three roads, and you can lean toward one; it is live** ([THR-1928](https://linear.app/threadbare/issue/THR-1928/the-crossroads-on-screen-a-threaded-mortals-next-three-roads-as-an)). Merged via [#2774](https://github.com/christianspliid-ui/threadbare/pull/2774).
 - **2026-11-06: hex cards' sphere push now lands on the right place on the map, and it is live** ([THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid)). Merged via [#2773](https://github.com/christianspliid-ui/threadbare/pull/2773).
 - **2026-11-06: The Crossroads is live — see a threaded mortal's top choices and lean on one** ([THR-1926](https://linear.app/threadbare/issue/THR-1926/the-crossroads-read-a-threaded-mortals-top-three-choices-encounters)), the god action you approved on 14 Oct. Merged via [#2772](https://github.com/christianspliid-ui/threadbare/pull/2772).
 - **2026-11-06: rank words on a reach tile now show where they sit on their ladder, and it is live** ([THR-2182](https://linear.app/threadbare/issue/THR-2182/rank-words-show-their-ladder-a-reach-tile-says-where-its-word-sits-and)). Merged via [#2771](https://github.com/christianspliid-ui/threadbare/pull/2771).
@@ -55,7 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-06: the god rail's folded rows now say what they count, and it is live** ([THR-2183](https://linear.app/threadbare/issue/THR-2183/the-rail-rows-say-what-they-are-plain-summaries-on-the-folded-god-rail)). Merged via [#2766](https://github.com/christianspliid-ui/threadbare/pull/2766).
 - **2026-11-06: a good-odds step that misses now says so, and it is live** ([THR-2180](https://linear.app/threadbare/issue/THR-2180/a-good-odds-step-that-misses-says-so-it-looked-fated-but-fate-rolled)). Merged via [#2764](https://github.com/christianspliid-ui/threadbare/pull/2764).
 - **2026-11-06: the god-rail hand gets room — one-line card rows and a hand floor, and it is live** ([THR-2177](https://linear.app/threadbare/issue/THR-2177/god-rail-the-pinned-essence-block-leaves-the-hand-no-room-eight-50-px)). Merged via [#2763](https://github.com/christianspliid-ui/threadbare/pull/2763).
-- **2026-11-06: each chapter now says whether it waits for you ("Waits for you" / "Theirs alone"), and it is live** ([THR-2178](https://linear.app/threadbare/issue/THR-2178/say-which-chapters-wait-for-the-god-a-waits-for-you-theirs-alone-word)). Merged via [#2761](https://github.com/christianspliid-ui/threadbare/pull/2761).
 ---
 
 Older resolved items and every earlier revision of this file: `git log -p origin/ops -- Design/user-actions.md`.
