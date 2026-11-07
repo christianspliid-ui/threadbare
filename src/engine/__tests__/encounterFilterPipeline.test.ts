@@ -288,6 +288,36 @@ describe('capWithDiversity', () => {
     }
   });
 
+  // ── Leaned-road reserve, Phase 1e-ter (THR-2188) ──────────────
+
+  it('keeps the one road a held Crossroads lean names past the cap, and reports it', () => {
+    const graph = new WorldGraph();
+    const head = Array.from({ length: 80 }, (_, i) =>
+      makeEntry({ templateId: `tmpl-${i}`, locationId: `loc-${i}`, encounterType: 'explore' }),
+    );
+    const leaned = makeEntry({ templateId: 'tmpl-leaned', locationId: 'loc-leaned', encounterType: 'explore', leanedRoad: true });
+    const report: { leanReserved?: boolean } = {};
+    const result = capWithDiversity([...head, leaned], 'agent-1', graph, undefined, undefined, undefined, report);
+    expect(result).toHaveLength(MAX_SCORED_CANDIDATES);
+    expect(result.some(e => e.templateId === 'tmpl-leaned')).toBe(true);
+    expect(report.leanReserved).toBe(true);
+
+    const unflagged = capWithDiversity([...head, { ...leaned, leanedRoad: false }], 'agent-1', graph);
+    expect(unflagged.some(e => e.templateId === 'tmpl-leaned')).toBe(false);
+  });
+
+  it('reserves at most one leanedRoad entry', () => {
+    const graph = new WorldGraph();
+    const head = Array.from({ length: 80 }, (_, i) =>
+      makeEntry({ templateId: `tmpl-${i}`, locationId: `loc-${i}`, encounterType: 'explore' }),
+    );
+    const a = makeEntry({ templateId: 'tmpl-lean-a', locationId: 'loc-a', encounterType: 'explore', leanedRoad: true });
+    const b = makeEntry({ templateId: 'tmpl-lean-b', locationId: 'loc-b', encounterType: 'explore', leanedRoad: true });
+    const result = capWithDiversity([...head, a, b], 'agent-1', graph);
+    expect(result.some(e => e.templateId === 'tmpl-lean-a')).toBe(true);
+    expect(result.some(e => e.templateId === 'tmpl-lean-b')).toBe(false);
+  });
+
   // ── Personally-offered reserve (THR-814) ──────────────────────
   //
   // The regression these pin is positional, not scoring: `phaseAgentDecision`

@@ -840,7 +840,7 @@ export function capWithDiversity(
   fill: CapFillOptions = DEFAULT_CAP_FILL,
   agentLocationId?: string,
   /** Out-param (THR-1687): set to the own-hex order only when the local pass actually ran. */
-  report?: { localOrder?: CapFillLocalOrder },
+  report?: { localOrder?: CapFillLocalOrder; leanReserved?: boolean },
 ): EncounterCacheEntry[] {
   if (entries.length <= MAX_SCORED_CANDIDATES) {
     return [...entries];
@@ -980,6 +980,23 @@ export function capWithDiversity(
     if (reservedKeys.has(key)) break;
     reserved.push(entry);
     reservedKeys.add(key);
+    break;
+  }
+
+  // Phase 1e-ter: preserve the encounter a held Crossroads lean names (THR-2188).
+  //
+  // The census found 855 of 890 lapsed leans were roads the cap cut at the mortal's
+  // next decision (a median of four ticks later), not roads gone from the world, so
+  // "likely" was followed on 22% of all leans. Same shape as 1e-bis: at most one
+  // flagged entry, walked in list order. Scoring still decides (the board's ×2 / ×0.5
+  // is unchanged). `report.leanReserved` records that this phase took the slot.
+  for (const entry of entries) {
+    if (!entry.leanedRoad) continue;
+    const key = `${entry.templateId}:${entry.locationId}`;
+    if (reservedKeys.has(key)) break;
+    reserved.push(entry);
+    reservedKeys.add(key);
+    if (report) report.leanReserved = true;
     break;
   }
 
@@ -1217,7 +1234,7 @@ export function runFilterPipeline(
 
   // Stage 5: Performance Cap
   const beforeCap = current;
-  const capReport: { localOrder?: CapFillLocalOrder } = {};
+  const capReport: { localOrder?: CapFillLocalOrder; leanReserved?: boolean } = {};
   try {
     current = capWithDiversity(current, agentId, graph, tick, capFill, agentLocationId, capReport);
   } catch {
@@ -1250,6 +1267,7 @@ export function runFilterPipeline(
       capCutTemplates,
       capReport.localOrder,
       afterStoryBreath,
+      capReport.leanReserved === true,
     ),
     ...(journeyGoalCutBy ? { journeyGoalCutBy } : {}),
   };
@@ -1275,6 +1293,7 @@ function buildTrace(
   capCutTemplates = 0,
   capLocalOrder?: CapFillLocalOrder,
   storyBreath?: number,
+  leanReserved = false,
 ): FilterPipelineTrace {
   return {
     id: 0,
@@ -1291,6 +1310,7 @@ function buildTrace(
     capCutTemplates,
     ...(capLocalOrder ? { capLocalOrder } : {}),
     storyBreath: storyBreath ?? afterPrerequisites,
+    ...(leanReserved ? { leanReserved: true } : {}),
     summary: `Agent ${agentId}: ${cacheSize} → ${afterCap} candidates`,
   };
 }

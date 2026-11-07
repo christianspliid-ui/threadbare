@@ -143,7 +143,7 @@ describe('the row words the reading (plan § UI pillar)', () => {
 
   it('a held lean: the held line, the leaned road marked, no other controls', () => {
     const s = buildCrossroadsSection(makeState({ lean: HELD }), KAEL)!;
-    expect(s.act?.held?.line).toMatch(/^Your hand rests on Kael, toward .+\. It holds until Kael next chooses\.$/);
+    expect(s.act?.held?.line).toMatch(/^Your hand rests on Kael, toward .+\. It waits until Kael next faces that road\.$/);
     expect(s.act?.held?.liftLabel).toBe(CROSSROADS_CONTROLS.lift);
     expect(s.tiles.map(t => t.marked === true)).toEqual([false, true, false]);
     expect(s.tiles.every(t => (t.offers ?? []).length === 0)).toBe(true);

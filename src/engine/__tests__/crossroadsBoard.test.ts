@@ -119,7 +119,7 @@ describe('a held lean resolves at the next decision (THR-1926)', () => {
     const decided = board(cands);
     const resolved = resolveCrossroadsLean(prepared, decided, cands as never, [], { agentId: 'a', agentName: 'Kael', tick, floor: 0 });
     expect(resolved?.outcome).toBe('lapsed_expired');
-    expect(resolved?.message).toBe('Your lean fades: Kael never came free to choose.');
+    expect(resolved?.message).toMatch(/^Your lean fades: Kael did not face .+ again in time\.$/);
   });
 
   it('an encounter ranked just outside the top five is pulled up onto the board', () => {

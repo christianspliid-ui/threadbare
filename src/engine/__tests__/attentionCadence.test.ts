@@ -158,6 +158,14 @@ describe('the story breath', () => {
     expect(out.map(e => e.templateId)).toEqual([CHORE, STORY]);
   });
 
+  it('filterByStoryBreath drops a road a Crossroads lean names (leanedRoad, THR-2188 — influence, not command)', () => {
+    const g = makeGraph('pause');
+    recordStoryChapterEnd(g, 'agent_1', 'ua_1', STORY, 10);
+    const leaned = { ...entry(STORY), leanedRoad: true } as EncounterCacheEntry;
+    const out = filterByStoryBreath([entry(CHORE), leaned], 'agent_1', g, 20);
+    expect(out.map(e => e.templateId)).toEqual([CHORE]);
+  });
+
   it('filterByStoryBreath passes everything for auto-mode threads', () => {
     const g = makeGraph('auto_resolve');
     g.updateEdge('thread_1', { properties: { lastStoryChapterEndTick: 10 } });

@@ -105,7 +105,7 @@ describe('placeCrossroadsLean succeeds (THR-1926)', () => {
     expect(r.lean).toMatchObject({ templateId: 'feast', targetId: 'greyford', direction: 'toward', tick: 10, rankWhenPlaced: 1, forecastAtPlacement: 'likely' });
     expect(state.graph.getNode(KAEL)?.properties.crossroadsLean).toEqual(r.lean);
     expect(state.essencePool).toEqual(before);
-    expect(r.message).toMatch(/^Your hand rests on Kael, toward .+\. It holds until Kael next chooses\.$/);
+    expect(r.message).toMatch(/^Your hand rests on Kael, toward .+\. It waits until Kael next faces that road\.$/);
     expect(r.message).not.toMatch(/feast/); // a name, never the template id
   });
 
