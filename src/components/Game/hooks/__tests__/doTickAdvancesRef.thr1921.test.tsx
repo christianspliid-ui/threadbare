@@ -22,6 +22,11 @@ import { generateArchetypes } from '../../../../engine/ascendant';
 import { clearTraces, enableTracing, disableTracing, getTraces } from '../../../../engine/traceBuffer';
 
 const SEED = 42;
+/**
+ * World generation + ticks inside jsdom, tracing on: ~1–2 s locally, past vitest's 5 s
+ * default on a CI shard (PR #2783 timed out both tests). A generous bound, not a perf budget.
+ */
+const WORLD_TEST_TIMEOUT_MS = 60_000;
 
 describe('doTick never ticks from a stale state (THR-1921)', () => {
   beforeEach(() => { clearTraces(); enableTracing(); });
@@ -48,7 +53,7 @@ describe('doTick never ticks from a stale state (THR-1921)', () => {
 
     expect(result.current.gameState.tick).toBe(start + 2);
     expect(getTraces().filter(t => t.category === 'tick_replayed')).toHaveLength(0);
-  });
+  }, WORLD_TEST_TIMEOUT_MS);
 
   it('a debug batch right after an interval tick starts from the advanced state', () => {
     const { result } = renderHook(() =>
@@ -70,5 +75,5 @@ describe('doTick never ticks from a stale state (THR-1921)', () => {
 
     expect(result.current.gameState.tick).toBe(start + 4);
     expect(getTraces().filter(t => t.category === 'tick_replayed')).toHaveLength(0);
-  });
+  }, WORLD_TEST_TIMEOUT_MS);
 });
