@@ -198,11 +198,11 @@ const SAMPLE_CROSSROADS_SECTION: DetailPageSection = {
   kind: 'cards', typeId: 'crossroads', label: 'Next, Kael weighs', labelTooltipId: 'ui.crossroads', gold: false, tier: 'routine', source: 'styleguide',
   tiles: [
     { title: "The Oath-Breaker's Rite", kindWord: 'A chance', lines: ['Kael has heard the oath-breaker will be named at dusk.'], offers: [
-      { optionIndex: 0, direction: 'toward', label: 'Lean toward', forecast: 'Kael will likely turn to it.', confirm: "Lean Kael toward The Oath-Breaker's Rite, paid now in Force essence, whatever Kael chooses.", cost: 2, sphere: 'force', blockedReason: null },
-      { optionIndex: 0, direction: 'away', label: 'Lean away', forecast: 'Kael may set it aside.', confirm: "Lean Kael away from The Oath-Breaker's Rite, paid now in Force essence, whatever Kael chooses.", cost: 2, sphere: 'force', blockedReason: null },
+      { optionIndex: 0, road: { family: 'encounter', templateId: 'sample.rite', targetId: null }, direction: 'toward', label: 'Lean toward', forecast: 'Kael will likely turn to it.', confirm: "Lean Kael toward The Oath-Breaker's Rite, paid now in Force essence, whatever Kael chooses.", cost: 2, sphere: 'force', blockedReason: null },
+      { optionIndex: 0, road: { family: 'encounter', templateId: 'sample.rite', targetId: null }, direction: 'away', label: 'Lean away', forecast: 'Kael may set it aside.', confirm: "Lean Kael away from The Oath-Breaker's Rite, paid now in Force essence, whatever Kael chooses.", cost: 2, sphere: 'force', blockedReason: null },
     ] },
     { title: 'Survey the ruin', kindWord: 'A work', lines: ['Choosing the stone.'], offers: [
-      { optionIndex: 1, direction: 'toward', label: 'Lean toward', forecast: 'It may tip Kael.', confirm: 'Lean Kael toward Survey the ruin, paid now in Energy essence, whatever Kael chooses.', cost: 3, sphere: 'energy', blockedReason: 'Not enough Energy essence.' },
+      { optionIndex: 1, road: { family: 'strategic_action', templateId: 'sample.survey', targetId: null }, direction: 'toward', label: 'Lean toward', forecast: 'It may tip Kael.', confirm: 'Lean Kael toward Survey the ruin, paid now in Energy essence, whatever Kael chooses.', cost: 3, sphere: 'energy', blockedReason: 'Not enough Energy essence.' },
     ] },
   ],
   act: { kind: 'crossroads', subjectId: 'sample', intro: [{ text: 'Kael is torn.', tooltipId: 'ui.crossroads.settledness' }], fireLabel: 'Lean', cancelLabel: 'Not now' },

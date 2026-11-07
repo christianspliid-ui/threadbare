@@ -36,10 +36,12 @@ export interface CardActHandlers {
 
 export const CardActContext = createContext<CardActHandlers | null>(null);
 
-/** The armed offer of one strip: which tile, which direction. */
-export interface ArmedOffer {
-  optionIndex: number;
-  direction: CardActOffer['direction'];
+/** The armed offer of one strip, by road identity and direction (never by position). */
+export type ArmedOffer = string;
+
+/** The arm key of an offer: its road's identity plus its direction. */
+export function offerKey(offer: Pick<CardActOffer, 'road' | 'direction'>): ArmedOffer {
+  return `${offer.road.family}|${offer.road.templateId}|${offer.road.targetId ?? ''}|${offer.direction}`;
 }
 
 /** One strip's arm state, shared by its intro and its tiles. */
@@ -101,7 +103,8 @@ export function CardActTileControls({ strip, tile, armed, onArm, onDisarm }: {
   const [refusal, setRefusal] = useState<string | null>(null);
   const offers = tile.offers ?? [];
   if (!handlers || strip.held || offers.length === 0) return null;
-  const armedOffer = armed ? offers.find(o => o.optionIndex === armed.optionIndex && o.direction === armed.direction) ?? null : null;
+  // A reading rewritten under an armed tile drops the strip rather than re-pointing it.
+  const armedOffer = armed ? offers.find(o => offerKey(o) === armed) ?? null : null;
 
   const fire = (offer: CardActOffer) => {
     if (offer.blockedReason) return;
@@ -129,7 +132,7 @@ export function CardActTileControls({ strip, tile, armed, onArm, onDisarm }: {
               onClick={() => {
                 setRefusal(null);
                 if (isArmed) onDisarm();
-                else onArm({ optionIndex: offer.optionIndex, direction: offer.direction });
+                else onArm(offerKey(offer));
               }}
             >
               {offer.label}

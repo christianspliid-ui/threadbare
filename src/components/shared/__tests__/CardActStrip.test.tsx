@@ -16,6 +16,7 @@ import { CardActContext, type CardActHandlers } from '../CardActStrip';
 function offer(optionIndex: number, direction: CardActOffer['direction'], extra: Partial<CardActOffer> = {}): CardActOffer {
   return {
     optionIndex, direction,
+    road: { family: 'encounter', templateId: `road_${optionIndex}`, targetId: null },
     label: direction === 'toward' ? 'Lean toward' : 'Lean away',
     forecast: 'It may tip Kael.',
     confirm: 'Lean Kael toward the Feast, paid now in Life essence, whatever Kael chooses.',
@@ -94,6 +95,18 @@ describe('CardActStrip (THR-1928)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Lean' }));
     expect(screen.getByText('Kael no longer weighs that road.')).toBeInTheDocument();
     expect(document.querySelector('[data-act-armed]')).not.toBeNull();
+  });
+
+  it('a reading rewritten under an armed tile drops the strip; it never re-points at another road (review-gate round 1)', () => {
+    const { rerender, value } = withHandlers(<Section section={section()} />);
+    fireEvent.click(document.querySelector('[data-act-offer="1:toward"]')!);
+    expect(document.querySelector('[data-act-armed]')).not.toBeNull();
+    // The next decision rewrote the reading: a different road now sits at index 1.
+    const rewritten = section();
+    rewritten.tiles[1] = { title: 'Survey the ruin', kindWord: 'A work', lines: [], offers: [{ ...offer(1, 'toward'), road: { family: 'strategic_action', templateId: 'survey', targetId: null } }] };
+    rerender(<CardActContext.Provider value={value}><Section section={rewritten} /></CardActContext.Provider>);
+    expect(document.querySelector('[data-act-armed]')).toBeNull();
+    expect(value.fire).not.toHaveBeenCalled();
   });
 
   it('held: the held line and "Lift your hand" only; the leaned tile is marked', () => {

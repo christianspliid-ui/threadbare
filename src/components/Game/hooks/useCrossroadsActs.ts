@@ -18,7 +18,7 @@ import type { GameState } from '../../../types/gameState';
 import type { ToastItem } from '../../../types/notification';
 import type { SimulationRuntime } from '../../../engine/simulationRuntime';
 import { touchWorld } from '../../../engine/simulationRuntime';
-import { placeCrossroadsLeanAt, liftCrossroadsLean } from '../../../engine/crossroadsActions';
+import { placeCrossroadsLean, liftCrossroadsLean } from '../../../engine/crossroadsActions';
 import { spendPremonitionEssence } from '../../../engine/premonitionActions';
 import { withEssenceSpend } from '../../../engine/essenceMovement';
 import type { CardActHandlers, CardActResult } from '../../shared/CardActStrip';
@@ -34,9 +34,13 @@ export interface CrossroadsActsDeps {
   pushToast: (toast: ToastItem) => void;
 }
 
-/** Lean one road of the live reading. Pure of React: the hook and the tests call it. */
-export function leanOnRoad(deps: CrossroadsActsDeps, agentId: string, optionIndex: number, direction: CardActOffer['direction']): CardActResult {
-  const result = placeCrossroadsLeanAt(deps.gameStateRef.current, agentId, optionIndex, direction);
+/**
+ * Lean on one road, named by identity — the road the player armed. A road the live reading
+ * no longer holds is refused `stale_option` by `placeCrossroadsLean`, spending nothing.
+ * Pure of React: the hook and the tests call it.
+ */
+export function leanOnRoad(deps: CrossroadsActsDeps, agentId: string, road: CardActOffer['road'], direction: CardActOffer['direction']): CardActResult {
+  const result = placeCrossroadsLean(deps.gameStateRef.current, agentId, road, direction);
   if (!result.success || !result.sphere) return { ok: false, message: result.message };
   if (deps.runtime) touchWorld(deps.runtime);
   const sphere = result.sphere;
@@ -70,7 +74,7 @@ export function useCrossroadsActs(deps: CrossroadsActsDeps): CardActHandlers {
   const { gameStateRef, runtime, setGameState, pushToast } = deps;
   const fire = useCallback((strip: CardsActStrip, offer: CardActOffer): CardActResult => {
     if (strip.kind !== 'crossroads') return { ok: false };
-    return leanOnRoad({ gameStateRef, runtime, setGameState, pushToast }, strip.subjectId, offer.optionIndex, offer.direction);
+    return leanOnRoad({ gameStateRef, runtime, setGameState, pushToast }, strip.subjectId, offer.road, offer.direction);
   }, [gameStateRef, runtime, setGameState, pushToast]);
   const lift = useCallback((strip: CardsActStrip): CardActResult => {
     if (strip.kind !== 'crossroads') return { ok: false };

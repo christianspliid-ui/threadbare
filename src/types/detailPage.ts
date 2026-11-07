@@ -400,8 +400,14 @@ export interface CardTile {
  * and the confirm sentence.
  */
 export interface CardActOffer {
-  /** The tile's position in the strip's source list (the Crossroads option index). */
+  /** The tile's position in the strip's source list (the Crossroads option index) — display only. */
   optionIndex: number;
+  /**
+   * The road this offer acts on, by identity (review-gate round 1): arming and firing key on
+   * it, never on the position, so a reading rewritten while a tile is armed can never re-point
+   * the strip — or the spend — at a different road.
+   */
+  road: { family: 'encounter' | 'strategic_action'; templateId: string; targetId: string | null };
   direction: 'toward' | 'away';
   /** The arming button's word: "Lean toward". */
   label: string;

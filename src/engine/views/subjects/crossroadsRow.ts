@@ -109,6 +109,7 @@ function offerFor(
   const affordable = (state.essencePool[sphere] ?? 0) >= cost;
   return {
     optionIndex: rank,
+    road: { family: option.family, templateId: option.templateId, targetId: option.targetId },
     direction,
     label: CROSSROADS_CONTROLS[direction],
     labelTooltipId: 'ui.crossroads.lean',
