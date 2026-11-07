@@ -23,6 +23,7 @@ import {
   FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS,
   FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY,
 } from './faction-constants';
+import { DEAL_DEFAULT_COUNT } from './nudge-constants';
 
 // ─── Constants ───────────────────────────────────────────────────────────
 
@@ -79,6 +80,9 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     steps: [
       {
         reach: 'veil',
+        // THR-2179 (slice 2): a pure-fill dealt hand on step 0 only. One of the five
+        // chapters The First most often met alone; steps 1+ stay the mortal's own.
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore'] },
         duration: { min: 1, max: 1 },
         difficulty: TS_DIFFICULTY_BASE / 100,
         failBehavior: 'continue_weakened',
@@ -209,6 +213,9 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     steps: [
       {
         reach: 'heart',
+        // THR-2179 (slice 2): a pure-fill dealt hand on step 0 only. One of the five
+        // chapters The First most often met alone; steps 1+ stay the mortal's own.
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['presence'] },
         duration: { min: 1, max: 1 },
         difficulty: TS_DIFFICULTY_BASE / 100,
         failBehavior: 'continue_weakened',
@@ -478,6 +485,9 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     steps: [
       {
         reach: 'veil',
+        // THR-2179 (slice 2): a pure-fill dealt hand on step 0 only. One of the five
+        // chapters The First most often met alone; steps 1+ stay the mortal's own.
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore'] },
         duration: { min: 1, max: 1 },
         difficulty: TS_DIFFICULTY_BASE / 100,
         failBehavior: 'continue_weakened',

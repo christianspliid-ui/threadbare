@@ -1330,6 +1330,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         id: 'market_haggle.entrance',
         name: 'The Entrance',
         reach: 'gold',
+        // THR-2179 (slice 2): a pure-fill dealt hand on step 0 only. One of the five
+        // chapters The First most often met alone; steps 1+ stay the mortal's own.
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['finesse'] },
         difficulty: DIFFICULTY_BASE,
         duration: 1,
         narrative: 'The market runs three deep at every stall and the noise makes honest talk impossible. {actor} picks out the one merchant not calling prices — the sign of a seller who already knows what the goods are worth.',
@@ -5632,6 +5635,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         id: 'the_haggle.opening',
         name: 'The Opening Bid',
         reach: 'gold',
+        // THR-2179 (slice 2): a pure-fill dealt hand on step 0 only. One of the five
+        // chapters The First most often met alone; steps 1+ stay the mortal's own.
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['finesse'] },
         difficulty: DIFFICULTY_BASE,
         duration: 1,
         narrative: '{actor} squares off against a merchant who has held this pitch for eleven years. The first price named is a barb — too high by half, as any fool could see.',

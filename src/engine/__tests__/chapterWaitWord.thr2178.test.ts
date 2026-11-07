@@ -17,7 +17,8 @@ import type { GameState } from '../../types/gameState';
 import { buildLedgerRows } from '../threadedChapters';
 import { buildLedgerRail } from '../views/ledgerRail';
 
-const HEAL_THE_SICK = 'ts.quest.heal_the_sick';
+// THR-2179: Heal the Sick now deals a step-0 hand; Meditate on the Spheres is still alone.
+const ALONE_CHAPTER = 'ts.quest.meditate_on_spheres';
 const GALLOWS_PARDON = 'encounter.town.gallows_pardon';
 const ORACLE_CONSULTED = 'reputation.eye.the_oracle_consulted';
 /** A Ledger-eligible (`isEncounterAction`) chapter shaped like Heal the Sick: no step offers a move. */
@@ -52,8 +53,8 @@ function template(id: string): UnifiedActionTemplate {
 }
 
 describe('chapterOffersPlayerMove (THR-2178)', () => {
-  it('Heal the Sick offers no move at any step: false', () => {
-    expect(chapterOffersPlayerMove(template(HEAL_THE_SICK))).toBe(false);
+  it('Meditate on the Spheres offers no move at any step: false', () => {
+    expect(chapterOffersPlayerMove(template(ALONE_CHAPTER))).toBe(false);
   });
 
   it('The Gallows Pardon offers moves: true', () => {
@@ -72,11 +73,11 @@ describe('chapterOffersPlayerMove (THR-2178)', () => {
   });
 
   it('a template with no steps is fail-soft true', () => {
-    expect(chapterOffersPlayerMove({ ...template(HEAL_THE_SICK), steps: [] })).toBe(true);
+    expect(chapterOffersPlayerMove({ ...template(ALONE_CHAPTER), steps: [] })).toBe(true);
   });
 
   it('agrees with stepOffersPlayerMove at every step', () => {
-    for (const id of [HEAL_THE_SICK, GALLOWS_PARDON, ORACLE_CONSULTED]) {
+    for (const id of [ALONE_CHAPTER, GALLOWS_PARDON, ORACLE_CONSULTED]) {
       const t = template(id);
       const anyStep = t.steps.some((_, i) => stepOffersPlayerMove(t, i));
       expect(chapterOffersPlayerMove(t)).toBe(anyStep);
@@ -89,23 +90,23 @@ describe('chapterWaitWord (THR-2178)', () => {
     const g = makeGraph('pause');
     expect(chapterWaitWord(g, 'agent_1', template(GALLOWS_PARDON))).toBe('waits');
     expect(chapterWaitWord(g, 'agent_1', template(ORACLE_CONSULTED))).toBe('waits');
-    expect(chapterWaitWord(g, 'agent_1', template(HEAL_THE_SICK))).toBe('theirs_alone');
+    expect(chapterWaitWord(g, 'agent_1', template(ALONE_CHAPTER))).toBe('theirs_alone');
   });
 
   it('a "Lives on" thread shows neither word', () => {
     const g = makeGraph('auto_resolve');
     expect(chapterWaitWord(g, 'agent_1', template(GALLOWS_PARDON))).toBeUndefined();
-    expect(chapterWaitWord(g, 'agent_1', template(HEAL_THE_SICK))).toBeUndefined();
+    expect(chapterWaitWord(g, 'agent_1', template(ALONE_CHAPTER))).toBeUndefined();
   });
 
   it('an unthreaded or dormant mortal shows neither word', () => {
-    expect(chapterWaitWord(makeGraph(null), 'agent_1', template(HEAL_THE_SICK))).toBeUndefined();
-    expect(chapterWaitWord(makeGraph('pause', 'dormant'), 'agent_1', template(HEAL_THE_SICK))).toBeUndefined();
+    expect(chapterWaitWord(makeGraph(null), 'agent_1', template(ALONE_CHAPTER))).toBeUndefined();
+    expect(chapterWaitWord(makeGraph('pause', 'dormant'), 'agent_1', template(ALONE_CHAPTER))).toBeUndefined();
   });
 
   it('a routine template or a missing one carries no word', () => {
     const g = makeGraph('pause');
-    expect(chapterWaitWord(g, 'agent_1', { ...template(HEAL_THE_SICK), routine: true })).toBeUndefined();
+    expect(chapterWaitWord(g, 'agent_1', { ...template(ALONE_CHAPTER), routine: true })).toBeUndefined();
     expect(chapterWaitWord(g, 'agent_1', undefined)).toBeUndefined();
   });
 });
