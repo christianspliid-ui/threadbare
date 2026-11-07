@@ -22,6 +22,7 @@ import type {
   CrossroadsLeanPlacedTrace,
   CrossroadsLeanLiftedTrace,
   CrossroadsLeanOutcomeTrace,
+  CrossroadsLeanWaitingTrace,
   CrossroadsSnapshotTrace,
 } from './traces/crossroads-traces';
 import type { ReachDomain } from './traits';
@@ -439,6 +440,7 @@ export type TraceCategory =
   | 'crossroads_lean_placed'
   | 'crossroads_lean_lifted'
   | 'crossroads_lean_outcome'
+  | 'crossroads_lean_waiting'
   | 'crossroads_snapshot'
   // KPI harness (THR-457)
   | 'kpi'
@@ -1073,6 +1075,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'crossroads_lean_placed',
   'crossroads_lean_lifted',
   'crossroads_lean_outcome',
+  'crossroads_lean_waiting',
   'crossroads_snapshot',
   // KPI harness (THR-457)
   'kpi',
@@ -2871,6 +2874,11 @@ export interface FilterPipelineTrace extends TraceBase {
    * Optional: traces from before THR-1715 lack it.
    */
   storyBreath?: number;
+  /**
+   * True when cap Phase 1e-ter reserved the road a held Crossroads lean names
+   * (THR-2188). Absent otherwise, and on traces from before THR-2188.
+   */
+  leanReserved?: boolean;
 }
 
 /** Trace: a pause-mode mortal's story chapter ended and the story breath began (THR-1715). */
@@ -6070,6 +6078,7 @@ export type TraceEntry =
   | CrossroadsLeanPlacedTrace
   | CrossroadsLeanLiftedTrace
   | CrossroadsLeanOutcomeTrace
+  | CrossroadsLeanWaitingTrace
   | CrossroadsSnapshotTrace;
 
 /**

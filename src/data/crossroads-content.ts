@@ -44,10 +44,10 @@ export const LEAN_CONFIRM: Record<CrossroadsDirectionKey, string> = {
   away: 'Lean {name} away from {road}, paid now in {sphere} essence, whatever {name} chooses.',
 };
 
-/** While a lean is held. */
+/** While a lean is held — it waits for its road, up to `CROSSROADS_HOLD_MAX_TICKS` (THR-2188). */
 export const LEAN_HELD: Record<CrossroadsDirectionKey, string> = {
-  toward: 'Your hand rests on {name}, toward {road}. It holds until {name} next chooses.',
-  away: 'Your hand rests on {name}, away from {road}. It holds until {name} next chooses.',
+  toward: 'Your hand rests on {name}, toward {road}. It waits until {name} next faces that road.',
+  away: 'Your hand rests on {name}, away from {road}. It waits until {name} next faces that road.',
 };
 
 /** The placement acknowledgement the action returns (the row's held state carries it on screen). */
@@ -65,7 +65,7 @@ export const OUTCOME_TOAST = {
   },
   /** Resisted toward, onto an idle board: there is no road to name. */
   resisted_idle: '{name} feels your hand and chooses to rest instead.',
-  lapsed_expired: 'Your lean fades: {name} never came free to choose.',
+  lapsed_expired: 'Your lean fades: {name} never came back to {road}.',
   lapsed_unavailable: "Your lean finds nothing to hold: {road} is gone from {name}'s road.",
 } as const;
 

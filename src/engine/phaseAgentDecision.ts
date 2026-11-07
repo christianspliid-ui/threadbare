@@ -126,10 +126,10 @@ import type { StrategicCandidateBoardTrace, StrategicActionStartedTrace } from '
 import type { DecisionFamily, UndertakingMomentRecord } from '../types/strategicAction';
 import type { BalanceEvent } from '../types/balanceEval';
 import { scoreUnifiedBoard, type BoardEntry } from './decisionBoard';
-import { buildCrossroadsSnapshotDetailed, settledness as crossroadsSettledness } from './crossroads';
+import { buildCrossroadsSnapshotDetailed, settledness as crossroadsSettledness, readCrossroadsLean } from './crossroads';
 import { prepareCrossroadsLean, resolveCrossroadsLean, bondReceptionOf, isThreadedByGod, type PreparedLean } from './crossroadsDecision';
 import { isSecretCellId } from './intentionReading';
-import { CROSSROADS_ENABLED, COMPULSION_PREMONITION_ENABLED } from '../data/premonition-constants';
+import { CROSSROADS_ENABLED, COMPULSION_PREMONITION_ENABLED, CROSSROADS_LEAN_WAITS_FOR_ROAD } from '../data/premonition-constants';
 import { UNIFIED_DECISION_BOARD_MODE, BOARD_SCORE_FLOOR } from '../data/strategic-action-constants';
 import { computeSurfaceKey } from './encounterSurface';
 import { resolveTemplateFragments } from './fragmentResolution';
@@ -1052,6 +1052,28 @@ export function phaseAgentDecision(
         if (idx >= 0) {
           const flagged = mergedEntries.slice();
           flagged[idx] = { ...mergedEntries[idx], compelledTarget: true };
+          mergedEntries = flagged;
+        }
+      }
+
+      // THR-2188: a held Crossroads encounter lean (either direction) flags its road
+      // the same way, so the cap (Phase 1e-ter) keeps it for the decision the lean
+      // resolves at. Read through `readCrossroadsLean`: a malformed lean flags nothing.
+      // NOT kept through the story breath (Law 9) — a lean the breath hides waits.
+      const leanForCap = CROSSROADS_ENABLED && actor.properties?.crossroadsLean !== undefined
+        ? readCrossroadsLean(actor.properties.crossroadsLean)
+        : null;
+      if (leanForCap && leanForCap.family === 'encounter') {
+        let idx = -1;
+        for (let i = 0; i < mergedEntries.length; i++) {
+          const e = mergedEntries[i];
+          if (e.templateId !== leanForCap.templateId) continue;
+          if (idx < 0) idx = i;
+          if (e.locationId === leanForCap.targetId) { idx = i; break; }
+        }
+        if (idx >= 0) {
+          const flagged = mergedEntries.slice();
+          flagged[idx] = { ...mergedEntries[idx], leanedRoad: true };
           mergedEntries = flagged;
         }
       }
@@ -2002,7 +2024,22 @@ export function phaseAgentDecision(
         ? { family: 'encounter' as const, templateId: decision.selected.entry.templateId, targetId: decision.selected.entry.locationId ?? null }
         : undefined;
       let leanTurned = false;
-      if (preparedLean && (preparedLean.malformed || preparedLean.expired || crossroadsBoard)) {
+      // THR-2188: a held, unexpired lean whose road is on neither list waits for the
+      // next full decision instead of lapsing `unavailable`. Kept on the mortal, traced;
+      // `CROSSROADS_HOLD_MAX_TICKS` still ends it as `lapsed_expired`.
+      const leanWaits = CROSSROADS_LEAN_WAITS_FOR_ROAD && preparedLean !== null
+        && preparedLean.held !== null && preparedLean.effective === null
+        && !preparedLean.expired && !preparedLean.malformed;
+      if (leanWaits && preparedLean?.held && isTracingEnabled()) {
+        const held = preparedLean.held;
+        emitTrace({
+          category: 'crossroads_lean_waiting',
+          tick: state.tick, agentId, family: held.family, templateId: held.templateId,
+          targetId: held.targetId, direction: held.direction, heldTicks: state.tick - held.tick,
+          summary: `Crossroads: the lean on ${actor.name} waits for ${held.templateId}`,
+        });
+      }
+      if (preparedLean && !leanWaits && (preparedLean.malformed || preparedLean.expired || crossroadsBoard)) {
         try {
           if (preparedLean.held) {
             const resolved = resolveCrossroadsLean(

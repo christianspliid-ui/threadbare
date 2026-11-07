@@ -60,6 +60,22 @@ export interface CrossroadsLeanOutcomeTrace extends TraceBase {
   forecastAtPlacement: Forecast;
 }
 
+/**
+ * A held lean's road was on no list at this full decision, so the lean waits for the
+ * next one instead of lapsing (THR-2188). At most one per decision per threaded mortal
+ * holding a lean, for at most `CROSSROADS_HOLD_MAX_TICKS`.
+ */
+export interface CrossroadsLeanWaitingTrace extends TraceBase {
+  category: 'crossroads_lean_waiting';
+  agentId: string;
+  family: Family;
+  templateId: string;
+  targetId: string | null;
+  direction: Direction;
+  /** tick − lean.tick */
+  heldTicks: number;
+}
+
 /** A threaded mortal's snapshot was written — emitted only while tracing is on (NFP #7). */
 export interface CrossroadsSnapshotTrace extends TraceBase {
   category: 'crossroads_snapshot';

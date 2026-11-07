@@ -151,6 +151,14 @@ export interface EncounterCacheEntry {
    */
   compelledTarget?: boolean;
   /**
+   * THR-2188 — true on the cache entry a held Crossroads lean names (either direction),
+   * set per decision by `phaseAgentDecision` on a copy of the shared entry. Claims one
+   * slot at the cap stage (Phase 1e-ter) so the road the god leaned on is still on the
+   * board when the mortal chooses. Unlike `compelledTarget` it does NOT survive the
+   * story breath: a lean is influence, not command (Law 9). Optional and falsy by default.
+   */
+  leanedRoad?: boolean;
+  /**
    * THR-1640 — on a guild **join** entry only: the mortal's fit for that guild, the
    * mean reach share (0–1) over the guild's primary reaches, computed per agent by
    * `generateFactionLifecycleCandidates`. `scoreAndSelect` adds

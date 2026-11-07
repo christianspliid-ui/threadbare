@@ -141,8 +141,11 @@ export const CROSSROADS_TORN_RATIO = 0.85;
  * Pinned to `1 / CROSSROADS_LEAN_TOWARD_MULT`. @range 0.3–0.7 */
 export const CROSSROADS_LEANING_RATIO = 0.5;
 
-/** Lead the leaned target must hold to read *likely* rather than *may*. @range 1.1–1.5 */
-export const CROSSROADS_LIKELY_MARGIN = 1.25;
+/** Lead the leaned target must hold to read *likely* rather than *may*.
+ * THR-2188: 1.25 → 1.5 — at 1.25 the 1–1.25× and 1.25–1.5× lead bands were both
+ * followed ~40% and both read *likely*; at 1.5 each word means more than the one below.
+ * @range 1.1–1.5 */
+export const CROSSROADS_LIKELY_MARGIN = 1.5;
 
 /** Essence for leaning toward the first road, before Dominion. @range 1–3 */
 export const CROSSROADS_LEAN_COST_BASE = 2;
@@ -156,6 +159,12 @@ export const CROSSROADS_LEAN_AWAY_COST = 2;
 /** How long a lean waits for the next full decision; past it, it lapses aloud.
  * Matches the THR-1781 holds. 72 ticks = 6 game days. @range 24–144 */
 export const CROSSROADS_HOLD_MAX_TICKS = 72;
+
+/** THR-2188: a held lean whose road is on no list at a full decision waits for the
+ * next decision (traced `crossroads_lean_waiting`) instead of lapsing; it still ends at
+ * `CROSSROADS_HOLD_MAX_TICKS`. One-flag revert: `false` restores the THR-1926
+ * `lapsed_unavailable` at the first decision without the road. */
+export const CROSSROADS_LEAN_WAITS_FOR_ROAD = true;
 
 // ═══════════════════════════════════════════════════════════════════
 // QUEUE & ELIGIBILITY
