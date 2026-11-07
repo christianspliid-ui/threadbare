@@ -126,7 +126,7 @@ import type { StrategicCandidateBoardTrace, StrategicActionStartedTrace } from '
 import type { DecisionFamily, UndertakingMomentRecord } from '../types/strategicAction';
 import type { BalanceEvent } from '../types/balanceEval';
 import { scoreUnifiedBoard, type BoardEntry } from './decisionBoard';
-import { buildCrossroadsSnapshotDetailed, settledness as crossroadsSettledness, readCrossroadsLean } from './crossroads';
+import { buildCrossroadsSnapshotDetailed, settledness as crossroadsSettledness, readCrossroadsLean, boardWinnerWithoutLean, boardEntryIdentity, sameRoad } from './crossroads';
 import { prepareCrossroadsLean, resolveCrossroadsLean, bondReceptionOf, isThreadedByGod, type PreparedLean } from './crossroadsDecision';
 import { isSecretCellId } from './intentionReading';
 import { CROSSROADS_ENABLED, COMPULSION_PREMONITION_ENABLED, CROSSROADS_LEAN_WAITS_FOR_ROAD } from '../data/premonition-constants';
@@ -2027,9 +2027,20 @@ export function phaseAgentDecision(
       // THR-2188: a held, unexpired lean whose road is on neither list waits for the
       // next full decision instead of lapsing `unavailable`. Kept on the mortal, traced;
       // `CROSSROADS_HOLD_MAX_TICKS` still ends it as `lapsed_expired`.
-      const leanWaits = CROSSROADS_LEAN_WAITS_FOR_ROAD && preparedLean !== null
+      // PROTO THR-2189 (never merged): an away lean whose road is on the board but is
+      // not the mortal's unleaned first choice waits — it has nothing to push against yet.
+      const protoAwayWaits = process.env.PROTO_AWAY_WAITS === '1' && preparedLean !== null
+        && preparedLean.held !== null && preparedLean.effective !== null
+        && preparedLean.effective.direction === 'away'
+        && !preparedLean.expired && !preparedLean.malformed && crossroadsBoard !== null && !crossroadsOverriddenTo
+        && (() => {
+          const u = boardWinnerWithoutLean(crossroadsBoard!.entries, BOARD_SCORE_FLOOR);
+          const uid = u ? boardEntryIdentity(u, decision.topCandidates, scoredStrategic) : null;
+          return !(uid && sameRoad(uid, preparedLean.effective!));
+        })();
+      const leanWaits = protoAwayWaits || (CROSSROADS_LEAN_WAITS_FOR_ROAD && preparedLean !== null
         && preparedLean.held !== null && preparedLean.effective === null
-        && !preparedLean.expired && !preparedLean.malformed;
+        && !preparedLean.expired && !preparedLean.malformed);
       if (leanWaits && preparedLean?.held && isTracingEnabled()) {
         const held = preparedLean.held;
         emitTrace({
