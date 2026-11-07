@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-07 22:58 local (21:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-07 23:58 local (22:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -33,13 +33,13 @@ Say "veto away lean waits", "veto paid army turns at once", "veto one tick runs 
 
 ## Queue
 
-**Starved: one ticket ready, and it is held until 09:00 UTC tomorrow.** [Away leans almost always "work"](https://linear.app/threadbare/issue/THR-2189) was planned by the design lane at 21:04 UTC and waits out its veto window before anyone builds it. The builder run at 21:45 UTC saw that hold and stood down, which is correct. The run before it fixed [an agreement that runs out its term takes the pair's bond with it](https://linear.app/threadbare/issue/THR-2045/an-agreement-that-runs-out-its-term-takes-the-pairs-bond-with-it), merged in [PR #2789](https://github.com/christianspliid-ui/threadbare/pull/2789) and live.
+**Starved: one ticket ready, and it is held until 09:00 UTC tomorrow.** [Away leans almost always "work"](https://linear.app/threadbare/issue/THR-2189) was planned by the design lane at 21:04 UTC and waits out its veto window before anyone builds it. The builder runs at 21:45, 22:11, 22:31 and 22:51 UTC each saw that hold and stood down, which is correct. The last build before that fixed [an agreement that runs out its term takes the pair's bond with it](https://linear.app/threadbare/issue/THR-2045/an-agreement-that-runs-out-its-term-takes-the-pairs-bond-with-it), merged in [PR #2789](https://github.com/christianspliid-ui/threadbare/pull/2789) and live.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (18 days; In Dev since 15 Oct, 23 days; last touched 1 Nov). No pushed branch and no local worktree carries work for it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- The live site is up to date (04ab1fb2). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting. All 10 scheduled tasks are on time. The worktree reaper ran within the hour. Engine speed is back to normal: 160 ms/tick, 10% above the weekly median (last hour's high reading was a busy machine).
+- The live site is up to date (04ab1fb2). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting. All 10 scheduled tasks are on time. The worktree reaper ran within the hour. Engine speed is normal: 132 ms/tick, 9% below the weekly median.
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local). Overnight quiet is normal, so this is not an ask.
-- **The home-folder copy of the repo is 228 commits behind main** (last synced 4 Nov). An edited `.claude/settings.local.json` and untracked files under `Docs/evidence/` and `Docs/ops/` still block the mirror's sync. This brief has flagged it 39 hours in a row. An attended agent session should set those files aside and fast-forward. Nothing is lost, because the lanes work from fresh copies of main.
+- **The home-folder copy of the repo is 228 commits behind main** (last synced 4 Nov). An edited `.claude/settings.local.json` and untracked files under `Docs/evidence/` and `Docs/ops/` still block the mirror's sync. This brief has flagged it 40 hours in a row. An attended agent session should set those files aside and fast-forward. Nothing is lost, because the lanes work from fresh copies of main.
