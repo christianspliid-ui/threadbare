@@ -14,7 +14,7 @@
  * no provider — the lab, a hover card — the strip draws its words and no controls, so no
  * button is ever a dead click (Law 25).
  */
-import { createContext, useCallback, useContext, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import type { CardActOffer, CardsActStrip, CardTile, SentencePart } from '../../types/detailPage';
 import { Button } from './Button';
 import { Tooltip } from './Tooltip';
@@ -44,9 +44,25 @@ export function offerKey(offer: Pick<CardActOffer, 'road' | 'direction'>): Armed
   return `${offer.road.family}|${offer.road.templateId}|${offer.road.targetId ?? ''}|${offer.direction}`;
 }
 
-/** One strip's arm state, shared by its intro and its tiles. */
-export function useCardActArming() {
-  const [armed, setArmed] = useState<ArmedOffer | null>(null);
+/** Every offer key a strip can arm right now — none while an act is held. */
+export function liveOfferKeys(strip: CardsActStrip | undefined, tiles: readonly CardTile[]): ReadonlySet<ArmedOffer> {
+  if (!strip || strip.held) return new Set();
+  return new Set(tiles.flatMap(t => (t.offers ?? []).map(offerKey)));
+}
+
+/**
+ * One strip's arm state, shared by its intro and its tiles. The arm is live only while an
+ * offer still carries its key (review-gate round 2): a reading rewritten without the armed
+ * road, or a lean held by another path, clears it — no invisible Escape layer swallowing the
+ * next keypress, and no strip coming back armed when the road returns.
+ */
+export function useCardActArming(liveKeys: ReadonlySet<ArmedOffer> = new Set()) {
+  const [armedRaw, setArmed] = useState<ArmedOffer | null>(null);
+  const armed = armedRaw !== null && liveKeys.has(armedRaw) ? armedRaw : null;
+  const stale = armedRaw !== null && armed === null;
+  useEffect(() => {
+    if (stale) setArmed(null);
+  }, [stale]);
   const disarm = useCallback(() => setArmed(null), []);
   useEscapeLayer(armed !== null, disarm, ESCAPE_LAYER_Z_PANEL, 'Inspector act strip');
   return { armed, setArmed, disarm };

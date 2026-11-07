@@ -12,6 +12,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import type { CardActOffer, CardsSection } from '../../../types/detailPage';
 import { Section } from '../Section';
 import { CardActContext, type CardActHandlers } from '../CardActStrip';
+import { getEscapeLayers } from '../useEscapeLayer';
 
 function offer(optionIndex: number, direction: CardActOffer['direction'], extra: Partial<CardActOffer> = {}): CardActOffer {
   return {
@@ -107,6 +108,11 @@ describe('CardActStrip (THR-1928)', () => {
     rerender(<CardActContext.Provider value={value}><Section section={rewritten} /></CardActContext.Provider>);
     expect(document.querySelector('[data-act-armed]')).toBeNull();
     expect(value.fire).not.toHaveBeenCalled();
+    // The arm is gone, not hidden (review-gate round 2): no act-strip Escape layer remains,
+    // and the road coming back does not bring the strip back armed.
+    expect(getEscapeLayers().some(l => l.label === 'Inspector act strip')).toBe(false);
+    rerender(<CardActContext.Provider value={value}><Section section={section()} /></CardActContext.Provider>);
+    expect(document.querySelector('[data-act-armed]')).toBeNull();
   });
 
   it('held: the held line and "Lift your hand" only; the leaned tile is marked', () => {

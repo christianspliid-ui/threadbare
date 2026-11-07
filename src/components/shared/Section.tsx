@@ -30,7 +30,7 @@ import {
 } from '../../contexts/DetailPageOpenerContext';
 import { Tooltip } from './Tooltip';
 import { StepDots } from './StepDots';
-import { CardActStripHead, CardActTileControls, useCardActArming } from './CardActStrip';
+import { CardActStripHead, CardActTileControls, liveOfferKeys, useCardActArming } from './CardActStrip';
 import { FIGHT_CLOCK_PIP_SIZE, FIGHT_TOOLTIP_IDS } from '../../data/fight-screen-content';
 
 interface SectionLabelProps {
@@ -624,8 +624,8 @@ function TileArt({ tile }: { tile: CardsSection['tiles'][number] }) {
 function CardsSectionRenderer({ section, inAside = false }: { section: CardsSection; inAside?: boolean }) {
   const columns = inAside ? `repeat(${INSPECTOR_GALLERY_COLUMNS}, minmax(0, 1fr))` : 'repeat(auto-fill, minmax(10rem, 1fr))';
   // THR-1928: one arm state per strip, so arming one road disarms the other.
-  const { armed, setArmed, disarm } = useCardActArming();
   const act = section.act;
+  const { armed, setArmed, disarm } = useCardActArming(liveOfferKeys(act, section.tiles));
   return (
     <SectionShell section={section} shape="cards">
       {act && <CardActStripHead strip={act} />}
