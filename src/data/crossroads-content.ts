@@ -65,7 +65,8 @@ export const OUTCOME_TOAST = {
   },
   /** Resisted toward, onto an idle board: there is no road to name. */
   resisted_idle: '{name} feels your hand and chooses to rest instead.',
-  lapsed_expired: 'Your lean fades: {name} never came back to {road}.',
+  /** THR-2188 review: true whether the mortal stayed busy past the hold or the road never came back. */
+  lapsed_expired: 'Your lean fades: {name} did not face {road} again in time.',
   lapsed_unavailable: "Your lean finds nothing to hold: {road} is gone from {name}'s road.",
 } as const;
 
