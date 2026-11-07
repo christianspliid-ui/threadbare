@@ -443,6 +443,25 @@ describe('the paid army turns at once (THR-2026)', () => {
     expect(getTraces().filter(t => t.category === 'war.aim.reaim')).toHaveLength(0);
   });
 
+  it('a two-controller town whose tax holder is the liege counts, though its first controls edge is an enemy\'s', () => {
+    const graph = paidWorld('t3', 24);
+    graph.updateEdge('e_ctl_b_t3', { properties: { influence: 0.2 } });
+    graph.addEdge({ id: 'e_ctl_a_t3', source: 'a', target: 't3', type: 'controls', properties: { influence: 0.8 } });
+    guardPaymasterTargets(makeState(graph, 25), noProjection);
+    expect(armyState(graph, 'army_v').objective?.targetNodeId).toBe('t6');
+    expect(guardReaims()).toHaveLength(1);
+  });
+
+  it('re-aims once, then leaves the new target alone on later ticks (no churn)', () => {
+    const graph = paidWorld('t1', 24);
+    guardPaymasterTargets(makeState(graph, 24), noProjection);
+    const first = armyState(graph, 'army_v').objective?.targetNodeId;
+    guardPaymasterTargets(makeState(graph, 25), noProjection);
+    guardPaymasterTargets(makeState(graph, 26), noProjection);
+    expect(armyState(graph, 'army_v').objective?.targetNodeId).toBe(first);
+    expect(getTraces().filter(t => t.category === 'war.aim.reaim')).toHaveLength(1);
+  });
+
   it('a stale wage no longer commands, so the guard leaves the army alone', () => {
     const graph = paidWorld('t1', 0);
     guardPaymasterTargets(makeState(graph, 100), noProjection);

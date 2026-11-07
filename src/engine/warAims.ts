@@ -35,7 +35,7 @@ import { RIVALRY_SENTIMENT_THRESHOLD } from '../types/factionAction';
 import { buildWarAimContext, hexOfActor, placeTierLocationOf, type WarAimContext } from './warAims/context';
 import { pickWarAim, stillEnemyTarget, inReach, marchableFrom, topCandidates, type WarAimPick, type ScoredTown } from './warAims/score';
 import { findThreatToDefend, type DefenceTarget } from './warAims/defence';
-import { campaignTargetOf, commanderFactionOf, isEnemyFaction, onPaymasterSide } from './warAims/enemy';
+import { campaignTargetOf, commanderFactionOf, isEnemyFaction, onPaymasterSide, isPaymasterHolder } from './warAims/enemy';
 import { ownFactionOf, payingLiegeOf } from './crown/wages';
 
 export type RealmProjectionSource = () => RealmProjection;
@@ -312,8 +312,7 @@ function reaimOne(
     if (!ctx.towns.has(current.targetNodeId)) why = 'target_taken';
     else if (!stillEnemyTarget(ctx, factionId, current.targetNodeId, own)) why = 'target_no_longer_enemy';
     else if (!inReach(state, ctx, factionId, armyHex, current.targetNodeId, marchableFrom(ctx, armyId))) why = 'target_out_of_reach';
-    // still valid, still marching: keep it (the paymaster guard re-aims regardless, THR-2026)
-    else if (here !== current.targetNodeId && !whyOverride) return;
+    else if (here !== current.targetNodeId) return; // still valid, still marching: keep it
     else why = 'target_taken';
   }
 
@@ -343,13 +342,34 @@ export function guardPaymasterTargets(state: GameState, getProjection?: RealmPro
   for (const army of armies) {
     try {
       if (!payingLiegeOf(graph, army.id, state.tick)) continue;
-      if (!onPaymasterSide(graph, army.id, state.tick)) continue;
+      // The first `controls` edge (the measure's and siege start's holder) or the tax holder
+      // (the war-aim context's): either on the liege's side voids the target. reaimOne's own
+      // stillEnemyTarget reads both, so a target it keeps is never on the liege's side.
+      if (!onPaymasterSide(graph, army.id, state.tick) && !taxHolderOnPaymasterSide(state, army.id, ctxRef, getProjection)) continue;
       reaimOne(state, army.id, ctxRef, getProjection, 'target_on_paymaster_side');
     } catch (err) {
       // fail-soft (NFP #4): this army keeps its objective; the rest are checked.
       console.warn(`[war_aims] paymaster guard failed for ${army.id}; objective kept`, err);
     }
   }
+}
+
+/** THR-2026 — the conquer target's tax holder (war-aim context) is the paying liege's side. */
+function taxHolderOnPaymasterSide(
+  state: GameState,
+  armyId: string,
+  ctxRef: { ctx: WarAimContext | null },
+  getProjection?: RealmProjectionSource,
+): boolean {
+  const graph = state.graph;
+  const objective = (graph.getNode(armyId)?.properties.armyState as ArmyState | undefined)?.objective;
+  if (objective?.type !== 'conquer') return false;
+  const { own, commander } = sidesOf(graph, armyId, state.tick);
+  if (!own || !commander || own === commander) return false;
+  // One multi-controller check per paid army: a lone controller is the first edge, already read.
+  if (graph.getIncomingEdges(objective.targetNodeId, 'controls').length < 2) return false;
+  const ctx = (ctxRef.ctx ??= contextFor(state, getProjection));
+  return isPaymasterHolder(graph, commander, ctx.towns.get(objective.targetNodeId)?.holderId);
 }
 
 /** Debug read: the army's objective, hold reason and last scored candidates. */

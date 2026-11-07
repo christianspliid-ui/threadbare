@@ -49,7 +49,11 @@ export function onPaymasterSide(graph: WorldGraph, armyId: string, tick: number)
   const own = ownFactionOf(graph, armyId);
   const commander = commanderFactionOf(graph, armyId, tick);
   if (!own || !commander || own === commander) return false;
-  const holder = graph.getIncomingEdges(target, 'controls')[0]?.source;
+  return isPaymasterHolder(graph, commander, graph.getIncomingEdges(target, 'controls')[0]?.source);
+}
+
+/** THR-2026 — `holder` is `commander`, or sworn to it and not its enemy. */
+export function isPaymasterHolder(graph: WorldGraph, commander: string, holder: string | null | undefined): boolean {
   if (!holder) return false;
   if (holder === commander) return true;
   return graph.getOutgoingEdges(holder, 'sworn_to')[0]?.target === commander && !isEnemyFaction(graph, commander, holder);
