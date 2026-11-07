@@ -16,10 +16,15 @@
  * Runs in the condition-expiry beat (orchestrator Phase 6.625c). Pure over graph state;
  * emits an `agreement_expired` trace per removal (the causal record of why a debt left the
  * sheet) and returns what it removed. Fail-soft: a malformed edge is skipped, never thrown on.
+ *
+ * A bond (`sentiment` / `trust`) that `bond_change` wrote onto the agreement edge — it writes
+ * the first edge between two people, which can be the agreement — is carried off before the
+ * edge goes, through the helper the settle path shares (THR-2045).
  */
 
 import type { WorldGraph } from './graph';
 import { readAgreement, agreementTermEnded } from './agreementShape';
+import { carryBondOffAgreementEdge } from './debtSettle';
 import { emitTrace } from './traceBuffer';
 import type { TraceEntry } from '../types/trace';
 
@@ -37,7 +42,11 @@ export interface ExpiredAgreement {
 export function expireAgreements(graph: WorldGraph, tick: number): ExpiredAgreement[] {
   const expired: ExpiredAgreement[] = [];
 
-  for (const edge of [...graph.getEdgesByType('relates_to')]) {
+  for (const { id } of [...graph.getEdgesByType('relates_to')]) {
+    // Re-read the live edge: an earlier removal this pass may have carried a bond onto it
+    // (`updateEdge` replaces the record, so the snapshot's copy would be stale).
+    const edge = graph.getEdge(id);
+    if (!edge) continue;
     const props = edge.properties as Record<string, unknown> | undefined;
     const agreement = readAgreement(props);
     if (!agreement || !agreementTermEnded(agreement, tick)) continue;
@@ -50,6 +59,8 @@ export function expireAgreements(graph: WorldGraph, tick: number): ExpiredAgreem
       agreementName: typeof props?.agreementName === 'string' ? props.agreementName : undefined,
       tick,
     });
+    // A bond written onto this edge (first-edge `bond_change`) outlives the agreement (THR-2045).
+    carryBondOffAgreementEdge(graph, edge);
     graph.removeEdge(edge.id);
 
     const removed = expired[expired.length - 1];
