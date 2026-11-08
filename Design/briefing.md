@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-08 11:58 local (10:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-08 12:58 local (11:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -19,26 +19,20 @@
 
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
-## Decided for you
-
-- ["A Work Finished" says every undertaking left something standing](https://linear.app/threadbare/issue/THR-2075/a-work-finished-says-every-undertaking-left-something-standing-a-relic) ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-08-thr-2075-a-finished-work-says-what-was-done.md)) — **when a mortal finishes a work that made nothing, the card now says what they actually did.** Taking up a relic reads "Kael takes up The Hollow Bell, left by a god of the last age…" instead of "It stands in the world now". Works that build something keep today's line; works that improve a mortal's own thing ("raise") get their own line. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-07h.md)* Live ([PR #2791](https://github.com/christianspliid-ui/threadbare/pull/2791)).
-
-Say "veto finished work line" to reverse it. (This veto window closes in about an hour.)
-
 ## This week's screens
 
 [Contact sheet — this week next to last week](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/ux-review/2026-11-02/contact-sheet.jpg) — better: all three of last week's faults are fixed, and for the first time the review reached a real mid-game, where one new overlap shows.
 
 ## Queue
 
-**Starved: nothing ready to build.** The builder finished [away leans](https://linear.app/threadbare/issue/THR-2189) and armed [PR #2795](https://github.com/christianspliid-ui/threadbare/pull/2795) to merge, but two of its four test shards fail (see Health). The pickup run at 10:43 UTC found the Ready-for-Dev list empty, which is correct with no tickets on the shelf.
+**Starved: nothing ready to build.** The builder finished [away leans](https://linear.app/threadbare/issue/THR-2189) and armed [PR #2795](https://github.com/christianspliid-ui/threadbare/pull/2795) to merge, but two of its four test shards fail (see Health). The last four pickup runs (10:43–11:51 UTC) found the Ready-for-Dev list empty, which is correct with no tickets on the shelf.
 
 Items for agents, not you:
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (19 days; In Dev since 15 Oct). GitHub has no branch for it and no local worktree holds uncommitted work for it; only a leftover local reference named `pr/1947` remains, so where its work is now is unknown. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (19 days; In Dev since 15 Oct). GitHub has no branch for it and no local worktree holds uncommitted work for it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- **[PR #2795](https://github.com/christianspliid-ui/threadbare/pull/2795) (away leans) will not merge:** test shards 1 and 4 fail, so the required "Test · Typecheck · Build" check is red and auto-merge never fires. The pickup lane's unstick duty owns this; a session must read the failing tests and push a fix. Executor's job, not yours.
-- The live site serves the latest main (e39f348f). Checks on main and the 3 scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 11:40 local (778 worktrees, 8 waiting for a decision). Engine speed is back to normal (150 ms/tick, +4% vs the 7-day median), so last hour's high reading was machine load.
+- **[PR #2795](https://github.com/christianspliid-ui/threadbare/pull/2795) (away leans) will not merge:** [test shards 1 and 4 fail](https://github.com/christianspliid-ui/threadbare/actions/runs/42472531606), so the required "Test · Typecheck · Build" check is red and auto-merge never fires (73 min old). The pickup lane's unstick duty owns this, and the four short pickup runs since it was armed have not taken it up; a session must read the failing tests and push a fix. Executor's job, not yours.
+- The live site serves the latest main (e39f348f). Checks on main and the 3 scheduled background jobs pass. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 12:40 local (777 worktrees, 8 waiting for a decision). Engine speed is normal (125 ms/tick, −13% vs the 7-day median).
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local). Overnight quiet is normal, so this is not an ask.
-- **The home-folder copy of the repo is 249 commits behind main** (last synced 4 Nov). An edited `.claude/settings.local.json` and untracked files under `Docs/evidence/` and `Docs/ops/` still block the mirror's sync. This brief has flagged it 52 hours in a row. An attended agent session should set those files aside and fast-forward. Nothing is lost, because the lanes work from fresh copies of main.
+- **The home-folder copy of the repo is 249 commits behind main** (last synced 4 Nov). An edited `.claude/settings.local.json` and untracked files under `Docs/evidence/` and `Docs/ops/` still block the mirror's sync. This brief has flagged it 53 hours in a row. An attended agent session should set those files aside and fast-forward. Nothing is lost, because the lanes work from fresh copies of main.

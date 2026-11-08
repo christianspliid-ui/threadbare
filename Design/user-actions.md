@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-11-08 10:57 local (09:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-08 12:58 local (11:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### What should the design lane plan next? (new 8 Nov)
 
-The builders have used up the agreed work. The last ticket, [away leans](https://linear.app/threadbare/issue/THR-2189), is being built now. After it, every agreed feature and bug has shipped or is waiting on you. **Reply with a system, or with one of the warm-playtest problems:** [rival gods you can't answer](https://linear.app/threadbare/issue/THR-2172), [no "while you were away"](https://linear.app/threadbare/issue/THR-2173), ["Fated" failing with no reason](https://linear.app/threadbare/issue/THR-2171). If you don't reply, the lanes wait for the next playtest round to fill the list again. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-08.md)*
+The builders have used up the agreed work. The last ticket, [away leans](https://linear.app/threadbare/issue/THR-2189), is built and waiting on its checks. After it, every agreed feature and bug has shipped or is waiting on you. **Reply with a system, or with one of the warm-playtest problems:** [rival gods you can't answer](https://linear.app/threadbare/issue/THR-2172), [no "while you were away"](https://linear.app/threadbare/issue/THR-2173), ["Fated" failing with no reason](https://linear.app/threadbare/issue/THR-2171). If you don't reply, the lanes wait for the next playtest round to fill the list again. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-08.md)*
 
 ### Set the Claude app to open when Windows starts
 
