@@ -23,12 +23,6 @@ remediation ticket or the build fails.
 | 🔵 UNVERIFIED-OK | 118 |
 | **Total** | **356** |
 
-## ⚠️ LEAKED / HOLLOW without a remediation ticket
-
-These fail the build. Either fix the contract or file a `Deferral` issue and cite it.
-
-- `ambition-player-visibility` — Tier 2: write sites present, declared read sites empty — the consumer is starving. — or the declared symbol does not appear at the declared site: grep 'getAmbitionsStrand' src/components/** before treating this as a leak. NOTE: verifiedLive (2026-07-24) is now STALE — re-verify or retire the contract.
-
 ## Contracts by producing subsystem
 
 ### Agent Lifecycle
@@ -48,7 +42,7 @@ These fail the build. Either fix the contract or file a `Deferral` issue and cit
 | `ambition-biases-encounter-choice` | An agent's ambitions bias which encounters they choose — motive drives action. | function: `applyAmbitionBoost` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `ambition-completed-history` | Completed ambitions accumulate into a readable history of who an agent became. | function: `completedAmbitions`, `getCompletedAmbitions` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `ambition-motive-receipts` | Ambitions explain motives — receipts carry ambition provenance into foreshadowing. | trace: `ambitionBoost` | Omens & Atmospheric Pressure | 🟢 LIVE | — |
-| `ambition-player-visibility` | The player can see what a mortal is striving for. | function: `getAmbitionsStrand` | Intelligence, Knowledge & Familiarity | 🔴 LEAKED | — |
+| `ambition-player-visibility` | The player can see what a mortal is striving for. | function: `getAmbitionsStrand` | Intelligence, Knowledge & Familiarity | 🔴 LEAKED | THR-2192 |
 | `ambition-progress-milestones` | Ambitions progress and complete, firing milestone events the player sees. | function: `phaseAmbitionProgress` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `binder-decision-traced` | Every casting decision an undertaking makes reaches the narrative surface: the trace answers "why is this moment generic?" after the fact (it fires on a slot that bound nobody as loudly as on one that bound somebody), and a lost must-persist cast member is carried into the checkpoint moment by name — "loses Old Maerin" rather than the anonymous "hits serious trouble" the complication class produced before. | trace: `binding_decision`, `resolveBinding`, `runBindPass` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | THR-1297 |
 | `binder-mint-valve` | When an undertaking needs a person the world does not have, that person is born the way every other mortal is born — through the lifecycle’s one-per-tick gate — instead of appearing on the spot. An unmetered spawn path is how a large map reached ~1010 agents by tick 72 (THR-814/THR-162), and the budget is what stops the binder becoming a second one. | state-field: `mintQueue`, `drainMintQueue`, `BINDER_MINT_BUDGET_PER_TICK`, `binder_mint` | Agent Lifecycle | 🟢 LIVE | — |
