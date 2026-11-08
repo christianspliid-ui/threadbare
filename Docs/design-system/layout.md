@@ -118,7 +118,7 @@ From lowest to highest:
 | Top bar | 30 | Always above map |
 | Action drawer | 40 | ActionDrawer (card hand) |
 | Debug panel | 45 | DebugPanel |
-| Focused overlays | 50 | ActionDrawer backdrop, EncounterVeil, StrandView, HarvestScreen, WarmStartOverlay |
+| Focused overlays | 50 | ActionDrawer backdrop, EncounterVeil, HarvestScreen, WarmStartOverlay |
 | Modals | 60 | `Modal` (shared) — AgentProfileModal, EventPopup; SettingsPanel (M), ScryOverlay (L), the Codex (XL) since THR-1880 |
 | Tooltips | 70+ | `Tooltip` (70 + nesting depth) |
 | Portal dropdown | 9999 | Portaled dropdowns (RivalsButton etc.) — must portal to body |

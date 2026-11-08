@@ -6,7 +6,7 @@
  * Harvest here rather than in `DialogHost` per the THR-1877 note (Christian ruled on
  * 2026-10-14 that the end of a cycle is a full-screen ceremony). The props carry
  * GameView's own names. GameView mounts this host right after `DialogHost`, so the
- * three `z-50` ceremonies still follow StrandView and the warm-start cover in the
+ * three `z-50` ceremonies still follow the warm-start cover in the
  * DOM, the order they had inline.
  *
  * THR-1877 (S1): the host renders by the home list. Each ceremony mounts only while the

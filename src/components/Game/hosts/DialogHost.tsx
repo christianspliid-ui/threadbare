@@ -1,5 +1,5 @@
 /**
- * DialogHost — the game screen's dialogs: StrandView, Scry, the warm-start cover,
+ * DialogHost — the game screen's dialogs: Scry, the warm-start cover,
  * the Chapter Ledger, delve progress, Read the Threads, divine receipts, the gift
  * beat (offer pill + AscendantBeatModal), Codex, Doom and Mandate details, and the
  * event popup. `MapAnchoredDialogs` (below) holds the three dialogs that render
@@ -9,16 +9,19 @@
  * THR-1881 (the GameView split, step b): moved out of `GameView.tsx` verbatim. The
  * props carry GameView's own names so each mount reads exactly as it did inline.
  * The mount order inside this host is the order the mounts had in GameView, and
- * GameView mounts this host where StrandView stood, ahead of `CeremonyHost`: the
- * non-portal `z-50` overlays (StrandView, warm start, then the ceremonies) keep
+ * GameView mounts this host ahead of `CeremonyHost`: the
+ * non-portal `z-50` overlays (warm start, then the ceremonies) keep
  * their DOM order, so equal-z stacking is unchanged. Everything else here either
  * portals (`Modal`, the Scry court) or carries its own z-index.
  *
  * THR-1877 (S1): the homed dialogs (the court, the warm start, the ledger, the receipt,
  * the gift beat, the popup) render by the home list — only while the interrupt
  * resolution names their kind — through one exhaustive switch over `DialogHomedKind`.
- * The tools beside them (StrandView, Read the Threads, Codex, Doom, Mandate) are not
+ * The tools beside them (Read the Threads, Codex, Doom, Mandate) are not
  * homed surfaces and mount as before.
+ *
+ * THR-1956: StrandView retired — nothing in the live game opened it, and the
+ * Inspector's person page (THR-1827) carries what it showed.
  */
 import { lazy, Suspense } from 'react';
 import type { ComponentProps, Dispatch, ReactNode, SetStateAction } from 'react';
@@ -57,7 +60,6 @@ import type { UseWarmStartResult } from '../hooks/useWarmStart';
 import { unplacedHomedKinds, type InterruptResolution } from '../interruptRegistry';
 import { HomedSurfaceFallback } from './HomedSurfaceFallback';
 import { DIALOG_HOST_KINDS } from './hostKinds';
-import { StrandView } from '../StrandView';
 import { ScryOverlay } from '../ScryOverlay';
 import { ScryProvider } from '../contexts/ScryContext';
 import { WarmStartOverlay } from '../WarmStartOverlay';
@@ -100,9 +102,6 @@ export interface DialogHostProps {
   setGameState: Dispatch<SetStateAction<GameState>>;
   runtime: SimulationRuntime;
   archetype: AscendantArchetype;
-  // StrandView
-  strandData: { agentName: string; strands: ComponentProps<typeof StrandView>['strands'] } | null;
-  handleStrandClose: () => void;
   // Scry
   scryVisible: boolean;
   scryState: ScryState;
@@ -156,8 +155,6 @@ export function DialogHost({
   setGameState,
   runtime,
   archetype,
-  strandData,
-  handleStrandClose,
   scryVisible,
   scryState,
   retinueAgents,
@@ -338,17 +335,6 @@ export function DialogHost({
   };
   return (
     <>
-      {/* StrandView overlay */}
-      <AnimateMount show={strandData !== null} animation="anim-fade">
-        {strandData && (
-          <StrandView
-            agentName={strandData.agentName}
-            strands={strandData.strands}
-            onClose={handleStrandClose}
-          />
-        )}
-      </AnimateMount>
-
       {renderDialog('divine-court')}
 
       {renderDialog('warm-start')}
