@@ -10,7 +10,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { scoreUnifiedBoard } from '../decisionBoard';
-import { prepareCrossroadsLean, resolveCrossroadsLean } from '../crossroadsDecision';
+import { prepareCrossroadsLean, resolveCrossroadsLean, awayLeanWaitsForReach } from '../crossroadsDecision';
 import { buildCrossroadsSnapshot, settledness, type CrossroadsLean } from '../crossroads';
 import { CROSSROADS_HOLD_MAX_TICKS, CROSSROADS_LEAN_TOWARD_MULT } from '../../data/premonition-constants';
 
@@ -179,5 +179,65 @@ describe('a held lean resolves at the next decision (THR-1926)', () => {
     const prepared = prepareCrossroadsLean({ family: 'encounter' }, { rankedCandidates: [], topCandidates: [] }, [], 6);
     expect(prepared.malformed).toBe(true);
     expect(prepared.effective).toBeNull();
+  });
+});
+
+describe('THR-2189 — an away lean waits for the reach', () => {
+  const away = (templateId: string, tick = 5): CrossroadsLean => ({ ...lean(templateId, 'g', tick), direction: 'away', rankWhenPlaced: 0 });
+  const setup = (scores: Record<string, number>, held: CrossroadsLean, tick = 6) => {
+    const cands = Object.entries(scores).map(([id, sc]) => mk(id, 'g', sc));
+    const decision = { rankedCandidates: cands, topCandidates: cands };
+    const prepared = prepareCrossroadsLean(held, decision as never, [], tick);
+    const decided = board(cands, prepared.effective ?? undefined);
+    return { cands, prepared, decided };
+  };
+
+  it('waits when the unleaned winner is another road (the mortal is not reaching for it)', () => {
+    const { cands, prepared, decided } = setup({ A: 0.9, B: 0.4 }, away('B'));
+    expect(prepared.effective).not.toBeNull();
+    expect(awayLeanWaitsForReach(prepared, decided, cands as never, [], 0, false)).toBe(true);
+  });
+
+  it('does not wait when the unleaned winner IS the leaned road; it resolves, and followed means the lean turned them', () => {
+    // A 0.9 unleaned wins; × 0.5 = 0.45 < B 0.6 → the lean turns the board.
+    const { cands, prepared, decided } = setup({ A: 0.9, B: 0.6 }, away('A'));
+    expect(awayLeanWaitsForReach(prepared, decided, cands as never, [], 0, false)).toBe(false);
+    const resolved = resolveCrossroadsLean(prepared, decided, cands as never, [], { agentId: 'a', agentName: 'Kael', tick: 6, floor: 0 });
+    expect(resolved?.outcome).toBe('followed');
+    expect(resolved?.leanTurned).toBe(true);
+  });
+
+  it('does not wait under an override, or with the flag off', () => {
+    const { cands, prepared, decided } = setup({ A: 0.9, B: 0.4 }, away('B'));
+    expect(awayLeanWaitsForReach(prepared, decided, cands as never, [], 0, true)).toBe(false);
+    expect(awayLeanWaitsForReach(prepared, decided, cands as never, [], 0, false, false)).toBe(false);
+  });
+
+  it('does not wait on identity drift (the unleaned winner resolves to no candidate)', () => {
+    const { prepared, decided } = setup({ A: 0.9, B: 0.4 }, away('B'));
+    expect(awayLeanWaitsForReach(prepared, decided, [] as never, [], 0, false)).toBe(false);
+  });
+
+  it('never waits for a toward lean, an expired lean, a malformed one, or a missing board', () => {
+    const { cands, prepared, decided } = setup({ A: 0.9, B: 0.4 }, { ...away('B'), direction: 'toward' });
+    expect(awayLeanWaitsForReach(prepared, decided, cands as never, [], 0, false)).toBe(false);
+    const expired = setup({ A: 0.9, B: 0.4 }, away('B'), 5 + CROSSROADS_HOLD_MAX_TICKS + 1);
+    expect(awayLeanWaitsForReach(expired.prepared, expired.decided, expired.cands as never, [], 0, false)).toBe(false);
+    const malformed = prepareCrossroadsLean({ family: 'encounter' }, { rankedCandidates: [], topCandidates: [] }, [], 6);
+    expect(awayLeanWaitsForReach(malformed, decided, cands as never, [], 0, false)).toBe(false);
+    const ok = setup({ A: 0.9, B: 0.4 }, away('B'));
+    expect(awayLeanWaitsForReach(ok.prepared, null, ok.cands as never, [], 0, false)).toBe(false);
+    expect(awayLeanWaitsForReach(null, decided, cands as never, [], 0, false)).toBe(false);
+  });
+
+  it('an away lean past the hold fades with the away line; the toward line is unchanged', () => {
+    const tick = 5 + CROSSROADS_HOLD_MAX_TICKS + 1;
+    const a = setup({ A: 0.5, B: 0.4 }, away('B'), tick);
+    const resolvedAway = resolveCrossroadsLean(a.prepared, a.decided, a.cands as never, [], { agentId: 'a', agentName: 'Kael', tick, floor: 0 });
+    expect(resolvedAway?.outcome).toBe('lapsed_expired');
+    expect(resolvedAway?.message).toMatch(/^Your lean fades: Kael never reached for .+ again.$/);
+    const t = setup({ A: 0.5, B: 0.4 }, lean('B', 'g'), tick);
+    const resolvedToward = resolveCrossroadsLean(t.prepared, t.decided, t.cands as never, [], { agentId: 'a', agentName: 'Kael', tick, floor: 0 });
+    expect(resolvedToward?.message).toMatch(/^Your lean fades: Kael did not face .+ again in time.$/);
   });
 });

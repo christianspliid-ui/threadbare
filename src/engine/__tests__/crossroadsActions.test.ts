@@ -91,6 +91,19 @@ describe('placeCrossroadsLean refuses, writing and spending nothing (THR-1926)',
   it('away on a non-leader', () => {
     expect(placeCrossroadsLean(makeState(), KAEL, road, 'away').reason).toBe('away_not_leader');
   });
+
+  it('THR-2189: away on a work (the leader is an undertaking) → away_on_a_work, in plain words', () => {
+    const workFirst: CrossroadsSnapshot = { tick: 9, options: [SNAPSHOT.options[2], SNAPSHOT.options[0]] };
+    const state = makeState({ snapshot: workFirst });
+    const before = { ...state.essencePool };
+    const r = placeCrossroadsLean(state, KAEL, workFirst.options[0], 'away');
+    expect(r.reason).toBe('away_on_a_work');
+    expect(r.message).toBe('Kael is not choosing that work; it runs on its own.');
+    expect(state.graph.getNode(KAEL)?.properties.crossroadsLean).toBeUndefined();
+    expect(state.essencePool).toEqual(before);
+    // toward on the same work is still offered
+    expect(placeCrossroadsLean(state, KAEL, workFirst.options[0], 'toward').success).toBe(true);
+  });
 });
 
 describe('placeCrossroadsLean succeeds (THR-1926)', () => {
@@ -107,6 +120,14 @@ describe('placeCrossroadsLean succeeds (THR-1926)', () => {
     expect(state.essencePool).toEqual(before);
     expect(r.message).toMatch(/^Your hand rests on Kael, toward .+\. It waits until Kael next faces that road\.$/);
     expect(r.message).not.toMatch(/feast/); // a name, never the template id
+  });
+
+  it('THR-2189: an away lean on the leader forecasts likely and says it waits for the reach', () => {
+    const r = placeCrossroadsLean(makeState(), KAEL, SNAPSHOT.options[0], 'away');
+    expect(r.success).toBe(true);
+    expect(r.forecast).toBe('likely');
+    expect(r.message).toMatch(/^Your hand rests on Kael, away from .+. It waits until Kael reaches for that road again.$/);
+    expect(LEAN_FORECAST.away.likely).toBe('If {name} reaches for it again, your hand will likely turn them from it.');
   });
 
   it('liftCrossroadsLean clears it with no refund', () => {
@@ -127,7 +148,7 @@ describe('crossroads content (THR-1926)', () => {
     ...Object.values(CROSSROADS_ANSWER).flatMap(v => Object.values(v)),
     ...Object.values(CROSSROADS_ANSWER_DEFAULT),
     OUTCOME_TOAST.followed.toward, OUTCOME_TOAST.followed.away, OUTCOME_TOAST.resisted.toward,
-    OUTCOME_TOAST.resisted.away, OUTCOME_TOAST.resisted_idle, OUTCOME_TOAST.lapsed_expired, OUTCOME_TOAST.lapsed_unavailable,
+    OUTCOME_TOAST.resisted.away, OUTCOME_TOAST.resisted_idle, OUTCOME_TOAST.lapsed_expired.toward, OUTCOME_TOAST.lapsed_expired.away, OUTCOME_TOAST.lapsed_unavailable,
   ];
   it('names the mortal by {name} and never guesses a gendered pronoun', () => {
     for (const line of lines) {

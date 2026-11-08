@@ -127,7 +127,7 @@ import type { DecisionFamily, UndertakingMomentRecord } from '../types/strategic
 import type { BalanceEvent } from '../types/balanceEval';
 import { scoreUnifiedBoard, type BoardEntry } from './decisionBoard';
 import { buildCrossroadsSnapshotDetailed, settledness as crossroadsSettledness, readCrossroadsLean } from './crossroads';
-import { prepareCrossroadsLean, resolveCrossroadsLean, bondReceptionOf, isThreadedByGod, type PreparedLean } from './crossroadsDecision';
+import { prepareCrossroadsLean, resolveCrossroadsLean, bondReceptionOf, isThreadedByGod, awayLeanWaitsForReach, type PreparedLean } from './crossroadsDecision';
 import { isSecretCellId } from './intentionReading';
 import { CROSSROADS_ENABLED, COMPULSION_PREMONITION_ENABLED, CROSSROADS_LEAN_WAITS_FOR_ROAD } from '../data/premonition-constants';
 import { UNIFIED_DECISION_BOARD_MODE, BOARD_SCORE_FLOOR } from '../data/strategic-action-constants';
@@ -2027,9 +2027,16 @@ export function phaseAgentDecision(
       // THR-2188: a held, unexpired lean whose road is on neither list waits for the
       // next full decision instead of lapsing `unavailable`. Kept on the mortal, traced;
       // `CROSSROADS_HOLD_MAX_TICKS` still ends it as `lapsed_expired`.
-      const leanWaits = CROSSROADS_LEAN_WAITS_FOR_ROAD && preparedLean !== null
+      // THR-2189: a held away lean whose road IS on the board, but is not the mortal's
+      // unleaned first choice, waits too — the mortal is not reaching for that road, so
+      // the hand has nothing to push against yet (`awayLeanWaitsForReach`).
+      const leanWaits = (CROSSROADS_LEAN_WAITS_FOR_ROAD && preparedLean !== null
         && preparedLean.held !== null && preparedLean.effective === null
-        && !preparedLean.expired && !preparedLean.malformed;
+        && !preparedLean.expired && !preparedLean.malformed)
+        || awayLeanWaitsForReach(
+          preparedLean, crossroadsBoard, decision.topCandidates, scoredStrategic,
+          BOARD_SCORE_FLOOR, crossroadsOverriddenTo !== undefined,
+        );
       if (leanWaits && preparedLean?.held && isTracingEnabled()) {
         const held = preparedLean.held;
         emitTrace({

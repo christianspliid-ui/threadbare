@@ -52,13 +52,13 @@ describe('crossroads — the ratio ↔ multiplier pins', () => {
     expect(CROSSROADS_LEAN_AWAY_MULT).toBe(CROSSROADS_LEANING_RATIO);
   });
 
-  it('reads not_enough in both directions on every set snapshot (toward any non-leader, away from the leader)', () => {
+  it('reads not_enough in both directions on every set snapshot (toward any non-leader, away from the leader, flag off)', () => {
     for (const r of [0.05, 0.2, 0.35, 0.49, 0.5]) {
       const s = snap(1, r, r * 0.9);
       expect(settledness(s)).toBe('set');
       expect(forecastLean(s, { ...s.options[1], direction: 'toward' })).toBe('not_enough');
       expect(forecastLean(s, { ...s.options[2], direction: 'toward' })).toBe('not_enough');
-      expect(forecastLean(s, { ...s.options[0], direction: 'away' })).toBe('not_enough');
+      expect(forecastLean(s, { ...s.options[0], direction: 'away' }, undefined, false)).toBe('not_enough');
     }
   });
 });
@@ -142,12 +142,20 @@ describe('crossroads — forecast', () => {
     // 0.4 × 2 = 0.8 < 1 → not_enough
     expect(forecastLean(snap(1, 0.4), { ...snap(1, 0.4).options[1], direction: 'toward' })).toBe('not_enough');
   });
-  it('away on the leader: likely / may / not_enough', () => {
+  it('away on the leader, flag off (THR-1926 arithmetic): likely / may / not_enough', () => {
     // 1 × 0.5 = 0.5 vs 0.9 → new leader by 1.8 → likely
-    expect(forecastLean(snap(1, 0.9), { ...snap(1, 0.9).options[0], direction: 'away' })).toBe('likely');
+    expect(forecastLean(snap(1, 0.9), { ...snap(1, 0.9).options[0], direction: 'away' }, undefined, false)).toBe('likely');
     // 1 × 0.5 = 0.5 vs 0.55 → leads by 1.1 → may
-    expect(forecastLean(snap(1, 0.55), { ...snap(1, 0.55).options[0], direction: 'away' })).toBe('may');
-    expect(forecastLean(snap(1, 0.4), { ...snap(1, 0.4).options[0], direction: 'away' })).toBe('not_enough');
+    expect(forecastLean(snap(1, 0.55), { ...snap(1, 0.55).options[0], direction: 'away' }, undefined, false)).toBe('may');
+    expect(forecastLean(snap(1, 0.4), { ...snap(1, 0.4).options[0], direction: 'away' }, undefined, false)).toBe('not_enough');
+  });
+  it('THR-2189: away on the leader reads likely with the wait on (the default), whatever the lead', () => {
+    for (const r of [0.9, 0.55, 0.4, 0.05]) {
+      expect(forecastLean(snap(1, r), { ...snap(1, r).options[0], direction: 'away' })).toBe('likely');
+      expect(forecastLean(snap(1, r), { ...snap(1, r).options[0], direction: 'away' }, undefined, true)).toBe('likely');
+    }
+    // toward is untouched by the flag
+    expect(forecastLean(snap(1, 0.4), { ...snap(1, 0.4).options[1], direction: 'toward' }, undefined, true)).toBe('not_enough');
   });
   it('away on a non-leader is likely; a road not in the reading is not_enough', () => {
     expect(forecastLean(snap(1, 0.9), { ...snap(1, 0.9).options[1], direction: 'away' })).toBe('likely');

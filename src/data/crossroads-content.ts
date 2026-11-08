@@ -31,8 +31,10 @@ export const LEAN_FORECAST: Record<CrossroadsDirectionKey, Record<CrossroadsFore
     may: 'It may tip {name}.',
     not_enough: 'Not enough to turn {name}.',
   },
+  /** THR-2189: with `CROSSROADS_AWAY_WAITS_FOR_REACH` on, the away offer only ever
+   * reads `likely` — a conditional promise. `may` / `not_enough` serve the flag-off path. */
   away: {
-    likely: '{name} will likely set it aside.',
+    likely: 'If {name} reaches for it again, your hand will likely turn them from it.',
     may: '{name} may set it aside.',
     not_enough: '{name} will hold to it anyway.',
   },
@@ -47,7 +49,8 @@ export const LEAN_CONFIRM: Record<CrossroadsDirectionKey, string> = {
 /** While a lean is held — it waits for its road, up to `CROSSROADS_HOLD_MAX_TICKS` (THR-2188). */
 export const LEAN_HELD: Record<CrossroadsDirectionKey, string> = {
   toward: 'Your hand rests on {name}, toward {road}. It waits until {name} next faces that road.',
-  away: 'Your hand rests on {name}, away from {road}. It waits until {name} next faces that road.',
+  /** THR-2189: an away lean waits for the reach, not merely for the road to be on the board. */
+  away: 'Your hand rests on {name}, away from {road}. It waits until {name} reaches for that road again.',
 };
 
 /** The placement acknowledgement the action returns (the row's held state carries it on screen). */
@@ -65,8 +68,12 @@ export const OUTCOME_TOAST = {
   },
   /** Resisted toward, onto an idle board: there is no road to name. */
   resisted_idle: '{name} feels your hand and chooses to rest instead.',
-  /** THR-2188 review: true whether the mortal stayed busy past the hold or the road never came back. */
-  lapsed_expired: 'Your lean fades: {name} did not face {road} again in time.',
+  /** THR-2188 review: true whether the mortal stayed busy past the hold or the road never came back.
+   * THR-2189: keyed by direction — an away lean fades because the mortal never reached for it. */
+  lapsed_expired: {
+    toward: 'Your lean fades: {name} did not face {road} again in time.',
+    away: 'Your lean fades: {name} never reached for {road} again.',
+  },
   lapsed_unavailable: "Your lean finds nothing to hold: {road} is gone from {name}'s road.",
 } as const;
 
@@ -83,6 +90,8 @@ export const LEAN_REFUSAL: Record<string, string> = {
   stale_option: '{name} no longer weighs that road.',
   held: 'Your hand already rests on {name}.',
   away_not_leader: '{name} is not set on that road; there is nothing to lean away from.',
+  /** THR-2189: a work runs on its own; the mortal does not reach for it at a choice. */
+  away_on_a_work: '{name} is not choosing that work; it runs on its own.',
   unaffordable: 'Not enough {sphere} essence.',
   nothing_held: 'Your hand does not rest on {name}.',
 };

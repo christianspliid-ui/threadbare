@@ -165,5 +165,39 @@ describe('THR-1926 — The Crossroads on seed 42', () => {
     expect(readCrossroadsLean(state.graph.getNode(FIRST_ID)?.properties.crossroadsLean)).toBeNull();
     waitFlag.value = undefined;
   }, MULTI_WORLD_SIM_TEST_TIMEOUT_MS);
+
+  it('THR-2189: an away lean on the leader is kept across decisions (traced waiting) until the mortal reaches for its road; a follow is always the lean’s doing', () => {
+    let { state, runtime } = freshWorld();
+    // Run until The First has a reading whose leader is a chance (away is not offered on a work).
+    let placed = false;
+    for (let t = 0; t < MAX_TICKS && !placed; t++) {
+      state = unattended(runTick(state, [], runtime));
+      clearTraces();
+      const snap = readCrossroadsSnapshot(state.graph.getNode(FIRST_ID)?.properties.crossroads);
+      if (snap && snap.options.length > 1 && snap.options[0].family === 'encounter') {
+        placed = placeCrossroadsLean(state, FIRST_ID, snap.options[0], 'away').success;
+      }
+    }
+    expect(placed, 'premise: The First had a reading led by a chance').toBe(true);
+    const waits: Array<TraceLike & { direction?: string }> = [];
+    const outcomes: Array<TraceLike & { leanTurned?: boolean }> = [];
+    for (let t = 0; t < 80 && outcomes.length === 0; t++) {
+      state = unattended(runTick(state, [], runtime));
+      for (const tr of getTraces() as ReadonlyArray<TraceLike & { direction?: string; leanTurned?: boolean }>) {
+        if (tr.agentId !== FIRST_ID) continue;
+        if (tr.category === 'crossroads_lean_waiting') waits.push(tr);
+        if (tr.category === 'crossroads_lean_outcome') outcomes.push(tr);
+      }
+      clearTraces();
+    }
+    expect(waits.length, 'premise: the away lean waited at least one decision').toBeGreaterThan(0);
+    expect(waits.every(w => w.direction === 'away')).toBe(true);
+    for (const o of outcomes) {
+      if (o.outcome === 'followed') expect(o.leanTurned).toBe(true);
+    }
+    if (outcomes.length === 0) {
+      expect(readCrossroadsLean(state.graph.getNode(FIRST_ID)?.properties.crossroadsLean)?.direction).toBe('away');
+    }
+  }, MULTI_WORLD_SIM_TEST_TIMEOUT_MS);
 });
 
