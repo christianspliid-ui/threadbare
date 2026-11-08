@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-08 05:58 local (04:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-08 06:58 local (05:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -50,6 +50,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-08: leftover mortal-summary code that only the deleted mortal panel used is gone; nothing changes on screen** ([THR-2192](https://linear.app/threadbare/issue/THR-2192)). Merged via [#2794](https://github.com/christianspliid-ui/threadbare/pull/2794).
 - **2026-11-08: a mortal's they/them second verb keeps its "s"** ([THR-1958](https://linear.app/threadbare/issue/THR-1958)). Merged via [#2793](https://github.com/christianspliid-ui/threadbare/pull/2793).
 - **2026-11-08: "A Work Finished" now says what a mortal actually did, and it is live** ([THR-2075](https://linear.app/threadbare/issue/THR-2075)). Merged via [#2791](https://github.com/christianspliid-ui/threadbare/pull/2791).
 - **2026-11-08: the mortal panel nothing could open, which showed raw reach codes, is gone** ([THR-1956](https://linear.app/threadbare/issue/THR-1956)). Merged via [#2792](https://github.com/christianspliid-ui/threadbare/pull/2792).
@@ -60,7 +61,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-07: the world no longer runs the same day twice, and it is live** ([THR-1921](https://linear.app/threadbare/issue/THR-1921/orchestrator-event-ids-collide-evt-141-10-25-duplicate-react-keys-in)). Merged via [#2783](https://github.com/christianspliid-ui/threadbare/pull/2783).
 - **2026-11-07: a screen reader now reads an encounter's opening picture as "Scene from …", never the game's hidden setup data, and it is live** ([THR-1733](https://linear.app/threadbare/issue/THR-1733/the-encounter-illustrations-alt-text-is-the-whole-encoded-contract)). Merged via [#2781](https://github.com/christianspliid-ui/threadbare/pull/2781).
 - **2026-11-07: five chapters The First used to play out alone now deal you a hand on their first step, and it is live** ([THR-2179](https://linear.app/threadbare/issue/THR-2179)). Merged via [#2776](https://github.com/christianspliid-ui/threadbare/pull/2776).
-- **2026-11-07: your cards now say how they landed — each card you play adds its own line under the step's result, and it is live** ([THR-2187](https://linear.app/threadbare/issue/THR-2187/your-cards-say-how-they-landed-each-card-the-god-played-adds-its-own)). Merged via [#2775](https://github.com/christianspliid-ui/threadbare/pull/2775).
 ---
 
 Older resolved items and every earlier revision of this file: `git log -p origin/ops -- Design/user-actions.md`.

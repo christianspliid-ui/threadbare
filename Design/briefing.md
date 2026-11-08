@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-08 05:58 local (04:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-08 06:58 local (05:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,9 +23,8 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 - ["A Work Finished" says every undertaking left something standing](https://linear.app/threadbare/issue/THR-2075/a-work-finished-says-every-undertaking-left-something-standing-a-relic) ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-08-thr-2075-a-finished-work-says-what-was-done.md)) — **when a mortal finishes a work that made nothing, the card now says what they actually did.** Taking up a relic reads "Kael takes up The Hollow Bell, left by a god of the last age…" instead of "It stands in the world now". Works that build something keep today's line; works that improve a mortal's own thing ("raise") get their own line. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-07h.md)* Live ([PR #2791](https://github.com/christianspliid-ui/threadbare/pull/2791)).
 - [Away leans almost always "work"](https://linear.app/threadbare/issue/THR-2189/away-leans-almost-always-work-kael-will-hold-to-it-anyway-is-followed) ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-07-thr-2189-an-away-lean-waits-for-the-reach.md)) — **when you lean a mortal away from the road they favour, your hand now waits until they actually reach for that road again.** The line "Kael sets it aside, as you leaned" then appears only when your hand did it. "Lean away" no longer shows on a mortal's own work, where it almost never mattered. Nobody builds on this before 09:00 UTC on 8 November. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-07g.md)*
-- [An army taken into its liege's pay keeps marching on its liege's town](https://linear.app/threadbare/issue/THR-2026/an-army-taken-into-its-lieges-pay-keeps-marching-on-its-lieges-town) ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-07-thr-2026-the-paid-army-turns-at-once.md)) — **a company that takes its liege's pay turns to fight for that liege before the day's turn ends.** *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-07f.md)* Live ([PR #2786](https://github.com/christianspliid-ui/threadbare/pull/2786)).
 
-Say "veto finished work line", "veto away lean waits" or "veto paid army turns at once" to reverse any of these.
+Say "veto finished work line" or "veto away lean waits" to reverse either of these.
 
 ## This week's screens
 
@@ -33,14 +32,14 @@ Say "veto finished work line", "veto away lean waits" or "veto paid army turns a
 
 ## Queue
 
-**Starved: one ticket ready, and it is held until 09:00 UTC.** [Away leans](https://linear.app/threadbare/issue/THR-2189) waits out its veto window. No pull requests are open. The last six pickup runs stood down because nothing was claimable — correct with an empty shelf. The orchestrator's latest run ([report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-08b.md)) found nothing new for you.
+**Starved: one ticket ready, and it is held until 09:00 UTC.** [Away leans](https://linear.app/threadbare/issue/THR-2189) waits out its veto window. No pull requests are open. The last ten pickup runs stood down because nothing was claimable, which is correct with an empty shelf. The latest merge was a code cleanup with nothing on screen ([THR-2192](https://linear.app/threadbare/issue/THR-2192), [PR #2794](https://github.com/christianspliid-ui/threadbare/pull/2794)).
 
 Items for agents, not you:
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (19 days; In Dev since 15 Oct, 24 days; last touched 1 Nov). Its work sits on the pushed branch `pr/1947`; no local copy holds uncommitted edits. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (19 days; In Dev since 20 Oct; last touched 1 Nov). Its work sits on the pushed branch `pr/1947`. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- The live site serves the latest main (e39f348f). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting. All 10 scheduled tasks are on time. The worktree reaper is running (its last count: 776 worktrees, 8 waiting for a decision).
-- Engine speed is normal: 144 ms/tick, level with the 7-day median.
+- The live site serves the latest main (e39f348f). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting. All 9 enabled scheduled tasks are on time. The worktree reaper ran at 06:40 local (776 worktrees, 8 waiting for a decision).
+- Engine speed is normal: 158 ms/tick, within range of the 7-day median (144).
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local). Overnight quiet is normal, so this is not an ask.
-- **The home-folder copy of the repo is 249 commits behind main** (last synced 4 Nov). An edited `.claude/settings.local.json` and untracked files under `Docs/evidence/` and `Docs/ops/` still block the mirror's sync. This brief has flagged it 46 hours in a row. An attended agent session should set those files aside and fast-forward. Nothing is lost, because the lanes work from fresh copies of main.
+- **The home-folder copy of the repo is 249 commits behind main** (last synced 4 Nov). An edited `.claude/settings.local.json` and untracked files under `Docs/evidence/` and `Docs/ops/` still block the mirror's sync. This brief has flagged it 47 hours in a row. An attended agent session should set those files aside and fast-forward. Nothing is lost, because the lanes work from fresh copies of main.
