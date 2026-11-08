@@ -15,9 +15,9 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 230 |
+| 🟢 LIVE | 229 |
 | 🟠 PARTIAL | 1 |
-| 🔴 LEAKED | 7 |
+| 🔴 LEAKED | 8 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 118 |
@@ -42,7 +42,7 @@ remediation ticket or the build fails.
 | `ambition-biases-encounter-choice` | An agent's ambitions bias which encounters they choose — motive drives action. | function: `applyAmbitionBoost` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `ambition-completed-history` | Completed ambitions accumulate into a readable history of who an agent became. | function: `completedAmbitions`, `getCompletedAmbitions` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `ambition-motive-receipts` | Ambitions explain motives — receipts carry ambition provenance into foreshadowing. | trace: `ambitionBoost` | Omens & Atmospheric Pressure | 🟢 LIVE | — |
-| `ambition-player-visibility` | The player can see what a mortal is striving for. | function: `getAmbitionsStrand` | Intelligence, Knowledge & Familiarity | 🟢 LIVE | — |
+| `ambition-player-visibility` | The player can see what a mortal is striving for. | function: `getAmbitionsStrand` | Intelligence, Knowledge & Familiarity | 🔴 LEAKED | THR-2192 |
 | `ambition-progress-milestones` | Ambitions progress and complete, firing milestone events the player sees. | function: `phaseAmbitionProgress` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `binder-decision-traced` | Every casting decision an undertaking makes reaches the narrative surface: the trace answers "why is this moment generic?" after the fact (it fires on a slot that bound nobody as loudly as on one that bound somebody), and a lost must-persist cast member is carried into the checkpoint moment by name — "loses Old Maerin" rather than the anonymous "hits serious trouble" the complication class produced before. | trace: `binding_decision`, `resolveBinding`, `runBindPass` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | THR-1297 |
 | `binder-mint-valve` | When an undertaking needs a person the world does not have, that person is born the way every other mortal is born — through the lifecycle’s one-per-tick gate — instead of appearing on the spot. An unmetered spawn path is how a large map reached ~1010 agents by tick 72 (THR-814/THR-162), and the budget is what stops the binder becoming a second one. | state-field: `mintQueue`, `drainMintQueue`, `BINDER_MINT_BUDGET_PER_TICK`, `binder_mint` | Agent Lifecycle | 🟢 LIVE | — |
@@ -656,15 +656,15 @@ remediation ticket or the build fails.
 - **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/engine/decisionBoard.ts`, `src/engine/phaseAgentDecision.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-07-23: ambitionBoost term appears in motiveReceipt provenance. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
-### `ambition-player-visibility` — 🟢 LIVE
+### `ambition-player-visibility` — 🔴 LEAKED
 
 - **Intent:** The player can see what a mortal is striving for.
 - **Producer → Consumer:** Ambitions & Undertakings → Intelligence, Knowledge & Familiarity
 - **UL terms:** *Ambition*, *Interaction Depth*
-- **Production hits:** 2 total — 1 write, 1 read, 0 unclassified
+- **Production hits:** 1 total — 1 write, 0 read, 0 unclassified
 - **Write sites:** `src/engine/strands.ts`
-- **Read sites:** `src/components/Game/hooks/useAgentInteraction.ts`
-- **Verdict:** Verified 2026-07-24: THR-721: JourneyTab gate retuned — AMBITION_PRIMARY_INTERACTIONS 2→1 and hardcoded `known` promoted to AMBITION_PRIMARY_KNOWLEDGE = `recognised`, so a single meaningful exposure surfaces the primary ambition. getAmbitionsStrand read by useAgentInteraction.ts feeds the AgentProfileModal tabs; browser-verified at 1920×1080.
+- **Read sites:** —
+- **Verdict:** Tier 2: write sites present, declared read sites empty — the consumer is starving. — or the declared symbol does not appear at the declared site: grep 'getAmbitionsStrand' src/components/** before treating this as a leak. NOTE: verifiedLive (2026-07-24) is now STALE — re-verify or retire the contract.
 
 ### `ambition-progress-milestones` — 🟢 LIVE
 

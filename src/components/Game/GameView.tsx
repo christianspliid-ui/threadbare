@@ -654,7 +654,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     threadedNodes,
     agentDetail,
     wheelSlots,
-    strandData,
     handleAgentSelect,
     handleThreadNodeSelect,
     attendThreadTug,
@@ -663,9 +662,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     handleInterventionCancel,
     handleAgendaSelect,
     handleAgendaCancel,
-    handleStrandClose,
     handleBackFromAgentDetail,
-    handleViewPsyche,
     handleOpenDrawer,
     handleAvatarActionClick,
     openAgentSheetForId,
@@ -4807,8 +4804,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         setGameState={setGameState}
         runtime={runtime}
         archetype={archetype}
-        strandData={strandData}
-        handleStrandClose={handleStrandClose}
         scryVisible={scryVisible}
         scryState={scryState}
         retinueAgents={retinueAgents}

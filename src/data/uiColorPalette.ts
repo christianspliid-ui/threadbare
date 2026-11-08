@@ -7,18 +7,6 @@
 import type { TickEvent } from '../types';
 
 // ============================================================================
-// Strand Colors (StrandView)
-// ============================================================================
-export const STRAND_COLORS: Record<string, string> = {
-  Presence: '#d4a574',   // warm amber/tan
-  Desires: '#e87534',    // coral/orange
-  Bonds: '#5c6bc0',      // indigo
-  Ambitions: '#eab308',  // gold/yellow
-  Beliefs: '#7cb342',    // lime green
-  Fears: '#b71c1c',      // deep red
-};
-
-// ============================================================================
 // Sentiment & Relationship Colors
 // ============================================================================
 export const SENTIMENT_POSITIVE = '#10b981'; // green (positive relationships)

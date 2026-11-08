@@ -41,14 +41,6 @@ import type { KnowledgeLevel } from '../../../types/familiarity';
 import { TIER_NAMES, AVATAR_TIER_LABEL } from '../../../data/influence-content';
 import { generateAgendas } from '../../../engine/agendaGenerator';
 import { DIVINE_INFLUENCE_CONSTANTS } from '../../../data/intervention-feedback-content';
-import {
-  getPresenceStrand,
-  getDesiresStrand,
-  getBondsStrand,
-  getAmbitionsStrand,
-  getBeliefsStrand,
-  getFearsStrand,
-} from '../../../engine/strands';
 import { useInterventionAudio } from './useInterventionAudio';
 import { getSphereColor } from '../../../data/sphereIcons';
 import { attendThreadTug as attendThreadTugInEngine } from '../../../engine/attentionPool';
@@ -145,7 +137,6 @@ export function useAgentInteraction({
   } | null>(null);
   const [selectedHexCoord, setSelectedHexCoord] = useState<HexCoord | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [strandViewAgent, setStrandViewAgent] = useState<string | null>(null);
   const [profileModalAgentId, setProfileModalAgentId] = useState<string | null>(null);
   /** THR-1963 — the tab the sheet opens on; undefined is Overview. */
   const [profileInitialTab, setProfileInitialTab] = useState<ProfileTabId | undefined>(undefined);
@@ -245,22 +236,6 @@ export function useAgentInteraction({
     return targetSlots.length > 0 ? targetSlots : null;
   }, [selectedAgentId, drawerOpen, gameState.essencePool, gameState.graph, gameState.ascendantId, gameState.hexRevelation, gameState.unlockedActionIds, gameState.controlEffects, gameState.unifiedActions, gameState.seed, retinueAgents, archetype, worldVersion]);
 
-  const strandData = useMemo(() => {
-    if (!strandViewAgent) return null;
-    const agentName = gameState.graph.getNode(strandViewAgent)?.name ?? 'Unknown';
-    return {
-      agentName,
-      strands: {
-        presence: getPresenceStrand(gameState.graph, strandViewAgent),
-        desires: getDesiresStrand(gameState.graph, strandViewAgent),
-        bonds: getBondsStrand(gameState.graph, strandViewAgent),
-        ambitions: getAmbitionsStrand(gameState.graph, strandViewAgent),
-        beliefs: getBeliefsStrand(gameState.graph, strandViewAgent),
-        fears: getFearsStrand(gameState.graph, strandViewAgent),
-      },
-    };
-  }, [strandViewAgent, gameState.graph, worldVersion]);
-
   const agentInfoCard = useMemo(() => {
     if (!selectedAgentId) return null;
     // Omniscience lifts the card to the top level instead of the familiarity
@@ -317,7 +292,6 @@ export function useAgentInteraction({
   // ── Handlers ──
   const handleAgentSelect = useCallback((agentId: string) => {
     setSelectedAgentId(agentId);
-    setStrandViewAgent(null);
     // THR-1911: a person opens their page; their cards are its Act row.
     if (openInspector) openInspector({ kind: 'agent', id: agentId }, 'docked');
     else setDrawerOpen(true);
@@ -660,21 +634,10 @@ export function useAgentInteraction({
     setDrawerOpen(false);
   }, []);
 
-  const handleStrandClose = useCallback(() => {
-    setStrandViewAgent(null);
-    setDrawerOpen(true);
-  }, []);
-
   const handleBackFromAgentDetail = useCallback(() => {
     setSelectedAgentId(null);
     setDrawerOpen(false); // IX-007: auto-close drawer when deselecting agent
   }, []);
-
-  const handleViewPsyche = useCallback(() => {
-    // IX-002: mutual exclusion — close profile modal when opening strand view
-    setProfileModalAgentId(null);
-    setStrandViewAgent(selectedAgentId);
-  }, [selectedAgentId]);
 
   const handleOpenDrawer = useCallback(() => {
     if (openInspector && selectedAgentId) openInspector({ kind: 'agent', id: selectedAgentId }, 'docked');
@@ -701,10 +664,8 @@ export function useAgentInteraction({
     if (selectedAgentId) {
       const tab = typeof initialTab === 'string' ? initialTab : undefined;
       setProfileInitialTab(tab);
-      // IX-002: mutual exclusion — close strand view when opening profile modal
       // IX-008: close drawer when opening full-screen profile modal
-      setStrandViewAgent(null);
-      setDrawerOpen(false);
+        setDrawerOpen(false);
       // THR-1911: the profile is the person's page, wide.
       if (openInspector) openInspector({ kind: 'agent', id: selectedAgentId }, 'wide', false, tab);
       else setProfileModalAgentId(selectedAgentId);
@@ -755,7 +716,6 @@ export function useAgentInteraction({
   const openAgentSheetForId = useCallback((agentId: string, initialTab?: ProfileTabId) => {
     setProfileInitialTab(initialTab);
     setSelectedAgentId(agentId);
-    setStrandViewAgent(null);
     setDrawerOpen(false);
     // THR-2186: the tab reaches the Inspector too, so "See the work →" opens on Journey.
     if (openInspector) openInspector({ kind: 'agent', id: agentId }, 'wide', false, initialTab);
@@ -768,7 +728,6 @@ export function useAgentInteraction({
       // Inspector opens its page (a pinned Inspector ignores a map click).
       if (category === 'agent') {
         setSelectedAgentId(nodeId);
-        setStrandViewAgent(null);
       }
       setSelectedThreadNode({ nodeId, category });
       setSelectedHexCoord(null);
@@ -837,7 +796,6 @@ export function useAgentInteraction({
   // IX-002: Close all agent-related overlays (used by cross-hook coordination)
   const closeAllAgentOverlays = useCallback(() => {
     setDrawerOpen(false);
-    setStrandViewAgent(null);
     setProfileModalAgentId(null);
     setPendingIntervention(null);
     setAgendaPickerOpen(false);
@@ -852,7 +810,6 @@ export function useAgentInteraction({
     handleHexSelect,
     handleHexDetailClose,
     drawerOpen,
-    strandViewAgent,
     pendingIntervention,
     pendingChoice,
     setPendingChoice,
@@ -869,7 +826,6 @@ export function useAgentInteraction({
     agentInfoCard,
     agentFullProfile,
     wheelSlots,
-    strandData,
     handleAgentSelect,
     handleThreadNodeSelect,
     attendThreadTug,
@@ -881,9 +837,7 @@ export function useAgentInteraction({
     handleInterventionConfirm,
     handleInterventionCancel,
     handleDrawerClose,
-    handleStrandClose,
     handleBackFromAgentDetail,
-    handleViewPsyche,
     handleOpenDrawer,
     handleAvatarActionClick,
     handleViewProfile,
