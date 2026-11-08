@@ -266,3 +266,22 @@ describe('THR-2075 — a finished work says what was done, not that something st
     expect(completionConsequence(record({ templateId: 'cell.control_claim.item', label: ` ${ECHO} ` }), STANDS)).toBe(ECHO);
   });
 });
+
+describe('THR-2075 review — a compiled cell override reads its line too', () => {
+  it('claim × Item under an override id (`<cell>.<slug>`) is still a claim, not a made thing', async () => {
+    const { applyCellOverride } = await import('../../../data/undertaking-cells');
+    const strategic = await import('../../../engine/strategicActionCandidates');
+    const override = applyCellOverride('cell.control_claim.item', 'hollow-bell', { displayName: 'The Hollow Bell' });
+    const line = 'Kael takes up The Hollow Bell and carries it home.';
+    const rec = record({ momentClass: 'completion', templateId: override.id, label: line });
+    const original = strategic.getStrategicTemplate;
+    // An override is registered by the content compiler; stand that in for the lookup.
+    const spy = (await import('vitest')).vi.spyOn(strategic, 'getStrategicTemplate')
+      .mockImplementation(id => (id === override.id ? override : original(id)));
+    try {
+      expect(completionConsequence(rec, 'It stands in the world now.')).toBe(line);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+});

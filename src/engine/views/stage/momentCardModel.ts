@@ -46,7 +46,9 @@ import {
   selectMomentCardTemplate,
   type MomentDivineVerb,
 } from '../../../data/moment-card-content';
-import { getCellTemplate } from '../../../data/undertaking-cells';
+// The lifecycle resolves the finished work through this same lookup when it writes
+// `record.label` — base cells and compiled cell overrides (`<cell>.<slug>`) alike.
+import { getStrategicTemplate } from '../../strategicActionCandidates';
 import { getUnifiedTemplateById } from '../../../data/unified-action-templates';
 import { canAfford } from '../../influence';
 import { dominionScaledEssenceCost } from '../../dominion';
@@ -242,7 +244,7 @@ function buildDivineActions(state: GameState, targetId: string): MomentDivineAct
  * label or the lifecycle's log form ("<name> completes: <work>") reads the verb-neutral line.
  */
 export function completionConsequence(record: UndertakingMomentRecord, fallback: string): string {
-  const variant = getCellTemplate(record.templateId)?.cellVariant;
+  const variant = getStrategicTemplate(record.templateId)?.cellVariant;
   if (!variant || variant === 'create') return fallback;
   const own = record.label?.trim();
   if (!own || own.includes(MOMENT_LOG_COMPLETION_MARKER)) return MOMENT_COMPLETION_UNMADE_CONSEQUENCE;
