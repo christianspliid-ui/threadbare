@@ -1452,16 +1452,17 @@ export const CONTRACTS: readonly Contract[] = [
     consumerSystem: 'Intelligence, Knowledge & Familiarity',
     intent: 'The player can see what a mortal is striving for.',
     ulTerms: ['Ambition', 'Interaction Depth'],
-    mechanism: { kind: 'function', symbols: ['getAmbitionsStrand'] },
-    writeSites: ['src/engine/strands.ts'],
-    readSites: ['src/components/**'],
-    // THR-1956 deleted StrandView, the last reader of getAmbitionsStrand; THR-2192
-    // retires src/engine/strands.ts and repoints this row at the Inspector's live reader.
-    deferralTicket: 'THR-2192',
+    mechanism: { kind: 'function', symbols: ['getAgentIntents', 'visibleJourneyIntents'] },
+    // agentDetail.ts builds AgentInfoCardData.intents (getAgentIntents); the person
+    // sheet's ambitions section and "What they want most" read it through the one
+    // gate, visibleJourneyIntents. THR-2192 retired src/engine/strands.ts, whose
+    // getAmbitionsStrand lost its last reader when THR-1956 deleted StrandView.
+    writeSites: ['src/engine/agentDetail.ts'],
+    readSites: ['src/engine/views/subjects/personRows.ts'],
     verifiedLive: {
-      date: '2026-07-24',
+      date: '2026-11-08',
       evidence:
-        'THR-721: JourneyTab gate retuned — AMBITION_PRIMARY_INTERACTIONS 2→1 and hardcoded `known` promoted to AMBITION_PRIMARY_KNOWLEDGE = `recognised`, so a single meaningful exposure surfaces the primary ambition. getAmbitionsStrand read by useAgentInteraction.ts feeds the AgentProfileModal tabs; browser-verified at 1920×1080.',
+        'THR-2192: the person sheet (Inspector person page) renders the ambitions section and the thread column\'s "What they want most" from visibleJourneyIntents(card, knowledge) in personRows.ts, over card.intents written by getAgentDetail in agentDetail.ts. The gate is THR-721\'s: AMBITION_PRIMARY_INTERACTIONS = 1 or a readable intention (readIntentionFromCard).',
     },
   },
   {

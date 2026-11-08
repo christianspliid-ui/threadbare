@@ -15,9 +15,9 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 229 |
+| 🟢 LIVE | 230 |
 | 🟠 PARTIAL | 1 |
-| 🔴 LEAKED | 8 |
+| 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 118 |
@@ -42,7 +42,7 @@ remediation ticket or the build fails.
 | `ambition-biases-encounter-choice` | An agent's ambitions bias which encounters they choose — motive drives action. | function: `applyAmbitionBoost` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `ambition-completed-history` | Completed ambitions accumulate into a readable history of who an agent became. | function: `completedAmbitions`, `getCompletedAmbitions` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `ambition-motive-receipts` | Ambitions explain motives — receipts carry ambition provenance into foreshadowing. | trace: `ambitionBoost` | Omens & Atmospheric Pressure | 🟢 LIVE | — |
-| `ambition-player-visibility` | The player can see what a mortal is striving for. | function: `getAmbitionsStrand` | Intelligence, Knowledge & Familiarity | 🔴 LEAKED | THR-2192 |
+| `ambition-player-visibility` | The player can see what a mortal is striving for. | function: `getAgentIntents`, `visibleJourneyIntents` | Intelligence, Knowledge & Familiarity | 🟢 LIVE | — |
 | `ambition-progress-milestones` | Ambitions progress and complete, firing milestone events the player sees. | function: `phaseAmbitionProgress` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `binder-decision-traced` | Every casting decision an undertaking makes reaches the narrative surface: the trace answers "why is this moment generic?" after the fact (it fires on a slot that bound nobody as loudly as on one that bound somebody), and a lost must-persist cast member is carried into the checkpoint moment by name — "loses Old Maerin" rather than the anonymous "hits serious trouble" the complication class produced before. | trace: `binding_decision`, `resolveBinding`, `runBindPass` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | THR-1297 |
 | `binder-mint-valve` | When an undertaking needs a person the world does not have, that person is born the way every other mortal is born — through the lifecycle’s one-per-tick gate — instead of appearing on the spot. An unmetered spawn path is how a large map reached ~1010 agents by tick 72 (THR-814/THR-162), and the budget is what stops the binder becoming a second one. | state-field: `mintQueue`, `drainMintQueue`, `BINDER_MINT_BUDGET_PER_TICK`, `binder_mint` | Agent Lifecycle | 🟢 LIVE | — |
@@ -656,15 +656,15 @@ remediation ticket or the build fails.
 - **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/engine/decisionBoard.ts`, `src/engine/phaseAgentDecision.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-07-23: ambitionBoost term appears in motiveReceipt provenance. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
-### `ambition-player-visibility` — 🔴 LEAKED
+### `ambition-player-visibility` — 🟢 LIVE
 
 - **Intent:** The player can see what a mortal is striving for.
 - **Producer → Consumer:** Ambitions & Undertakings → Intelligence, Knowledge & Familiarity
 - **UL terms:** *Ambition*, *Interaction Depth*
-- **Production hits:** 1 total — 1 write, 0 read, 0 unclassified
-- **Write sites:** `src/engine/strands.ts`
-- **Read sites:** —
-- **Verdict:** Tier 2: write sites present, declared read sites empty — the consumer is starving. — or the declared symbol does not appear at the declared site: grep 'getAmbitionsStrand' src/components/** before treating this as a leak. NOTE: verifiedLive (2026-07-24) is now STALE — re-verify or retire the contract.
+- **Production hits:** 2 total — 1 write, 1 read, 0 unclassified
+- **Write sites:** `src/engine/agentDetail.ts`
+- **Read sites:** `src/engine/views/subjects/personRows.ts`
+- **Verdict:** Verified 2026-11-08: THR-2192: the person sheet (Inspector person page) renders the ambitions section and the thread column's "What they want most" from visibleJourneyIntents(card, knowledge) in personRows.ts, over card.intents written by getAgentDetail in agentDetail.ts. The gate is THR-721's: AMBITION_PRIMARY_INTERACTIONS = 1 or a readable intention (readIntentionFromCard).
 
 ### `ambition-progress-milestones` — 🟢 LIVE
 
@@ -1295,10 +1295,10 @@ exit
 - **Intent:** A member of a group — a company, and since THR-1297 a network — is not a member of a faction by that name; faction rank, allegiance display and heraldry must keep reading the faction.
 - **Producer → Consumer:** Companies & Group Travel → Factions & Succession
 - **UL terms:** *Company*, *Faction*
-- **Production hits:** 54 total — 2 write, 9 read, 43 unclassified
+- **Production hits:** 53 total — 2 write, 9 read, 42 unclassified
 - **Write sites:** `src/engine/graphQueries.ts`, `src/engine/groupShape.ts`
 - **Read sites:** `src/engine/anointSuccessor.ts`, `src/engine/contextBuilder.ts`, `src/engine/detailPageResolvers.ts`, `src/engine/factionReputation.ts`, `src/engine/notableAgendas.ts` +4 more
-- **Other hits:** `src/components/Game/debug/RelationshipGraph.tsx`, `src/engine/agentDetail.ts`, `src/engine/armyNotifications.ts`, `src/engine/binding/binder.ts`, `src/engine/complicationEffects.ts` +38 more
+- **Other hits:** `src/components/Game/debug/RelationshipGraph.tsx`, `src/engine/agentDetail.ts`, `src/engine/armyNotifications.ts`, `src/engine/binding/binder.ts`, `src/engine/complicationEffects.ts` +37 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 1 completed the sweep THR-74 started: 48 further agent-sourced `member_of` reads that treated any target as "their faction" now route through getFactionMembershipEdges, taking the routed total to 62 of the 69 raw call sites. The 7 that remain raw are deliberate and annotated in place — army-sourced reads (an army really is member_of its faction), the three group-scoped resolvers that exist to find the company, and reputation.ts's target-addressed a→b finder, whose membership leg must keep resolving standing with one's own company. The rule itself moved to engine/groupShape.ts (getGroupKind → groupKind tag first, pre-THR-1297 property-presence as back-compat fallback), retiring the hand-mirrored copy in graphQueries.ts. This is what makes the network kind safe: isFactionMembershipEdge rested on "companies are the only non-faction member_of target", which a network (THR-1288, member_of contact edges) makes false. One live defect fixed in passing — strategicActionCandidates.ts's `faction` target rule returned a company as a faction target. Non-vacuous by src/engine/__tests__/factionMembershipGolden.test.ts (11 tests): a differential over real seeded worlds (42, 99) re-deriving the pre-THR-1297 rule inline and asserting the wrapper agrees agent-by-agent, with a company constructed into each world because a tick-0 world has none — falsified 5-of-11 red with isGroupMembershipTarget stubbed to false (the per-seed differentials stayed green before the constructed company was added, which is the vacuity the pin closes). Full suite 18532 green; 30-tick seed-42 CLI smoke reached tick 30 with 377 agents.
 
 ### `company-position-derives-from-leader` — 🟢 LIVE
@@ -1688,10 +1688,10 @@ exit
 - **Producer → Consumer:** Personality & Emergent Traits → Encounters & Dilemmas
 - **UL terms:** *Struck down*, *Scarred*, *Grudge*
 - **Module:** `src/engine/fights/fightEnding.ts`
-- **Production hits:** 101 total — 1 write, 1 read, 99 unclassified
+- **Production hits:** 100 total — 1 write, 1 read, 98 unclassified
 - **Write sites:** `src/engine/fights/fightEnding.ts`
 - **Read sites:** `src/engine/encounters/branchDecision.ts`
-- **Other hits:** `src/data/action-template-content.ts`, `src/data/agenda-content.ts`, `src/data/agreement-reward-catalog.ts`, `src/data/ambition-templates.ts`, `src/data/ascendant-trap-encounters.ts` +94 more
+- **Other hits:** `src/data/action-template-content.ts`, `src/data/agenda-content.ts`, `src/data/agreement-reward-catalog.ts`, `src/data/ambition-templates.ts`, `src/data/ascendant-trap-encounters.ts` +93 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `echo-lift-reads-dominion` — 🔵 UNVERIFIED-OK
@@ -2679,10 +2679,10 @@ exit
 - **Producer → Consumer:** Strategic Projects & Control → Factions & Succession
 - **UL terms:** *hold*, *Realm*, *Faction*
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 68 total — 2 write, 3 read, 63 unclassified
+- **Production hits:** 67 total — 2 write, 3 read, 62 unclassified
 - **Write sites:** `src/engine/phaseStrategicProjects.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/factionQuestGeneration.ts`, `src/engine/factionReputation.ts`
-- **Other hits:** `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/RelationshipGraph.tsx`, `src/components/Game/DebugPanel.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/data/strategic-action-constants.ts` +58 more
+- **Other hits:** `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/RelationshipGraph.tsx`, `src/components/Game/DebugPanel.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/data/strategic-action-constants.ts` +57 more
 - **Verdict:** Verified 2026-09-22: THR-1448. On a fixture (`holdStanding.test.ts`): a stance on a town inside a Realm’s projection mints `member_of` with `reputation = HOLD_STANDING_REPUTATION_SEED`, `rank` stays 0 and derives to *subject*; a second pass writes and announces nothing; an existing member reads `membershipMinted: false` and keeps their reputation; a wilds stance opens nothing; a gone stance traces `position_closed` and leaves the edge. On a **generated** world (`holdStandingReach.test.ts`, heavy lane, seed 42 small): a real mortal claims a real town on a Realm’s ground through `claimControl`, one `runTick` traces `position_opened` naming the projection’s Realm with the membership minted at the seed, and collapsing the stance closes the standing with the membership present.
 
 ### `held-town-supplies-keeper-content-past-rank-access` — 🟢 LIVE
@@ -3144,10 +3144,10 @@ exit
 - **Producer → Consumer:** Mortal Economy & Prosperity → Ambitions & Undertakings
 - **UL terms:** *Means*
 - **Module:** `src/engine/mortalMeans.ts`
-- **Production hits:** 142 total — 2 write, 2 read, 138 unclassified
+- **Production hits:** 141 total — 2 write, 2 read, 137 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/mortalMeans.ts`
 - **Read sites:** `src/engine/decisionBoard.ts`, `src/engine/phaseAgentDecision.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/content/ruins/archetypes.ts` +133 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/content/ruins/archetypes.ts` +132 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mortal-raised-building-from-town-chooser` — 🟢 LIVE
@@ -3569,10 +3569,10 @@ exit
 - **Intent:** A held town at RISING_THRESHOLD 90 throws off its holder (THR-1957 S2). The holder's members who live there split off through the shared splinter writes (factionSplinter.ts, the new resident_of member selector); with none, the highest-ranked resident founds a free town through foundFaction. Either way the new faction takes the town's controls (via rising, takenFrom) and hostile_to is written both ways (reason rising), which war aims' enemy rule reads. No resident: no rising.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Settlement*, *Unrest*, *Faction*
-- **Production hits:** 276 total — 2 write, 2 read, 272 unclassified
+- **Production hits:** 275 total — 2 write, 2 read, 271 unclassified
 - **Write sites:** `src/engine/factionSplinter.ts`, `src/engine/unrestPressure/rising.ts`
 - **Read sites:** `src/engine/crown.ts`, `src/engine/warAims/enemy.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +267 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +266 more
 - **Verdict:** Verified 2026-10-20: THR-1957. unrestPressureS2.test.ts: resident members split off, take the town and are hostile to the old holder (isEnemyFaction true); with no member resident a resident founds "The Free Town of Ferris", which takes the town; no resident leaves the holder in place; the phase writes the A Town Rises chronicle line.
 
 ### `rite-applies-outcomes` — 🔵 UNVERIFIED-OK
@@ -4046,10 +4046,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Factions & Succession
 - **UL terms:** *Faction*, *Spotlight tier*
 - **Module:** `src/engine/factionOutcome.ts`
-- **Production hits:** 54 total — 2 write, 2 read, 50 unclassified
+- **Production hits:** 53 total — 2 write, 2 read, 49 unclassified
 - **Write sites:** `src/engine/factionOutcome.ts`, `src/engine/orchestrator.ts`
 - **Read sites:** `src/engine/factionQuestGeneration.ts`, `src/engine/guildJoinFunnel.ts`
-- **Other hits:** `src/components/Game/debug/RelationshipGraph.tsx`, `src/engine/agentDetail.ts`, `src/engine/anointSuccessor.ts`, `src/engine/armyNotifications.ts`, `src/engine/binding/binder.ts` +45 more
+- **Other hits:** `src/components/Game/debug/RelationshipGraph.tsx`, `src/engine/agentDetail.ts`, `src/engine/anointSuccessor.ts`, `src/engine/armyNotifications.ts`, `src/engine/binding/binder.ts` +44 more
 - **Verdict:** Verified 2026-09-28: THR-1640. `readers/guild-join.ts 42,99 200` with `PROBE=0` (the probe writes engine state, so the probed world is not the unprobed one): on `origin/main` 7 joins fired on seed 99, 3 landed in a success band, 0 memberships; with the live hook, joins resolved `success`/`success_at_cost`/`critical_success` write `member_of` every time (seed 42: 13 of 13 landed joins, seed 99: 17 of 17), and spotlight mortals belong to 7 · 5 non-Realm guilds at t200 (was 1 · 1). `readers/reach.ts 42,99 200`: first-gate `no_deciding_member` 83 · 84 → 35 · 37; drawable fired 161 → 159 (floor 121). Spotlight count at t200 19 · 20, unchanged. Unit: `guildJoinsSpotlight.test.ts` (13).
 
 ### `starve-faithful-drains-faith` — 🟢 LIVE
@@ -4240,10 +4240,10 @@ exit
 - **Intent:** A held town On the edge turns to a better lord (THR-1957 S2). Once a day the unrest phase weighs every faction that holds a settlement within DEFECTION_RADIUS_HEXES 8 (protection from the crown's offer term over this town, standing, fed, solvent); when the best beats the holder by DEFECTION_MARGIN 0.4 the holder's controls edges are retargeted to it with via defection and takenFrom, the old holder's relates_to toward it drops past the enemy line (DEFECTION_GRUDGE_SENTIMENT −0.35, defectionTick) and it adopts a revenge ambition whose grievanceSourceId / targetNodeId name the lord and the town. The crown's holding_lost reads takenFrom; war aims' isEnemyFaction reads the grudge.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Settlement*, *Unrest*, *Faction*, *Ambition*
-- **Production hits:** 267 total — 2 write, 2 read, 263 unclassified
+- **Production hits:** 266 total — 2 write, 2 read, 262 unclassified
 - **Write sites:** `src/engine/factionAmbitions.ts`, `src/engine/unrestPressure/defection.ts`
 - **Read sites:** `src/engine/crown.ts`, `src/engine/warAims/enemy.ts`
-- **Other hits:** `src/components/CMS/types.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +258 more
+- **Other hits:** `src/components/CMS/types.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +257 more
 - **Verdict:** Verified 2026-10-20: THR-1957. src/engine/__tests__/unrestPressureS2.test.ts: a fed, solvent neighbour with a hall in the town beats a broke holder and the town defects on the next daily pass — controls moves (via defection, takenFrom), the grudge reads as enemies under isEnemyFaction, and the holder pursues revenge naming the town; a holder that feeds and pays keeps it; the cooldown holds.
 
 ### `trace-ring-to-incident-bundle` — 🟢 LIVE
@@ -4344,10 +4344,10 @@ exit
 - **Intent:** Finishing a long work raises the mortal’s capability in the Reach that work leaned on — which the raw-score walk, the tier words and the calling all read, so a mortal who finishes enough of one kind of work can have the world rename what it calls them.
 - **Producer → Consumer:** Strategic Projects & Control → Encounters & Dilemmas
 - **Module:** `src/engine/undertakingCapabilityGrowth.ts`
-- **Production hits:** 65 total — 2 write, 2 read, 61 unclassified
+- **Production hits:** 64 total — 2 write, 2 read, 60 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/undertakingCapabilityGrowth.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/domainCapability.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/icons/CoatOfArms.tsx`, `src/data/agent-behavior-constants.ts`, `src/data/domain-words.ts` +56 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/icons/CoatOfArms.tsx`, `src/data/agent-behavior-constants.ts`, `src/data/domain-words.ts` +55 more
 - **Verdict:** Verified 2026-09-08: THR-1440. `growCapabilityOnCompletion` is the one writer of `domainCapabilities` in the undertaking lifecycle, called from the project completion terminal in `advanceStrategicProjects` and nowhere else — the failure and abandonment terminals build their rows through `buildFailureHistory` and pay nothing, and the instant terminal deliberately pays nothing either (an instant cell has no checkpoints, so it cannot fail and was measured as a no-risk farm: with it paying, the starvation contract’s zeroed hero never idled at all even at 60 ticks, because `observe × area` targets its own hex and one free watch lifts Eye off zero and widens awareness). The read side is `computeRawScore`, which starts from the node’s `domainCapabilities[domain]` before any trait/artifact walk, so a grown Reach moves the tier and the calling on the same tick — the write is placed before the calling recompute for exactly that reason. Non-vacuous by falsification and by a control arm: neutering the writer reddens 4 of 11 assertions in `undertakingCapabilityGrowth.test.ts`, and re-running the live measurement with it disabled drops carriers-risen from 12 · 10 to **0 · 0** on seeds 42 · 99, which is also the proof that nothing else writes the field during a run. Live population (small world, 150 ticks, one seed per process): 22 · 28 rider-paying completions against 66 · 61 total, 0 · 0 on non-completed terminals, 7 · 4 carriers rising on their leading Reach. Tier crossings are honestly small — 31 vs 29 and 41 vs 41 against the control arm, so the rider’s own contribution is +2 and 0; the constants are the named lever.
 
 ### `undertaking-creation-effects` — 🔵 UNVERIFIED-OK
@@ -4584,10 +4584,10 @@ exit
 - **Intent:** Every named hero starts with a kin, a friend and a rival among their neighbours (`seedLivingWorld.seedTies`, both directions, stamped `origin: worldgen`), and the systems that read ties by basis see them: ambition selection scores `bondModifiers` through one alias table (`src/data/bond-basis.ts` — `lineage`, `heir` and `exile_kin` read as `kin`, `enemy` as `rivalry`), a dead hero’s grievance passes to the strongest tie (kin at 0.8), grief routes to bonds, and the binder casts tied mortals in each other’s scenes.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 91 total — 1 write, 3 read, 87 unclassified
+- **Production hits:** 90 total — 1 write, 3 read, 86 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/engine/ambitionTick.ts`, `src/engine/grievance/grievanceLifecycle.ts`, `src/engine/grievance/undertakingOutcomeNode.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/KnowledgeComparisonTab.tsx`, `src/components/Game/debug/RelationshipGraph.tsx` +82 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/KnowledgeComparisonTab.tsx`, `src/components/Game/debug/RelationshipGraph.tsx` +81 more
 - **Verdict:** Verified 2026-09-28: THR-1630. `Docs/audits/2026-09-25-living-world-data/readers/ties.ts` on medium, seed 42 · 99: person-to-person `relates_to` at t0 21 · 37 → 104 · 128, every seeded tie mutual and stamped (was 0 mutual, 0 between co-residents); kin 14 · 17 (was 0). Over 200 ticks, ambition re-evaluations scoring a seeded bond 3 · 3 (the new `bondsMatched` field on the assignment trace). `seededTies-generatedWorld.test.ts` (heavy) pins the kin → `protect_the_home` bond modifier and the kin heir on a generated world.
 
 ### `yield-is-a-verb` — 🟢 LIVE

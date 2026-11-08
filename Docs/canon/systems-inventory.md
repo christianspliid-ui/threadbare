@@ -444,7 +444,6 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `sphere` (3) | `sphereAffinity.ts`, `spherePoints.ts`, `sphereScaling.ts` | `THR-1749` |
 | `spotlight` (1) | `spotlightPull.ts` | `THR-1329`, `THR-1348` |
 | `step` (2) | `stepCast.ts`, `stepResolutionCore.ts` | `THR-1292`, `THR-1670` |
-| `strands` (1) | `strands.ts` | — |
 | `strategic` (7) | `strategicActionCandidates.ts`, `strategicActionLifecycle.ts`, `strategicActionScoring.ts`, `strategicGraphOps.ts`, `strategicKindReachability.ts`, `strategicPresentation.ts`, `strategicTelemetry.ts` | `THR-1309`, `THR-1329` |
 | `subject` (1) | `subjectVerbAgreement.ts` | `THR-1857` |
 | `sublocation` (2) | `sublocation.ts`, `sublocationShape.ts` | `THR-1177`, `THR-1183`, `THR-1193` |
@@ -488,4 +487,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 115 tick phases · 241 engine domains · 814 modules._
+_Counts: 28 registered subsystems (2 dormant) · 115 tick phases · 240 engine domains · 813 modules._
