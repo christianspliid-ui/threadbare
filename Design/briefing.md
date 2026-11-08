@@ -1,9 +1,9 @@
 # Briefing
-**Generated:** 2026-11-08 09:58 local (08:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-08 10:57 local (09:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Pick what the design lane plans next. The builders are about to run out of agreed work.** The only ticket left, [away leans](https://linear.app/threadbare/issue/THR-2189), opens for building at 09:00 UTC, in a few minutes. After that, every agreed feature and bug has shipped or is waiting on you. Reply with a system, or with one of the warm-playtest problems: [rival gods you can't answer](https://linear.app/threadbare/issue/THR-2172), [no "while you were away"](https://linear.app/threadbare/issue/THR-2173), or ["Fated" failing with no reason](https://linear.app/threadbare/issue/THR-2171). If you don't reply, the lanes wait for the next playtest round to fill the list again. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-08.md), still open on Discord ([run b](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-08b.md))*
+**Pick what the design lane plans next. The builders have run out of agreed work.** The last ticket, [away leans](https://linear.app/threadbare/issue/THR-2189), is being built now. Nothing else is on the shelf: every agreed feature and bug has shipped or is waiting on you. Reply with a system, or with one of the warm-playtest problems: [rival gods you can't answer](https://linear.app/threadbare/issue/THR-2172), [no "while you were away"](https://linear.app/threadbare/issue/THR-2173), or ["Fated" failing with no reason](https://linear.app/threadbare/issue/THR-2171). If you don't reply, the lanes wait for the next playtest round to fill the list again. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-08.md), still open on Discord ([run b](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-08b.md))*
 
 ## Also waiting (9)
 
@@ -22,9 +22,8 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 ## Decided for you
 
 - ["A Work Finished" says every undertaking left something standing](https://linear.app/threadbare/issue/THR-2075/a-work-finished-says-every-undertaking-left-something-standing-a-relic) ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-08-thr-2075-a-finished-work-says-what-was-done.md)) — **when a mortal finishes a work that made nothing, the card now says what they actually did.** Taking up a relic reads "Kael takes up The Hollow Bell, left by a god of the last age…" instead of "It stands in the world now". Works that build something keep today's line; works that improve a mortal's own thing ("raise") get their own line. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-07h.md)* Live ([PR #2791](https://github.com/christianspliid-ui/threadbare/pull/2791)).
-- [Away leans almost always "work"](https://linear.app/threadbare/issue/THR-2189/away-leans-almost-always-work-kael-will-hold-to-it-anyway-is-followed) ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-07-thr-2189-an-away-lean-waits-for-the-reach.md)) — **when you lean a mortal away from the road they favour, your hand now waits until they actually reach for that road again.** The line "Kael sets it aside, as you leaned" then appears only when your hand did it. "Lean away" no longer shows on a mortal's own work, where it almost never mattered. Nobody builds on this before 09:00 UTC on 8 November. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-07g.md)*
 
-Say "veto finished work line" or "veto away lean waits" to reverse either of these.
+Say "veto finished work line" to reverse it.
 
 ## This week's screens
 
@@ -32,14 +31,14 @@ Say "veto finished work line" or "veto away lean waits" to reverse either of the
 
 ## Queue
 
-**Starved: one ticket ready, and it opens for building at 09:00 UTC.** [Away leans](https://linear.app/threadbare/issue/THR-2189) is finishing its veto window. No pull requests are open. The last six pickup runs (07:11–08:52 UTC) stood down because nothing was claimable, which is correct with an empty shelf, so no stall ticket was filed. The latest merge was a code cleanup with nothing on screen ([THR-2192](https://linear.app/threadbare/issue/THR-2192), [PR #2794](https://github.com/christianspliid-ui/threadbare/pull/2794)).
+**Starved: nothing ready to build.** The builder claimed [away leans](https://linear.app/threadbare/issue/THR-2189) at 09:11 UTC and is still working on it (branch `proto/thr-2189-away-lean-waits`). No pull requests are open.
 
 Items for agents, not you:
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (19 days; In Dev since 15 Oct; last touched 1 Nov). Its work sits on the pushed branch `pr/1947`. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (19 days; In Dev since 15 Oct). Earlier briefs said its work sat on the branch `pr/1947`, but this run found no such branch on GitHub or in the local copy, so where its work is now is unknown. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- The live site serves the latest main (e39f348f). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 09:40 local (779 worktrees, 8 waiting for a decision).
-- **Engine speed reading is high:** tick cost 188 ms/tick steady, 31% above the 7-day median (144, 157 rows since d3516032); top phase agent_decision, 638 agents. Name the merges between d3516032 and e39f348f: `git log --oneline --merges d3516032..e39f348f`. The same commit measured 146 ms/tick an hour ago, so this is likely machine load rather than a code change; the next hour's reading will tell. Executor's job, not yours.
+- The live site serves the latest main (e39f348f). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 10:40 local (778 worktrees, 8 waiting for a decision).
+- **Engine speed reading is high:** tick cost 206 ms/tick steady, 43% above the 7-day median (144, 156 rows since d3516032); top phase agent_decision, 638 agents. Name the merges between d3516032 and e39f348f: `git log --oneline --merges d3516032..e39f348f`. The same commit measured 146 ms/tick two hours ago and the builder was running at the same time, so this is likely machine load rather than a code change. Executor's job, not yours.
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local). Overnight quiet is normal, so this is not an ask.
-- **The home-folder copy of the repo is 249 commits behind main** (last synced 4 Nov). An edited `.claude/settings.local.json` and untracked files under `Docs/evidence/` and `Docs/ops/` still block the mirror's sync. This brief has flagged it 50 hours in a row. An attended agent session should set those files aside and fast-forward. Nothing is lost, because the lanes work from fresh copies of main.
+- **The home-folder copy of the repo is 249 commits behind main** (last synced 4 Nov). An edited `.claude/settings.local.json` and untracked files under `Docs/evidence/` and `Docs/ops/` still block the mirror's sync. This brief has flagged it 51 hours in a row. An attended agent session should set those files aside and fast-forward. Nothing is lost, because the lanes work from fresh copies of main.
