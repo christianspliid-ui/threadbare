@@ -35,6 +35,7 @@ const seeds = (arg('--seeds') ?? '42,7').split(',').map(Number);
 const ticks = Number(arg('--ticks') ?? 600);
 const map = (arg('--map') ?? 'medium') as MapSizePreset;
 const MORTALS = Number(arg('--mortals') ?? 6);
+const NO_AWAY = argv.includes('--no-away');
 
 /** Kill-criterion thresholds (plan § Kill criteria). */
 const LIKELY_FOLLOWED_MIN = 0.6;
@@ -93,6 +94,9 @@ for (const seed of seeds) {
         const r = ps.rotation++ % 3;
         const idx = r === 0 ? 1 : r === 1 ? 0 : snap.options.length - 1;
         const direction: LeanDirection = r === 1 ? 'away' : 'toward';
+        // THR-2189 control arm: `--no-away` places nothing on the away slot, so the toward
+        // rows are measured without the timing of held away leans (which now wait).
+        if (NO_AWAY && direction === 'away') continue;
         const o = snap.options[idx];
         const road = { family: o.family, templateId: o.templateId, targetId: o.targetId };
         const forecast = forecastLean(snap, { ...road, direction });

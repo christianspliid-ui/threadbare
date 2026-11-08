@@ -117,6 +117,23 @@ describe('the row words the reading (plan § UI pillar)', () => {
     expect(s.tiles[0].offers?.[0].label).toBe(CROSSROADS_CONTROLS.toward);
   });
 
+  it('THR-2189: no "Lean away" when the first road is a work; toward stays on every road', () => {
+    const workFirst: CrossroadsSnapshot = { tick: 9, options: [TORN.options[2], TORN.options[0], TORN.options[1]] };
+    const s = buildCrossroadsSection(makeState({ snapshot: workFirst }), KAEL)!;
+    expect(s.tiles.map(t => (t.offers ?? []).map(o => o.direction))).toEqual([['toward'], ['toward'], ['toward']]);
+  });
+
+  it('THR-2189: the away offer says, before paying, that the hand waits for the reach', () => {
+    const s = buildCrossroadsSection(makeState(), KAEL)!;
+    const awayOffer = s.tiles[0].offers?.find(o => o.direction === 'away');
+    expect(awayOffer?.forecast).toBe('If Kael reaches for it again, your hand will likely turn them from it.');
+  });
+
+  it('THR-2189: a held away lean says it waits until the mortal reaches for that road again', () => {
+    const s = buildCrossroadsSection(makeState({ lean: { ...HELD, templateId: 'duel', direction: 'away', rankWhenPlaced: 0 } }), KAEL)!;
+    expect(s.act?.held?.line).toMatch(/^Your hand rests on Kael, away from .+. It waits until Kael reaches for that road again.$/);
+  });
+
   it('every offer says before paying what the spend then charges (Laws 17, 18)', () => {
     const s = buildCrossroadsSection(makeState(), KAEL)!;
     for (const tile of s.tiles) {
