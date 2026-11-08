@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-08 04:00 local (03:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-08 04:57 local (03:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -40,7 +40,7 @@ Items for agents, not you:
 
 ## Health
 
-- The live site serves the latest main (e39f348f). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting. All 10 scheduled tasks are on time. The worktree reaper ran at 03:40 local.
-- Engine speed is normal: 130 ms/tick, 10% below the 7-day median.
+- The live site serves the latest main (e39f348f). Checks on main and the 3 scheduled background jobs pass. No pull requests are waiting. All 10 scheduled tasks are on time. The worktree reaper ran at 04:40 local.
+- Engine speed is normal: 127 ms/tick, 12% below the 7-day median.
 - The lanes were quiet overnight 3–4 Nov (20:25–08:19 local). Overnight quiet is normal, so this is not an ask.
-- **The home-folder copy of the repo is 249 commits behind main** (last synced 4 Nov). An edited `.claude/settings.local.json` and untracked files under `Docs/evidence/` and `Docs/ops/` still block the mirror's sync. This brief has flagged it 44 hours in a row. An attended agent session should set those files aside and fast-forward. Nothing is lost, because the lanes work from fresh copies of main.
+- **The home-folder copy of the repo is 249 commits behind main** (last synced 4 Nov). An edited `.claude/settings.local.json` and untracked files under `Docs/evidence/` and `Docs/ops/` still block the mirror's sync. This brief has flagged it 45 hours in a row. An attended agent session should set those files aside and fast-forward. Nothing is lost, because the lanes work from fresh copies of main.
