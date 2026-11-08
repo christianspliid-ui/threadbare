@@ -139,7 +139,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'half a mile of dressed stone and older mortar, walked twice a shift by whoever {cast:officer} ' +
           'trusts with the dull work. At first bell the mist has not lifted. The city below sounds like ' +
           'itself, which means there are no particular alarms, which means nothing has happened yet. ' +
-          '{name} begins at the granary end and set{s} a pace that will not look like hurrying to anyone ' +
+          '{name} begins at the granary end and sets a pace that will not look like hurrying to anyone ' +
           'watching from below. ' +
           '{?has_faction}The guard runs these sections because the wall is the promise the city makes ' +
           'to itself. {name} has heard the speech. {They} walk{s}.{/has_faction}' +
@@ -1245,7 +1245,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         narrativeTemplate:
           'The assault is smaller than the intelligence suggested, which is either good news ' +
           'or a decoy for something worse happening at another entrance. {name} hold{s} the gate ' +
-          'and process{es} this question simultaneously with the business of actually holding, ' +
+          'and processes this question simultaneously with the business of actually holding, ' +
           'which is the division of attention that command requires and never fully accommodates. ' +
           '{?has_ally}{ally:strongest} is on the left flank — {name} can feel the steadiness of ' +
           'that presence without looking.{/has_ally}' +

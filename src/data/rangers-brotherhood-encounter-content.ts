@@ -249,7 +249,7 @@ export const RANGERS_BROTHERHOOD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         narrativeTemplate:
           'The den is a collapsed root-shelf under a cedar stand — old, weathered, used every season. ' +
           'The beast is large. Larger than the print suggested, which the print always is until ' +
-          'you are standing here. {name} read{s} the entry angle and take{s} the draw line. ' +
+          'you are standing here. {name} read{s} the entry angle and takes the draw line. ' +
           '{?has_faction}The Brotherhood trains for this: patience before the draw, commitment ' +
           'after it. {name} wait{s} for the beast to clear the shadow.{/has_faction}' +
           '{?no_faction}One shot, one chance. The beast has been living by the same arithmetic.{/no_faction}',
@@ -526,7 +526,7 @@ export const RANGERS_BROTHERHOOD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           'men or twelve — campfire discipline separates the professionals from the amateurs. ' +
           '{name} goes up before first light to count and read the sign. ' +
           '{?has_faction}The Brotherhood\'s protocol for threat assessment: two hours of observation ' +
-          'before any approach. {name} set{s} up in a draw line the wind favors and wait{s}.{/has_faction}' +
+          'before any approach. {name} set{s} up in a draw line the wind favors and waits.{/has_faction}' +
           '{?no_faction}No protocol, just patience. What the dawn shows is what {name} will work with.{/no_faction}',
         successAfterimage:
           'Nine men. Two sentries with a three-minute rotation gap. Rested, but not organized — ' +
@@ -1771,7 +1771,7 @@ export const RANGERS_BROTHERHOOD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         narrativeTemplate:
           'A veteran ranger at {location} takes {name} out to a cleared section of the trail where ' +
           'the ground holds sign well. Two sets of prints: one human, one animal, both old. The ' +
-          'veteran points at the human print without speaking. {name} crouch{es} and read{s} it. ' +
+          'veteran points at the human print without speaking. {name} crouch{es} and reads it. ' +
           '{?has_faction}The Brotherhood teaches reading as conversation: trainer points, trainee ' +
           'names what they see, trainer confirms or corrects. No grades. Just the print and what ' +
           'it says and whether {name} heard it correctly.{/has_faction}' +

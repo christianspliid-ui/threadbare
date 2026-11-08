@@ -1768,7 +1768,7 @@ export const MERCHANT_CONSORTIUM_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
           'strong opinions about who should sit near whom; {name} either trust{s} it or quietly ' +
           'repositions before the first course.{/has_faction}' +
           '{?no_faction}Without the chart, {name} read{s} the room during the pre-feast mingling ' +
-          'and take{s} a seat where the conversations will be better than average.{/no_faction}',
+          'and takes a seat where the conversations will be better than average.{/no_faction}',
         successAfterimage:
           'By the third toast, {name} has made two introductions the consortium will remember and ' +
           'received one that will surface next quarter as an opportunity.',
@@ -1870,7 +1870,7 @@ export const MCT_JOIN_TEMPLATE: UnifiedActionTemplate = {
         'The consortium\'s entrance examination at {location} is conducted on a plain table with ' +
         'two senior factors watching. The format is simple: a commercial problem, stated in five ' +
         'sentences. {name} has two hours and a sheet of paper. The factors do not prompt. ' +
-        '{?has_faction}{name} has read the consortium\'s public pedagogy and know{s} that the ' +
+        '{?has_faction}{name} has read the consortium\'s public pedagogy and knows that the ' +
         'correct answer is not the most clever — it is the most defensible.{/has_faction}' +
         '{?no_faction}Without a sense of what the consortium values, {name} write{s} what ' +
         '{they} would actually do, which is either honest enough to pass or naive enough to fail.{/no_faction}',
