@@ -14,6 +14,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   bindNameSubjectVerbs,
+  NAME_SUBJECT_ADVERBS,
   NAME_SUBJECT_TOKENS,
   PRONOUN_SUBJECT_HARDCODED_S,
 } from '../subjectVerbAgreement';
@@ -33,6 +34,37 @@ const COORDINATE_NAME = /\(\s*-?\d+\s*,\s*-?\d+\s*\)/;
  */
 const NOUN_SUBJECT_AGREEMENT =
   /\b(?:[Tt]he|[Aa]n?) [A-Za-z'-]+(?:\\?'s [A-Za-z-]+)? [a-z]+\{(?:s|es)\}|\{(?:cast|ally):[^}]+\} [a-z]+\{(?:s|es)\}/g;
+
+/**
+ * THR-1958: `<name token> [adverb] <verb>s … (, | and | or | then) [adverb] <verb>{s|es}` in one
+ * clause — no sentence or clause stop, no string end, no `{they}` between. Run after
+ * `bindNameSubjectVerbs`, so the first verb has already become literal.
+ */
+function nameSubjectSecondVerbRe(): RegExp {
+  const tokens = NAME_SUBJECT_TOKENS.map(t => t.replace('.', '\\.')).join('|');
+  const adverb = `(?:(?:${NAME_SUBJECT_ADVERBS.join('|')})\\s+)?`;
+  return new RegExp(
+    `\\{(?:${tokens})\\}\\s+${adverb}[A-Za-z][A-Za-z'-]*s\\b` +
+      `(?:(?!\\{[Tt]hey\\})[^.!?;"\`\\n])*?(?:,|\\band|\\bor|\\bthen)\\s+${adverb}[a-z]+\\{(e?s)\\}`,
+  );
+}
+
+/**
+ * Every name-subject second verb still carrying `{s}` / `{es}`. Source string concatenation
+ * (`'… ' +\n  'and take{s} …'`) is joined first, and each hit is bound before the next scan so
+ * a chain ("build{s}, test{s}, adjust{s}") reports every link.
+ */
+function nameSubjectSecondVerbs(source: string): string[] {
+  const re = nameSubjectSecondVerbRe();
+  let text = bindNameSubjectVerbs(source.replace(/(['"`])\s*\+\s*\1/g, ''));
+  const hits: string[] = [];
+  for (let m = re.exec(text); m; m = re.exec(text)) {
+    hits.push(m[0]);
+    const end = m.index + m[0].length;
+    text = text.slice(0, end - m[1].length - 2) + m[1] + text.slice(end);
+  }
+  return hits;
+}
 
 function dataFiles(): Array<{ file: string; text: string }> {
   return readdirSync(DATA_DIR)
@@ -115,6 +147,24 @@ describe('name-subject verb agreement (THR-1857)', () => {
     const line = '{name} watch{es} the gate; {they} go{es} in.';
     expect(enrichProse(line, ctx('') as never)).toBe('Kael watches the gate; they go in.');
     expect(enrichProse(line, ctx('s') as never)).toBe('Kael watches the gate; she goes in.');
+  });
+
+  it('content lint: no {s} on the second verb of a name-subject clause (THR-1958)', () => {
+    // "{name} hold{s} the gate and process{es} this" — the binder takes only the verb right
+    // after the name, so the second one resolves by pronoun and reads "Kael holds the gate
+    // and process this" for a they/them actor. The subject is the name: write the verb out.
+    const offenders: string[] = [];
+    for (const { file, text } of dataFiles()) {
+      for (const hit of nameSubjectSecondVerbs(text)) offenders.push(`${file}: ${hit}`);
+    }
+    expect(offenders).toEqual([]);
+    expect(nameSubjectSecondVerbs('{name} hold{s} the gate and process{es} this')).toHaveLength(1);
+    expect(nameSubjectSecondVerbs("'{name} either join{s} today ' +\n        'or return{s} later'")).toHaveLength(1);
+    // A chain is caught link by link, not only its first link.
+    expect(nameSubjectSecondVerbs('{name} build{s} it first, test{s} it, adjust{s} one')).toHaveLength(2);
+    expect(nameSubjectSecondVerbs('{name} nod{s}, and {they} smile{s}')).toEqual([]);
+    expect(nameSubjectSecondVerbs('{name} nod{s}. {They} stop{s} and wait{s}')).toEqual([]);
+    expect(nameSubjectSecondVerbs('{name} holds the gate and processes this')).toEqual([]);
   });
 
   it('the lint itself catches the shapes it guards', () => {

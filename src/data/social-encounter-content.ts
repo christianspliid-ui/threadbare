@@ -1579,7 +1579,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'The last exchange is the one that decides it. In a duel, most of the fight ' +
           'has already happened by the time the ending arrives — ' +
           'what remains is the question of whether endurance or skill is the variable that matters. ' +
-          '{name} breathe{s} once and commit{s}.',
+          '{name} breathe{s} once and commits.',
         successAfterimage:
           'The duel is over. The witnesses know who won, and why, ' +
           'and the reasoning will be discussed in {location} for some time. ' +

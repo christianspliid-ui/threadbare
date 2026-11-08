@@ -230,7 +230,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         failureMetadata: { reputationDelta: -0.005 },
         narrativeTemplate:
           'The site has been staked by the commissioner\'s surveyor and found adequate. ' +
-          '{name} run{s} a level line from the primary corner stake to the secondary and watch{s} ' +
+          '{name} run{s} a level line from the primary corner stake to the secondary and watches ' +
           'the bubble. The surveyor was working to a less precise tolerance than the Fellowship requires. ' +
           '{?has_artifact}The transit {name} carries catches what the eye misses: a half-degree ' +
           'fall toward the east over eighteen feet, which is not nothing when the building runs ' +
@@ -855,7 +855,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           'them failed.{/no_artifact}',
         successAfterimage:
           'The arch form is settled: three-centered ellipse, precise formwork required. ' +
-          '{name} note{s} this and continue{s}.',
+          '{name} note{s} this and continues.',
         failureAfterimage:
           'The design has a structural weakness in the east abutment that the east bank\'s soil ' +
           'conditions will eventually find.',
@@ -878,7 +878,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         narrativeTemplate:
           'The crews are competent; the problem is the river. It runs high in the second week ' +
           'of construction, taking out the eastern coffer dam and setting the schedule back five days. ' +
-          '{name} recalculate{s} the completion date and present{s} the revised figure to the ' +
+          '{name} recalculate{s} the completion date and presents the revised figure to the ' +
           'commissioner without framing it as a surprise, because it is not one — anyone who has ' +
           'built over running water should expect this. ' +
           '{?has_artifact}The precision instruments allow real-time adjustment of the formwork ' +
@@ -1058,7 +1058,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
     ],
     narrativeTemplates: {
       initiation:
-        '{name} studies the defenses of {location} and prepare{s} a fortification improvement plan.',
+        '{name} studies the defenses of {location} and prepares a fortification improvement plan.',
       success:
         'The improvements are built. The northern approach is no longer the weak point it was.',
       failure:
@@ -1373,7 +1373,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           'north face in month four, a scaffolding redesign when the upper course geometry did not ' +
           'match the drawings at elevation, and seventeen other things that will not appear in the ' +
           'public account of the project. ' +
-          'The unveiling is civic ceremony. {name} stand{s} to one side and look{s} at the proportions. ' +
+          'The unveiling is civic ceremony. {name} stand{s} to one side and looks at the proportions. ' +
           'The north face light is correct. The harbor sightline is correct.',
         successAfterimage:
           'The monument stands on the hill. The ratio works from the harbor, from the boulevard, ' +
@@ -1540,7 +1540,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         failureMetadata: { reputationDelta: -0.03 },
         narrativeTemplate:
           'The construction goes in phases the engineers can observe and adjust. ' +
-          '{name} build{s} the formwork system first, test{s} it with load, adjust{s} one ' +
+          '{name} build{s} the formwork system first, tests it with load, adjusts one ' +
           'joint sequence after the first section shows a different deflection than calculated. ' +
           'By the third section the method is understood. The fourth section goes in clean. ' +
           'The formwork comes out. {name} walk{s} under the vault and does not look up for a long time.',
@@ -1783,7 +1783,7 @@ export const BUILDERS_FELLOWSHIP_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
           'of a completed bridge, this time, the one that opened the northern market route. ' +
           'Everyone is in a better mood than usual, which is noticeable because the usual mood ' +
           'is not bad but is not particularly festive either. ' +
-          '{name} find{s} a place at the long table and eat{s}. ' +
+          '{name} find{s} a place at the long table and eats. ' +
           'The Fellowship trades work stories the way other people trade gossip — ' +
           'what held up a foundation pour, what the commissioners never understand about curing time, ' +
           'what the younger apprentices are doing wrong that everyone did wrong once.',
@@ -2024,7 +2024,7 @@ export const BF_JOIN_TEMPLATE: UnifiedActionTemplate = {
     fallback: {
       overview:
         'The application test is complete. {name} either join{s} the Fellowship today ' +
-        'or return{s} when the work is cleaner.',
+        'or returns when the work is cleaner.',
       changes: [
         {
           id: 'join_outcome',
