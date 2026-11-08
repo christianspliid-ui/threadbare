@@ -38,6 +38,7 @@ import {
   CROSSROADS_LEAN_COST_PER_RANK,
   CROSSROADS_LEAN_AWAY_COST,
   CROSSROADS_HOLD_MAX_TICKS,
+  CROSSROADS_AWAY_WAITS_FOR_REACH,
 } from '../data/premonition-constants';
 import { BOARD_SCORE_FLOOR } from '../data/strategic-action-constants';
 
@@ -228,6 +229,9 @@ export function settledness(snapshot: CrossroadsSnapshot | null | undefined, flo
  * - toward: the target leads by ≥ `CROSSROADS_LIKELY_MARGIN` → `likely`; leads by less → `may`; behind → `not_enough`.
  * - away on the leader: the new leader leads by the margin → `likely`; by less → `may`; the leader holds → `not_enough`.
  * - away on a non-leader: `likely` — the leader still leads (the row only offers away on the leader).
+ * - THR-2189, `awayWaits` on (default `CROSSROADS_AWAY_WAITS_FOR_REACH`): away on the leader → `likely`.
+ *   The lean now waits for the decision where the mortal reaches for that road again, and the
+ *   snapshot's lead carries no signal about that decision; the word is its measured rate (74%).
  *
  * The board's floor binds as it does at the decision (review-gate round 2): a toward
  * target whose leaned score stays below `floor` cannot win — the board idles — so it
@@ -237,11 +241,13 @@ export function forecastLean(
   snapshot: CrossroadsSnapshot,
   lean: Pick<CrossroadsLean, 'family' | 'templateId' | 'targetId' | 'direction'>,
   floor: number = BOARD_SCORE_FLOOR,
+  awayWaits: boolean = CROSSROADS_AWAY_WAITS_FOR_REACH,
 ): LeanForecast {
   const options = snapshot.options;
   const targetIdx = options.findIndex(o => sameRoad(o, lean));
   if (targetIdx < 0) return 'not_enough';
   if (lean.direction === 'away' && targetIdx !== 0) return 'likely';
+  if (lean.direction === 'away' && awayWaits) return 'likely';
   const ranked = options
     .map((o, i) => ({ i, s: o.score * crossroadsLeanMultiplier(o, lean) }))
     .sort((a, b) => (b.s - a.s) || (a.i - b.i));

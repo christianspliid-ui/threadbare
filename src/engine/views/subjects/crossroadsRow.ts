@@ -6,7 +6,8 @@
  * lean (`crossroadsLean`) and words them as one `cards` section with an act strip:
  * "Next, Kael weighs", the settledness line, up to three roads, and on each road the
  * arm-then-fire offers — "Lean toward" on every road, "Lean away" on the first only
- * (Law 25: away on a non-leader cannot matter). Each offer carries the forecast word,
+ * (Law 25: away on a non-leader cannot matter), and only when that first road is a
+ * chance, not a work (THR-2189). Each offer carries the forecast word,
  * the price and the confirm sentence before paying (Law 17), computed with the same
  * functions `placeCrossroadsLean` uses, so the strip and the spend never disagree (Law 18).
  *
@@ -162,7 +163,8 @@ export function buildCrossroadsSection(
     const line = roadLine(state, agentId, option, runtime);
     const offers = lean ? [] : [
       offerFor(state, agentId, name, snapshot, rank, 'toward'),
-      ...(rank === 0 && snapshot.options.length > 1 ? [offerFor(state, agentId, name, snapshot, rank, 'away')] : []),
+      // THR-2189: no "Lean away" on a work (Law 25) — a work runs on its own.
+      ...(rank === 0 && snapshot.options.length > 1 && option.family === 'encounter' ? [offerFor(state, agentId, name, snapshot, rank, 'away')] : []),
     ];
     return {
       title: roadName,

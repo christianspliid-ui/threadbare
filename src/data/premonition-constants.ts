@@ -166,6 +166,16 @@ export const CROSSROADS_HOLD_MAX_TICKS = 72;
  * `lapsed_unavailable` at the first decision without the road. */
 export const CROSSROADS_LEAN_WAITS_FOR_ROAD = true;
 
+/** THR-2189: a held lean *away* whose road is on the board but is not the mortal's
+ * unleaned first choice waits (traced `crossroads_lean_waiting`) until the decision
+ * where the mortal reaches for that road again, so a `followed` ending is always the
+ * lean's doing. With it on, `forecastLean` reads away-on-the-leader as `'likely'` (the
+ * measured rate of the decision that does resolve it), and still ends at
+ * `CROSSROADS_HOLD_MAX_TICKS`. One-flag revert: `false` restores the THR-1926 away
+ * resolution at the next decision and the snapshot's away forecast arithmetic.
+ * @see Docs/plans/2026-11-07-thr-2189-an-away-lean-waits-for-the-reach.md */
+export const CROSSROADS_AWAY_WAITS_FOR_REACH = true;
+
 // ═══════════════════════════════════════════════════════════════════
 // QUEUE & ELIGIBILITY
 // ═══════════════════════════════════════════════════════════════════

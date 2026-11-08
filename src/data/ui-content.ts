@@ -225,7 +225,7 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   },
   'ui.crossroads.forecast': {
     label: 'Forecast',
-    desc: 'Read from how they weigh things now. The world may change before they choose, and your hand waits until that road is in front of them again.',
+    desc: 'Read from how they weigh things now. The world may change before they choose. A lean toward waits until that road is in front of them again; a lean away waits until they reach for it again.',
   },
   'ui.crossroads.torn_badge': {
     label: 'Torn',

@@ -41,6 +41,8 @@ export type LeanRefusal =
   | 'stale_option'
   | 'held'
   | 'away_not_leader'
+  /** THR-2189: away is not offered on a work — a work runs; the mortal does not reach for it. */
+  | 'away_on_a_work'
   | 'unaffordable';
 
 export interface PlaceLeanResult {
@@ -70,7 +72,7 @@ function capitalize(s: string): string {
  * Place a lean on one road of the mortal's current reading. Refuses — writing and
  * spending nothing (Law 19) — when the Crossroads is off, the mortal is unthreaded or
  * unreadable, there is no reading, the road is not in the current reading, a lean is
- * already held, `away` names a non-leader, or the pool cannot cover the price.
+ * already held, `away` names a non-leader or a work (THR-2189), or the pool cannot cover the price.
  */
 export function placeCrossroadsLean(
   state: GameState,
@@ -96,6 +98,7 @@ export function placeCrossroadsLean(
   if (rank < 0) return refuse('stale_option');
   if (readCrossroadsLean(node.properties.crossroadsLean)) return refuse('held');
   if (direction === 'away' && rank !== 0) return refuse('away_not_leader');
+  if (direction === 'away' && snapshot.options[rank].family === 'strategic_action') return refuse('away_on_a_work');
 
   const option = snapshot.options[rank];
   const sphere = REACH_TO_SPHERE[option.reach];

@@ -34,7 +34,7 @@ import {
   type LeanOutcome,
 } from './crossroads';
 import { crossroadsRoadName } from './crossroadsNames';
-import { CROSSROADS_HOLD_MAX_TICKS } from '../data/premonition-constants';
+import { CROSSROADS_AWAY_WAITS_FOR_REACH, CROSSROADS_HOLD_MAX_TICKS } from '../data/premonition-constants';
 import {
   CROSSROADS_ANSWER,
   CROSSROADS_ANSWER_DEFAULT,
@@ -81,6 +81,42 @@ export function prepareCrossroadsLean(
   }
   const onBoard = strategicCandidates.some(c => c.templateId === held.templateId && (c.targetNodeId ?? null) === held.targetId);
   return onBoard ? { ...none, effective: held } : none;
+}
+
+/**
+ * THR-2189 — does a held away lean wait for the reach at this decision?
+ *
+ * True only when `CROSSROADS_AWAY_WAITS_FOR_REACH` is on, the lean is an unexpired,
+ * well-formed *away* lean whose road is on the board (`effective`), no override took
+ * the decision, and the board's **unleaned** winner (`boardWinnerWithoutLean`) is some
+ * other road — or no road (idle). The lean has nothing to push against yet: the mortal
+ * would set that road aside with or without the god's hand. It resolves at the decision
+ * where the unleaned first choice *is* its road. Pure; cannot throw — identity drift
+ * (an unleaned winner that resolves to no identity) reads as "no wait" (resolve as today).
+ *
+ * @see Docs/plans/2026-11-07-thr-2189-an-away-lean-waits-for-the-reach.md § Engine pillar
+ */
+export function awayLeanWaitsForReach(
+  prepared: PreparedLean | null,
+  board: { entries: readonly BoardEntry[] } | null,
+  encounterCandidates: readonly ScoredCandidate[],
+  strategicCandidates: readonly ScoredStrategicCandidate[],
+  floor: number,
+  overridden: boolean,
+  enabled: boolean = CROSSROADS_AWAY_WAITS_FOR_REACH,
+): boolean {
+  try {
+    if (!enabled || !prepared || overridden || !board) return false;
+    if (prepared.malformed || prepared.expired || !prepared.held || !prepared.effective) return false;
+    if (prepared.effective.direction !== 'away') return false;
+    const unleaned = boardWinnerWithoutLean(board.entries, floor);
+    if (!unleaned) return true; // the mortal would rest: they are not reaching for the road
+    const unleanedId = boardEntryIdentity(unleaned, encounterCandidates, strategicCandidates);
+    if (!unleanedId) return false; // identity drift → no wait
+    return !sameRoad(unleanedId, prepared.effective);
+  } catch {
+    return false;
+  }
 }
 
 export interface ResolvedLean {
@@ -149,7 +185,8 @@ export function resolveCrossroadsLean(
   if (outcome === 'followed') line = OUTCOME_TOAST.followed[lean.direction];
   else if (outcome === 'resisted') {
     line = lean.direction === 'toward' && !winner ? OUTCOME_TOAST.resisted_idle : OUTCOME_TOAST.resisted[lean.direction];
-  } else line = OUTCOME_TOAST[outcome];
+  } else if (outcome === 'lapsed_expired') line = OUTCOME_TOAST.lapsed_expired[lean.direction];
+  else line = OUTCOME_TOAST[outcome];
   const chosen = winner ? crossroadsRoadName(winner) : '';
   let message = fillCrossroadsLine(line, { name, road, chosen });
   if (outcome === 'followed' || outcome === 'resisted') {
