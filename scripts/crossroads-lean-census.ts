@@ -12,7 +12,11 @@
  *
  * Deterministic: same seeds, same ticks, same tables.
  *
- * Usage: npm run census:crossroads-leans -- [--seeds 42,7] [--ticks 600] [--map medium] [--mortals 6]
+ * Usage: npm run census:crossroads-leans -- [--seeds 42,7] [--ticks 600] [--map medium] [--mortals 6] [--no-away]
+ *
+ * THR-2189: away leans now wait for the reach and are judged by `census:crossroads-away-leans`;
+ * the combined kill lines here still count them. `--no-away` measures toward leans alone
+ * (the away slot places nothing), which `CROSSROADS_AWAY_WAITS_FOR_REACH` cannot change.
  *
  * @see Docs/plans/2026-11-07-thr-2188-a-lean-waits-for-its-road.md § The measurement
  */
