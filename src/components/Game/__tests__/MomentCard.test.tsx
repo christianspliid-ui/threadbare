@@ -9,7 +9,8 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { WorldGraph } from '../../../engine/graph';
 import type { UndertakingMomentClass, UndertakingMomentRecord } from '../../../types/strategicAction';
 import { MomentCard } from '../MomentCard';
-import type { MomentCardModel } from '../momentCardModel';
+import { buildMomentCardModel, type MomentCardModel } from '../momentCardModel';
+import type { GameState } from '../../../types/gameState';
 import { fallbackStageView } from '../../../engine/views/stage/stageView';
 import { resolveEntityVisual } from '../../../engine/views/entityVisualResolver';
 
@@ -154,5 +155,35 @@ describe('MomentCard', () => {
       />,
     );
     expect(screen.queryByTestId('moment-card-actions')).toBeNull();
+  });
+});
+
+describe('THR-2075 — the finished-work card says what was done', () => {
+  const STANDS = 'It stands in the world now';
+  const ECHO = 'Kael takes up The Hollow Bell, left by a god of the last age, and carries it out of the Barrow.';
+  function finishedCard(templateId: string, label: string) {
+    const graph = buildGraph();
+    const state = {
+      graph, tick: 10, ascendantId: 'ascendant', essencePool: {},
+      strategicState: { projects: [], controls: [], history: [] },
+    } as unknown as GameState;
+    const rec: UndertakingMomentRecord = {
+      id: 'undertaking_completion_proj_1_10', projectId: 'proj_1', actorId: 'actor_1', templateId,
+      momentClass: 'completion', presentation: 'interrupt', tick: 10, label,
+      undertakingName: 'The Hollow Bell', acknowledged: false,
+    };
+    return render(<MomentCard open model={buildMomentCardModel(state, rec)} graph={graph} onAcknowledge={() => {}} />);
+  }
+
+  it('claim × Item shows the echo line, not that something stands', () => {
+    finishedCard('cell.control_claim.item', ECHO);
+    const line = screen.getByTestId('moment-card-consequence').textContent ?? '';
+    expect(line).toBe(ECHO);
+    expect(line).not.toContain(STANDS);
+  });
+
+  it('a create cell card is unchanged', () => {
+    finishedCard('cell.create.place', 'Kael raises a storehouse at the ford.');
+    expect(screen.getByTestId('moment-card-consequence').textContent).toContain(STANDS);
   });
 });
