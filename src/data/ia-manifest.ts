@@ -461,19 +461,6 @@ export const IA_SURFACES: IASurface[] = [
     "notes": "Player's woven threads (relationships, stakes). Click opens the thread's page in the Inspector.\n"
   },
   {
-    "surface": "game.strand-view",
-    "view": "game",
-    "mount": "drillin",
-    "reads": [
-      {
-        "state_path": "graph",
-        "reader": "StrandView",
-        "visible_when": "always"
-      }
-    ],
-    "notes": "Strand visualization — subset of thread view focused on specific entity pairs.\n"
-  },
-  {
     "surface": "game.chapter-ledger",
     "view": "game",
     "mount": "drillin",
