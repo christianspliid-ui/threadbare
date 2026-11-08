@@ -1455,6 +1455,9 @@ export const CONTRACTS: readonly Contract[] = [
     mechanism: { kind: 'function', symbols: ['getAmbitionsStrand'] },
     writeSites: ['src/engine/strands.ts'],
     readSites: ['src/components/**'],
+    // THR-1956 deleted StrandView, the last reader of getAmbitionsStrand; THR-2192
+    // retires src/engine/strands.ts and repoints this row at the Inspector's live reader.
+    deferralTicket: 'THR-2192',
     verifiedLive: {
       date: '2026-07-24',
       evidence:
