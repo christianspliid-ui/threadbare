@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-08 04:00 local (03:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-08 05:58 local (04:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -50,7 +50,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
-- **2026-11-08: a mortal's they/them second verb keeps its "s"** ([THR-1958](https://linear.app/threadbare/issue/THR-1958)). Built and set to merge on green via [#2793](https://github.com/christianspliid-ui/threadbare/pull/2793).
+- **2026-11-08: a mortal's they/them second verb keeps its "s"** ([THR-1958](https://linear.app/threadbare/issue/THR-1958)). Merged via [#2793](https://github.com/christianspliid-ui/threadbare/pull/2793).
 - **2026-11-08: "A Work Finished" now says what a mortal actually did, and it is live** ([THR-2075](https://linear.app/threadbare/issue/THR-2075)). Merged via [#2791](https://github.com/christianspliid-ui/threadbare/pull/2791).
 - **2026-11-08: the mortal panel nothing could open, which showed raw reach codes, is gone** ([THR-1956](https://linear.app/threadbare/issue/THR-1956)). Merged via [#2792](https://github.com/christianspliid-ui/threadbare/pull/2792).
 
