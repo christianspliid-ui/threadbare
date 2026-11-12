@@ -155,6 +155,11 @@ export interface ToastItem {
    * own line). Two or more = a grouped toast: it shows the headline and opens to this list.
    */
   groupMembers?: ToastGroupMember[];
+  /**
+   * THR-2194 — set while the player holds the toast open (its list is showing): the
+   * expiry it had before the hold. Folding the list restores a live expiry from it.
+   */
+  heldFrom?: number;
 }
 
 export interface AlertItem {

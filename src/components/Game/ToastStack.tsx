@@ -51,6 +51,8 @@ interface ToastStackProps {
   onDismiss: (id: string) => void;
   /** THR-2194 — a grouped toast's list was opened: keep it until dismissed. */
   onHold?: (id: string) => void;
+  /** THR-2194 — a held grouped toast's list was folded: let it lapse again. */
+  onRelease?: (id: string) => void;
   /** Called when a toast with actorId is clicked — navigates to that agent */
   onSelectAgent?: (agentId: string) => void;
   /** Called when a toast with a navigation target is clicked */
@@ -97,7 +99,7 @@ function isGroupedToast(toast: ToastItem): boolean {
 
 export const toastStackTestHelpers = { formatCount, filterActive, isGroupedToast };
 
-export function ToastStack({ toasts, onDismiss, onHold, onSelectAgent, onNavigate, receiptOpenLocked = false, toastVisuals, stageOpen = false }: ToastStackProps) {
+export function ToastStack({ toasts, onDismiss, onHold, onRelease, onSelectAgent, onNavigate, receiptOpenLocked = false, toastVisuals, stageOpen = false }: ToastStackProps) {
   // Track which toasts are in exit animation (right-click dismissed)
   const [dismissingIds, setDismissingIds] = useState<Set<string>>(new Set());
   // THR-1877 — the receipt toast whose click was refused, and a counter that restarts its shake.
@@ -183,7 +185,7 @@ export function ToastStack({ toasts, onDismiss, onHold, onSelectAgent, onNavigat
               onClick={() => {
                 // THR-2194 — a grouped toast opens (or folds) its list; it navigates nowhere.
                 if (grouped) {
-                  if (!groupOpen) onHold?.(toast.id);
+                  if (groupOpen) onRelease?.(toast.id); else onHold?.(toast.id);
                   toggleGroup(toast.id);
                   return;
                 }
