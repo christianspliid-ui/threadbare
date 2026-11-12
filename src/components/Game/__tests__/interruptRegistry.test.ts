@@ -297,7 +297,7 @@ describe('interruptRegistry — arrivals wait their turn (THR-1853)', () => {
 
   it('every arrival is a surface the world pushes, never one the player opens', () => {
     const arrivals = INTERRUPT_SURFACES.filter(s => s.arrival).map(s => s.id);
-    expect(arrivals).toEqual(['PremonitionModal', 'JourneyVignetteModal', 'StoryBeatModal', 'MomentCard', 'EventPopup']);
+    expect(arrivals).toEqual(['ThreadingRite', 'PremonitionModal', 'JourneyVignetteModal', 'StoryBeatModal', 'EmergenceDilemmaModal', 'DivineReceiptModal', 'MomentCard', 'EventPopup']);
   });
 });
 

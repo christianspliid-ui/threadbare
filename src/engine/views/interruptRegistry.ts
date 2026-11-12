@@ -45,7 +45,8 @@ import {
 } from '../../data/homed-surfaces';
 
 /**
- * THR-1853 — wall-clock milliseconds after the player's last pointer or key input
+ * THR-1853 — wall-clock milliseconds after the player's last input (a click, a key,
+ * and since THR-2197 a wheel or a pointer move — `components/Game/inputQuietWindow.ts`)
  * before a world-pushed interrupt (an arrival) may mount. Long enough that a modal
  * never appears under a click already in flight; short enough that a waiting
  * premonition shows the moment the player pauses.
@@ -109,6 +110,12 @@ export interface InterruptSnapshot {
   playerSurfaceOpen?: boolean;
   /** THR-1853 — the last input was under `INTERRUPT_QUIET_AFTER_INPUT_MS` ago. Holds arrivals. Optional. */
   recentInput?: boolean;
+  /**
+   * THR-2197 — arrival kinds the player opened by their own hand this time (a receipt
+   * clicked through from its toast). They mount at once, like any non-arrival surface.
+   * Optional: absent = none.
+   */
+  playerOpenedKinds?: readonly HomedSurfaceKind[];
   /**
    * THR-1853 — the ids `resolveInterrupts` returned as open on the previous render.
    * An arrival already on screen keeps its slot whatever the holds say. Optional:
@@ -316,6 +323,9 @@ export function resolveInterrupts(
   surfaces: readonly InterruptSurface[] = HOMED_INTERRUPT_SURFACES,
 ): InterruptResolution {
   const shown = new Set(snapshot.alreadyShown ?? []);
+  const playerOpened = new Set<string>(snapshot.playerOpenedKinds ?? []);
+  // THR-2197 — an arrival kind the player opened by their own hand is not an arrival this time.
+  const isArrival = (s: InterruptSurface) => s.arrival === true && !(s.kind && playerOpened.has(s.kind));
   const skipped = new Set<string>(snapshot.skippedKinds ?? []);
   const homeOf = (s: InterruptSurface): HomeId => s.home ?? 'dialog';
   const isForeground = (s: InterruptSurface) => homeOf(s) !== 'dialog';
@@ -334,16 +344,16 @@ export function resolveInterrupts(
   // else that wants the screen is held, and opens when the player begins.
   const recapExclusive = snapshot.warmRecapOpen === true && snapshot.warmStartRunning !== true;
   // R4 — dialogs that do not wait their turn.
-  const dialogs = wish.filter(s => !isForeground(s) && !s.waitsTurn && !s.arrival
+  const dialogs = wish.filter(s => !isForeground(s) && !s.waitsTurn && !isArrival(s)
     && (!recapExclusive || s.kind === 'warm-start'));
   const momentWish = wish.some(s => s.id === MOMENT_ID);
   const popupWish = wish.find(s => s.id === POPUP_ID);
 
   // What an arrival steps back for (THR-1853): any surface the world stops for that is
   // not itself an arrival — except the rite and the receipt, which wait for others.
-  const nonArrivalBlocking = wish.filter(s => !s.arrival && s.id !== 'ThreadingRite' && s.waitsTurn !== 'foreground');
+  const nonArrivalBlocking = wish.filter(s => !isArrival(s) && s.id !== 'ThreadingRite' && s.waitsTurn !== 'foreground');
   // A new arrival waits for every other surface that wants the screen, the receipt included.
-  const nonArrivalWanting = wish.filter(s => !s.arrival);
+  const nonArrivalWanting = wish.filter(s => !isArrival(s));
   // A popup already on screen keeps its slot against a new arrival (THR-1853).
   const popupShown = !!popupWish && !momentWish && shown.has(POPUP_ID);
 
@@ -352,10 +362,10 @@ export function resolveInterrupts(
 
   const foregroundWish = wish.filter(isForeground);
   const mayHoldAsIncumbent = (s: InterruptSurface) =>
-    !s.arrival || nonArrivalBlocking.length === 0;
+    !isArrival(s) || nonArrivalBlocking.length === 0;
   const mayTakeFreeSlot = (s: InterruptSurface) => {
     if (s.waitsTurn === 'dialogs' && dialogs.length > 0) return false;
-    if (!s.arrival) return true;
+    if (!isArrival(s)) return true;
     return nonArrivalWanting.length === 0 && !popupShown && quiet;
   };
 
@@ -364,10 +374,19 @@ export function resolveInterrupts(
   // R3 — the slot is free: list order.
   const fg = recapExclusive ? null : incumbent ?? foregroundWish.find(mayTakeFreeSlot) ?? null;
 
-  // R5 — the receipt waits for the foreground.
-  const afterForeground = fg || recapExclusive ? [] : wish.filter(s => s.waitsTurn === 'foreground');
+  // THR-2197 — a dialog arrival not yet on screen waits for a quiet moment and for
+  // every non-arrival surface that wants the screen; once shown it keeps its place.
+  const dialogArrivalMayShow = (s: InterruptSurface) =>
+    isShown(s) || (quiet && !popupShown && nonArrivalWanting.length === 0);
+  // R5 — the receipt waits for the foreground (and, as an arrival, for a quiet moment).
+  const afterForeground = fg || recapExclusive ? [] : wish.filter(s => s.waitsTurn === 'foreground'
+    && (!isArrival(s) || dialogArrivalMayShow(s)));
+  // THR-2197 — a dialog arrival that waits no turn of its own (none today; the path
+  // keeps a future one from never rendering).
+  const dialogArrivals = recapExclusive ? [] : wish.filter(s => !isForeground(s) && !s.waitsTurn
+    && isArrival(s) && dialogArrivalMayShow(s));
 
-  const renderingSet = new Set<InterruptSurface>([...dialogs, ...afterForeground, ...(fg ? [fg] : [])]);
+  const renderingSet = new Set<InterruptSurface>([...dialogs, ...dialogArrivals, ...afterForeground, ...(fg ? [fg] : [])]);
   // R5 — the popup waits for everything, the waiting moment card included (today's rule).
   if (popupWish && !recapExclusive && renderingSet.size === 0 && !momentWish && (shown.has(POPUP_ID) || quiet)) {
     renderingSet.add(popupWish);
@@ -383,7 +402,7 @@ export function resolveInterrupts(
   const heldArrivals: HeldArrival[] = [];
   const somethingElseRenders = rendering.length > 0;
   for (const s of wish) {
-    if (!s.arrival || renderingSet.has(s)) continue;
+    if (!isArrival(s) || renderingSet.has(s)) continue;
     if (s.id === MOMENT_ID) {
       heldArrivals.push({ id: s.id, heldBy: blockingOpen ? ['interrupt', ...quietHolds] : [...quietHolds] });
     } else if (s.id === POPUP_ID) {

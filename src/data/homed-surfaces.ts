@@ -65,7 +65,7 @@ export interface HomedSurfaceEntry {
 export const HOMED_SURFACES = [
   { kind: 'warm-start', surfaceId: 'WarmStartOverlay', home: 'dialog', stopsTime: true, holderName: 'the world settling' },
   { kind: 'meet-the-first', surfaceId: 'MeetTheFirstFlow', home: 'ceremony', stopsTime: true, holderName: 'meeting The First', heldLine: 'Meeting your First' },
-  { kind: 'threading-rite', surfaceId: 'ThreadingRite', home: 'ceremony', stopsTime: true, waitsTurn: 'dialogs', holderName: 'the threading rite', heldLine: 'The threading rite with {subject}' },
+  { kind: 'threading-rite', surfaceId: 'ThreadingRite', home: 'ceremony', stopsTime: true, waitsTurn: 'dialogs', arrival: true, holderName: 'the threading rite', heldLine: 'The threading rite with {subject}' },
   { kind: 'encounter', surfaceId: 'EncounterVeil', home: 'stage', stopsTime: true, palette: 'encounter', holderName: 'an encounter', heldLine: '{title}, with {subject}' },
   // THR-2151 — the encounter veil as the live answering card: a step committed on a
   // running clock waits on the Stage for its answer while the world turns underneath,
@@ -76,8 +76,8 @@ export const HOMED_SURFACES = [
   { kind: 'story-beat', surfaceId: 'StoryBeatModal', home: 'stage', stopsTime: true, arrival: true, palette: 'story', holderName: 'a story beat', heldLine: "A turn in {subject}'s story" },
   { kind: 'ascendant-beat', surfaceId: 'AscendantBeatModal', home: 'dialog', stopsTime: true, palette: 'story', holderName: 'a beat of your story' },
   { kind: 'choice-set', surfaceId: 'ChoiceSetModal', home: 'dialog', stopsTime: true, holderName: 'a choice' },
-  { kind: 'emergence-dilemma', surfaceId: 'EmergenceDilemmaModal', home: 'stage', stopsTime: true, palette: 'elder', holderName: 'a new power', heldLine: 'A new power at {subject}' },
-  { kind: 'divine-receipt', surfaceId: 'DivineReceiptModal', home: 'dialog', stopsTime: true, waitsTurn: 'foreground', palette: 'gain', holderName: 'what your act bought', heldLine: 'What your act bought' },
+  { kind: 'emergence-dilemma', surfaceId: 'EmergenceDilemmaModal', home: 'stage', stopsTime: true, arrival: true, palette: 'elder', holderName: 'a new power', heldLine: 'A new power at {subject}' },
+  { kind: 'divine-receipt', surfaceId: 'DivineReceiptModal', home: 'dialog', stopsTime: true, waitsTurn: 'foreground', arrival: true, palette: 'gain', holderName: 'what your act bought', heldLine: 'What your act bought' },
   { kind: 'chapter-ledger', surfaceId: 'ChapterLedger', home: 'dialog', stopsTime: true, holderName: 'the Chapter Ledger' },
   { kind: 'divine-court', surfaceId: 'ScryOverlay', home: 'dialog', stopsTime: true, holderName: 'your court' },
   { kind: 'undertaking-moment', surfaceId: 'MomentCard', home: 'stage', stopsTime: true, waitsTurn: 'dialogs', arrival: true, palette: 'gain', holderName: 'a moment', heldLine: "News of {subject}'s work" },
@@ -94,6 +94,25 @@ type HomedEntry = (typeof HOMED_SURFACES)[number];
 
 /** Every homed surface's key. A new entry above extends it. */
 export type HomedSurfaceKind = HomedEntry['kind'];
+
+/**
+ * THR-2197 — every homed kind that is NOT an arrival, and why. A surface the world
+ * pushes on its own carries `arrival: true` and waits for a quiet moment; a surface
+ * the player opens by their own hand, or one with its own hold, is named here. A new
+ * kind without `arrival` must be added here with its reason (`homedSurfaces.test.ts`).
+ */
+export const ARRIVAL_EXEMPT_REASONS: Readonly<Partial<Record<HomedSurfaceKind, string>>> = {
+  'warm-start': 'the player starts it from the menu; it is the screen before play, not a moment inside it',
+  'meet-the-first': "opens once, straight off the player's own resolve of the opening beat (THR-1716); an arrival steps back for any non-arrival surface, and that would unmount its multi-step flow",
+  'encounter': "a chapter the player opens (badge, row, Needs you) mounts at once; a chapter the world opens has its own hold (worldOpenedEncounterHeldBy, THR-2053)",
+  'encounter-answering': 'the live answering card of a chapter already on screen (THR-2151); it stops no time',
+  'ascendant-beat': "entered only by the gift-delivery quiet hold (resolveGiftDelivery, THR-1809) or the player's own press; once entered it must mount at once",
+  'choice-set': "opens from the player's own intervention confirm (a choice_set effect in player mode)",
+  'chapter-ledger': 'the player opens it',
+  'divine-court': 'the player opens it',
+  'age-twilight': 'the end of the age: it holds the run and cannot wait behind anything',
+  'cycle-harvest': 'follows the twilight the player has just closed; it stops no time',
+};
 /** The kinds the Stage plays. */
 export type StageHomedKind = Extract<HomedEntry, { home: 'stage' }>['kind'];
 /** The kinds that open as dialogs. */

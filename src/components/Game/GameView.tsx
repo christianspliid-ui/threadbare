@@ -214,6 +214,7 @@ import {
   PLAYER_SURFACE_INTERRUPT_IDS,
   type GiftDelivery,
 } from './giftDelivery';
+import { installQuietWindowStamp } from './inputQuietWindow';
 import { getUnifiedTemplateById, UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
 import { preparePlayerCast, commitPlayerCast } from '../../engine/playerCastDispatch';
 import { withEssenceSpend, recordEssenceMovement } from '../../engine/essenceMovement';
@@ -576,21 +577,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // THR-1716 U1: the opening beat offered at arrival enters itself — no offer
   // banner frame first. Later beats still start un-entered.
   const [beatEntered, setBeatEntered] = useState(arrivalBeatOffered);
-  // THR-1809: wall-clock time of the player's last pointer or key input. A ready
-  // opening gift waits `GIFT_QUIET_AFTER_INPUT_MS` after it (`giftDelivery.ts`).
-  // Capture phase + passive: it only stamps, never stops or delays the event.
+  // THR-1809: wall-clock time of the player's last input. A ready opening gift waits
+  // `GIFT_QUIET_AFTER_INPUT_MS` after it (`giftDelivery.ts`); arrivals and world-opened
+  // chapters wait `INTERRUPT_QUIET_AFTER_INPUT_MS`. THR-2197: a wheel or a pointer move
+  // counts as well as a click or a key (`inputQuietWindow.ts`).
   // Starts at 0, so with no input yet the hold is surface-only (fail-soft).
   const lastInputAtRef = useRef(0);
-  useEffect(() => {
-    const stamp = () => { lastInputAtRef.current = Date.now(); };
-    const opts: AddEventListenerOptions = { capture: true, passive: true };
-    window.addEventListener('pointerdown', stamp, opts);
-    window.addEventListener('keydown', stamp, opts);
-    return () => {
-      window.removeEventListener('pointerdown', stamp, opts);
-      window.removeEventListener('keydown', stamp, opts);
-    };
-  }, []);
+  useEffect(() => installQuietWindowStamp(window, at => { lastInputAtRef.current = at; }), []);
 
   // THR-1853: the top bar's Rivals and Notables dropdowns, reported up so a queued
   // arrival or a waiting gift never mounts over them.
@@ -3731,6 +3724,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     warmRecapOpen: warmStart.recap !== null,
     playerSurfaceOpen: arrivalSurfaceOpen,
     recentInput: arrivalRecentInput,
+    // THR-2197 — a receipt the player clicked through from its toast mounts at once.
+    playerOpenedKinds: openedReceiptId !== null && activeReceipt?.id === openedReceiptId ? ['divine-receipt'] : undefined,
     alreadyShown: shownInterruptsRef.current,
     cycleHarvestPending: harvestResult !== null,
     twilightPending: twilightBeats !== null,
