@@ -11,7 +11,7 @@
 
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { FactionEncounterMeta } from '../types/faction';
-import type { ActionStep, BranchAwareAftermathConfig, UnifiedActionTemplate } from '../types/unifiedAction';
+import type { ActionStep, AftermathOutcomeOverride, BranchAwareAftermathConfig, UnifiedActionTemplate } from '../types/unifiedAction';
 
 // ─── Local Raw Type ───────────────────────────────────────────────
 
@@ -1347,9 +1347,38 @@ function buildAftermathConfig(templateId: string, templateName: string): BranchA
           closeAfterSelection: true,
         },
       ],
+      // THR-2196: a lost register signing is not a joining. Only ag.join carries
+      // the band; the shared contract ending of the other ag templates is unchanged.
+      ...(templateId === 'ag.join' ? {
+        byOutcome: {
+          failure: AG_JOIN_DEFERRED_BAND,
+          critical_failure: AG_JOIN_DEFERRED_BAND,
+          contested_lost: AG_JOIN_DEFERRED_BAND,
+        },
+      } : {}),
     },
   };
 }
+
+/**
+ * THR-2196 — the ending of a lost ag.join. Nothing is written on a deferral,
+ * so there is no tally and no chip (Law 56).
+ */
+const AG_JOIN_DEFERRED_BAND: AftermathOutcomeOverride = {
+  overview:
+    'A veteran objected and the clerk withdrew the charter. {name} leaves without a Guild name.',
+  changes: [],
+  reactionPrompt: 'The Guild said not yet.',
+  reactions: [
+    {
+      id: 'join_deferred',
+      label: 'The charter is withdrawn.',
+      intent: 'Not a member yet. The clerk can be asked again another season.',
+      effects: [],
+      closeAfterSelection: true,
+    },
+  ],
+};
 
 /**
  * THR-2161 — the two elite quests' step-2 hands. These were the last cards on

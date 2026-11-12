@@ -3016,10 +3016,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Mortal Economy & Prosperity
 - **UL terms:** *The First*
 - **Module:** `src/engine/firstTrade.ts`
-- **Production hits:** 36 total — 2 write, 3 read, 31 unclassified
+- **Production hits:** 37 total — 2 write, 3 read, 32 unclassified
 - **Write sites:** `src/engine/gameInit.ts`, `src/engine/meetingEncounter.ts`
 - **Read sites:** `src/engine/encounterFilterPipeline.ts`, `src/engine/mortalMeans.ts`, `src/engine/views/subjects/personRows.ts`
-- **Other hits:** `src/data/binder-constants.ts`, `src/data/candidate-vignettes.ts`, `src/data/item-generator-tables.ts`, `src/data/npc-action-templates.ts`, `src/data/npc-role-words.ts` +26 more
+- **Other hits:** `src/data/binder-constants.ts`, `src/data/candidate-vignettes.ts`, `src/data/item-generator-tables.ts`, `src/data/npc-action-templates.ts`, `src/data/npc-role-words.ts` +27 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `membership-change-writes-rank-and-faction-rank-gate-reads-it` — 🔵 UNVERIFIED-OK
@@ -3398,10 +3398,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 480 total — 1 write, 1 read, 478 unclassified
+- **Production hits:** 481 total — 1 write, 1 read, 479 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +473 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +474 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `recovered-town-keeps-faith` — 🟢 LIVE

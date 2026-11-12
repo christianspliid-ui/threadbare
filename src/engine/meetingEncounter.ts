@@ -25,6 +25,7 @@ import type { AxiologicalProfile, ValuePair } from '../types/agent';
 import type { AscendantLens } from '../types/hunger';
 import { REACH_VALUE_PAIR, VALUE_PAIRS } from '../types/agent';
 import { REACH_DOMAINS } from '../types/traits';
+import type { NpcRole } from '../types/npc';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import { assignCooperationStrategy } from './disposition';
 import type {
@@ -54,6 +55,7 @@ import {
   MEETING_CULTURED_PREFERENCE_RADIUS,
   MEETING_DILEMMA_COUNT_MIN,
   MEETING_DILEMMA_COUNT_MAX,
+  MEETING_DILEMMA_TRADE_GATE,
   DILEMMA_SHIFT_MAGNITUDE,
   PRIMARY_REACH_BASE,
   SECONDARY_REACH_BASE,
@@ -428,10 +430,26 @@ export function selectDilemmas(
   locationSubtype: string,
   seed: number,
   lens?: AscendantLens,
+  tradeRole?: NpcRole,
 ): DilemmaInstance[] {
   return selectDilemmasScored(
-    templates, primaryReach, secondaryReach, sphere, archetypeId, locationSubtype, seed, lens,
+    templates, primaryReach, secondaryReach, sphere, archetypeId, locationSubtype, seed, lens, tradeRole,
   ).dilemmas;
+}
+
+/**
+ * THR-2196 — may this dilemma be dealt to a candidate of this trade? A dilemma
+ * whose backstory casts the mortal in a trade (`castsTrade`) is dealt only to a
+ * candidate holding one of those roles, so the meeting and the bonded sheet
+ * never tell two trades. Trade-neutral dilemmas, candidates with no known trade
+ * and the switch off all pass. Pure: no PRNG, so the draw stream is unchanged.
+ */
+export function dilemmaFitsTrade(template: DilemmaTemplate, tradeRole: NpcRole | undefined): boolean {
+  if (!MEETING_DILEMMA_TRADE_GATE) return true;
+  const casts = template.castsTrade;
+  if (!casts || casts.length === 0) return true;
+  if (!tradeRole) return true;
+  return casts.includes(tradeRole);
 }
 
 /**
@@ -448,6 +466,8 @@ export function selectDilemmasScored(
   locationSubtype: string,
   seed: number,
   lens?: AscendantLens,
+  /** THR-2196 — the candidate's trade role; gates `castsTrade` dilemmas. Absent ⇒ no gate. */
+  tradeRole?: NpcRole,
 ): { dilemmas: DilemmaInstance[]; record: DilemmaSelectionRecord } {
   const rng = createSeededRng(seed, 'dilemma_select');
   const slots: Array<DilemmaSelectionRecord['slots'][number]> = [];
@@ -463,7 +483,8 @@ export function selectDilemmasScored(
   const eligible = (t: DilemmaTemplate) =>
     !usedIds.has(t.id) &&
     (t.archetypeIds == null || t.archetypeIds.length === 0 || t.archetypeIds.includes(archetypeId)) &&
-    (t.locationSubtypes == null || t.locationSubtypes.length === 0 || t.locationSubtypes.includes(locationSubtype));
+    (t.locationSubtypes == null || t.locationSubtypes.length === 0 || t.locationSubtypes.includes(locationSubtype)) &&
+    dilemmaFitsTrade(t, tradeRole);
 
   // 1. One axiological dilemma targeting the primary reach's value pair
   const primaryPair = REACH_VALUE_PAIR[primaryReach];

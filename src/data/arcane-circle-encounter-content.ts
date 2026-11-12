@@ -9,7 +9,7 @@
  * edge of dangerous knowledge.
  */
 
-import type { UnifiedActionTemplate } from '../types/unifiedAction';
+import type { AftermathOutcomeOverride, UnifiedActionTemplate } from '../types/unifiedAction';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { FactionEncounterMeta } from '../types/faction';
 import { withEncounterContract } from './encounter-contract-builder';
@@ -2031,6 +2031,26 @@ export const ARCANE_CIRCLE_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
 // ─── Join & Promotion ───────────────────────────────────────────────────
 
+/**
+ * THR-2196 — the ending of a lost ac.join test. Nothing is written on a
+ * deferral, so there is no tally and no chip (Law 56).
+ */
+const AC_JOIN_DEFERRED_BAND: AftermathOutcomeOverride = {
+  overview:
+    'The workings landed wide. The Circle turns {name} away for now, and the test can be taken again.',
+  changes: [],
+  reactionPrompt: 'The Circle said not yet.',
+  reactions: [
+    {
+      id: 'join_deferred',
+      label: 'Turned away, to practise and return.',
+      intent: 'Not an apprentice yet. The Circle will test {name} again another day.',
+      effects: [],
+      closeAfterSelection: true,
+    },
+  ],
+};
+
 export const AC_JOIN_TEMPLATE: UnifiedActionTemplate = {
   id: 'ac.join',
   stakes: {
@@ -2093,6 +2113,13 @@ export const AC_JOIN_TEMPLATE: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
+      // THR-2196: a lost test is not a joining. These bands replace the
+      // welcome reactions on every losing outcome, with no tally and no chip.
+      byOutcome: {
+        failure: AC_JOIN_DEFERRED_BAND,
+        critical_failure: AC_JOIN_DEFERRED_BAND,
+        contested_lost: AC_JOIN_DEFERRED_BAND,
+      },
       overview:
         '{name} either joins the circle or doesn\'t. The examination room is ' +
         'cleaned and reset for the next candidate, with the same efficiency the circle ' +

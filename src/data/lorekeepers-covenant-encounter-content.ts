@@ -14,7 +14,7 @@
  * ledgers change the stakes of Covenant work).
  */
 
-import type { UnifiedActionTemplate } from '../types/unifiedAction';
+import type { AftermathOutcomeOverride, UnifiedActionTemplate } from '../types/unifiedAction';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { FactionEncounterMeta } from '../types/faction';
 import { withEncounterContract } from './encounter-contract-builder';
@@ -1728,6 +1728,26 @@ export const LOREKEEPERS_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
 // ─── Lifecycle Templates ──────────────────────────────────────────────────
 
+/**
+ * THR-2196 — the ending of a lost lk.join test. Nothing is written on a
+ * deferral, so there is no tally and no chip (Law 56).
+ */
+const LK_JOIN_DEFERRED_BAND: AftermathOutcomeOverride = {
+  overview:
+    '{name} is sent off to fill a hundred practice pages before the Covenant will look again.',
+  changes: [],
+  reactionPrompt: 'The Covenant said not yet.',
+  reactions: [
+    {
+      id: 'join_deferred',
+      label: 'Sent off to fill practice pages.',
+      intent: 'Not a scribe yet. The Covenant wants a steadier hand first.',
+      effects: [],
+      closeAfterSelection: true,
+    },
+  ],
+};
+
 export const LK_JOIN_TEMPLATE: UnifiedActionTemplate = {
   id: 'lk.join',
   stakes: {
@@ -1784,6 +1804,13 @@ export const LK_JOIN_TEMPLATE: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
+      // THR-2196: a lost test is not a joining. These bands replace the
+      // welcome reactions on every losing outcome, with no tally and no chip.
+      byOutcome: {
+        failure: LK_JOIN_DEFERRED_BAND,
+        critical_failure: LK_JOIN_DEFERRED_BAND,
+        contested_lost: LK_JOIN_DEFERRED_BAND,
+      },
       overview:
         '{name} is in the Covenant now — or has been asked to return with a cleaner record. ' +
         'The Covenant\'s welcome is precise: it opens when the margin is clean.',

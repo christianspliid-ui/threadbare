@@ -939,6 +939,8 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
   },
   {
     id: 'AX-GOLD-03',
+    // THR-2196: the setup apprentices the mortal to a merchant.
+    castsTrade: ['merchant', 'trader', 'broker', 'appraiser'],
     category: 'axiological',
     targetValuePair: 'asceticism_extravagance',
     setup: 'A wealthy merchant takes {agent.name} as an apprentice. For months, {agent.name} learns the craft: weights and measures, the reading of markets, the art of the fair price. Then the merchant reveals his true method. He has been adulterating grain with chaff — not enough to notice, just enough to stretch profits. "Everyone does it," he says. "The difference between a rich man and a poor man is the rich man learned to stop feeling guilty about the small lies."',
@@ -2519,6 +2521,8 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
   },
   {
     id: 'AX-HEART-01',
+    // THR-2196: the setup makes the mortal a smith's apprentice.
+    castsTrade: ['smith', 'mason'],
     category: 'axiological',
     targetValuePair: 'loyalty_ambition',
     setup: '{agent.name} has served the settlement\'s smith for two years — a decent smith, kind enough, who teaches slowly and asks little. Then a master artisan passes through {agent.location}, recognizes {agent.name}\'s talent, and offers an apprenticeship in the distant city. It is the chance of a lifetime. The city smith is legendary. {agent.name} will learn in a year what would take a decade here. But the settlement smith took {agent.name} in when no one else would, and leaving will break the old man\'s workshop — there is no one else to tend the forge.',
@@ -4849,6 +4853,8 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
   },
   {
     id: 'AX-STAR-05',
+    // THR-2196: the setup makes the mortal the settlement healer's last student.
+    castsTrade: ['healer', 'alchemist'],
     category: 'axiological',
     targetValuePair: 'sacrifice_survival',
     setup: '{agent.name} is the only person in {agent.location} who knows the herb-lore. The settlement\'s healer died last winter, and {agent.name} — the healer\'s last student — is all that remains. Now a hunting party has returned with two badly wounded members, and the wounds are beyond {agent.name}\'s skill. A better healer exists in the mountain settlement, two days\' hard travel through wolf territory. {agent.name} can go and fetch the healer — but if {agent.name} dies in the mountains, the settlement loses its only medical knowledge. One trip to save two people might cost the village its ability to save anyone.',
@@ -5974,6 +5980,8 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
   },
   {
     id: 'RC-SHADOW-02',
+    // THR-2196: the setup apprentices the mortal to the settlement's scribe.
+    castsTrade: ['scribe', 'clerk', 'librarian', 'scholar'],
     category: 'reach_specific',
     targetReach: 'shadow',
     setup: 'An old scribe in {agent.location} — the one who writes the settlement\'s official documents — takes {agent.name} as an apprentice. The training is meticulous: letterforms, ink mixing, seal pressing, the particular rhythm of each elder\'s signature. Then the scribe reveals the real curriculum. Hidden among the legitimate documents are forgeries — deeds altered, boundaries shifted, a generation of quiet land theft executed through penmanship. "Every settlement has someone like me," the scribe says. "I\'m showing you because you need to know it exists. What you do with that is your business."',
@@ -8784,6 +8792,8 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
   },
   {
     id: 'DS-ENERGY-03',
+    // THR-2196: the setup has the mortal working at the settlement's forge.
+    castsTrade: ['smith', 'mason', 'alchemist'],
     category: 'domain_specific',
     targetSphere: 'energy',
     setup: 'Working at the settlement\'s forge, {agent.name} watches the smith plunge a red-hot blade into water and witnesses the transformation: the metal screams, the water boils, and in that moment of violent exchange, the blade becomes harder, stronger, different at the molecular level. The smith does this every day without thinking. But {agent.name} sees it as if for the first time: the energy isn\'t destroyed. It moves. From fire to metal to water to steam to air. Nothing is lost. Everything transforms.',
@@ -10160,6 +10170,8 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
   },
   {
     id: 'GR-FACTION-01',
+    // THR-2196: the setup makes the mortal a successful trader.
+    castsTrade: ['merchant', 'trader', 'broker', 'appraiser'],
     category: 'general',
     setup: '{agent.name}\'s trade success attracts attention. A representative of the regional merchant guild arrives in {agent.location} and offers membership: access to trade routes, credit networks, information sharing, and the guild\'s protection against bandits and bad debtors. The cost: a percentage of all profits, compliance with guild pricing rules, and loyalty to guild interests over settlement interests when the two conflict.',
     godVoice: '',

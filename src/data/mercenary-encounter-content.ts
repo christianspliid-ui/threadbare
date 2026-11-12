@@ -7,7 +7,7 @@
  * keeping it honest, keeping the word. Never: glory.
  */
 
-import type { UnifiedActionTemplate } from '../types/unifiedAction';
+import type { AftermathOutcomeOverride, UnifiedActionTemplate } from '../types/unifiedAction';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { FactionEncounterMeta } from '../types/faction';
 import { withEncounterContract } from './encounter-contract-builder';
@@ -1504,6 +1504,26 @@ export const MERCENARY_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
 // ─── Lifecycle Templates ──────────────────────────────────────────────────
 
+/**
+ * THR-2196 — the ending of a lost mc.join test. Nothing is written on a
+ * deferral, so there is no tally and no chip (Law 56).
+ */
+const MC_JOIN_DEFERRED_BAND: AftermathOutcomeOverride = {
+  overview:
+    '{name} is asked to come back when the contract sits easy. No name goes on it today.',
+  changes: [],
+  reactionPrompt: 'The Company said not yet.',
+  reactions: [
+    {
+      id: 'join_deferred',
+      label: 'Asked to come back later.',
+      intent: 'Not signed. The Company will hear {name} out another day.',
+      effects: [],
+      closeAfterSelection: true,
+    },
+  ],
+};
+
 export const MC_JOIN_TEMPLATE: UnifiedActionTemplate = {
   id: 'mc.join',
   stakes: {
@@ -1555,6 +1575,13 @@ export const MC_JOIN_TEMPLATE: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
+      // THR-2196: a lost test is not a joining. These bands replace the
+      // welcome reactions on every losing outcome, with no tally and no chip.
+      byOutcome: {
+        failure: MC_JOIN_DEFERRED_BAND,
+        critical_failure: MC_JOIN_DEFERRED_BAND,
+        contested_lost: MC_JOIN_DEFERRED_BAND,
+      },
       overview:
         'The recruiter wrote the name down and the standard contract was signed. No ceremony — '
         + 'pay per clause, split on delivery, name on the stone if the clause fails.',

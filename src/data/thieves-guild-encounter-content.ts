@@ -8,7 +8,7 @@
  * for reconnaissance, encounter seeds for consequences that echo forward).
  */
 
-import type { UnifiedActionTemplate } from '../types/unifiedAction';
+import type { AftermathOutcomeOverride, UnifiedActionTemplate } from '../types/unifiedAction';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { FactionEncounterMeta } from '../types/faction';
 import { withEncounterContract } from './encounter-contract-builder';
@@ -1858,6 +1858,26 @@ export const THIEVES_GUILD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
 // ─── Join & Promotion ───────────────────────────────────────────────────
 
+/**
+ * THR-2196 — the ending of a lost tg.join test. Nothing is written on a
+ * deferral, so there is no tally and no chip (Law 56).
+ */
+const TG_JOIN_DEFERRED_BAND: AftermathOutcomeOverride = {
+  overview:
+    '{name} fumbled the lift. The Guild turns {them} away, and nobody says when to come back.',
+  changes: [],
+  reactionPrompt: 'The Guild said no.',
+  reactions: [
+    {
+      id: 'join_deferred',
+      label: 'Fumbled the lift and turned away.',
+      intent: 'No door opens tonight. The Guild remembers who fumbles.',
+      effects: [],
+      closeAfterSelection: true,
+    },
+  ],
+};
+
 export const TG_JOIN_TEMPLATE: UnifiedActionTemplate = {
   id: 'tg.join',
   stakes: {
@@ -1911,6 +1931,13 @@ export const TG_JOIN_TEMPLATE: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
+      // THR-2196: a lost test is not a joining. These bands replace the
+      // welcome reactions on every losing outcome, with no tally and no chip.
+      byOutcome: {
+        failure: TG_JOIN_DEFERRED_BAND,
+        critical_failure: TG_JOIN_DEFERRED_BAND,
+        contested_lost: TG_JOIN_DEFERRED_BAND,
+      },
       overview:
         'The test is over. {name} either belongs to the guild now, or doesn\'t, ' +
         'and the {location} market continues its commerce, indifferent to either outcome.',

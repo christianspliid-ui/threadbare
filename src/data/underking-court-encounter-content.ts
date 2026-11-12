@@ -20,7 +20,7 @@
  *     consolidation step respond to how the prior step was resolved.
  */
 
-import type { UnifiedActionTemplate } from '../types/unifiedAction';
+import type { AftermathOutcomeOverride, UnifiedActionTemplate } from '../types/unifiedAction';
 import type { FactionEncounterMeta } from '../types/faction';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import { withEncounterContract } from './encounter-contract-builder';
@@ -1381,6 +1381,26 @@ export const UNDERKING_COURT_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
 // ─── Join & Promotion ─────────────────────────────────────────────────────
 
+/**
+ * THR-2196 — the ending of a lost uk.join test. Nothing is written on a
+ * deferral, so there is no tally and no chip (Law 56).
+ */
+const UK_JOIN_DEFERRED_BAND: AftermathOutcomeOverride = {
+  overview:
+    '{name} fumbled the test theft. The Court\'s messenger does not come back.',
+  changes: [],
+  reactionPrompt: 'The Court said nothing at all.',
+  reactions: [
+    {
+      id: 'join_deferred',
+      label: 'Fumbled the test. No second call.',
+      intent: 'No compact is sealed. The Court does not call twice.',
+      effects: [],
+      closeAfterSelection: true,
+    },
+  ],
+};
+
 export const UK_JOIN_TEMPLATE: UnifiedActionTemplate = {
   id: 'uk.join',
   stakes: {
@@ -1421,6 +1441,13 @@ export const UK_JOIN_TEMPLATE: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
+      // THR-2196: a lost test is not a joining. These bands replace the
+      // welcome reactions on every losing outcome, with no tally and no chip.
+      byOutcome: {
+        failure: UK_JOIN_DEFERRED_BAND,
+        critical_failure: UK_JOIN_DEFERRED_BAND,
+        contested_lost: UK_JOIN_DEFERRED_BAND,
+      },
       overview: 'The test ends. The Court either extends the compact or does not. Either way, the silence that follows is intentional.',
       changes: [
         {
