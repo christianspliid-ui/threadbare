@@ -96,6 +96,9 @@ function faceKey(face: string): string {
   return face.trim().toLowerCase().replace(/[\s_-]+/g, '');
 }
 
+/** A slot's `shape:` value, stopping at the next `<key>:` column or a `[` gloss. */
+const SHAPE_LINE = /^\s*shape:\s*([^[\n]+?)(?=\s+[A-Za-z_]+:|\s*\[|\s*$)/;
+
 /**
  * Count a brief's rolled slots and its `query_prize` faces.
  *
@@ -105,11 +108,18 @@ function faceKey(face: string): string {
  * skeleton and the one brief on disk write `shape: personality_fork`. A parser
  * that took only one would report a compliant batch as a violation, which is the
  * fastest way to get a gate switched off.
+ *
+ * `draw:packet` also prints a second column on the same line —
+ * `shape: appointment               system: movement` — and a long shape id
+ * eats the padding down to one space (`shape: danger_confrontation_aftermath
+ * system: traits`). The capture therefore stops at the next `<key>:` column, not
+ * at a run of spaces; reading the whole line made every brief in that format
+ * record zero of both floor faces (THR-1938).
  */
 export function briefFloorReport(path: string, content: string): BriefFloorReport {
   const shapes: string[] = [];
   for (const line of content.split('\n')) {
-    const match = /^\s*shape:\s*([^[\n]+)/.exec(line);
+    const match = SHAPE_LINE.exec(line);
     if (!match) continue;
     shapes.push(faceKey(match[1]));
   }
