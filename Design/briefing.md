@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-12 22:58 local (21:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-12 23:58 local (22:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -31,15 +31,17 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 2 ready to build, 1 being built.** Two more fixes went live this hour.
+**Starved but moving: 1 ready to build (held for your veto), 1 being built.** Two more fixes went live this hour, and the next "make the middle a game" ticket is queued for the design lane.
 
-- Live now: [THR-2196](https://linear.app/threadbare/issue/THR-2196) The First's first chapter no longer contradicts itself ([PR #2800](https://github.com/christianspliid-ui/threadbare/pull/2800)) · [THR-2197](https://linear.app/threadbare/issue/THR-2197) popups wait for the player's hand to go quiet ([PR #2801](https://github.com/christianspliid-ui/threadbare/pull/2801)).
-- Being built: [THR-2198 — four small faults from playtest round 7](https://linear.app/threadbare/issue/THR-2198) (builder run live, [PR #2802](https://github.com/christianspliid-ui/threadbare/pull/2802) open, not yet armed).
-- Ready: [THR-2194](https://linear.app/threadbare/issue/THR-2194) stacked "claim comes due" toasts · [THR-2193](https://linear.app/threadbare/issue/THR-2193) thread row wraps (held for veto until 08:19 UTC).
+- Live now: [THR-2198](https://linear.app/threadbare/issue/THR-2198) four small faults from playtest round 7 ([PR #2802](https://github.com/christianspliid-ui/threadbare/pull/2802)) · [THR-2194](https://linear.app/threadbare/issue/THR-2194) several rulers' agendas coming due now fold into one toast ([PR #2803](https://github.com/christianspliid-ui/threadbare/pull/2803)).
+- Being built: [THR-1938](https://linear.app/threadbare/issue/THR-1938) a writing check that wrongly fails every "master everyday" brief (builder run live since 22:51 UTC).
+- Ready: [THR-2193](https://linear.app/threadbare/issue/THR-2193) thread row wraps (held for veto until 08:19 UTC).
+- Next for the design lane: [THR-2201 Make the purse bite](https://linear.app/threadbare/issue/THR-2201/make-the-purse-bite-a-full-hand-should-cost-more-than-the-god-can), the first of the five tickets you approved today. *— from the orchestrator*
 
 Items for agents, not you:
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (23 days; In Dev since 15 Oct). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (23 days; In Dev since 15 Oct). No pushed branch names it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-All green. The live site serves the latest main (0fe83afd). Checks on main and the 3 scheduled background jobs pass. The one open PR (#2802) belongs to the live builder run. All enabled scheduled tasks are on time. Engine speed is normal (149 ms/tick, +8% on the 137 median). The worktree reaper ran at 22:40 local (777 worktrees, 10 waiting for a decision).
+- **Engine measured slower this run:** tick cost 188 ms/tick steady, 35% above the 7-day median (139, 64 rows since 4833b9b3); top phase agent_decision, 638 agents. Name the merges between 4833b9b3 and fe0d09ef: `git log --oneline --merges 4833b9b3..fe0d09ef`. Last hour read 149 ms, and this run measured while a builder session was busy on the same machine, so the next hour's row shows whether it holds. Executor work if it does.
+- Everything else green: the live site serves the latest main (fe0d09ef), checks on main and the 3 scheduled background jobs pass, no PRs are waiting to merge, all 10 enabled scheduled tasks are on time, and the worktree reaper ran at 23:40 local (777 worktrees, 10 waiting for a decision).
