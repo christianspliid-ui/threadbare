@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-12 21:57 local (20:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-12 22:58 local (21:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -50,6 +50,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-12: popups now wait for the player's hand to go quiet instead of opening under it, and it is live** ([THR-2197](https://linear.app/threadbare/issue/THR-2197)). Merged via [#2801](https://github.com/christianspliid-ui/threadbare/pull/2801).
+- **2026-11-12: The First's first chapter no longer contradicts itself, and it is live** ([THR-2196](https://linear.app/threadbare/issue/THR-2196)). Merged via [#2800](https://github.com/christianspliid-ui/threadbare/pull/2800).
 - **2026-11-12: the shelf refilled without a direction call. Cold playtest round 7 and the weekly screen review filed new work, so "what should the design lane plan next?" is retired.** ([round 7](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-7.md))
 - **2026-11-12: the bonding scene opens at its first line and fits one screen, and it is live** ([THR-2195](https://linear.app/threadbare/issue/THR-2195)). Merged via [#2799](https://github.com/christianspliid-ui/threadbare/pull/2799).
 - **2026-11-08: a god's lean on a mortal who is away now waits for them to come back, with one honest "away" line, and it is live** ([THR-2189](https://linear.app/threadbare/issue/THR-2189)). Merged via [#2795](https://github.com/christianspliid-ui/threadbare/pull/2795).
@@ -58,8 +60,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-08: "A Work Finished" now says what a mortal actually did, and it is live** ([THR-2075](https://linear.app/threadbare/issue/THR-2075)). Merged via [#2791](https://github.com/christianspliid-ui/threadbare/pull/2791).
 - **2026-11-08: the mortal panel nothing could open, which showed raw reach codes, is gone** ([THR-1956](https://linear.app/threadbare/issue/THR-1956)). Merged via [#2792](https://github.com/christianspliid-ui/threadbare/pull/2792).
 - **2026-11-07: a loan or favour that runs out its term no longer takes the pair's feelings for each other with it, and it is live** ([THR-2045](https://linear.app/threadbare/issue/THR-2045/an-agreement-that-runs-out-its-term-takes-the-pairs-bond-with-it)). Merged via [#2789](https://github.com/christianspliid-ui/threadbare/pull/2789).
-- **2026-11-07: a mortal's Story list now names the deed in words ("Destroy a power"), never the game's internal code, and it is live** ([THR-2145](https://linear.app/threadbare/issue/THR-2145)). Merged via [#2787](https://github.com/christianspliid-ui/threadbare/pull/2787).
-- **2026-11-07: a god's lean now waits for its road instead of lapsing, and it is live** ([THR-2188](https://linear.app/threadbare/issue/THR-2188)). Merged via [#2784](https://github.com/christianspliid-ui/threadbare/pull/2784).
 
 ---
 

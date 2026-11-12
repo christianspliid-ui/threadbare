@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-12 21:57 local (20:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-12 22:58 local (21:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -29,26 +29,17 @@ Say "veto <title>" to reverse any of these.
 
 [Contact sheet — this week next to last week](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/ux-review/2026-11-12/contact-sheet.jpg) — better: The First's name fits, the essence and Doom readouts speak in words, and returning to the mid-game now opens on a "While you were away" summary, but arrival toasts still pile up and his thread row cuts his story short.
 
-## News from the playtest (no decision needed)
-
-- **Best round so far: nobody said no.** All three new players bonded a mortal for the sixth round running. For the first time the lunch-break player moved from "no" to "maybe" ([report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-7.md)).
-- **Round 6's walls are gone.** Chapters now answer on screen, and the results screen and the mortal's page agree.
-- **The new wall is the god's goal.** Its bar says your mortal's deeds fill it, but they never do, so after five chapters it still shows nothing. All three players were stuck on "am I winning?" ([THR-2199](https://linear.app/threadbare/issue/THR-2199), for design).
-- **The bonding scene, everyone's favourite, opens cut off at the top** and cannot be scrolled up ([THR-2195](https://linear.app/threadbare/issue/THR-2195), ready to build).
-- **6 tickets are filed** in the [round-7 group](https://linear.app/threadbare/project/onboarding-and-first-run-experience-4591bc5f51c7): 4 bugs ready to build and 2 for design. Round 8 runs on its own once they are closed and live. Nothing here needs a decision from you.
-
-*— from [cold playtest round 7](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-7.md)*. Since then the bonding-scene fix ([THR-2195](https://linear.app/threadbare/issue/THR-2195)) has merged and is live ([PR #2799](https://github.com/christianspliid-ui/threadbare/pull/2799)).
-
 ## Queue
 
-**Healthy again: 4 ready to build, 1 being built.** Last hour's ask ("what should the design lane plan next?") is retired: playtest round 7 and the weekly screen review refilled the shelf, as the brief said they would.
+**Healthy: 2 ready to build, 1 being built.** Two more fixes went live this hour.
 
-- Being built: [THR-2196 — The First's first chapter contradicts itself](https://linear.app/threadbare/issue/THR-2196) (claimed 20:09 UTC, branch pushed, a builder run is live).
-- Ready: [THR-2198](https://linear.app/threadbare/issue/THR-2198) four small faults from round 7 · [THR-2197](https://linear.app/threadbare/issue/THR-2197) popups opening under the player's hand · [THR-2193](https://linear.app/threadbare/issue/THR-2193) thread row wraps (held for veto until 08:19 UTC) · [THR-2194](https://linear.app/threadbare/issue/THR-2194) stacked "claim comes due" toasts.
+- Live now: [THR-2196](https://linear.app/threadbare/issue/THR-2196) The First's first chapter no longer contradicts itself ([PR #2800](https://github.com/christianspliid-ui/threadbare/pull/2800)) · [THR-2197](https://linear.app/threadbare/issue/THR-2197) popups wait for the player's hand to go quiet ([PR #2801](https://github.com/christianspliid-ui/threadbare/pull/2801)).
+- Being built: [THR-2198 — four small faults from playtest round 7](https://linear.app/threadbare/issue/THR-2198) (builder run live, [PR #2802](https://github.com/christianspliid-ui/threadbare/pull/2802) open, not yet armed).
+- Ready: [THR-2194](https://linear.app/threadbare/issue/THR-2194) stacked "claim comes due" toasts · [THR-2193](https://linear.app/threadbare/issue/THR-2193) thread row wraps (held for veto until 08:19 UTC).
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (23 days; In Dev since 15 Oct). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-All green. The live site serves the latest main (8fcdca17). Checks on main and the 3 scheduled background jobs pass. No PRs are waiting to merge. All 10 enabled scheduled tasks are on time. Engine speed is back to normal (159 ms/tick, within range of the 136 median). The home-folder copy of the repo has caught up with main. The worktree reaper ran at 21:40 local (775 worktrees, 10 waiting for a decision).
+All green. The live site serves the latest main (0fe83afd). Checks on main and the 3 scheduled background jobs pass. The one open PR (#2802) belongs to the live builder run. All enabled scheduled tasks are on time. Engine speed is normal (149 ms/tick, +8% on the 137 median). The worktree reaper ran at 22:40 local (777 worktrees, 10 waiting for a decision).
