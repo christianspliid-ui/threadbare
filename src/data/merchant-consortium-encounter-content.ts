@@ -14,7 +14,7 @@
  *   • hidden marks — ledger manipulation, monopoly secrets, broken handshakes
  */
 
-import type { UnifiedActionTemplate } from '../types/unifiedAction';
+import type { AftermathOutcomeOverride, UnifiedActionTemplate } from '../types/unifiedAction';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { FactionEncounterMeta } from '../types/faction';
 import { withEncounterContract } from './encounter-contract-builder';
@@ -1838,6 +1838,26 @@ export const MERCHANT_CONSORTIUM_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
 // ─── Join & Promotion ─────────────────────────────────────────────────────
 
+/**
+ * THR-2196 — the ending of a lost mct.join test. Nothing is written on a
+ * deferral, so there is no tally and no chip (Law 56).
+ */
+const MCT_JOIN_DEFERRED_BAND: AftermathOutcomeOverride = {
+  overview:
+    '{name} failed the exam. The Consortium sends {them} off to study and sit it again.',
+  changes: [],
+  reactionPrompt: 'The Consortium said not yet.',
+  reactions: [
+    {
+      id: 'join_deferred',
+      label: 'Sent off to study for the exam.',
+      intent: 'Not in the ledger yet. The exam can be sat again.',
+      effects: [],
+      closeAfterSelection: true,
+    },
+  ],
+};
+
 export const MCT_JOIN_TEMPLATE: UnifiedActionTemplate = {
   id: 'mct.join',
   stakes: {
@@ -1896,6 +1916,13 @@ export const MCT_JOIN_TEMPLATE: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
+      // THR-2196: a lost test is not a joining. These bands replace the
+      // welcome reactions on every losing outcome, with no tally and no chip.
+      byOutcome: {
+        failure: MCT_JOIN_DEFERRED_BAND,
+        critical_failure: MCT_JOIN_DEFERRED_BAND,
+        contested_lost: MCT_JOIN_DEFERRED_BAND,
+      },
       overview:
         'The entrance examination at {location} is complete. {name} either join{s} the consortium ' +
         'today or is given a specific note to work on.',

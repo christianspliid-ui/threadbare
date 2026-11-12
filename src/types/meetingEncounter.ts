@@ -41,6 +41,14 @@ export const MEETING_DILEMMA_COUNT_MIN = 2;
 /** Max dilemmas per meeting encounter */
 export const MEETING_DILEMMA_COUNT_MAX = 3;
 
+/**
+ * THR-2196 — kill switch for the trade gate on meeting dilemmas. `true` deals a
+ * dilemma carrying `castsTrade` only to a candidate whose trade role it lists;
+ * `false` restores the old deal, where a smith's-apprentice backstory could
+ * precede a bond that writes Shrine-keeper.
+ */
+export const MEETING_DILEMMA_TRADE_GATE = true;
+
 /** Axiological shift magnitude per dilemma choice */
 export const DILEMMA_SHIFT_MAGNITUDE = 0.15;
 
@@ -378,6 +386,14 @@ export interface DilemmaTemplate {
   archetypeIds?: string[];
   /** Location subtypes where this dilemma fits (empty = universal) */
   locationSubtypes?: string[];
+  /**
+   * THR-2196 — the trades this dilemma's backstory casts the mortal in (a
+   * smith's apprentice, a scribe's student). When present, the dilemma is dealt
+   * only to a candidate whose trade role is listed, so the meeting never tells
+   * one trade while the bond writes another. Absent or empty ⇒ trade-neutral,
+   * dealt to everyone. A candidate with no known trade is never filtered.
+   */
+  castsTrade?: readonly NpcRole[];
   /** Rich prose setup — the situation the god has arranged (3-5 sentences) */
   setup: string;
   /** How the god perceives this moment (sphere-filtered, 1-2 sentences) */

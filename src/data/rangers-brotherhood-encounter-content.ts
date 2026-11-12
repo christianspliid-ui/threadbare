@@ -15,7 +15,7 @@
  *   • {?has_artifact} — utilitarian gear: bows, maps, tracking horns, weathered rope
  */
 
-import type { UnifiedActionTemplate } from '../types/unifiedAction';
+import type { AftermathOutcomeOverride, UnifiedActionTemplate } from '../types/unifiedAction';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { FactionEncounterMeta } from '../types/faction';
 import { withEncounterContract } from './encounter-contract-builder';
@@ -1944,6 +1944,26 @@ export const RANGERS_BROTHERHOOD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
 // ─── Join & Promotion ─────────────────────────────────────────────────────
 
+/**
+ * THR-2196 — the ending of a lost rb.join test. Nothing is written on a
+ * deferral, so there is no tally and no chip (Law 56).
+ */
+const RB_JOIN_DEFERRED_BAND: AftermathOutcomeOverride = {
+  overview:
+    'The Brotherhood sent {name} away from the trial. The roster stays closed to {them} for now.',
+  changes: [],
+  reactionPrompt: 'The Brotherhood said not yet.',
+  reactions: [
+    {
+      id: 'join_deferred',
+      label: 'Sent away from the trial.',
+      intent: 'Not on the roster yet. The trial can be run again.',
+      effects: [],
+      closeAfterSelection: true,
+    },
+  ],
+};
+
 export const RB_JOIN_TEMPLATE: UnifiedActionTemplate = {
   id: 'rb.join',
   stakes: {
@@ -2006,6 +2026,13 @@ export const RB_JOIN_TEMPLATE: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
+      // THR-2196: a lost test is not a joining. These bands replace the
+      // welcome reactions on every losing outcome, with no tally and no chip.
+      byOutcome: {
+        failure: RB_JOIN_DEFERRED_BAND,
+        critical_failure: RB_JOIN_DEFERRED_BAND,
+        contested_lost: RB_JOIN_DEFERRED_BAND,
+      },
       overview:
         'The Brotherhood trial at {location} is complete. {name} either joins the roster today ' +
         'or has a specific gap to close before the next attempt.',
