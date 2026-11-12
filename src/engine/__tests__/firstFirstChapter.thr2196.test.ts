@@ -51,12 +51,14 @@ describe('THR-2196 item 1 — a lost join test is not a joining', () => {
 
   it('the shared ag ending is unchanged for ag templates other than ag.join', () => {
     const t = getUnifiedTemplateById('ag.join')!;
-    const other = getUnifiedTemplateById('ag.join.1') ?? undefined;
     // ag.join's band is keyed to ag.join alone; the success ending keeps its tally.
     const win = resolveAftermathVariant(t.aftermathConfig!, [], 'success');
     expect(win.reactions?.[0]?.effects.length ?? 0).toBeGreaterThan(0);
-    if (other?.aftermathConfig) {
-      expect(other.aftermathConfig.fallback.byOutcome).toBeUndefined();
+    // Every other ag template shares buildAftermathConfig and must get no band.
+    for (const id of ['ag.quest.escort_caravan', 'ag.elite.dragon_lair', 'ag.social.share_maps']) {
+      const other = getUnifiedTemplateById(id);
+      expect(other?.aftermathConfig, `${id} is registered with an aftermath`).toBeDefined();
+      expect(other!.aftermathConfig!.fallback.byOutcome, id).toBeUndefined();
     }
   });
 });
