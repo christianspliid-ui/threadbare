@@ -156,3 +156,58 @@ describe("the query-prize floor", () => {
     }
   });
 });
+
+describe("the packet's two-column shape line (THR-1938)", () => {
+  /** A slot block in the format `draw:packet` prints: shape and system on one line. */
+  function twoColumnBrief(rows: readonly (readonly [string, string])[]): string {
+    return [
+      "```",
+      ...rows.flatMap(([shape, system], index) => [
+        `slot ${index + 1}:`,
+        // Padded to the packet's column, collapsing to one space for long ids.
+        `  shape: ${shape.padEnd(25)} system: ${system}`,
+      ]),
+      "```",
+    ].join("\n");
+  }
+
+  it("reads only the shape column, so both floor faces count", () => {
+    const report = briefFloorReport(
+      "fixture.md",
+      twoColumnBrief([
+        [APPOINTMENT_FACE, "movement"],
+        ["danger_confrontation_aftermath", "movement"],
+        ["puzzle_investigation_resolution", "traits"],
+        ["opt_in_complication", "items"],
+        ["test_and_consequence", "cards"],
+        [QUERY_PRIZE_FACE, "favors"],
+      ]),
+    );
+
+    expect(report.slots).toBe(BATCH_SLOT_FLOOR_THRESHOLD);
+    expect(report.queryPrizeSlots).toBe(QUERY_PRIZE_BRIEF_FLOOR);
+    expect(report.appointmentSlots).toBe(APPOINTMENT_BRIEF_FLOOR);
+    expect(report.satisfied).toBe(true);
+  });
+
+  it("still names a real shortfall in that format", () => {
+    // Controlled arm: same layout, the two floor faces swapped out.
+    const report = briefFloorReport(
+      "fixture.md",
+      twoColumnBrief(SIX_WITHOUT_QUERY.map(shape => [shape, "movement"] as const)),
+    );
+
+    expect(report.slots).toBe(BATCH_SLOT_FLOOR_THRESHOLD);
+    expect(report.queryPrizeSlots).toBe(0);
+    expect(report.appointmentSlots).toBe(0);
+    expect(report.satisfied).toBe(false);
+  });
+
+  it("keeps the printed-label form with its bracket gloss", () => {
+    const report = briefFloorReport(
+      "fixture.md",
+      "  shape:        Query Prize  [any + queried ending]\n",
+    );
+    expect(report.queryPrizeSlots).toBe(1);
+  });
+});
