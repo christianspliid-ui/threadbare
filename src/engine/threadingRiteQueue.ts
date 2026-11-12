@@ -56,6 +56,7 @@ import {
   type RitePendingMarker,
 } from './threadingRite';
 import { emitTrace } from './traceBuffer';
+import type { NpcRole } from '../types/npc';
 
 /**
  * The rite's seed: world seed × agent × the tick the thread was written
@@ -353,6 +354,9 @@ export function planThreadingRite(graph: WorldGraph, rite: PendingThreadingRite,
         candidate.archetypeId,
         subtype ?? 'village',
         seed + 1,
+        undefined,
+        // THR-2196 — the bound mortal's own trade gates trade-casting dilemmas.
+        graph.getNode(rite.agentId)?.properties.npcRole as NpcRole | undefined,
       );
       converted = dilemmas
         .filter((d): d is DilemmaInstance & { test: FormativeTest } => d.test != null)

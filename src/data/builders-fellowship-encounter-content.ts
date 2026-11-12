@@ -10,10 +10,11 @@
  *
  */
 
-import type { UnifiedActionTemplate } from '../types/unifiedAction';
+import type { AftermathOutcomeOverride, UnifiedActionTemplate } from '../types/unifiedAction';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { FactionEncounterMeta } from '../types/faction';
 import { withEncounterContract } from './encounter-contract-builder';
+import { DEAL_DEFAULT_COUNT } from './nudge-constants';
 
 // ─── Constants ────────────────────────────────────────────────────────────
 
@@ -1963,6 +1964,26 @@ export const BUILDERS_FELLOWSHIP_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
 // ─── Join & Promotion ──────────────────────────────────────────────────────
 
+/**
+ * THR-2196 — the ending of a lost bf.join test. Nothing is written on a
+ * deferral, so there is no tally and no chip (Law 56).
+ */
+const BF_JOIN_DEFERRED_BAND: AftermathOutcomeOverride = {
+  overview:
+    'The joints were not clean enough. The journeymen send {name} off to make cleaner ones and try the test again.',
+  changes: [],
+  reactionPrompt: 'The Fellowship said not yet.',
+  reactions: [
+    {
+      id: 'join_deferred',
+      label: 'Sent back to make cleaner joints.',
+      intent: 'Not a Fellow yet. The journeymen gave {name} one specific note to work on.',
+      effects: [],
+      closeAfterSelection: true,
+    },
+  ],
+};
+
 export const BF_JOIN_TEMPLATE: UnifiedActionTemplate = {
   id: 'bf.join',
   stakes: {
@@ -1986,6 +2007,9 @@ export const BF_JOIN_TEMPLATE: UnifiedActionTemplate = {
       reach: 'stone',
       duration: { min: 1, max: 1 },
       difficulty: BF_JOIN_DIFFICULTY / 100,
+      // THR-2196: the First's first chapter after the bond must wait on the
+      // god's hand. A pure Repertoire fill, as THR-2179 did for the five alone chapters.
+      deal: { count: DEAL_DEFAULT_COUNT, tags: ['craft'] },
       failBehavior: 'fail_action',
       onSuccess: [],
       onFailure: [],
@@ -2022,6 +2046,13 @@ export const BF_JOIN_TEMPLATE: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
+      // THR-2196: a lost test is not a joining. These bands replace the
+      // welcome reactions on every losing outcome, with no tally and no chip.
+      byOutcome: {
+        failure: BF_JOIN_DEFERRED_BAND,
+        critical_failure: BF_JOIN_DEFERRED_BAND,
+        contested_lost: BF_JOIN_DEFERRED_BAND,
+      },
       overview:
         'The application test is complete. {name} either join{s} the Fellowship today ' +
         'or returns when the work is cleaner.',

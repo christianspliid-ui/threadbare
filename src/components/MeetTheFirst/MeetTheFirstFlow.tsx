@@ -147,6 +147,9 @@ export function MeetTheFirstFlow({
       locationSubtype,
       seed + 1,
       lens,
+      // THR-2196 — a dilemma that casts the mortal in a trade is dealt only to
+      // a candidate of that trade, so the meeting and the bonded sheet agree.
+      selectedCandidate.trade?.role,
     );
   }, [selectedCandidate, locationSubtype, seed, lens]);
 
