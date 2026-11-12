@@ -262,3 +262,62 @@ describe('routeNotifications', () => {
     });
   });
 });
+
+describe('routeNotifications — toast bursts (THR-2194, Law 49)', () => {
+  const GROUP = { key: 'notable_agenda_crack', headline: "{count} rulers' agendas come due" };
+  const crack = (id: string, tick: number, message: string) =>
+    makeEvent({ id, tick, type: 'rival_action', message, notification: { channel: 'toast', group: GROUP } });
+
+  it('folds same-kind toasts in one batch into one toast with a count and the member list', () => {
+    const result = routeNotifications(
+      [crack('c1', 5, 'A comes due.'), crack('c2', 5, 'B comes due.'), crack('c3', 5, 'C comes due.')],
+      EMPTY_STATE, NOW,
+    );
+    expect(result.toasts).toHaveLength(1);
+    expect(result.toasts[0]).toMatchObject({ id: 'c1', count: 3, message: "Three rulers' agendas come due", groupKey: GROUP.key });
+    expect(result.toasts[0].groupMembers?.map(m => m.message)).toEqual(['A comes due.', 'B comes due.', 'C comes due.']);
+  });
+
+  it('folds into a still-showing toast of the kind from an earlier batch, without mutating it', () => {
+    const first = routeNotifications([crack('c1', 5, 'A comes due.')], EMPTY_STATE, NOW);
+    const before = first.toasts[0];
+    const second = routeNotifications([crack('c2', 6, 'B comes due.')], first, NOW + 1000);
+    expect(second.toasts).toHaveLength(1);
+    expect(second.toasts[0]).toMatchObject({ id: 'c1', count: 2, message: "Two rulers' agendas come due" });
+    expect(second.toasts[0].expiresAt).toBeGreaterThan(before.expiresAt);
+    expect(before).toMatchObject({ count: 1, message: 'A comes due.' });
+    expect(before.groupMembers).toHaveLength(1);
+  });
+
+  it('starts a fresh toast once the earlier one of the kind has expired', () => {
+    const first = routeNotifications([crack('c1', 5, 'A comes due.')], EMPTY_STATE, NOW);
+    const later = first.toasts[0].expiresAt + 1;
+    const second = routeNotifications([crack('c2', 9, 'B comes due.')], first, later);
+    const live = second.toasts.filter(t => t.expiresAt > later);
+    expect(live).toHaveLength(1);
+    expect(live[0]).toMatchObject({ id: 'c2', count: 1, message: 'B comes due.' });
+  });
+
+  it('keeps different kinds and ungrouped toasts separate', () => {
+    const result = routeNotifications([
+      crack('c1', 5, 'A comes due.'),
+      makeEvent({ id: 'r1', tick: 5, type: 'rival_action', message: 'A god schemes.', notification: { channel: 'toast' } }),
+      crack('c2', 5, 'B comes due.'),
+    ], EMPTY_STATE, NOW);
+    expect(result.toasts.map(t => t.message)).toEqual(['A god schemes.', "Two rulers' agendas come due"]);
+  });
+});
+
+describe('capToasts — a held toast keeps its slot (THR-2194)', () => {
+  it('keeps a held group when a burst of ungrouped toasts passes the cap', () => {
+    const held = { id: 'g', message: 'Two rulers', count: 2, createdTick: 1, expiresAt: Infinity, heldFrom: 5000 };
+    let state: NotificationState = { ...EMPTY_STATE, toasts: [held] };
+    const events = Array.from({ length: TOAST_MAX_VISIBLE + 2 }, (_, i) =>
+      makeEvent({ id: `u${i}`, tick: 2, message: `Line ${i}.`, notification: { channel: 'toast' } }));
+    state = routeNotifications(events, state, NOW);
+    expect(state.toasts).toHaveLength(TOAST_MAX_VISIBLE);
+    expect(state.toasts[0].id).toBe('g');
+    expect(state.toasts.slice(1).map(t => t.id)).toEqual(
+      events.slice(-(TOAST_MAX_VISIBLE - 1)).map(e => e.id));
+  });
+});

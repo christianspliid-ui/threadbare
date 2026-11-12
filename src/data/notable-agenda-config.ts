@@ -5,6 +5,8 @@
  * Plan doc: Docs/plans/2026-07-05-autonomous-notables.md §A (notable agendas).
  */
 
+import type { ToastGroupDirective } from '../types/notification';
+
 /** Spotlight budget: max simultaneously active notable agendas world-wide. */
 export const MAX_ACTIVE_NOTABLE_AGENDAS = 7;
 
@@ -64,3 +66,13 @@ export const NOTABLE_AGENDA_SPHERE_PRESSURE_PER_PHASE = 0.6;
 
 /** Multiplier on the terminal (crack) phase's sphere pressure. */
 export const NOTABLE_AGENDA_CRACK_PRESSURE_MULTIPLIER = 2;
+
+/**
+ * THR-2194 (Law 49): the agenda-crack toast's burst kind. Several rulers' agendas coming
+ * due while one such toast is still showing fold into it: "Three rulers' agendas come
+ * due", opening to each ruler's own line.
+ */
+export const NOTABLE_AGENDA_CRACK_TOAST_GROUP: ToastGroupDirective = {
+  key: 'notable_agenda_crack',
+  headline: "{count} rulers' agendas come due",
+};

@@ -1,6 +1,6 @@
 import type { TickEvent } from '../types/gameState';
 import type {
-  NotificationState, ToastItem, AlertItem, PopupItem, EntityNotice,
+  NotificationState, ToastItem, ToastGroupMember, AlertItem, PopupItem, EntityNotice,
   NavigationTarget, NotificationCategoryKey, NotificationPreferences,
 } from '../types/notification';
 import {
@@ -137,6 +137,76 @@ export function resolvePreferences(
 /** ExpiresAt value for permanent-mode notifications */
 const PERMANENT_TOAST_EXPIRY = Infinity;
 
+// ─── Toast bursts (THR-2194, Law 49) ───────────────────────────
+
+/** Count words for a grouped toast's headline; above the table the numeral stands. */
+const COUNT_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'] as const;
+
+/** The count in words, capitalised when it leads the line ("Three"). Pure. */
+export function countInWords(n: number, capitalise = true): string {
+  const word = COUNT_WORDS[n] ?? String(n);
+  return capitalise ? word.charAt(0).toUpperCase() + word.slice(1) : word;
+}
+
+/** A grouped toast's line: the headline template with `{count}` filled. Pure. */
+export function formatGroupHeadline(template: string, count: number): string {
+  return template.replace(/\{count\}/g, (_m, offset: number) => countInWords(count, offset === 0));
+}
+
+/**
+ * The newest `TOAST_MAX_VISIBLE` toasts, never dropping one the player holds open
+ * (`heldFrom` set, THR-2194): a held toast keeps its slot and the cap trims the rest,
+ * oldest first. Order is kept. Pure; exported for tests.
+ */
+export function capToasts(toasts: readonly ToastItem[]): ToastItem[] {
+  const held = toasts.filter(t => t.heldFrom !== undefined).length;
+  let room = Math.max(0, TOAST_MAX_VISIBLE - held);
+  const keep = new Array<boolean>(toasts.length).fill(false);
+  for (let i = toasts.length - 1; i >= 0; i--) {
+    if (toasts[i].heldFrom !== undefined) keep[i] = true;
+    else if (room > 0) { keep[i] = true; room -= 1; }
+  }
+  return toasts.filter((_t, i) => keep[i]);
+}
+
+/** Index of the newest still-showing toast collecting burst kind `key`, or -1. */
+function findLiveGroupToast(toasts: readonly ToastItem[], key: string, now: number): number {
+  for (let i = toasts.length - 1; i >= 0; i--) {
+    if (toasts[i].groupKey === key && toasts[i].expiresAt > now) return i;
+  }
+  return -1;
+}
+
+/** A pre-existing toast's own line, as the first member of the group it now hosts. */
+function toastAsGroupMember(toast: ToastItem): ToastGroupMember {
+  return {
+    id: toast.id,
+    message: toast.message,
+    ...(toast.navigationTarget ? { navigationTarget: toast.navigationTarget } : {}),
+    ...(toast.actorId ? { actorId: toast.actorId } : {}),
+  };
+}
+
+/**
+ * The host toast with `members` folded in: a new object (the previous state's toast is
+ * never mutated). A grouped toast has no single target — its click opens the list, and
+ * each listed line opens its own place or person.
+ */
+function foldGroupToast(host: ToastItem, members: ToastGroupMember[], fallbackHeadline: string, expiresAt: number): ToastItem {
+  const headline = host.groupHeadline ?? fallbackHeadline;
+  const rest: ToastItem = { ...host };
+  delete rest.navigationTarget;
+  delete rest.actorId;
+  return {
+    ...rest,
+    message: formatGroupHeadline(headline, members.length),
+    count: members.length,
+    expiresAt: Math.max(host.expiresAt, expiresAt),
+    groupHeadline: headline,
+    groupMembers: members,
+  };
+}
+
 // ─── Router ────────────────────────────────────────────────────
 
 /**
@@ -222,6 +292,40 @@ export function routeNotifications(
 
     switch (channel) {
       case 'toast': {
+        // THR-2194 (Law 49): a declared burst kind folds into the one toast of its kind
+        // still on screen, so N rulers' agendas coming due read as one toast with a count.
+        const group = event.notification.group;
+        if (group) {
+          const member: ToastGroupMember = {
+            id: event.id,
+            message: event.message,
+            ...(navTarget ? { navigationTarget: navTarget } : {}),
+            ...(event.actorId ? { actorId: event.actorId } : {}),
+          };
+          const at = findLiveGroupToast(newToasts, group.key, now);
+          if (at >= 0) {
+            const host = newToasts[at];
+            const members = [...(host.groupMembers ?? [toastAsGroupMember(host)]), member];
+            newToasts.splice(at, 1);
+            newToasts.push(foldGroupToast(host, members, group.headline, isPermanent ? PERMANENT_TOAST_EXPIRY : now + TOAST_DURATION_MS));
+          } else {
+            newToasts.push({
+              id: event.id,
+              message: event.message,
+              sphere: event.sphere,
+              count: 1,
+              createdTick: event.tick,
+              expiresAt: isPermanent ? PERMANENT_TOAST_EXPIRY : now + TOAST_DURATION_MS,
+              actorId: event.actorId,
+              navigationTarget: navTarget,
+              ...(event.band ? { band: event.band } : {}),
+              groupKey: group.key,
+              groupHeadline: group.headline,
+              groupMembers: [member],
+            });
+          }
+          break;
+        }
         const existing = toastByMessage.get(event.message);
         if (existing) {
           existing.count += 1;
@@ -282,7 +386,7 @@ export function routeNotifications(
   const trimmedAtCap = (currentState.alertsTrimmedAtCap ?? 0) + trimmed.trimmedAtCap;
 
   return {
-    toasts: newToasts.slice(-TOAST_MAX_VISIBLE),
+    toasts: capToasts(newToasts),
     alerts: trimmed.alerts,
     ...(trimmedAtCap > 0 ? { alertsTrimmedAtCap: trimmedAtCap } : {}),
     popupQueue: newPopupQueue,

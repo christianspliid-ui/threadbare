@@ -1034,6 +1034,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     notificationState,
     currentPopup,
     handleDismissToast,
+    handleHoldToast,
+    handleReleaseToast,
     handleDismissAlert,
     handleDismissPopup,
     handlePopupChoice,
@@ -4622,6 +4624,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               toasts={shownToasts}
               toastVisuals={toastVisuals}
               onDismiss={handleDismissShownToast}
+              onHold={handleHoldToast}
+              onRelease={handleReleaseToast}
               onSelectAgent={handleAgentSelect}
               onNavigate={handleNotificationNavigate}
               // THR-1877 (D7): a receipt waits while a ceremony or Stage moment holds the screen.

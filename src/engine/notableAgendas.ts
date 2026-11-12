@@ -66,6 +66,7 @@ import {
   NOTABLE_AGENDA_STALL_TICKS,
   NOTABLE_AGENDA_SPHERE_PRESSURE_PER_PHASE,
   NOTABLE_AGENDA_CRACK_PRESSURE_MULTIPLIER,
+  NOTABLE_AGENDA_CRACK_TOAST_GROUP,
 } from '../data/notable-agenda-config';
 import { AMBITION_KIND_FACTION, AMBITION_KIND_KEY } from './ambitionShape';
 import { isPlaceNode, getLocationNodes, resolveToParentLocation } from './sublocationShape';
@@ -864,7 +865,14 @@ export function phaseNotableAgendas(state: GameState): Partial<GameState> {
               type: 'rival_action',
               message: `${notableName}'s ${family.label.toLowerCase()} comes due over ${targetName ?? 'the reach'}.`,
               significance: 0.8,
-              notification: { channel: 'toast' },
+              // THR-2194: a place target is the event's world reference, so the toast —
+              // and its line in a grouped toast's list — opens the place (Law 1).
+              ...(targetNode && targetId && isPlaceNode(targetNode)
+                ? { refs: [{ kind: 'location' as const, id: targetId }] }
+                : {}),
+              // THR-2194 (Law 49): several rulers' agendas coming due together — a warm
+              // start's catch-up, or a few close ticks — read as one toast with a count.
+              notification: { channel: 'toast', group: NOTABLE_AGENDA_CRACK_TOAST_GROUP },
             });
             break;
           }

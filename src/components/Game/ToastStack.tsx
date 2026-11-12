@@ -49,6 +49,10 @@ const MAX_VISIBLE_TOASTS = 6;
 interface ToastStackProps {
   toasts: ToastItem[];
   onDismiss: (id: string) => void;
+  /** THR-2194 — a grouped toast's list was opened: keep it until dismissed. */
+  onHold?: (id: string) => void;
+  /** THR-2194 — a held grouped toast's list was folded: let it lapse again. */
+  onRelease?: (id: string) => void;
   /** Called when a toast with actorId is clicked — navigates to that agent */
   onSelectAgent?: (agentId: string) => void;
   /** Called when a toast with a navigation target is clicked */
@@ -85,13 +89,30 @@ function navTargetHasPicture(target: NavigationTarget): boolean {
   return !!(ROW_VISUAL_KIND as Readonly<Record<string, unknown>>)[target.kind];
 }
 
-export const toastStackTestHelpers = { formatCount, filterActive };
+/**
+ * THR-2194 (Law 49) — a grouped toast: two or more same-kind toasts folded into one. Its
+ * line carries the count in words, so the ×N badge stays off; its click opens the list.
+ */
+function isGroupedToast(toast: ToastItem): boolean {
+  return (toast.groupMembers?.length ?? 0) > 1;
+}
 
-export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate, receiptOpenLocked = false, toastVisuals, stageOpen = false }: ToastStackProps) {
+export const toastStackTestHelpers = { formatCount, filterActive, isGroupedToast };
+
+export function ToastStack({ toasts, onDismiss, onHold, onRelease, onSelectAgent, onNavigate, receiptOpenLocked = false, toastVisuals, stageOpen = false }: ToastStackProps) {
   // Track which toasts are in exit animation (right-click dismissed)
   const [dismissingIds, setDismissingIds] = useState<Set<string>>(new Set());
   // THR-1877 — the receipt toast whose click was refused, and a counter that restarts its shake.
   const [lockedHint, setLockedHint] = useState<{ id: string; n: number } | null>(null);
+  // THR-2194 — the grouped toasts whose list is open.
+  const [openGroupIds, setOpenGroupIds] = useState<ReadonlySet<string>>(() => new Set());
+  const toggleGroup = useCallback((id: string) => {
+    setOpenGroupIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }, []);
   useEffect(() => {
     if (!lockedHint) return undefined;
     const timer = setTimeout(() => setLockedHint(null), RECEIPT_LOCKED_HINT_MS);
@@ -141,6 +162,8 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate, recei
         const visual = toastVisuals?.[toast.id] ?? null;
         // A toast names a subject when what its click opens is a person, place, faction, army or relic.
         const namesSubject = !!toastVisuals && !!navTarget && navTargetHasPicture(navTarget);
+        const grouped = isGroupedToast(toast);
+        const groupOpen = grouped && openGroupIds.has(toast.id);
         return (
           <AnimateMount key={toast.id} show={!isDismissing} animation="anim-fade-up" duration={150}>
             <div
@@ -156,7 +179,16 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate, recei
                 borderRight: '1px solid var(--border-subtle)',
                 borderBottom: '1px solid var(--border-subtle)',
               }}
+              data-toast-group={grouped ? toast.groupKey : undefined}
+              data-toast-count={grouped ? toast.count : undefined}
+              aria-expanded={grouped ? groupOpen : undefined}
               onClick={() => {
+                // THR-2194 — a grouped toast opens (or folds) its list; it navigates nowhere.
+                if (grouped) {
+                  if (groupOpen) onRelease?.(toast.id); else onHold?.(toast.id);
+                  toggleGroup(toast.id);
+                  return;
+                }
                 // THR-1877 — a receipt waits while a moment holds the foreground.
                 if (receiptLocked) {
                   setLockedHint(prev => ({ id: toast.id, n: (prev?.n ?? 0) + 1 }));
@@ -182,7 +214,7 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate, recei
               aria-description="Right-click to dismiss"
             >
               <RowPicture visual={visual} />
-              <span
+              <div
                 className="flex-1 leading-snug"
                 style={{
                   fontSize: 'var(--text-xs)',
@@ -201,8 +233,54 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate, recei
                     {TOPBAR_LOCKED_SUFFIX}
                   </span>
                 )}
-              </span>
-              {toast.count > 1 && (
+                {groupOpen && (
+                  <ul data-testid="toast-group-list" className="block" style={{ marginTop: 'var(--space-1)', listStyle: 'none', padding: 0 }}>
+                    {toast.groupMembers!.map(member => {
+                      const opens = Boolean(member.navigationTarget && onNavigate) || Boolean(member.actorId && onSelectAgent);
+                      return (
+                        <li key={member.id}>
+                          <button
+                            type="button"
+                            data-testid="toast-group-member"
+                            disabled={!opens}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (member.navigationTarget && onNavigate) onNavigate(member.navigationTarget);
+                              else if (member.actorId && onSelectAgent) onSelectAgent(member.actorId);
+                              else return;
+                              onDismiss(toast.id);
+                            }}
+                            title={member.navigationTarget ? NAV_TOOLTIPS[member.navigationTarget.kind] : undefined}
+                            className="text-left w-full"
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              padding: 'var(--space-1) 0',
+                              color: 'var(--text-secondary)',
+                              font: 'inherit',
+                              cursor: opens ? 'pointer' : 'default',
+                              borderTop: '1px solid var(--border-subtle)',
+                            }}
+                          >
+                            {renderProseWithIPK(member.message)}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+              {grouped && (
+                <span
+                  className="flex-shrink-0"
+                  style={{ fontSize: 'var(--text-xs)', color: accentColor, opacity: NAV_GLYPH_OPACITY }}
+                  title={groupOpen ? 'Fold the list' : 'Open the list'}
+                  aria-hidden="true"
+                >
+                  <Icon name="disclosure" size="floor" decorative style={{ transform: groupOpen ? 'rotate(180deg)' : 'rotate(90deg)' }} />
+                </span>
+              )}
+              {!grouped && toast.count > 1 && (
                 <span
                   className="flex-shrink-0 px-1.5 py-0.5 rounded-full font-bold"
                   style={{

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { TickEvent } from '../../../types/gameState';
 import type { NotificationState, PopupItem, NotificationPreferences, ToastItem } from '../../../types/notification';
+import { TOAST_DURATION_MS } from '../../../types/notification';
 import type { VisibilityMap } from '../../../types/visibility';
 import type { WorldGraph } from '../../../engine/graph';
 import { routeNotifications, selectUnroutedEvents } from '../../../engine/notificationRouter';
@@ -21,6 +22,36 @@ function dismissToast(state: NotificationState, id: string): NotificationState {
   return { ...state, toasts: state.toasts.filter(t => t.id !== id) };
 }
 
+/**
+ * THR-2194 — a grouped toast whose list the player opened stays while it is open: the
+ * expiry timer would otherwise fold the list away mid-read. The prior expiry is kept on
+ * `heldFrom` so `releaseToast` can give it a live one back.
+ */
+function holdToast(state: NotificationState, id: string): NotificationState {
+  if (!state.toasts.some(t => t.id === id && t.heldFrom === undefined)) return state;
+  return {
+    ...state,
+    toasts: state.toasts.map(t => (t.id === id ? { ...t, heldFrom: t.expiresAt, expiresAt: Infinity } : t)),
+  };
+}
+
+/**
+ * THR-2194 — the player folded a held toast's list: it lapses again a toast's lifetime
+ * from now (a permanent-mode toast stays permanent), so a folded group never lingers as
+ * the host every later burst of its kind folds into.
+ */
+function releaseToast(state: NotificationState, id: string, now: number): NotificationState {
+  if (!state.toasts.some(t => t.id === id && t.heldFrom !== undefined)) return state;
+  return {
+    ...state,
+    toasts: state.toasts.map(t => {
+      if (t.id !== id || t.heldFrom === undefined) return t;
+      const { heldFrom, ...rest } = t;
+      return { ...rest, expiresAt: Math.max(heldFrom, now + TOAST_DURATION_MS) };
+    }),
+  };
+}
+
 function advancePopupQueue(state: NotificationState): NotificationState {
   return { ...state, popupQueue: state.popupQueue.slice(1) };
 }
@@ -37,6 +68,8 @@ export const useNotificationsTestHelpers = {
   expireToasts,
   dismissAlert,
   dismissToast,
+  holdToast,
+  releaseToast,
   advancePopupQueue,
   clearEntityNotices,
 };
@@ -62,6 +95,10 @@ export interface UseNotificationsReturn {
   notificationState: NotificationState;
   currentPopup: PopupItem | null;
   handleDismissToast: (id: string) => void;
+  /** THR-2194: keep a toast until dismissed (a grouped toast whose list was opened). */
+  handleHoldToast: (id: string) => void;
+  /** THR-2194: a held toast's list was folded — it lapses again. */
+  handleReleaseToast: (id: string) => void;
   handleDismissAlert: (id: string) => void;
   handleDismissPopup: () => void;
   handlePopupChoice: (effect: string) => void;
@@ -135,6 +172,14 @@ export function useNotifications({
     setState(prev => dismissToast(prev, id));
   }, []);
 
+  const handleHoldToast = useCallback((id: string) => {
+    setState(prev => holdToast(prev, id));
+  }, []);
+
+  const handleReleaseToast = useCallback((id: string) => {
+    setState(prev => releaseToast(prev, id, Date.now()));
+  }, []);
+
   const pushToast = useCallback((toast: ToastItem) => {
     setState(prev => ({ ...prev, toasts: [...prev.toasts, toast] }));
   }, []);
@@ -160,6 +205,8 @@ export function useNotifications({
     notificationState: state,
     currentPopup: state.popupQueue[0] ?? null,
     handleDismissToast,
+    handleHoldToast,
+    handleReleaseToast,
     handleDismissAlert,
     handleDismissPopup,
     handlePopupChoice,

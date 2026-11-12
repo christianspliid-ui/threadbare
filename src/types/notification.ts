@@ -105,6 +105,30 @@ export interface NotificationDirective {
     art?: string;
     choices?: PopupChoice[];
   };
+  /**
+   * THR-2194 (Law 49) — the producer declares that its toasts belong to a burst kind.
+   * Toasts sharing `key` that arrive while an earlier one of the kind is still on screen
+   * fold into that one toast: its line becomes `headline` (with `{count}` replaced by the
+   * count in words, capitalised) and it opens to the list of every member's own line.
+   * Absent = the toast stands alone (exact-repeat messages still collapse as before).
+   */
+  group?: ToastGroupDirective;
+}
+
+/** THR-2194 — a toast burst kind, declared by the event's producer. */
+export interface ToastGroupDirective {
+  /** Burst kind: event kind plus producer, e.g. `notable_agenda_crack`. */
+  key: string;
+  /** The grouped toast's line; `{count}` becomes the member count in words ("Three"). */
+  headline: string;
+}
+
+/** THR-2194 — one folded toast's own line, kept so the grouped toast opens to the list. */
+export interface ToastGroupMember {
+  id: string;
+  message: string;
+  navigationTarget?: NavigationTarget;
+  actorId?: string;
 }
 
 export interface ToastItem {
@@ -122,6 +146,20 @@ export interface ToastItem {
   navigationTarget?: NavigationTarget;
   /** Outcome band for band-keyed accent styling (e.g. 'fortunate', 'setback'). Absent → default gold accent. */
   band?: string;
+  /** THR-2194 — the burst kind this toast collects (`NotificationDirective.group.key`). */
+  groupKey?: string;
+  /** THR-2194 — the burst kind's headline template (`{count}` token). */
+  groupHeadline?: string;
+  /**
+   * THR-2194 — every toast folded into this one, oldest first (the first is this toast's
+   * own line). Two or more = a grouped toast: it shows the headline and opens to this list.
+   */
+  groupMembers?: ToastGroupMember[];
+  /**
+   * THR-2194 — set while the player holds the toast open (its list is showing): the
+   * expiry it had before the hold. Folding the list restores a live expiry from it.
+   */
+  heldFrom?: number;
 }
 
 export interface AlertItem {
