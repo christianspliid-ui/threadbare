@@ -21,6 +21,15 @@ function dismissToast(state: NotificationState, id: string): NotificationState {
   return { ...state, toasts: state.toasts.filter(t => t.id !== id) };
 }
 
+/**
+ * THR-2194 — a grouped toast whose list the player opened stays until dismissed: the
+ * expiry timer would otherwise fold the list away mid-read.
+ */
+function holdToast(state: NotificationState, id: string): NotificationState {
+  if (!state.toasts.some(t => t.id === id && t.expiresAt !== Infinity)) return state;
+  return { ...state, toasts: state.toasts.map(t => (t.id === id ? { ...t, expiresAt: Infinity } : t)) };
+}
+
 function advancePopupQueue(state: NotificationState): NotificationState {
   return { ...state, popupQueue: state.popupQueue.slice(1) };
 }
@@ -37,6 +46,7 @@ export const useNotificationsTestHelpers = {
   expireToasts,
   dismissAlert,
   dismissToast,
+  holdToast,
   advancePopupQueue,
   clearEntityNotices,
 };
@@ -135,6 +145,10 @@ export function useNotifications({
     setState(prev => dismissToast(prev, id));
   }, []);
 
+  const handleHoldToast = useCallback((id: string) => {
+    setState(prev => holdToast(prev, id));
+  }, []);
+
   const pushToast = useCallback((toast: ToastItem) => {
     setState(prev => ({ ...prev, toasts: [...prev.toasts, toast] }));
   }, []);
@@ -160,6 +174,7 @@ export function useNotifications({
     notificationState: state,
     currentPopup: state.popupQueue[0] ?? null,
     handleDismissToast,
+    handleHoldToast,
     handleDismissAlert,
     handleDismissPopup,
     handlePopupChoice,
