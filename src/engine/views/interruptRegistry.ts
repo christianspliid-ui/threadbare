@@ -352,8 +352,9 @@ export function resolveInterrupts(
   // What an arrival steps back for (THR-1853): any surface the world stops for that is
   // not itself an arrival — except the rite and the receipt, which wait for others.
   const nonArrivalBlocking = wish.filter(s => !isArrival(s) && s.id !== 'ThreadingRite' && s.waitsTurn !== 'foreground');
-  // A new arrival waits for every other surface that wants the screen, the receipt included.
-  const nonArrivalWanting = wish.filter(s => !isArrival(s));
+  // A new arrival waits for every other surface that wants the screen, the receipt included
+  // (THR-2197: the receipt is an arrival now, but it keeps its turn ahead of later arrivals).
+  const nonArrivalWanting = wish.filter(s => !isArrival(s) || s.waitsTurn === 'foreground');
   // A popup already on screen keeps its slot against a new arrival (THR-1853).
   const popupShown = !!popupWish && !momentWish && shown.has(POPUP_ID);
 
@@ -361,8 +362,10 @@ export function resolveInterrupts(
     shown.has(s.id) || (s.kind !== undefined && s.kind === snapshot.foregroundIncumbent);
 
   const foregroundWish = wish.filter(isForeground);
+  // THR-2197 — an arrival ceremony on screen (the rite) keeps its slot: stepping back would
+  // unmount its multi-step flow and lose the tests already played.
   const mayHoldAsIncumbent = (s: InterruptSurface) =>
-    !isArrival(s) || nonArrivalBlocking.length === 0;
+    !isArrival(s) || homeOf(s) === 'ceremony' || nonArrivalBlocking.length === 0;
   const mayTakeFreeSlot = (s: InterruptSurface) => {
     if (s.waitsTurn === 'dialogs' && dialogs.length > 0) return false;
     if (!isArrival(s)) return true;
@@ -377,7 +380,7 @@ export function resolveInterrupts(
   // THR-2197 — a dialog arrival not yet on screen waits for a quiet moment and for
   // every non-arrival surface that wants the screen; once shown it keeps its place.
   const dialogArrivalMayShow = (s: InterruptSurface) =>
-    isShown(s) || (quiet && !popupShown && nonArrivalWanting.length === 0);
+    isShown(s) || (quiet && !popupShown && nonArrivalWanting.every(o => o === s));
   // R5 — the receipt waits for the foreground (and, as an arrival, for a quiet moment).
   const afterForeground = fg || recapExclusive ? [] : wish.filter(s => s.waitsTurn === 'foreground'
     && (!isArrival(s) || dialogArrivalMayShow(s)));

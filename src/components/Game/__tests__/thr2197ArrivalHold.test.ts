@@ -148,8 +148,31 @@ describe('THR-2197 — the threading rite and the receipt wait like arrivals', (
     expect(r.heldArrivals).toEqual([]);
   });
 
-  it('the receipt still waits for the foreground, as before', () => {
+  it('the receipt keeps its turn ahead of a later arrival, as before (review gate)', () => {
     const r = resolveInterrupts(snap({ divineReceiptPending: true, premonitionPending: true }));
+    expect(r.open).toEqual(['DivineReceiptModal']);
+    expect(r.heldArrivals.map(h => h.id)).toEqual(['PremonitionModal']);
+  });
+
+  it('the receipt still waits for a foreground already on screen', () => {
+    const r = resolveInterrupts(snap({ divineReceiptPending: true, premonitionPending: true, alreadyShown: ['PremonitionModal'], foregroundIncumbent: 'premonition' }));
     expect(r.open).toEqual(['PremonitionModal']);
+  });
+
+  it('a rite on screen keeps its slot when the world opens a chapter (review gate: no unmount mid-rite)', () => {
+    const r = resolveInterrupts(snap({
+      threadingRitePending: true, encounterOpen: true,
+      alreadyShown: ['ThreadingRite'], foregroundIncumbent: 'threading-rite',
+    }));
+    expect(r.foreground).toBe('threading-rite');
+    expect(r.open).toContain('ThreadingRite');
+  });
+
+  it('a premonition on screen still steps back for a chapter, as THR-1853 settled', () => {
+    const r = resolveInterrupts(snap({
+      premonitionPending: true, encounterOpen: true,
+      alreadyShown: ['PremonitionModal'], foregroundIncumbent: 'premonition',
+    }));
+    expect(r.foreground).toBe('encounter');
   });
 });
