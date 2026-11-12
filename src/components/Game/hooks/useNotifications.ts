@@ -72,6 +72,8 @@ export interface UseNotificationsReturn {
   notificationState: NotificationState;
   currentPopup: PopupItem | null;
   handleDismissToast: (id: string) => void;
+  /** THR-2194: keep a toast until dismissed (a grouped toast whose list was opened). */
+  handleHoldToast: (id: string) => void;
   handleDismissAlert: (id: string) => void;
   handleDismissPopup: () => void;
   handlePopupChoice: (effect: string) => void;
