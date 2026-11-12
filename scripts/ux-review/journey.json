@@ -1,5 +1,5 @@
 {
-  "journeyVersion": 2,
+  "journeyVersion": 3,
   "base": "https://threadbearer.co/",
   "viewport": { "width": 1920, "height": 1080 },
   "playwrightCore": "1.58.2",
@@ -135,9 +135,9 @@
       "what": "A chapter that opens a few seasons in.",
       "continue": true,
       "steps": [
-        { "press": "Escape" },
+        { "click": { "role": "button", "nameRegex": "notables?$" } },
         { "wait": 800 },
-        { "ensure": { "role": "dialog" }, "press": "Space", "timeout": 120000 },
+        { "waitFor": { "role": "dialog" }, "timeout": 30000 },
         { "wait": 1500 }
       ]
     }
