@@ -11,7 +11,9 @@
  */
 import { describe, expect, it } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { BondBeat, BOND_STAGE_CLASS } from '../BondBeat';
+import { BondBeat, BOND_HAND_ROW_WIDTH_PX, BOND_STAGE_CLASS } from '../BondBeat';
+import { CARDS_PER_ROW } from '../../Game/encounter-stage/shells/NudgePhaseShell';
+import { CARD_WIDTH_PX } from '../../shared/CardFace';
 import { MEETING_BOND_TEST } from '../../../data/meeting-bond-test';
 import type { NarrativeCandidate, SparkVision } from '../../../types/meetingEncounter';
 import type { StoredHungerId } from '../../../types/hunger';
@@ -67,6 +69,17 @@ describe('THR-2195 — bond stages centre safely, never spill above the top', ()
     expect(column.style.marginBlock).toBe('auto');
     // The fit ran (jsdom measures 0px, so it leaves the column at natural size).
     expect(column.dataset.fitScale).toBe('1');
+  });
+
+  it('the column holds a full hand row and sets the portrait beside the setup, so 8 cards take two rows', () => {
+    expect(BOND_HAND_ROW_WIDTH_PX).toBe(CARDS_PER_ROW * CARD_WIDTH_PX + (CARDS_PER_ROW - 1) * 12);
+    renderBond();
+    const column = screen.getByTestId('bond-test-column');
+    expect(column.style.boxSizing).toBe('content-box');
+    expect(column.style.maxWidth).toBe(`${BOND_HAND_ROW_WIDTH_PX}px`);
+    const header = screen.getByTestId('bond-test-header');
+    expect(header.style.display).toBe('flex');
+    expect(header.contains(screen.getByTestId('bond-test-setup'))).toBe(true);
   });
 
   it('the reveal and naming stages centre safely too', () => {
