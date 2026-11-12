@@ -70,6 +70,11 @@ interface HexTooltipProps {
   /** Sphere tint for the avatar line's marker dot. */
   avatarColor?: string;
   /**
+   * THR-2198 — the anomaly ring on this hex, in words, with a ring marker in the
+   * halo's own colour so the line and the mark on the map read as one thing.
+   */
+  anomalyLine?: { text: string; color: string };
+  /**
    * THR-1750 — while the Dominion lens is on: "Held ground, by Hesk Crossing".
    * The band word in its colour; the place's page explains the same band.
    */
@@ -135,6 +140,7 @@ export function HexTooltip({
   locationActivity,
   avatarLine,
   avatarColor,
+  anomalyLine,
   dominionLine,
   dominionDrop,
   lensLines,
@@ -157,12 +163,12 @@ export function HexTooltip({
   );
   const hasOverflow = (locationActivity?.agentThreads.length ?? 0) > LOCATION_ACTIVITY_CONSTANTS.TOOLTIP_MAX_NAMED_AGENTS;
 
-  const estimatedWidth  = hasLocationData || (lensLines?.length ?? 0) > 0 || avatarLine || battleLines?.length ? 240 : 180;
+  const estimatedWidth  = hasLocationData || (lensLines?.length ?? 0) > 0 || avatarLine || anomalyLine || battleLines?.length ? 240 : 180;
   const estimatedHeight = geoParams ? 100
     : hasLocationData
       ? 46 + murmurLineCount * 18 + threadCount * 16 + (hasOverflow ? 14 : 0) + 8
       : 46;
-  const avatarLineHeight = avatarLine ? 20 : 0;
+  const avatarLineHeight = (avatarLine ? 20 : 0) + (anomalyLine ? 36 : 0);
   const battleLineHeight = (battleLines?.length ?? 0) * 18;
   const offsetY = INTERACTION_CONSTANTS.TOOLTIP_OFFSET_Y;
 
@@ -249,6 +255,32 @@ export function HexTooltip({
           {line.rest}
         </div>
       ))}
+
+      {/* THR-2198 — the anomaly ring on this hex, named */}
+      {anomalyLine && (
+        <div
+          data-testid="hex-tooltip-anomaly"
+          style={{
+            display:    'flex',
+            alignItems: 'center',
+            gap:        6,
+            color:      'var(--text-primary)',
+            fontSize:   'var(--text-xs)',
+            fontFamily: 'var(--font-body)',
+            lineHeight: 1.5,
+            whiteSpace: 'normal',
+          }}
+        >
+          <span
+            aria-hidden
+            style={{
+              width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+              border: `2px solid ${anomalyLine.color}`,
+            }}
+          />
+          {anomalyLine.text}
+        </div>
+      )}
 
       {/* THR-1750 — the Dominion band of this ground, while the lens is on */}
       {dominionLine && (

@@ -19,6 +19,7 @@ import type {
   JourneyVignetteData,
   PendingVignette,
   BeatVariant,
+  BeatChoice,
 } from '../types/journeyEngine';
 import {
   PHASE_BOUNDARIES,
@@ -292,6 +293,31 @@ function excludePlayed(
 
 // ─── Beat Execution ─────────────────────────────────────────────────
 
+/** THR-2198 — the role title the journey content was authored around. */
+const FIRST_ROLE_TITLE = /\b[Tt]he First\b/g;
+
+/**
+ * THR-2198 — journey prose names the mortal, not the role. Every variant was authored
+ * around "The First"; a round-7 tester read "The First stands at the threshold…" as a
+ * placeholder. Fail-soft: a blank name leaves the text as authored.
+ */
+export function personalizeJourneyText(text: string, agentName: string): string {
+  const name = agentName.trim();
+  if (!name || !text) return text;
+  return text.replace(FIRST_ROLE_TITLE, name);
+}
+
+function personalizeChoice(choice: BeatChoice, agentName: string): BeatChoice {
+  const consequenceProse = choice.effects.consequenceProse;
+  return {
+    ...choice,
+    text: personalizeJourneyText(choice.text, agentName),
+    effects: consequenceProse === undefined
+      ? choice.effects
+      : { ...choice.effects, consequenceProse: personalizeJourneyText(consequenceProse, agentName) },
+  };
+}
+
 /**
  * Build a JourneyVignetteData from a fired beat.
  * This is the data the UI needs to render the vignette modal.
@@ -315,9 +341,9 @@ export function buildVignetteData(
     beatIndex,
     templateId: template.id,
     variantKey: variant.key,
-    setupProse: variant.setupProse,
-    tensionProse: variant.tensionProse,
-    choices: variant.choices,
+    setupProse: personalizeJourneyText(variant.setupProse, agentName),
+    tensionProse: personalizeJourneyText(variant.tensionProse, agentName),
+    choices: variant.choices.map(choice => personalizeChoice(choice, agentName)),
     stateSnapshot: snapshot,
     isOrdeal: phase === 'ordeal',
     tick,

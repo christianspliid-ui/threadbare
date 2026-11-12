@@ -50,7 +50,7 @@ import { createStrategicMarkerLayer } from './scene/StrategicMarkerMesh';
 import type { StrategicMarkerLayer } from './scene/StrategicMarkerMesh';
 import type { HexStrategicOverlay } from '../../engine/strategicPresentation';
 import { ACTIVITY_ICON_ZOOM_HIDE_THRESHOLD } from '../../data/attention-constants';
-import { createAnomalyShimmerLayer, tickAnomalyShimmers, triggerAnomalyRevealFlash } from './scene/AnomalyShimmerMesh';
+import { createAnomalyShimmerLayer, getAnomalySphereColor, tickAnomalyShimmers, triggerAnomalyRevealFlash } from './scene/AnomalyShimmerMesh';
 import type { AnomalyShimmerLayerGroup } from './scene/AnomalyShimmerMesh';
 import {
   createLocationRaritySignifierLayer,
@@ -127,6 +127,7 @@ import type { ScreenBBox } from './overlay/labelCollision';
 import { HexTooltip } from './interaction/HexTooltip';
 import { useHexTooltipDelay } from './interaction/useHexTooltipDelay';
 import { avatarHoverLine } from '../../data/avatar-framing';
+import { anomalyHoverLine } from '../../data/ui-content';
 import type { LocationActivitySummary } from '../../types/locationActivity';
 import { LOCATION_IMPORTANCE_MAP, LOCATION_ICON_REGISTRY, CENTERED_SIZE_CLASSES } from './locations/locationIconRegistry';
 import { getPlaceIconStatus } from './locations/locationIconTextures';
@@ -2378,6 +2379,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           const avatarHere = agents?.find(
             a => a.isAvatar && a.hexCol === tooltipHex.col && a.hexRow === tooltipHex.row,
           );
+          // THR-2198: the shimmer / halo ring drawn on this hex, named in words.
+          const anomalyHere = anomalies?.find(
+            a => a.hexCol === tooltipHex.col && a.hexRow === tooltipHex.row,
+          );
           return (
             <HexTooltip
               terrainName={terrainKey}
@@ -2391,6 +2396,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
               locationActivity={locationActivity}
               avatarLine={avatarHere ? avatarHoverLine(avatarHere.name ?? '') : undefined}
               avatarColor={avatarHere?.avatarSphereColor}
+              anomalyLine={anomalyHere ? {
+                text: anomalyHoverLine(anomalyHere.discovered, anomalyHere.name),
+                color: getAnomalySphereColor(anomalyHere.locationType),
+              } : undefined}
               battleLines={battleHexLines(battles, tooltipHex.col, tooltipHex.row)}
               {...(() => {
                 const d = dominionTooltip?.(tooltipHex.col, tooltipHex.row);

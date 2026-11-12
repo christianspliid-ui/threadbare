@@ -302,7 +302,7 @@ const portraitWithDispositionResolver: SectionResolver = (ctx) => {
   const section: PortraitSection = {
     kind: 'portrait',
     typeId: 'portrait_with_disposition',
-    label: 'Disposition toward her',
+    label: dispositionLabel(node.name),
     gold: true,
     tier: 'routine',
     source: 'portraitWithDispositionResolver',
@@ -340,6 +340,14 @@ function bondOf(ctx: SectionResolverContext, actor: GraphNode): Pick<ProseSectio
  */
 export function whatTheyAreToYouLabel(name: string): string {
   return `What ${name} is to you`;
+}
+
+/**
+ * THR-2198 — the disposition row's heading. It read "Disposition toward her", gendering a
+ * god the player never gendered (round-7 cold playtest), the sibling THR-2142 missed.
+ */
+export function dispositionLabel(name: string): string {
+  return `How ${name} regards you`;
 }
 
 const whatSheIsToHimResolver: SectionResolver = (ctx) => {
@@ -1210,7 +1218,7 @@ export const actorPortraitFallback: SectionResolver = (ctx) => {
   const section: PortraitSection = {
     kind: 'portrait',
     typeId: 'portrait_with_disposition',
-    label: 'Disposition toward her',
+    label: dispositionLabel(actor.name),
     gold: true,
     tier: 'routine',
     source: 'actorPortraitFallback',

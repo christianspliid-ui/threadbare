@@ -971,6 +971,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         hexRow: n.hexRow,
         locationType: n.locationType,
         discovered: n.discoveredByExploration ?? false,
+        name: n.name,
       }));
   }, [locationNodes]);
 

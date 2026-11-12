@@ -657,6 +657,10 @@ export function getEncounterForeshadowing({
  * @param encounterId The encounter template ID.
  * @param tick        Current simulation tick.
  * @param runtime     Per-session SimulationRuntime (owns the cache).
+ * @param placeName   Optional — the place the caller already shows beside the line
+ *                    (the Crossroads row's "at Sacred Grove", THR-2198). Grounds the
+ *                    matter there instead of the no-place pool. Does not narrow the
+ *                    receipt match (the receipt may sit on a sublocation id).
  */
 export function getEncounterForeshadowingById(
   state: GameState,
@@ -664,8 +668,10 @@ export function getEncounterForeshadowingById(
   encounterId: string,
   tick: number,
   runtime: SimulationRuntime,
+  placeName?: string,
 ): ForeshadowingResult {
-  const key = idCacheKey(agentId, encounterId);
+  const locationName = placeName?.trim() || undefined;
+  const key = locationName ? `${idCacheKey(agentId, encounterId)}|${locationName}` : idCacheKey(agentId, encounterId);
 
   const cached = runtime.foreshadowingCache.get(key);
   if (cached) {
@@ -699,6 +705,7 @@ export function getEncounterForeshadowingById(
       encounterId,
       agentNode,
       signals,
+      locationName,
       authoredTemplate,
       // The thread-card tooltip holds the state, so it asks the one rule (THR-1433).
       intention: canReadIntention(state, state.ascendantId, agentId),

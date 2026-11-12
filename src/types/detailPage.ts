@@ -180,7 +180,7 @@ export interface TriggerRow {
 // ─── Section base + variants ──────────────────────────────────────────────────
 
 export interface SectionBase {
-  /** Sentence-case label (THR-1879 label rule), e.g. "Disposition toward her". */
+  /** Sentence-case label (THR-1879 label rule), e.g. "How Seren regards you". */
   label: string;
   /** Gold-coloured label = primary section. Default false (tertiary). */
   gold: boolean;

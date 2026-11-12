@@ -114,6 +114,21 @@ export const JOURNEY_STAGE_LABELS: Record<CampbellianPhase, string> = {
   return: 'The Return',
 };
 
+/**
+ * THR-2198 — the hex hover names the anomaly ring (round-7 cold playtest: "The pink ring on
+ * the map: no idea. Hovering showed nothing"). Found: the place by name. Not yet found: the
+ * glow, unnamed, because the name is what exploring it earns.
+ */
+export const ANOMALY_HOVER_FOUND = 'The ring marks {name}, a place where the world runs strange.';
+export const ANOMALY_HOVER_FOUND_UNNAMED = 'The ring marks a place where the world runs strange.';
+export const ANOMALY_HOVER_UNFOUND = 'Something strange glows here. No one has found its source.';
+
+export function anomalyHoverLine(discovered: boolean, name?: string): string {
+  if (!discovered) return ANOMALY_HOVER_UNFOUND;
+  const n = name?.trim();
+  return n ? ANOMALY_HOVER_FOUND.replace('{name}', () => n) : ANOMALY_HOVER_FOUND_UNNAMED;
+}
+
 /** THR-1854 — the button that closes a journey moment once its answer has been read. */
 export const JOURNEY_CONTINUE_LABEL = 'Continue';
 

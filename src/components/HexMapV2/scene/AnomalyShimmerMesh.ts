@@ -46,6 +46,8 @@ export interface AnomalyShimmerData {
   hexRow: number;
   locationType: string;
   discovered: boolean;
+  /** THR-2198 — the place's name, so the hover line can name the ring. Optional (additive). */
+  name?: string;
 }
 
 // ── Layer Group ──────────────────────────────────────────────────────────────
@@ -162,8 +164,8 @@ function getHaloTexture(color: string): THREE.CanvasTexture {
 
 // ── Sphere Color Lookup ──────────────────────────────────────────────────────
 
-/** Get the sphere color for an anomaly, with fallback. */
-function getAnomalySphereColor(locationType: string): string {
+/** Get the sphere color for an anomaly, with fallback. Exported for the hover line's ring (THR-2198). */
+export function getAnomalySphereColor(locationType: string): string {
   const sphere = ANOMALY_SPHERE_MAP[locationType];
   if (!sphere) return ANOMALY_FALLBACK_SPHERE_COLOR;
   return getSphereColor(sphere);
