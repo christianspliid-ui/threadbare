@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { BondOutcome, BondTest, NarrativeCandidate, SparkVision } from '../../types/meetingEncounter';
 import { BOND_PROSE, BOND_PROSE_FALLBACK, BOND_RELEASE_TEXT, MEETING_FATE_REVEAL_CONTINUE } from '../../data/meeting-narrative-prose';
 import { getSphereColor } from '../../data/sphereIcons';
 import type { SphereName } from '../../types/graph';
-import { NudgePhaseShell } from '../Game/encounter-stage/shells/NudgePhaseShell';
+import { CARDS_PER_ROW, NudgePhaseShell } from '../Game/encounter-stage/shells/NudgePhaseShell';
+import { CARD_WIDTH_PX } from '../shared/CardFace';
 import { buildMeetingNudgePhaseModel, meetingSpendRequests } from './buildMeetingNudgePhaseModel';
 import type { NudgeSpendRequest } from '../Game/encounter-stage/nudgeCommit';
 import { resolveBondTest } from '../../engine/meetingEncounter';
@@ -13,6 +14,25 @@ import { toHungerId } from '../../types/hunger';
 import type { StoredHungerId } from '../../types/hunger';
 import { MEETING_FORMATIVE_TEST_COUNT } from '../../data/meeting-nudge-constants';
 import { personalizeBondTest } from '../../engine/bondTestVoice';
+import { useFitToParentHeight } from './fitToViewport';
+
+/**
+ * THR-2195 — every stage of this beat centres its column with `margin-block: auto`
+ * inside a top-aligned scroll box, never with `justify-content: center`. A centred
+ * flex column taller than its box spills half its overflow above the top edge,
+ * where scrollTop is already 0 and the wheel can never reach it (cold playtest
+ * round 7: the bond test opened mid-paragraph at 1920x1080). Auto margins centre a
+ * short column and collapse to 0 on a tall one, so the opening stays reachable.
+ */
+export const BOND_STAGE_CLASS = 'h-screen flex flex-col items-center overflow-y-auto';
+const SAFE_CENTER: React.CSSProperties = { marginBlock: 'auto', flexShrink: 0 };
+
+/** Gap between hand cards — mirrors NudgePhaseShell's row gap. */
+const HAND_CARD_GAP_PX = 12;
+/** The bond test column's content width: exactly one full hand row (THR-2195). */
+export const BOND_HAND_ROW_WIDTH_PX = CARDS_PER_ROW * CARD_WIDTH_PX + (CARDS_PER_ROW - 1) * HAND_CARD_GAP_PX;
+/** The candidate portrait beside the setup prose. @range 120–200px */
+const BOND_PORTRAIT_WIDTH = 'min(150px, 11vw)';
 
 interface BondBeatProps {
   candidate: NarrativeCandidate;
@@ -90,6 +110,11 @@ export function BondBeat({
   const [editingName, setEditingName] = useState(false);
   const [name, setName] = useState(candidate.name);
 
+  // THR-2195 — the bond test's column (portrait, voice, setup, whole hand) zooms
+  // down to fit the viewport, the way FormativeTestBeat's does (THR-1804, Law 33).
+  const testFitRef = useRef<HTMLDivElement>(null);
+  useFitToParentHeight(testFitRef, [stage, bondTest]);
+
   const sphereColor = getSphereColor(primarySphere);
   const bondProse = BOND_PROSE[hungerId] ?? BOND_PROSE_FALLBACK;
 
@@ -144,47 +169,68 @@ export function BondBeat({
       bondTest.godVoiceByHunger[toHungerId(hungerId) ?? ''] ?? bondTest.godVoiceFallback;
     return (
       <div
-        className="h-screen flex flex-col items-center justify-center overflow-y-auto"
+        className={BOND_STAGE_CLASS}
         style={{ background: SCENE_BG }}
         data-testid="bond-test-stage"
       >
-        <div style={{ maxWidth: 900, padding: '4vh 6vw' }}>
-          {/* Persistent candidate portrait — the Sensing likeness, carried
-              through every beat (verdict 12a: the only human likeness shown). */}
+        <div
+          ref={testFitRef}
+          data-testid="bond-test-column"
+          style={{
+            ...SAFE_CENTER,
+            // THR-2195 — the content box holds one full hand row, so the hand
+            // wraps at CARDS_PER_ROW (two rows for 8 cards), not at three.
+            boxSizing: 'content-box',
+            maxWidth: BOND_HAND_ROW_WIDTH_PX,
+            padding: '4vh 6vw',
+          }}
+        >
+          {/* THR-2195 — the portrait sits beside the god voice and the setup,
+              not above them: stacked, it cost the column a card row of height. */}
           <div
-            style={{
-              width: 'min(200px, 16vw)',
-              aspectRatio: '3/4',
-              backgroundImage: `url(${candidate.imageAssetPath}), ${candidate.placeholderGradient}`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              maskImage: 'radial-gradient(ellipse 90% 90% at center, black 30%, transparent 92%)',
-              WebkitMaskImage: 'radial-gradient(ellipse 90% 90% at center, black 30%, transparent 92%)',
-              marginBottom: '2vh',
-            }}
-          />
-          <p
-            style={{
-              fontFamily: FONT_PROSE,
-              fontStyle: 'italic',
-              fontSize: 'var(--text-xs)',
-              color: 'rgba(212,168,122,0.7)',
-              marginBottom: 12,
-              lineHeight: 1.6,
-            }}
+            data-testid="bond-test-header"
+            style={{ display: 'flex', alignItems: 'center', gap: '1.5vw', marginBottom: '1vh' }}
           >
-            {godVoice}
-          </p>
-          <p
-            style={{
-              fontFamily: FONT_PROSE,
-              fontSize: '1rem',
-              color: 'rgba(200,190,170,0.85)',
-              lineHeight: 1.7,
-            }}
-          >
-            {bondTest.setup}
-          </p>
+            {/* Persistent candidate portrait — the Sensing likeness, carried
+                through every beat (verdict 12a: the only human likeness shown). */}
+            <div
+              style={{
+                width: BOND_PORTRAIT_WIDTH,
+                flexShrink: 0,
+                aspectRatio: '3/4',
+                backgroundImage: `url(${candidate.imageAssetPath}), ${candidate.placeholderGradient}`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                maskImage: 'radial-gradient(ellipse 90% 90% at center, black 30%, transparent 92%)',
+                WebkitMaskImage: 'radial-gradient(ellipse 90% 90% at center, black 30%, transparent 92%)',
+              }}
+            />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p
+                style={{
+                  fontFamily: FONT_PROSE,
+                  fontStyle: 'italic',
+                  fontSize: 'var(--text-xs)',
+                  color: 'rgba(212,168,122,0.7)',
+                  marginBottom: 12,
+                  lineHeight: 1.6,
+                }}
+              >
+                {godVoice}
+              </p>
+              <p
+                data-testid="bond-test-setup"
+                style={{
+                  fontFamily: FONT_PROSE,
+                  fontSize: '1rem',
+                  color: 'rgba(200,190,170,0.85)',
+                  lineHeight: 1.7,
+                }}
+              >
+                {bondTest.setup}
+              </p>
+            </div>
+          </div>
           {/* THR-1732 — the shell's hand bar is `position: sticky` against this
               beat's scrolling column; no ancestor between here and that column
               may set `overflow`, or the commit falls back below the fold. */}
@@ -205,11 +251,11 @@ export function BondBeat({
     const fateLine = selectBondFateLine(outcome, candidate.name);
     return (
       <div
-        className="h-screen flex flex-col items-center justify-center"
+        className={BOND_STAGE_CLASS}
         style={{ background: SCENE_BG }}
         data-testid="bond-reveal-stage"
       >
-        <div style={{ maxWidth: 640, textAlign: 'center', padding: '0 6vw' }}>
+        <div style={{ ...SAFE_CENTER, maxWidth: 640, textAlign: 'center', padding: '0 6vw' }}>
           {fateLine.text && (
             <p
               data-testid="bond-fate-line"
@@ -275,10 +321,8 @@ export function BondBeat({
   });
 
   return (
-    <div
-      className="h-screen flex flex-col items-center justify-center"
-      style={{ background: SCENE_BG }}
-    >
+    <div className={BOND_STAGE_CLASS} style={{ background: SCENE_BG }} data-testid="bond-naming-stage">
+      <div className="flex flex-col items-center" style={SAFE_CENTER}>
       {/* Vision portrait — fades in */}
       <div
         style={{
@@ -410,6 +454,7 @@ export function BondBeat({
       >
         {BOND_RELEASE_TEXT}
       </button>
+      </div>
     </div>
   );
 }
