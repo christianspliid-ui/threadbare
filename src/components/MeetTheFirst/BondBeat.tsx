@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { BondOutcome, BondTest, NarrativeCandidate, SparkVision } from '../../types/meetingEncounter';
 import { BOND_PROSE, BOND_PROSE_FALLBACK, BOND_RELEASE_TEXT, MEETING_FATE_REVEAL_CONTINUE } from '../../data/meeting-narrative-prose';
 import { getSphereColor } from '../../data/sphereIcons';
@@ -13,6 +13,18 @@ import { toHungerId } from '../../types/hunger';
 import type { StoredHungerId } from '../../types/hunger';
 import { MEETING_FORMATIVE_TEST_COUNT } from '../../data/meeting-nudge-constants';
 import { personalizeBondTest } from '../../engine/bondTestVoice';
+import { useFitToParentHeight } from './fitToViewport';
+
+/**
+ * THR-2195 — every stage of this beat centres its column with `margin-block: auto`
+ * inside a top-aligned scroll box, never with `justify-content: center`. A centred
+ * flex column taller than its box spills half its overflow above the top edge,
+ * where scrollTop is already 0 and the wheel can never reach it (cold playtest
+ * round 7: the bond test opened mid-paragraph at 1920x1080). Auto margins centre a
+ * short column and collapse to 0 on a tall one, so the opening stays reachable.
+ */
+export const BOND_STAGE_CLASS = 'h-screen flex flex-col items-center overflow-y-auto';
+const SAFE_CENTER: React.CSSProperties = { marginBlock: 'auto', flexShrink: 0 };
 
 interface BondBeatProps {
   candidate: NarrativeCandidate;
@@ -90,6 +102,11 @@ export function BondBeat({
   const [editingName, setEditingName] = useState(false);
   const [name, setName] = useState(candidate.name);
 
+  // THR-2195 — the bond test's column (portrait, voice, setup, whole hand) zooms
+  // down to fit the viewport, the way FormativeTestBeat's does (THR-1804, Law 33).
+  const testFitRef = useRef<HTMLDivElement>(null);
+  useFitToParentHeight(testFitRef, [stage, bondTest]);
+
   const sphereColor = getSphereColor(primarySphere);
   const bondProse = BOND_PROSE[hungerId] ?? BOND_PROSE_FALLBACK;
 
@@ -144,11 +161,15 @@ export function BondBeat({
       bondTest.godVoiceByHunger[toHungerId(hungerId) ?? ''] ?? bondTest.godVoiceFallback;
     return (
       <div
-        className="h-screen flex flex-col items-center justify-center overflow-y-auto"
+        className={BOND_STAGE_CLASS}
         style={{ background: SCENE_BG }}
         data-testid="bond-test-stage"
       >
-        <div style={{ maxWidth: 900, padding: '4vh 6vw' }}>
+        <div
+          ref={testFitRef}
+          data-testid="bond-test-column"
+          style={{ ...SAFE_CENTER, maxWidth: 900, padding: '4vh 6vw' }}
+        >
           {/* Persistent candidate portrait — the Sensing likeness, carried
               through every beat (verdict 12a: the only human likeness shown). */}
           <div
@@ -205,11 +226,11 @@ export function BondBeat({
     const fateLine = selectBondFateLine(outcome, candidate.name);
     return (
       <div
-        className="h-screen flex flex-col items-center justify-center"
+        className={BOND_STAGE_CLASS}
         style={{ background: SCENE_BG }}
         data-testid="bond-reveal-stage"
       >
-        <div style={{ maxWidth: 640, textAlign: 'center', padding: '0 6vw' }}>
+        <div style={{ ...SAFE_CENTER, maxWidth: 640, textAlign: 'center', padding: '0 6vw' }}>
           {fateLine.text && (
             <p
               data-testid="bond-fate-line"
@@ -275,10 +296,8 @@ export function BondBeat({
   });
 
   return (
-    <div
-      className="h-screen flex flex-col items-center justify-center"
-      style={{ background: SCENE_BG }}
-    >
+    <div className={BOND_STAGE_CLASS} style={{ background: SCENE_BG }} data-testid="bond-naming-stage">
+      <div className="flex flex-col items-center" style={SAFE_CENTER}>
       {/* Vision portrait — fades in */}
       <div
         style={{
@@ -410,6 +429,7 @@ export function BondBeat({
       >
         {BOND_RELEASE_TEXT}
       </button>
+      </div>
     </div>
   );
 }
