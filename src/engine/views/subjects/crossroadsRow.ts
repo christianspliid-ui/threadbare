@@ -50,6 +50,7 @@ import { castTargetBand, dominionScaledCost } from '../../dominion';
 import { worldRefKindOf } from '../../undertakingDeed';
 import { getStrategicTemplate } from '../../strategicActionCandidates';
 import { getEncounterForeshadowingById } from '../../foreshadowing/encounterForeshadowing';
+import { isLocationNode, isPlaceNode } from '../../sublocationShape';
 
 /** The Inspector registry id of the row (and the badge's scroll target). */
 export const CROSSROADS_ROW_TYPE_ID = 'crossroads';
@@ -71,7 +72,11 @@ function roadLine(state: GameState, agentId: string, option: CrossroadsOption, r
   try {
     if (option.family === 'encounter') {
       if (!runtime) return null;
-      const f = getEncounterForeshadowingById(state, agentId, option.templateId, state.tick, runtime);
+      // THR-2198: ground the line at the place the row already names ("at Sacred Grove"),
+      // so the matter is "what stirs at Sacred Grove", not the no-place pool.
+      const target = option.targetId ? state.graph.getNode(option.targetId) : null;
+      const placeName = target && (isLocationNode(target) || isPlaceNode(target)) ? target.name : undefined;
+      const f = getEncounterForeshadowingById(state, agentId, option.templateId, state.tick, runtime, placeName);
       const line = firstSentence(f.tooltipProse ?? f.prose);
       return line && !line.includes('{') && line !== '...' ? line : null;
     }

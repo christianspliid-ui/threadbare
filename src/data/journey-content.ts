@@ -154,13 +154,15 @@ const CALL_FALLBACK: JourneyBeatTemplate = {
       key: 'generic_call',
       label: 'The Thread Stirs',
       score: scoreGeneric,
-      setupProse: 'The thread between god and mortal hums with new energy. Something is beginning — a story that will reshape this corner of the world.',
-      tensionProse: 'The First stands at the threshold between the life they know and the destiny they were chosen for.',
+      // THR-2198: the beat fires after the first chapters, so it names what has already
+      // begun rather than announcing a start ("the journey begins" read out of order).
+      setupProse: 'The thread between god and mortal has hummed since the day it was woven. What began then has grown into a story that will reshape this corner of the world.',
+      tensionProse: 'Since the binding, The First has stood between an old life and a road not yet walked, and the road is calling louder.',
       choices: [
         {
           id: 'call_guide',
           text: 'Guide them gently toward their path',
-          effects: { interventionType: 'supportive', consequenceProse: 'A gentle nudge. The journey begins.' },
+          effects: { interventionType: 'supportive', consequenceProse: 'A gentle nudge. The road already under way finds its footing.' },
         },
         {
           id: 'call_observe',

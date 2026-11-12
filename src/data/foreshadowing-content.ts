@@ -189,7 +189,7 @@ export const MOTIVE_CLAUSES: Record<MotiveContributionKind, readonly string[]> =
   ],
   personality: [
     '{Subject} {v:go} because this is the kind of thing {subject} always {v:go} toward.',
-    '{Subject} {v:take} {matter} on because it fits how {subject} {v:move} through the world.',
+    '{Subject} {v:take} on {matter} because it fits how {subject} {v:move} through the world.',
     'This is {object} all over — {subject} {v:mean} to meet {matter} head-on.',
     '{Subject} {v:answer} {matter} the way {subject} {v:answer} most things, plainly and soon.',
   ],

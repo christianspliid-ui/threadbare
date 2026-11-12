@@ -212,7 +212,7 @@ const SAMPLE_CARD_ACT_HANDLERS: CardActHandlers = { fire: () => ({ ok: true }), 
 const SAMPLE_DETAIL_SECTIONS: DetailPageSection[] = [
   {
     kind: 'prose',
-    label: 'Disposition toward her',
+    label: 'How Seren regards you',
     gold: true,
     tier: 'notable',
     typeId: 'disposition_toward_her',
