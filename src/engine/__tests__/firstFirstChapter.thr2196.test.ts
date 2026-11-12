@@ -28,15 +28,15 @@ describe('THR-2196 item 1 — a lost join test is not a joining', () => {
   it('bf.join on failure shows the sent-back reaction with no tally', () => {
     const t = getUnifiedTemplateById('bf.join')!;
     const v = resolveAftermathVariant(t.aftermathConfig!, [], 'failure');
-    expect(v.reactions.map(r => r.label)).toEqual(['Sent back to make cleaner joints.']);
-    expect(v.reactions.flatMap(r => r.effects)).toEqual([]);
+    expect((v.reactions ?? []).map(r => r.label)).toEqual(['Sent back to make cleaner joints.']);
+    expect((v.reactions ?? []).flatMap(r => r.effects)).toEqual([]);
     expect(v.changes).toEqual([]);
   });
 
   it('bf.join on success still welcomes the Fellow', () => {
     const t = getUnifiedTemplateById('bf.join')!;
     const v = resolveAftermathVariant(t.aftermathConfig!, [], 'success');
-    expect(v.reactions[0].label).toBe('{name} is a Fellow.');
+    expect(v.reactions?.[0]?.label).toBe('{name} is a Fellow.');
   });
 
   it.each(JOIN_IDS)('%s carries no effect on any losing outcome', (id) => {
@@ -44,8 +44,8 @@ describe('THR-2196 item 1 — a lost join test is not a joining', () => {
     expect(t, `${id} is registered`).toBeDefined();
     for (const outcome of LOSING) {
       const v = resolveAftermathVariant(t!.aftermathConfig!, [], outcome);
-      expect(v.reactions.map(r => r.id), `${id} ${outcome}`).toEqual(['join_deferred']);
-      expect(v.reactions.flatMap(r => r.effects), `${id} ${outcome}`).toEqual([]);
+      expect((v.reactions ?? []).map(r => r.id), `${id} ${outcome}`).toEqual(['join_deferred']);
+      expect((v.reactions ?? []).flatMap(r => r.effects), `${id} ${outcome}`).toEqual([]);
     }
   });
 
@@ -54,7 +54,7 @@ describe('THR-2196 item 1 — a lost join test is not a joining', () => {
     const other = getUnifiedTemplateById('ag.join.1') ?? undefined;
     // ag.join's band is keyed to ag.join alone; the success ending keeps its tally.
     const win = resolveAftermathVariant(t.aftermathConfig!, [], 'success');
-    expect(win.reactions[0].effects.length).toBeGreaterThan(0);
+    expect(win.reactions?.[0]?.effects.length ?? 0).toBeGreaterThan(0);
     if (other?.aftermathConfig) {
       expect(other.aftermathConfig.fallback.byOutcome).toBeUndefined();
     }
