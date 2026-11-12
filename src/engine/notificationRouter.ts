@@ -153,6 +153,22 @@ export function formatGroupHeadline(template: string, count: number): string {
   return template.replace(/\{count\}/g, (_m, offset: number) => countInWords(count, offset === 0));
 }
 
+/**
+ * The newest `TOAST_MAX_VISIBLE` toasts, never dropping one the player holds open
+ * (`heldFrom` set, THR-2194): a held toast keeps its slot and the cap trims the rest,
+ * oldest first. Order is kept. Pure; exported for tests.
+ */
+export function capToasts(toasts: readonly ToastItem[]): ToastItem[] {
+  const held = toasts.filter(t => t.heldFrom !== undefined).length;
+  let room = Math.max(0, TOAST_MAX_VISIBLE - held);
+  const keep = new Array<boolean>(toasts.length).fill(false);
+  for (let i = toasts.length - 1; i >= 0; i--) {
+    if (toasts[i].heldFrom !== undefined) keep[i] = true;
+    else if (room > 0) { keep[i] = true; room -= 1; }
+  }
+  return toasts.filter((_t, i) => keep[i]);
+}
+
 /** Index of the newest still-showing toast collecting burst kind `key`, or -1. */
 function findLiveGroupToast(toasts: readonly ToastItem[], key: string, now: number): number {
   for (let i = toasts.length - 1; i >= 0; i--) {
@@ -370,7 +386,7 @@ export function routeNotifications(
   const trimmedAtCap = (currentState.alertsTrimmedAtCap ?? 0) + trimmed.trimmedAtCap;
 
   return {
-    toasts: newToasts.slice(-TOAST_MAX_VISIBLE),
+    toasts: capToasts(newToasts),
     alerts: trimmed.alerts,
     ...(trimmedAtCap > 0 ? { alertsTrimmedAtCap: trimmedAtCap } : {}),
     popupQueue: newPopupQueue,

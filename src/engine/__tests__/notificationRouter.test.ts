@@ -307,3 +307,17 @@ describe('routeNotifications — toast bursts (THR-2194, Law 49)', () => {
     expect(result.toasts.map(t => t.message)).toEqual(['A god schemes.', "Two rulers' agendas come due"]);
   });
 });
+
+describe('capToasts — a held toast keeps its slot (THR-2194)', () => {
+  it('keeps a held group when a burst of ungrouped toasts passes the cap', () => {
+    const held = { id: 'g', message: 'Two rulers', count: 2, createdTick: 1, expiresAt: Infinity, heldFrom: 5000 };
+    let state: NotificationState = { ...EMPTY_STATE, toasts: [held] };
+    const events = Array.from({ length: TOAST_MAX_VISIBLE + 2 }, (_, i) =>
+      makeEvent({ id: `u${i}`, tick: 2, message: `Line ${i}.`, notification: { channel: 'toast' } }));
+    state = routeNotifications(events, state, NOW);
+    expect(state.toasts).toHaveLength(TOAST_MAX_VISIBLE);
+    expect(state.toasts[0].id).toBe('g');
+    expect(state.toasts.slice(1).map(t => t.id)).toEqual(
+      events.slice(-(TOAST_MAX_VISIBLE - 1)).map(e => e.id));
+  });
+});
