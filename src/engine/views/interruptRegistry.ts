@@ -369,7 +369,12 @@ export function resolveInterrupts(
   const mayTakeFreeSlot = (s: InterruptSurface) => {
     if (s.waitsTurn === 'dialogs' && dialogs.length > 0) return false;
     if (!isArrival(s)) return true;
-    return nonArrivalWanting.length === 0 && !popupShown && quiet;
+    // THR-2197 — an arrival ceremony (the rite) still goes ahead of the receipt, which
+    // waits for the foreground (R5), as it did before the rite became an arrival.
+    const waitsFor = homeOf(s) === 'ceremony'
+      ? nonArrivalWanting.filter(o => o.waitsTurn !== 'foreground')
+      : nonArrivalWanting;
+    return waitsFor.length === 0 && !popupShown && quiet;
   };
 
   // R2 — the incumbent (the first shown foreground surface in list order).

@@ -154,6 +154,12 @@ describe('THR-2197 — the threading rite and the receipt wait like arrivals', (
     expect(r.heldArrivals.map(h => h.id)).toEqual(['PremonitionModal']);
   });
 
+  it('a due rite still goes ahead of a pending receipt, as before (review gate round 2)', () => {
+    const r = resolveInterrupts(snap({ threadingRitePending: true, divineReceiptPending: true }));
+    expect(r.foreground).toBe('threading-rite');
+    expect(r.open).toEqual(['ThreadingRite']);
+  });
+
   it('the receipt still waits for a foreground already on screen', () => {
     const r = resolveInterrupts(snap({ divineReceiptPending: true, premonitionPending: true, alreadyShown: ['PremonitionModal'], foregroundIncumbent: 'premonition' }));
     expect(r.open).toEqual(['PremonitionModal']);
