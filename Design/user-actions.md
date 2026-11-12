@@ -1,12 +1,8 @@
 # User Action Required
 
-**Last updated:** 2026-11-12 20:53 local (19:53 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-12 21:57 local (20:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
-
-### What should the design lane plan next? (new 8 Nov)
-
-The builders have used up the agreed work. The last ticket, [away leans](https://linear.app/threadbare/issue/THR-2189), merged on 8 Nov and is live. Nothing is ready to build. **Reply with a system, or with one of the warm-playtest problems:** [rival gods you can't answer](https://linear.app/threadbare/issue/THR-2172), [no "while you were away"](https://linear.app/threadbare/issue/THR-2173), ["Fated" failing with no reason](https://linear.app/threadbare/issue/THR-2171). If you don't reply, the lanes wait for the next playtest round to fill the list again. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-08.md)*
 
 ### Sunday 8 – Thursday 12 Nov: was the computer off or the app closed, or was this a pause? (new 12 Nov)
 
@@ -54,6 +50,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-12: the shelf refilled without a direction call. Cold playtest round 7 and the weekly screen review filed new work, so "what should the design lane plan next?" is retired.** ([round 7](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-7.md))
+- **2026-11-12: the bonding scene opens at its first line and fits one screen, and it is live** ([THR-2195](https://linear.app/threadbare/issue/THR-2195)). Merged via [#2799](https://github.com/christianspliid-ui/threadbare/pull/2799).
 - **2026-11-08: a god's lean on a mortal who is away now waits for them to come back, with one honest "away" line, and it is live** ([THR-2189](https://linear.app/threadbare/issue/THR-2189)). Merged via [#2795](https://github.com/christianspliid-ui/threadbare/pull/2795).
 - **2026-11-08: leftover mortal-summary code that only the deleted mortal panel used is gone; nothing changes on screen** ([THR-2192](https://linear.app/threadbare/issue/THR-2192)). Merged via [#2794](https://github.com/christianspliid-ui/threadbare/pull/2794).
 - **2026-11-08: a mortal's they/them second verb keeps its "s"** ([THR-1958](https://linear.app/threadbare/issue/THR-1958)). Merged via [#2793](https://github.com/christianspliid-ui/threadbare/pull/2793).
@@ -62,8 +60,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-07: a loan or favour that runs out its term no longer takes the pair's feelings for each other with it, and it is live** ([THR-2045](https://linear.app/threadbare/issue/THR-2045/an-agreement-that-runs-out-its-term-takes-the-pairs-bond-with-it)). Merged via [#2789](https://github.com/christianspliid-ui/threadbare/pull/2789).
 - **2026-11-07: a mortal's Story list now names the deed in words ("Destroy a power"), never the game's internal code, and it is live** ([THR-2145](https://linear.app/threadbare/issue/THR-2145)). Merged via [#2787](https://github.com/christianspliid-ui/threadbare/pull/2787).
 - **2026-11-07: a god's lean now waits for its road instead of lapsing, and it is live** ([THR-2188](https://linear.app/threadbare/issue/THR-2188)). Merged via [#2784](https://github.com/christianspliid-ui/threadbare/pull/2784).
-- **2026-11-07: the world no longer runs the same day twice, and it is live** ([THR-1921](https://linear.app/threadbare/issue/THR-1921/orchestrator-event-ids-collide-evt-141-10-25-duplicate-react-keys-in)). Merged via [#2783](https://github.com/christianspliid-ui/threadbare/pull/2783).
-- **2026-11-07: a screen reader now reads an encounter's opening picture as "Scene from …", never the game's hidden setup data, and it is live** ([THR-1733](https://linear.app/threadbare/issue/THR-1733/the-encounter-illustrations-alt-text-is-the-whole-encoded-contract)). Merged via [#2781](https://github.com/christianspliid-ui/threadbare/pull/2781).
 
 ---
 
