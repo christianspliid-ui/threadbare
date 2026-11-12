@@ -4853,6 +4853,8 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
   },
   {
     id: 'AX-STAR-05',
+    // THR-2196: the setup makes the mortal the settlement healer's last student.
+    castsTrade: ['healer', 'alchemist'],
     category: 'axiological',
     targetValuePair: 'sacrifice_survival',
     setup: '{agent.name} is the only person in {agent.location} who knows the herb-lore. The settlement\'s healer died last winter, and {agent.name} — the healer\'s last student — is all that remains. Now a hunting party has returned with two badly wounded members, and the wounds are beyond {agent.name}\'s skill. A better healer exists in the mountain settlement, two days\' hard travel through wolf territory. {agent.name} can go and fetch the healer — but if {agent.name} dies in the mountains, the settlement loses its only medical knowledge. One trip to save two people might cost the village its ability to save anyone.',
@@ -10168,6 +10170,8 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
   },
   {
     id: 'GR-FACTION-01',
+    // THR-2196: the setup makes the mortal a successful trader.
+    castsTrade: ['merchant', 'trader', 'broker', 'appraiser'],
     category: 'general',
     setup: '{agent.name}\'s trade success attracts attention. A representative of the regional merchant guild arrives in {agent.location} and offers membership: access to trade routes, credit networks, information sharing, and the guild\'s protection against bandits and bad debtors. The cost: a percentage of all profits, compliance with guild pricing rules, and loyalty to guild interests over settlement interests when the two conflict.',
     godVoice: '',

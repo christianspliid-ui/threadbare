@@ -76,7 +76,13 @@ const TRADE_CASTING = [
   /\{agent\.name\} has served the settlement\\?'s [a-z]+/,
   /takes \{agent\.name\} as an apprentice/,
   /Working at the settlement\\?'s forge/,
+  /the [a-z]+\\?'s last student/,
+  /\{agent\.name\}\\?'s trade success/,
+  /who knows the herb-lore/,
 ];
+
+/** The dilemmas known to cast a trade. A guard that a pattern above is not dead. */
+const KNOWN_TRADE_CASTING = ['AX-HEART-01', 'AX-GOLD-03', 'RC-SHADOW-02', 'DS-ENERGY-03', 'AX-STAR-05', 'GR-FACTION-01'];
 
 describe('THR-2196 item 3 — the meeting tells the trade the bond writes', () => {
   it('every dilemma whose setup casts a trade declares castsTrade', () => {
@@ -85,6 +91,10 @@ describe('THR-2196 item 3 — the meeting tells the trade the bond writes', () =
       .filter(d => !d.castsTrade || d.castsTrade.length === 0)
       .map(d => d.id);
     expect(untagged).toEqual([]);
+    const matched = ENRICHED_DILEMMA_LIBRARY
+      .filter(d => TRADE_CASTING.some(re => re.test(d.setup)))
+      .map(d => d.id);
+    for (const id of KNOWN_TRADE_CASTING) expect(matched, `${id} matches a pattern`).toContain(id);
   });
 
   it('no vignette can be dealt a dilemma casting a trade it does not hold', () => {
