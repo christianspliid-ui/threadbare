@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-13 11:58 local (10:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-13 12:58 local (11:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -33,6 +33,13 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
   - **Safeguards:** the builder stops tuning at the first setting where a full hand is affordable less than half the time. At least one card must stay playable at nine steps in ten, a god who plays nothing must keep its threads, and Meet The First must not change.
   - **Veto:** held for your veto until 20:46 UTC today. Say "veto purse bite" to keep the god's income as it is and only raise prices. The measurements say that alone will not make anyone choose.
 
+- [Stop the world only for real decisions](https://linear.app/threadbare/issue/THR-2203) ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-13-thr-2203-stop-only-for-real-decisions.md)). The world now stops only when you have something to decide or something of your own to read:
+  - **An ending you had no part in waits on its badge.** If you played no card in a chapter, its ending no longer stops the clock. It sits on the mortal's thread row as "theirs alone", "played out without your hand", or "went badly without your hand" (the last one in the failure colour), one click away. Say "veto quiet endings" to keep every ending stopping the world.
+  - **A Fated step with only dealt cards plays out within the day.** If a step already reads Fated before you play anything, and its cards are only the ones dealt from your repertoire, it shows on the badge as "Fated — plays out soon unless you step in". Open it and the world stops as usual; leave it and it plays out. Steps with authored cards always stop: Flawed Steel, The Boundary Survey and The Well Sinking are untouched. Say "veto Fated fuse" to keep every Fated step stopping.
+  - **The texts change with it.** Game Law 27 gains: *"A moment matters when it offers the god a move or reports the god's own hand; a chapter that did neither waits on its badge."* UI Law 39, the rulebook and one Vision sentence change to match ([game laws](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/game-design/laws.md), [UI laws](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/design-system/laws.md)).
+  - **Template chapters now deal different hands, without any shuffle.** Easy steps get the guard cards (Buy The Floor, Spare The Worst); middle steps get Draw On Character; hard steps get Press The Odds and Draw On Character. Your first sphere's card is always offered; your second sphere's card has to earn its place. In the test, the witness god's nine template steps went from one hand to five. Say "veto stakes hands" to keep the old deal.
+  - Both build tickets are held for your veto until 23:40 UTC today: [An ending the god had no part in waits on its badge…](https://linear.app/threadbare/issue/THR-2211) and [A dealt hand reads how hard the step is](https://linear.app/threadbare/issue/THR-2212). *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-13c.md)*
+
 Say "veto <title>" to reverse any of these.
 
 ## This week's screens
@@ -41,16 +48,17 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy but paused: 3 tickets ready, none being built.** All three are held for your veto until about 20:45 UTC, so the builder is idle on purpose until then.
+**Healthy but paused: 5 tickets ready, none being built.** All five are held for your veto (three until about 20:45 UTC, two until 23:40 UTC), so the builder is idle on purpose until then.
 
-- Ready: [THR-2201 Make the purse bite](https://linear.app/threadbare/issue/THR-2201/make-the-purse-bite-a-full-hand-should-cost-more-than-the-god-can), [THR-2207 Stay the Unmaking](https://linear.app/threadbare/issue/THR-2207/stay-the-unmaking-a-god-card-that-slows-doom-while-you-hold-it-and-the), [THR-2208 A bound mortal's deeds fill the Mandate](https://linear.app/threadbare/issue/THR-2208/a-bound-mortals-deeds-fill-the-mandate-a-threaded-chapter-credits-it).
-- Not yet ready: [THR-2209 Rebuke](https://linear.app/threadbare/issue/THR-2209/rebuke-a-god-card-that-answers-a-rival-on-the-place-it-just-pressed) sits in Todo; the orchestrator promotes it when it is unblocked.
-- Shipped since the last brief: [THR-2193](https://linear.app/threadbare/issue/THR-2193) thread rows wrap ([PR #2807](https://github.com/christianspliid-ui/threadbare/pull/2807)), and the "give both clocks a verb" plan ([PR #2806](https://github.com/christianspliid-ui/threadbare/pull/2806)). Both are live.
+- Ready, held until ~20:45 UTC: [THR-2201 Make the purse bite](https://linear.app/threadbare/issue/THR-2201/make-the-purse-bite-a-full-hand-should-cost-more-than-the-god-can), [THR-2207 Stay the Unmaking](https://linear.app/threadbare/issue/THR-2207/stay-the-unmaking-a-god-card-that-slows-doom-while-you-hold-it-and-the), [THR-2208 A bound mortal's deeds fill the Mandate](https://linear.app/threadbare/issue/THR-2208/a-bound-mortals-deeds-fill-the-mandate-a-threaded-chapter-credits-it).
+- Ready, held until 23:40 UTC (new this hour): [THR-2211 An ending the god had no part in waits on its badge](https://linear.app/threadbare/issue/THR-2211/an-ending-the-god-had-no-part-in-waits-on-its-badge-and-a-fated-step), [THR-2212 A dealt hand reads how hard the step is](https://linear.app/threadbare/issue/THR-2212/a-dealt-hand-reads-how-hard-the-step-is-guard-cards-on-easy-steps-the).
+- Not yet ready: [THR-2209 Rebuke](https://linear.app/threadbare/issue/THR-2209/rebuke-a-god-card-that-answers-a-rival-on-the-place-it-just-pressed) is not in Ready for Dev; the orchestrator promotes it when it is unblocked.
+- Shipped since the last brief: the "stop the world only for real decisions" plan ([PR #2808](https://github.com/christianspliid-ui/threadbare/pull/2808)), docs only.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (24 days; In Dev since 15 Oct). No pushed branch and no local worktree names it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- One builder run at 09:51 UTC failed to sign in (a Cloudflare 403 on the API); the next runs were fine. The 09:53 brief did not publish, likely for the same reason.
-- Everything else green: the live site serves the latest main (80720d45), checks on main and the 3 scheduled background jobs pass, no PRs are waiting, all 10 scheduled tasks are on time, and engine speed is normal (152 ms/tick, +8% on the 7-day median).
+- All green: the live site serves the latest game build (80720d45; the one newer commit is docs only), checks on main and the 3 scheduled background jobs pass, no PRs are waiting, all 10 scheduled tasks are on time, and engine speed is normal (150 ms/tick, +5% on the 7-day median).
+- The overnight quiet from 23:04 to 07:49 UTC is normal and needs nothing.
