@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-12 23:58 local (22:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-13 08:50 local (07:50 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -50,6 +50,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-12: the writing check that wrongly failed every "master everyday" brief now reads only the shape column; all three master briefs pass** ([THR-1938](https://linear.app/threadbare/issue/THR-1938)). Merged via [#2804](https://github.com/christianspliid-ui/threadbare/pull/2804).
 - **2026-11-12: several rulers' agendas coming due now fold into one toast that opens to each ruler's line, and it is live** ([THR-2194](https://linear.app/threadbare/issue/THR-2194)). Merged via [#2803](https://github.com/christianspliid-ui/threadbare/pull/2803).
 - **2026-11-12: four small faults from playtest round 7 are fixed, and it is live** ([THR-2198](https://linear.app/threadbare/issue/THR-2198)). Merged via [#2802](https://github.com/christianspliid-ui/threadbare/pull/2802).
 - **2026-11-12: popups now wait for the player's hand to go quiet instead of opening under it, and it is live** ([THR-2197](https://linear.app/threadbare/issue/THR-2197)). Merged via [#2801](https://github.com/christianspliid-ui/threadbare/pull/2801).
@@ -59,7 +60,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-08: a god's lean on a mortal who is away now waits for them to come back, with one honest "away" line, and it is live** ([THR-2189](https://linear.app/threadbare/issue/THR-2189)). Merged via [#2795](https://github.com/christianspliid-ui/threadbare/pull/2795).
 - **2026-11-08: leftover mortal-summary code that only the deleted mortal panel used is gone; nothing changes on screen** ([THR-2192](https://linear.app/threadbare/issue/THR-2192)). Merged via [#2794](https://github.com/christianspliid-ui/threadbare/pull/2794).
 - **2026-11-08: a mortal's they/them second verb keeps its "s"** ([THR-1958](https://linear.app/threadbare/issue/THR-1958)). Merged via [#2793](https://github.com/christianspliid-ui/threadbare/pull/2793).
-- **2026-11-08: "A Work Finished" now says what a mortal actually did, and it is live** ([THR-2075](https://linear.app/threadbare/issue/THR-2075)). Merged via [#2791](https://github.com/christianspliid-ui/threadbare/pull/2791).
 
 ---
 
