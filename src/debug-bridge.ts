@@ -3460,18 +3460,31 @@ if (import.meta.env.DEV) {
 
       const {
         buildNudgeHand, collectHeldTraitIds, collectNudgeModifiers,
-        resolveTraitVariants, selectActiveRider, sumModifiers, totalNudgeCost,
+        resolveTraitVariants, selectActiveRider, sumModifiers, totalNudgeCost, effectiveNudgeCost,
       } = await import('./engine/encounters/nudges');
       const heldTraits = collectHeldTraitIds(graph, actor.id);
       const pool = state.essencePool ?? {};
+      // THR-2201 — the stage's own pricing rules, through the stage's own
+      // helpers: the discount and a sphere-less card's reach are the god's
+      // bought spheres, and step cards carry NUDGE_ESSENCE_COST_SCALE.
+      const { homeSpheresFor, essenceReader } = await import('./engine/views/stage/buildNudgePhaseModel');
+      const { NUDGE_ESSENCE_COST_SCALE } = await import('./data/nudge-constants');
+      const { SPHERE_NAMES } = await import('./types/index');
+      const homeSpheres = state.ascendantIdentity ? homeSpheresFor(state) : [];
+      const accessibleSpheres = SPHERE_NAMES.filter(
+        (s) => ((pool as Record<string, number>)[s] ?? 0) > 0,
+      );
+      const discountSpheres = homeSpheres.length > 0 ? homeSpheres : accessibleSpheres;
       const hand = buildNudgeHand(step, template, {
-        availableEssence: (sphere) => (sphere
-          ? (pool as Record<string, number>)[sphere] ?? 0
-          : Object.values(pool as Record<string, number>).reduce((s, v) => s + (v ?? 0), 0)),
-        accessibleSpheres: Object.keys(pool) as import('./types/index').SphereName[],
+        availableEssence: essenceReader(pool as Record<string, number>, homeSpheres),
+        accessibleSpheres,
+        discountSpheres,
+        costScale: NUDGE_ESSENCE_COST_SCALE,
         unlockedTemplateIds: new Set(state.unlockedActionIds ?? []),
         heldTraits,
       });
+      const priceOf = (n: { sphere?: import('./types/index').SphereName; essenceCost: number }) =>
+        effectiveNudgeCost(n, discountSpheres, NUDGE_ESSENCE_COST_SCALE);
       const variants = resolveTraitVariants(template, heldTraits);
       const modifiers = collectNudgeModifiers(step, action.activeNudges, variants);
 
@@ -3482,12 +3495,13 @@ if (import.meta.env.DEV) {
         // Nudges exist only in the attended encounter — a false here means the
         // hand is authored but the scope rule says it is not in play.
         attended: action.effectiveTier === 'story_beat',
-        playable: hand.playable.map(e => ({ id: e.nudge.id, name: e.nudge.name, cost: e.nudge.essenceCost, rider: e.nudge.rider ?? null })),
-        dimmed: hand.dimmed.map(e => ({ id: e.nudge.id, name: e.nudge.name, blocked: e.blocked ?? null })),
+        playable: hand.playable.map(e => ({ id: e.nudge.id, name: e.nudge.name, cost: priceOf(e.nudge), authoredCost: e.nudge.essenceCost, rider: e.nudge.rider ?? null })),
+        dimmed: hand.dimmed.map(e => ({ id: e.nudge.id, name: e.nudge.name, cost: priceOf(e.nudge), authoredCost: e.nudge.essenceCost, blocked: e.blocked ?? null })),
         hidden: [...hand.hidden],
         activeNudges: [...(action.activeNudges ?? [])],
         activeRider: selectActiveRider(step, action.activeNudges, template.id) ?? null,
-        committedCost: totalNudgeCost(step, action.activeNudges),
+        committedCost: totalNudgeCost(step, action.activeNudges, discountSpheres, NUDGE_ESSENCE_COST_SCALE),
+        homeSpheres,
         traitVariants: variants.map(v => ({ traitId: v.traitId, factorLine: v.factorLine })),
         modifiers: modifiers.map(m => ({ source: m.source, delta: m.delta })),
         modifierTotal: sumModifiers(modifiers),

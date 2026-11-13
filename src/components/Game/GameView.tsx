@@ -2782,6 +2782,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       gameState.essencePool,
       requests,
       phase.budgetSphere ?? archetype.sphereAlignment.primary,
+      // THR-2201 — a sphere-less card is paid from the god's own spheres only.
+      phase.payableSpheres,
     );
 
     if (!spend.ok) {

@@ -4022,10 +4022,10 @@ exit
 - **Intent:** The god is what it poured itself into (THR-1749). Remembrance writes the bought sphere vector onto the ascendant node as `spherePoints` (`createAscendant`, with `sphereAlignment` re-derived as the two largest buys); the essence ledger and the essence bar read it through `getSpherePoints` and split income with the one shared `distributeBySpherePoints` (every sphere keeps `UNBOUGHT_SPHERE_INCOME_SHARE`, the rest follows the points), so ledger and readout cannot disagree.
 - **Producer → Consumer:** World Generation, Terrain & Places → Essence & Divine Economy
 - **UL terms:** *Essence*, *Sphere*
-- **Production hits:** 26 total — 1 write, 2 read, 23 unclassified
+- **Production hits:** 27 total — 1 write, 2 read, 24 unclassified
 - **Write sites:** `src/engine/ascendant.ts`
 - **Read sites:** `src/engine/essenceIncome.ts`, `src/engine/influence.ts`
-- **Other hits:** `src/App.tsx`, `src/components/CMS/registry.ts`, `src/components/Remembrance/RemembranceFlow.tsx`, `src/components/Remembrance/RevealBeat.tsx`, `src/components/Remembrance/sphereBuy.ts` +18 more
+- **Other hits:** `src/App.tsx`, `src/components/CMS/registry.ts`, `src/components/Remembrance/RemembranceFlow.tsx`, `src/components/Remembrance/RevealBeat.tsx`, `src/components/Remembrance/sphereBuy.ts` +19 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `sphere-pressure-credits-mandate` — 🔵 UNVERIFIED-OK
