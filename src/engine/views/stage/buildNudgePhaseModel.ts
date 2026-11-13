@@ -1051,7 +1051,13 @@ export function buildNudgePhaseModel(
     cards: pricedCards,
     withheld,
     committedIds,
-    availableEssence: availableEssenceFor(undefined),
+    // The pooled total across every sphere, deliberately NOT the home-sphere sum
+    // (THR-2201 review): `useNudgeHand` subtracts *every* selected card from this
+    // as its overall guard, gated cards of unbought spheres included, so narrowing
+    // it dimmed an Order card the Order pool could pay. The home-sphere reach for a
+    // sphere-less card is enforced by `buildNudgeHand` (above), the budget-sphere
+    // check in the hook, and `payableSpheres` at commit.
+    availableEssence: essenceReader(pool)(undefined),
     // `accessibleSpheres` threaded through for the same reason the card models
     // quote the effective price: omitting it re-quotes a discounted hand at its
     // authored cost, so a reopened stage would report a total the commit path

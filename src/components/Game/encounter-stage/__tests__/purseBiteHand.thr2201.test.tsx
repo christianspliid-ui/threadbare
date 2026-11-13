@@ -16,7 +16,8 @@
  */
 
 import { describe, expect, it, afterEach } from 'vitest';
-import { render, screen, cleanup } from '@testing-library/react';
+import { render, screen, cleanup, renderHook, act } from '@testing-library/react';
+import { useNudgeHand } from '../useNudgeHand';
 import { WorldGraph } from '../../../../engine/graph';
 import type { GameState } from '../../../../types/gameState';
 import type { ActionStep, StepNudge, UnifiedAction, UnifiedActionTemplate } from '../../../../types/unifiedAction';
@@ -86,7 +87,8 @@ describe('THR-2201 · the hand prices only the god\'s own spheres', () => {
     expect(byId.get(COMMON.id)?.state).toBe('dimmed');
     expect(byId.get(COMMON.id)?.blockedCode).toBe('essence_unavailable');
     expect(phase.payableSpheres).toEqual(['mind', 'spirit']);
-    expect(phase.availableEssence).toBeCloseTo(3.5);
+    // The pooled total stays the hook's overall guard (review finding, round 1).
+    expect(phase.availableEssence).toBeCloseTo(2.5 + 1 + 30 * (SPHERE_NAMES.length - 2));
 
     render(<NudgePhaseShell phase={phase} onCommit={() => {}} />);
     const order = screen.getByTestId(`nudge-card-${ORDER.id}`).textContent ?? '';
@@ -95,5 +97,19 @@ describe('THR-2201 · the hand prices only the god\'s own spheres', () => {
     const pips = (text: string) => (text.match(/^✦+/u)?.[0] ?? '').length;
     expect(pips(order)).toBe(3); // full price — before THR-2201 the stray discount showed 2
     expect(pips(mind)).toBe(2);
+  });
+
+  it('selecting a home card leaves an unbought-sphere card its own pool can pay still playable', () => {
+    const s = step();
+    const g = graph();
+    const phase = buildNudgePhaseModel({ template: template(s), activeAction: ACTION, step: s, graph: g, gameState: godState(g) })!;
+    const { result } = renderHook(({ p }) => useNudgeHand(p), { initialProps: { p: phase } });
+    const order = () => result.current.cards.find((c) => c.id === ORDER.id)!;
+    expect(order().interactive).toBe(true);
+    act(() => result.current.toggle(MIND.id));
+    expect(result.current.selectedIds).toEqual([MIND.id]);
+    // Order pays from Order (30); the 2-essence Mind card must not starve it.
+    expect(order().interactive).toBe(true);
+    expect(order().state).toBe('playable');
   });
 });

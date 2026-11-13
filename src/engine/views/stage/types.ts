@@ -945,8 +945,9 @@ export interface EncounterStageNudgePhaseModel {
   /**
    * THR-2201 — the god's own (bought) spheres, primary first: the only pools a
    * sphere-less card may be paid from. The commit passes them to
-   * `spendNudgeEssence`, and `availableEssence` sums the same list, so the hand
-   * prices what the commit charges. Absent on a run with no sphere identity ⇒
+   * `spendNudgeEssence`; `buildNudgeHand` prices a sphere-less card against the
+   * same list, so the hand prices what the commit charges. (`availableEssence`
+   * stays the pooled total — the hook's overall guard.) Absent on a run with no sphere identity ⇒
    * the commit spills across the whole pool, as before.
    */
   payableSpheres?: SphereName[];
