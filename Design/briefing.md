@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-13 18:57 local (17:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-13 19:58 local (18:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -21,6 +21,13 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
+- **New this hour:** [Measure whether the player matters](https://linear.app/threadbare/issue/THR-2205) ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-13-thr-2205-measure-whether-the-player-matters.md)). **Today, playing every card changes nothing about how the age ends.**
+  - **What was tested:** the same world was run twice on each of three seeds. In one run the god never played a card. In the other it played every card it could afford: 117, 178 and 139 cards.
+  - **What happened:** on all three seeds, both runs ended by Doom within 15 days of each other. The First became an Aspect, or lived, the same way in both. The Apotheosis came by day 400 in both. The Mandate never passed 13%. A second card-free run matched the first exactly, so none of this is chance.
+  - **Underneath, play does move things.** The First's chapters differ by 14–35% between the runs, and the outcome mix shifts. None of it reaches the ending. That is the gap the other four "make the middle a game" tickets have to close, and this number will show when one does.
+  - **The measure:** "the player mattered" when the played run differs from the unplayed one in how the age ended, the First's fate, the Apotheosis, the Mandate or the Doom stage. It asks whether the runs ended *differently*, never which ending was better. The game does not rank the player.
+  - **Where it lives:** an on-demand command the builders run when a sibling ticket lands. Your ticket placed it in the weekly review. The pipeline freeze, made permanent this morning, bans new standing lane steps, so that part is held. Say "lift the freeze for the agency number" to have the weekly review run it.
+  - The build ticket is held for your veto until 06:20 UTC tomorrow: [Ship the agency census](https://linear.app/threadbare/issue/THR-2213). Say "veto agency measure" to stop it. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-13d.md)*
 - [Give both clocks a verb](https://linear.app/threadbare/issue/THR-2202) ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-13-thr-2202-give-both-clocks-a-verb.md)). Each threat now has an answer the player can play, paid from the same essence as the nudge cards:
   - **The Mandate:** when a mortal bound to you finishes a chapter, the Mandate goes up. It goes up a little when the chapter is in one of the Mandate's spheres, and more when you played cards of those spheres in it. The goal word now shows the last day ("Rising", "Holding", "Slipping") instead of sitting at "Holding" all run. Say "veto Mandate deeds" to keep it counting only your own hand.
   - **Doom:** a new card, *Stay the Unmaking*, which you get at the first Doom stage. While you hold it, Doom runs at three-quarters speed, and it draws on your essence every day. It never stops Doom. The Doom notice gets a "Stay it" button. Say "veto Stay the Unmaking" to keep Doom unanswerable.
@@ -32,7 +39,6 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
   - **Result in the test runs:** the full hand was affordable at 5 of 13 steps in one world and 2 of 19 in another.
   - **Safeguards:** the builder stops tuning at the first setting where a full hand is affordable less than half the time. At least one card must stay playable at nine steps in ten, a god who plays nothing must keep its threads, and Meet The First must not change.
   - **Veto:** held for your veto until 20:46 UTC today. Say "veto purse bite" to keep the god's income as it is and only raise prices. The measurements say that alone will not make anyone choose.
-
 - [Stop the world only for real decisions](https://linear.app/threadbare/issue/THR-2203) ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-13-thr-2203-stop-only-for-real-decisions.md)). The world now stops only when you have something to decide or something of your own to read:
   - **An ending you had no part in waits on its badge.** If you played no card in a chapter, its ending no longer stops the clock. It sits on the mortal's thread row as "theirs alone", "played out without your hand", or "went badly without your hand" (the last one in the failure colour), one click away. Say "veto quiet endings" to keep every ending stopping the world.
   - **A Fated step with only dealt cards plays out within the day.** If a step already reads Fated before you play anything, and its cards are only the ones dealt from your repertoire, it shows on the badge as "Fated — plays out soon unless you step in". Open it and the world stops as usual; leave it and it plays out. Steps with authored cards always stop: Flawed Steel, The Boundary Survey and The Well Sinking are untouched. Say "veto Fated fuse" to keep every Fated step stopping.
@@ -48,19 +54,19 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy but paused: 5 tickets ready, none being built.** All five are held for your veto (three until about 20:45 UTC, two until 23:40 UTC), so the builder is idle on purpose until then.
+**Healthy but paused: 6 tickets ready, none being built.** All six are held for your veto, so the builder is idle on purpose until the first hold lifts at about 20:45 UTC.
 
 - Ready, held until ~20:45 UTC: [THR-2201 Make the purse bite](https://linear.app/threadbare/issue/THR-2201/make-the-purse-bite-a-full-hand-should-cost-more-than-the-god-can), [THR-2207 Stay the Unmaking](https://linear.app/threadbare/issue/THR-2207/stay-the-unmaking-a-god-card-that-slows-doom-while-you-hold-it-and-the), [THR-2208 A bound mortal's deeds fill the Mandate](https://linear.app/threadbare/issue/THR-2208/a-bound-mortals-deeds-fill-the-mandate-a-threaded-chapter-credits-it).
 - Ready, held until 23:40 UTC: [THR-2211 An ending the god had no part in waits on its badge](https://linear.app/threadbare/issue/THR-2211/an-ending-the-god-had-no-part-in-waits-on-its-badge-and-a-fated-step), [THR-2212 A dealt hand reads how hard the step is](https://linear.app/threadbare/issue/THR-2212/a-dealt-hand-reads-how-hard-the-step-is-guard-cards-on-easy-steps-the).
+- **New:** ready, held until 06:20 UTC tomorrow: [THR-2213 Ship the agency census](https://linear.app/threadbare/issue/THR-2213/ship-the-agency-census-a-hands-off-run-and-a-played-run-on-the-same).
 - Not yet ready: [THR-2209 Rebuke](https://linear.app/threadbare/issue/THR-2209/rebuke-a-god-card-that-answers-a-rival-on-the-place-it-just-pressed) is not in Ready for Dev; the orchestrator promotes it when it is unblocked.
-- No game change shipped since the last brief; main only gained the weekly process review ([#2812](https://github.com/christianspliid-ui/threadbare/pull/2812)). The builder's runs at 17:11, 17:31 and 17:51 UTC each found every ready ticket inside its veto window and stood down, which is correct.
+- No game change shipped since the last brief; main gained the agency-census plan ([#2813](https://github.com/christianspliid-ui/threadbare/pull/2813)) and an impediment note ([#2814](https://github.com/christianspliid-ui/threadbare/pull/2814)). The builder's runs at 18:11, 18:31 and 18:51 UTC each found every ready ticket inside its veto window and stood down, which is correct.
 
 Items for agents, not you:
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (24 days; In Dev since 15 Oct). No pushed branch and no local worktree names it (checked this run); nothing has touched the ticket since 8 Nov. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (24 days; In Dev since 15 Oct). No local worktree names it (checked this run); nothing has touched the ticket since 8 Nov. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
 - Linear read live this run.
-- **Engine speed (for agents, not you):** tick cost 262 ms/tick steady, 82% above the 7-day median (144, 57 rows since 79a90972); top phase agent_decision, 638 agents. Name the merges between 79a90972 and 175d10b0: `git log --oneline --merges 79a90972..175d10b0`. The same commit (175d10b0) measured 165 ms/tick an hour ago, so this reading is probably the machine being busy, not a code change; the next hour's measurement will show which.
-- The live site serves the latest game build (80720d45; the newer commits are docs only). Checks on main and the 3 scheduled background jobs pass. No PRs are waiting to merge. All 10 scheduled tasks are on time, and the worktree reaper ran at 18:40 local.
-- The overnight quiet from 23:04 to 07:49 UTC is normal and needs nothing.
+- Engine speed is back to normal: 155 ms/tick, +7% against the 7-day median, so last hour's 262 ms reading was the machine being busy, not a code change.
+- The live site serves the latest game build (80720d45; the newer commits are docs only). Checks on main and the 3 scheduled background jobs pass. No PRs are waiting to merge. All 10 scheduled tasks are on time, and the worktree reaper ran at 19:40 local.
