@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-13 08:57 local (07:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-13 09:58 local (08:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -21,9 +21,14 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-- [The First's thread row cuts his current story to "raising a p…"](https://linear.app/threadbare/issue/THR-2193) ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-12-thr-2193-thread-row-story-lines-wrap.md)). **The lines under a mortal in the Threads rail now wrap instead of cutting.** What they are working on, their latest chapter's result and their promises show in full, up to three lines each, instead of "raising a p… — all or nothing". The rail had empty room below, and your "room before scroll" law says a panel grows before it cuts. The other choice was shorter hand-written versions of every line; that would mean a new list to keep up to date and would still drop words. If the taller rows ever push the Chronicle off screen, the cap drops to two lines. It is held for your veto until 08:19 UTC tomorrow. Say "veto thread row wrap" to keep rows one line high instead.
+- [Make the purse bite — a full hand should cost more than the god can afford](https://linear.app/threadbare/issue/THR-2201) ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-13-thr-2201-make-the-purse-bite.md)). **Essence becomes scarce mainly because the god earns less, not only because cards cost more.**
+  - **What was tested:** I measured three worlds. The god could afford every card in the hand at every attended step, in all three. Even with prices tripled and a smaller pool, it still could. Attended steps come only every 40 to 48 ticks, and in that time the god's own pools earn about ten times what a hand costs.
+  - **What changes:** cards cost about three times more, each pool holds 35 instead of 50, and the god's base and home-seat income halve. Two hidden rules also change. The cheaper price on your own spheres now goes only to spheres you actually chose. A card with no sphere is now paid from your own spheres, not from all twelve pools added together.
+  - **Result in the test runs:** the full hand was affordable at 5 of 13 steps in one world and 2 of 19 in another.
+  - **Safeguards:** the builder stops tuning at the first setting where a full hand is affordable less than half the time. At least one card must stay playable at nine steps in ten, a god who plays nothing must keep its threads, and Meet The First must not change.
+  - **Veto:** held for your veto until 20:46 UTC today. Say "veto purse bite" to keep the god's income as it is and only raise prices. The measurements say that alone will not make anyone choose.
 
-Say "veto <title>" to reverse any of these. (The thread-row veto window closes at 08:19 UTC today, about 20 minutes from now.)
+Say "veto <title>" to reverse any of these. (The thread-row veto window closed at 08:19 UTC with no veto; the builder has started on it.)
 
 ## This week's screens
 
@@ -31,17 +36,16 @@ Say "veto <title>" to reverse any of these. (The thread-row veto window closes a
 
 ## Queue
 
-**Starved, but it is the morning restart: 1 ticket ready (its veto window ends at 08:19 UTC), nothing being built.** One more fix went live overnight.
+**Starved but moving: 1 ticket ready, 1 being built.**
 
-- Live now: [THR-1938](https://linear.app/threadbare/issue/THR-1938) the writing check that wrongly failed every "master everyday" brief now reads only the shape column ([PR #2804](https://github.com/christianspliid-ui/threadbare/pull/2804)).
-- Ready: [THR-2193](https://linear.app/threadbare/issue/THR-2193) thread row wraps. The builder can take it at 08:19 UTC.
-- Next for the design lane: [THR-2201 Make the purse bite](https://linear.app/threadbare/issue/THR-2201/make-the-purse-bite-a-full-hand-should-cost-more-than-the-god-can), the first of the five tickets you approved on 12 Nov. *— from the orchestrator*
+- Being built: [THR-2193](https://linear.app/threadbare/issue/THR-2193) thread row wraps. The builder claimed it after the veto window closed at 08:19 UTC; its run is active.
+- Ready: [THR-2201 Make the purse bite](https://linear.app/threadbare/issue/THR-2201/make-the-purse-bite-a-full-hand-should-cost-more-than-the-god-can), planned by the design lane this morning and held for your veto until 20:46 UTC.
+- Waiting to merge: [PR #2806](https://github.com/christianspliid-ui/threadbare/pull/2806), the plan for "give both clocks a verb", waiting on its checks.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (24 days; In Dev since 15 Oct). No pushed branch and no local worktree names it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- **Overnight quiet, no action:** no lane wrote anything from 00:04 to 08:44 local (8.7 hours). That is the normal night gap, so it is not an ask. The worktree reaper's newest run is from 23:40 local last night, so the computer was most likely asleep. Every lane restarted at 08:44.
-- Everything else green: the live site serves the latest main (4740df5f), checks on main and the 3 scheduled background jobs pass, no PRs are waiting to merge, all 10 enabled scheduled tasks are on time, and engine speed is normal (135 ms/tick, 4% under the 7-day median).
-- Housekeeping, no action: this run briefly detached the home folder's checkout from `main` by mistake (same commit, no files changed) and put it back within a minute.
+- **Engine speed reading high, for the builder to check:** tick cost 176 ms/tick steady, 25% above the 7-day median (140, 58 rows since dd214308); top phase agent_decision, 638 agents. Name the merges between dd214308 and 1e32e9f6: git log --oneline --merges dd214308..1e32e9f6. The only merge since the 135 ms reading an hour ago was a plan doc, so the likely cause is the builder running on the same computer during the measurement; next hour's reading will tell.
+- Everything else green: the live site is current (only docs changed since the last publish), checks on main and the 3 scheduled background jobs pass, 1 PR is waiting on checks and will merge on green, and the builder is working.
