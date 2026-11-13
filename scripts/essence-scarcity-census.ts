@@ -222,8 +222,13 @@ function playHeldSteps(): void {
     try { phase = buildNudgePhaseModel({ template, activeAction: live, step, graph: state.graph, gameState: state, allowEmptyHand: true }); } catch { phase = undefined; }
     const cards: any[] = phase?.cards ?? [];
     const budget = phase?.budgetSphere ?? primary;
-    // THR-2201 — the commit's reach for a sphere-less card (GameView passes the same field).
-    const payable = phase?.payableSpheres;
+    // THR-2201 — what a player can actually select. `useNudgeHand` gates a
+    // sphere-less card on the budget (primary) pool alone (THR-1706), so the
+    // commit's spill onto other bought spheres is never a way to afford a card.
+    // Charging with `payableSpheres` here counted cards the hand dims (review
+    // cycle 2). Legacy runs (no `payableSpheres`) keep the pooled spill, which
+    // matches the hand's pooled check there.
+    const payable = phase?.payableSpheres ? [budget] : undefined;
     const hand = cards.map(c => ({ id: c.id, cost: Math.max(0, c.essenceCost ?? 0), sphere: c.sphere ?? null, state: c.state }));
     const handCost = sum(hand.map(h => h.cost));
     const charge = (p: any, hs: typeof hand) => spendNudgeEssence(p, hs.map(h => ({ sphere: h.sphere ?? undefined, cost: h.cost })) as any, budget as any, payable);
