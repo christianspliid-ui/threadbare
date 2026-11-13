@@ -1,7 +1,7 @@
 ---
 name: cicd-review
 description: Weekly CI/CD flow review (tb-cicd-review lane, Thursdays). Measures the last week of git flow with `npm run cicd:metrics` plus the pickup lane's run history, appends the row to the metrics series on `ops`, judges every recent harness tweak against its own hypothesis, and ships at most two small, reversible harness tweaks (hooks, routine prompts, skills' procedure text, gate scripts, CI config) with a hypothesis each. Never touches product code. Triggers on "cicd review", "/cicd-review", "review the git flow", "did the routine change help", "CI/CD performance".
-last_validated_against: 2026-10-24
+last_validated_against: 2026-11-13
 ---
 
 # CI/CD review — weekly
@@ -20,7 +20,7 @@ Christian's rulings this lane runs on:
 
 - **2026-10-04:** CI/CD is agent-owned with full authority. Never escalate a conflict, red check or stuck PR to him.
 - **2026-10-09:** harness tweaks are not filed as tickets; they are built and shipped directly. That also exempts this lane from the "scheduled lanes do not file process tickets" rule: it files nothing, it ships.
-- **2026-10-15 — pipeline freeze until 2026-11-13 (THR-1946).** Step 3's two tweaks may only **remove or loosen** machinery, or fix machinery that broke or blocked a cited run. No new gate, probe, ratchet, hook, baseline, CI job or standing rule. Authority: `Docs/canon/session-protocol.md` § Process-work throttle.
+- **2026-10-15 — pipeline freeze (THR-1946), permanent since the 2026-11-13 weekly review.** Step 3's two tweaks may only **remove or loosen** machinery, or fix machinery that broke or blocked a cited run. No new gate, probe, ratchet, hook, baseline, CI job or standing rule. Authority: `Docs/canon/session-protocol.md` § Process-work throttle.
 
 ## Scope
 
@@ -82,7 +82,7 @@ Close a tweak (`kept` / `reverted`) once it has a settled verdict. Apply the **s
 
 ## Step 3 — act: at most two tweaks
 
-**Until 2026-11-13 both tweaks are removals or loosening only** (pipeline freeze, THR-1946 — see the rulings above).
+**Both tweaks are removals or loosening only** (pipeline freeze, THR-1946, permanent since 2026-11-13 — see the rulings above).
 
 Pick the two changes with the largest expected effect on the worst-moving metric. Good tweaks are small and reversible: a hook predicate, a constant, a cron minute, one paragraph of procedure, a `.gitattributes` line, regenerating an artifact post-merge instead of in-PR.
 
