@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-13 16:56 local (15:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-13 17:58 local (16:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -53,7 +53,7 @@ Say "veto <title>" to reverse any of these.
 - Ready, held until ~20:45 UTC: [THR-2201 Make the purse bite](https://linear.app/threadbare/issue/THR-2201/make-the-purse-bite-a-full-hand-should-cost-more-than-the-god-can), [THR-2207 Stay the Unmaking](https://linear.app/threadbare/issue/THR-2207/stay-the-unmaking-a-god-card-that-slows-doom-while-you-hold-it-and-the), [THR-2208 A bound mortal's deeds fill the Mandate](https://linear.app/threadbare/issue/THR-2208/a-bound-mortals-deeds-fill-the-mandate-a-threaded-chapter-credits-it).
 - Ready, held until 23:40 UTC: [THR-2211 An ending the god had no part in waits on its badge](https://linear.app/threadbare/issue/THR-2211/an-ending-the-god-had-no-part-in-waits-on-its-badge-and-a-fated-step), [THR-2212 A dealt hand reads how hard the step is](https://linear.app/threadbare/issue/THR-2212/a-dealt-hand-reads-how-hard-the-step-is-guard-cards-on-easy-steps-the).
 - Not yet ready: [THR-2209 Rebuke](https://linear.app/threadbare/issue/THR-2209/rebuke-a-god-card-that-answers-a-rival-on-the-place-it-just-pressed) is not in Ready for Dev; the orchestrator promotes it when it is unblocked.
-- No game change shipped since the last brief; main only gained impediment-log notes. The builder's runs at 15:11, 15:31 and 15:51 UTC each found every ready ticket inside its veto window and stood down, which is correct.
+- No game change shipped since the last brief; main only gained the weekly process review ([#2812](https://github.com/christianspliid-ui/threadbare/pull/2812)). The builder's runs at 16:11, 16:31 and 16:51 UTC each found every ready ticket inside its veto window and stood down, which is correct.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (24 days; In Dev since 15 Oct). No pushed branch and no local worktree names it (checked this run); nothing has touched the ticket since 8 Nov. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
@@ -61,5 +61,5 @@ Items for agents, not you:
 ## Health
 
 - All green. Linear read live this run.
-- The live site serves the latest game build (80720d45; the newer commits are docs only). Checks on main and the 3 scheduled background jobs pass. No PRs are waiting to merge ([#2811](https://github.com/christianspliid-ui/threadbare/pull/2811) merged). All 10 scheduled tasks are on time, the worktree reaper ran at 16:40 local, and engine speed is normal (144 ms/tick, level with the 7-day median).
+- The live site serves the latest game build (80720d45; the newer commits are docs only). Checks on main and the 3 scheduled background jobs pass. No PRs are waiting to merge ([#2812](https://github.com/christianspliid-ui/threadbare/pull/2812) merged). All 10 scheduled tasks are on time, the worktree reaper ran at 17:40 local, and engine speed is normal (165 ms/tick, 14% above the 7-day median of 144, inside the 25% band).
 - The overnight quiet from 23:04 to 07:49 UTC is normal and needs nothing.
