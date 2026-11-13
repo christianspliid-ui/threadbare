@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-13 21:57 local (20:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-13 22:57 local (21:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -39,7 +39,6 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
   - **The texts change with it.** Game Law 27 gains: *"A moment matters when it offers the god a move or reports the god's own hand; a chapter that did neither waits on its badge."* UI Law 39, the rulebook and one Vision sentence change to match ([game laws](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/game-design/laws.md), [UI laws](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/design-system/laws.md)).
   - **Template chapters now deal different hands, without any shuffle.** Easy steps get the guard cards (Buy The Floor, Spare The Worst); middle steps get Draw On Character; hard steps get Press The Odds and Draw On Character. Your first sphere's card is always offered; your second sphere's card has to earn its place. In the test, the witness god's nine template steps went from one hand to five. Say "veto stakes hands" to keep the old deal.
   - Both build tickets are held for your veto until 23:40 UTC today: [An ending the god had no part in waits on its badge…](https://linear.app/threadbare/issue/THR-2211) and [A dealt hand reads how hard the step is](https://linear.app/threadbare/issue/THR-2212). *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-13c.md)*
-- [Give both clocks a verb](https://linear.app/threadbare/issue/THR-2202) ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-13-thr-2202-give-both-clocks-a-verb.md)). A Mandate that fills from a bound mortal's deeds, a *Stay the Unmaking* card that slows Doom, and a *Rebuke* card that answers a rival on the place it pressed. The veto window closed at 20:43 UTC, so [Stay the Unmaking](https://linear.app/threadbare/issue/THR-2207) and [the Mandate deeds](https://linear.app/threadbare/issue/THR-2208) are now open for building; [Rebuke](https://linear.app/threadbare/issue/THR-2209) is not yet ready. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-13b.md)*
 
 Say "veto <title>" to reverse any of these.
 
@@ -49,7 +48,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: building again.** The first veto holds lifted at 20:43–20:46 UTC, and the builder claimed [THR-2201 Make the purse bite](https://linear.app/threadbare/issue/THR-2201/make-the-purse-bite-a-full-hand-should-cost-more-than-the-god-can) at 20:52 UTC; it is building it now. 5 more are ready.
+**Healthy: building.** The builder claimed [THR-2201 Make the purse bite](https://linear.app/threadbare/issue/THR-2201/make-the-purse-bite-a-full-hand-should-cost-more-than-the-god-can) at 20:52 UTC and is still working on it (last activity 21:55 UTC); no pull request yet. 5 more are ready.
 
 - Ready now: [THR-2207 Stay the Unmaking](https://linear.app/threadbare/issue/THR-2207/stay-the-unmaking-a-god-card-that-slows-doom-while-you-hold-it-and-the), [THR-2208 A bound mortal's deeds fill the Mandate](https://linear.app/threadbare/issue/THR-2208/a-bound-mortals-deeds-fill-the-mandate-a-threaded-chapter-credits-it).
 - Ready, held until 23:40 UTC: [THR-2211 An ending the god had no part in waits on its badge](https://linear.app/threadbare/issue/THR-2211/an-ending-the-god-had-no-part-in-waits-on-its-badge-and-a-fated-step), [THR-2212 A dealt hand reads how hard the step is](https://linear.app/threadbare/issue/THR-2212/a-dealt-hand-reads-how-hard-the-step-is-guard-cards-on-easy-steps-the).
@@ -62,5 +61,5 @@ Items for agents, not you:
 ## Health
 
 - Linear read live this run.
-- Engine speed is normal: 159 ms/tick, +10% against the 7-day median.
-- The live site serves the latest game build (80720d45; the newer commits are docs only). Checks on main and the 3 scheduled background jobs pass. No PRs are waiting to merge. All 10 scheduled tasks are on time, and the worktree reaper ran at 21:40 local.
+- Engine speed: tick cost 193 ms/tick steady, 33% above the 7-day median (146, 57 rows since 192a06fb); top phase agent_decision, 638 agents. Name the merges between 192a06fb and 4e7a88c8: `git log --oneline --merges 192a06fb..4e7a88c8`. The same commit measured 159 ms/tick an hour ago, and the builder was running beside this measurement, so this is likely machine load, not code; the next hour's row will tell.
+- The live site serves the latest game build (80720d45; the newer commits are docs only). Checks on main and the 3 scheduled background jobs pass. No PRs are waiting to merge. All 10 scheduled tasks are on time, and the worktree reaper ran at 22:40 local.
