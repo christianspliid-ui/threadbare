@@ -79,6 +79,13 @@ export interface DoomClockState {
   expired: boolean;
   /** Accumulated acceleration/deceleration from player/rival actions */
   tickModifier: number;       // added to currentTick each real tick (default 1.0)
+  /**
+   * THR-2207 — what the last `advanceDoomClock` actually added to `currentTick`
+   * (`tickModifier` × that tick's `doom_rate_multiplier`, clamped). Readers that
+   * rebuild last tick's progress (`phaseJourneyBeat`) use it; absent on old saves,
+   * where `tickModifier` was the step.
+   */
+  lastStep?: number;
   /** Added severity for the next doom escalation, usually from missed mandate checkpoints. */
   nextEscalationSeverityModifier: number;
   /** Counter-omens banked from outperforming mandate checkpoints. */

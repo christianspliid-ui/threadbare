@@ -550,7 +550,8 @@ export function phaseJourneyBeat(
 
   // Calculate previous doom progress (before this tick's advance)
   const prevDoomProgress = doomClock.currentTick > 0
-    ? (doomClock.currentTick - doomClock.tickModifier) / doomClock.totalTicks
+    // THR-2207: the step actually taken, which a doom_rate_multiplier scales.
+    ? (doomClock.currentTick - (doomClock.lastStep ?? doomClock.tickModifier)) / doomClock.totalTicks
     : 0;
 
   // Find all First-position threads

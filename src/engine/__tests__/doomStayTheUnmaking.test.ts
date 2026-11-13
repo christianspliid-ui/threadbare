@@ -16,6 +16,7 @@ import { createGreatChronicle } from '../chronicle';
 import { createDefaultFundament, createResonanceState } from '../worldSoul';
 import { enableTracing, disableTracing, clearTraces, getTraces } from '../traceBuffer';
 import { phaseControlEffects } from '../phaseControlEffects';
+import { getSustainedControlNodes } from '../retinue';
 import { spawnControlEffect, syncControlRuleOverrides, NON_STACKING_CONTROL_TEMPLATE_IDS } from '../controlEffectSpawn';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 import { DOOM_STAY_TEMPLATE_ID, doomStayHint } from '../../data/doom-stay-content';
@@ -414,5 +415,20 @@ describe('THR-2207 — review-gate regressions', () => {
     expect(step).toBeCloseTo(DOOM_RATE_FLOOR, 9);
     const trace = getTraces().find(t => t.category === 'doom.stay_applied') as unknown as { rate: number };
     expect(trace.rate).toBeCloseTo(DOOM_RATE_FLOOR / 0.12, 9);
+  });
+});
+
+describe('THR-2207 — review-gate round 2 regressions', () => {
+  it('the clock records the step it actually took, so last tick\'s progress can be rebuilt', () => {
+    const clock = { ...createDoomClockState('breach', TOTAL_TICKS), wokeAtTick: 0 };
+    expect(advanceDoomClock(clock, 0.75).lastStep).toBeCloseTo(0.75, 9);
+    expect(advanceDoomClock(clock, 3).lastStep).toBeCloseTo(3, 9);
+    expect(advanceDoomClock(clock).lastStep).toBe(1);
+  });
+
+  it('a held Stay is not listed as a map covenant row', () => {
+    const base = makeState();
+    const effect = castStay(base, 'success');
+    expect(getSustainedControlNodes(base.graph, base.ascendantId, [effect], {}, 0)).toEqual([]);
   });
 });

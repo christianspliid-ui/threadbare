@@ -763,6 +763,7 @@ export function advanceDoomClock(state: DoomClockState, rateMultiplier = 1): Doo
   return {
     ...state,
     currentTick: clampedTick,
+    lastStep: clampedTick - state.currentTick,
     progress: newProgress,
     currentStage: newStage,
     stageTransitions: transitions,
