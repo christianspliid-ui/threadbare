@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-13 08:50 local (07:50 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-13 08:57 local (07:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,7 +23,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 - [The First's thread row cuts his current story to "raising a p…"](https://linear.app/threadbare/issue/THR-2193) ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-12-thr-2193-thread-row-story-lines-wrap.md)). **The lines under a mortal in the Threads rail now wrap instead of cutting.** What they are working on, their latest chapter's result and their promises show in full, up to three lines each, instead of "raising a p… — all or nothing". The rail had empty room below, and your "room before scroll" law says a panel grows before it cuts. The other choice was shorter hand-written versions of every line; that would mean a new list to keep up to date and would still drop words. If the taller rows ever push the Chronicle off screen, the cap drops to two lines. It is held for your veto until 08:19 UTC tomorrow. Say "veto thread row wrap" to keep rows one line high instead.
 
-Say "veto <title>" to reverse any of these. (The thread-row veto window closes at 08:19 UTC today, about half an hour from now.)
+Say "veto <title>" to reverse any of these. (The thread-row veto window closes at 08:19 UTC today, about 20 minutes from now.)
 
 ## This week's screens
 
@@ -43,4 +43,5 @@ Items for agents, not you:
 ## Health
 
 - **Overnight quiet, no action:** no lane wrote anything from 00:04 to 08:44 local (8.7 hours). That is the normal night gap, so it is not an ask. The worktree reaper's newest run is from 23:40 local last night, so the computer was most likely asleep. Every lane restarted at 08:44.
-- Everything else green: the live site serves the latest main (4740df5f), checks on main and the 3 scheduled background jobs pass, no PRs are waiting to merge, all 10 enabled scheduled tasks are on time, and engine speed is normal (162 ms/tick, +15% against the 7-day median, under the 25% line).
+- Everything else green: the live site serves the latest main (4740df5f), checks on main and the 3 scheduled background jobs pass, no PRs are waiting to merge, all 10 enabled scheduled tasks are on time, and engine speed is normal (135 ms/tick, 4% under the 7-day median).
+- Housekeeping, no action: this run briefly detached the home folder's checkout from `main` by mistake (same commit, no files changed) and put it back within a minute.
