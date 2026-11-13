@@ -68,8 +68,12 @@ const ROW_NAME_STYLE: React.CSSProperties = {
  * sustained-control status lines) shows whole up to this many lines (Law 57: a panel with
  * room grows before it cuts); past it, it clamps with an ellipsis. The whole sentence
  * stays in the tooltip. The rail scrolls inside itself when full (Law 33).
+ *
+ * The plan set 3; the 1920×1080 capture measured the rail's text column at ~198 px
+ * (not the estimated ~230), where a live stakes sentence of ~140 characters needs 5
+ * lines and clipped at 3. Raised to 5 per the plan's kill criterion.
  */
-export const THREAD_STORY_LINE_MAX_LINES = 3;
+export const THREAD_STORY_LINE_MAX_LINES = 5;
 
 /** THR-2193 — the shared wrap-then-clamp style for a row's story line (same pattern as ChroniclePanel). */
 export const STORY_LINE_CLAMP: React.CSSProperties = {
