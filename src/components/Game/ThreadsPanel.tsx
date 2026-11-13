@@ -63,6 +63,24 @@ const ROW_NAME_STYLE: React.CSSProperties = {
   overflowWrap: 'break-word',
 };
 
+/**
+ * THR-2193 — a thread row's story line (doing, appointment, stakes/result, and the two
+ * sustained-control status lines) shows whole up to this many lines (Law 57: a panel with
+ * room grows before it cuts); past it, it clamps with an ellipsis. The whole sentence
+ * stays in the tooltip. The rail scrolls inside itself when full (Law 33).
+ */
+export const THREAD_STORY_LINE_MAX_LINES = 3;
+
+/** THR-2193 — the shared wrap-then-clamp style for a row's story line (same pattern as ChroniclePanel). */
+export const STORY_LINE_CLAMP: React.CSSProperties = {
+  display: '-webkit-box',
+  WebkitBoxOrient: 'vertical',
+  WebkitLineClamp: THREAD_STORY_LINE_MAX_LINES,
+  overflow: 'hidden',
+  overflowWrap: 'break-word',
+  minWidth: 0,
+};
+
 /** THR-2165 — the head row of a thread row: its marks wrap below the name when they do not fit. */
 const ROW_HEAD_WRAP: React.CSSProperties = { flexWrap: 'wrap', rowGap: 4 };
 
@@ -717,8 +735,8 @@ function CompactThreadRow({
           {node.category === 'location' && locationClaimStatus && (
             <div
               data-testid="location-claim-status"
-              className="truncate"
               style={{
+                ...STORY_LINE_CLAMP,
                 fontFamily: 'var(--font-body)',
                 fontSize: 'var(--text-xs)',
                 fontStyle: 'italic',
@@ -785,12 +803,12 @@ function CompactThreadRow({
           {node.category === 'agent' && strategicBadgeText && familyPresentation && (
             <Tooltip label={familyPresentation.label} desc={strategicBadgeDesc}>
               <div
-                className="truncate"
                 data-testid="thread-doing-line"
                 style={{
                   padding: '1px 4px',
                   borderRadius: 4,
-                  // One coalesced line (Law 49) with a hit area a pointer can land on (Law 46).
+                  // THR-2193: the line wraps rather than cuts while the rail has room (Law 57),
+                  // up to THREAD_STORY_LINE_MAX_LINES; a hit area a pointer can land on (Law 46).
                   minHeight: 24,
                   display: 'flex',
                   alignItems: 'center',
@@ -804,28 +822,29 @@ function CompactThreadRow({
               >
                 <Icon name={familyPresentation.icon} size="floor" decorative style={{ flexShrink: 0 }} />
                 {strategicSummary?.activeProject ? (
-                  <>
-                    {/* THR-1962: the phrase truncates; the progress word never does —
-                        it is the part the player needs (Law 57). */}
-                    <span className="truncate" style={{ minWidth: 0 }}>{strategicSummary.activeProject.phrase}</span>
+                  // THR-2193: phrase and word share an inner box aligned to its bottom, so the
+                  // word sits on the phrase's last line however many lines the phrase wraps to.
+                  <span style={{ display: 'flex', alignItems: 'flex-end', gap: 4, minWidth: 0, flex: '1 1 auto' }}>
+                    {/* THR-1962: the phrase wraps and, past the cap, clamps; the progress word
+                        never cuts — it is the part the player needs (Law 57). */}
+                    <span data-testid="thread-doing-phrase" style={STORY_LINE_CLAMP}>{strategicSummary.activeProject.phrase}</span>
                     <span data-testid="thread-doing-word" style={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
                       — {strategicSummary.activeProject.word}
                     </span>
-                  </>
+                  </span>
                 ) : (
-                  <span className="truncate">{strategicBadgeText}</span>
+                  <span data-testid="thread-doing-phrase" style={STORY_LINE_CLAMP}>{strategicBadgeText}</span>
                 )}
               </div>
             </Tooltip>
           )}
 
           {/* THR-1479: the appointment clock line — a promise to be somewhere by
-              a time, in words; the regime on hover. Same one-line shape as the
-              doing-line above (Law 49), so the row grows by one coalesced line. */}
+              a time, in words; the regime on hover. Same shape as the doing-line
+              above: it wraps before it cuts (Law 57, THR-2193). */}
           {node.category === 'agent' && appointmentBadge && (
             <Tooltip label="A promise to keep" desc={appointmentBadge.desc}>
               <div
-                className="truncate"
                 data-testid="thread-appointment-line"
                 data-appointment-regime={appointmentBadge.readout.regime}
                 style={{
@@ -842,22 +861,21 @@ function CompactThreadRow({
                   backgroundColor: 'color-mix(in srgb, var(--text-secondary) 8%, transparent)',
                 }}
               >
-                <Icon name={ICON_FOR_THREAD_ROW_MARK.appointment} size="floor" decorative />
-                <span className="truncate">{appointmentBadge.text}</span>
+                <Icon name={ICON_FOR_THREAD_ROW_MARK.appointment} size="floor" decorative style={{ flexShrink: 0 }} />
+                <span data-testid="thread-appointment-text" style={STORY_LINE_CLAMP}>{appointmentBadge.text}</span>
               </div>
             </Tooltip>
           )}
 
           {/* THR-1727: the story line — what this mortal's encounter is about while
-              it runs, and how it ended after. Same one-line shape as the
-              doing-line (Law 49); the whole sentence on hover (Law 55). */}
+              it runs, and how it ended after. Same shape as the doing-line: it
+              wraps before it cuts (Law 57, THR-2193); the whole sentence on hover (Law 55). */}
           {node.category === 'agent' && encounterStakesLine && (
             <Tooltip
               label={encounterStakesLine.kind === 'result' ? 'How it ended' : 'What is at stake'}
               desc={encounterStakesLine.text}
             >
               <div
-                className="truncate"
                 data-testid="thread-stakes-line"
                 data-stakes-kind={encounterStakesLine.kind}
                 style={{
@@ -872,7 +890,7 @@ function CompactThreadRow({
                   color: 'var(--text-secondary)',
                 }}
               >
-                <span className="truncate">{encounterStakesLine.text}</span>
+                <span data-testid="thread-stakes-text" style={STORY_LINE_CLAMP}>{encounterStakesLine.text}</span>
               </div>
             </Tooltip>
           )}
@@ -958,9 +976,9 @@ function StatusLine({
 }) {
   const line = (
     <div
-      className="truncate"
       data-testid="sustained-status-line"
       style={{
+        ...STORY_LINE_CLAMP,
         fontFamily: 'var(--font-body)',
         fontSize: 'var(--text-xs)',
         fontStyle: 'italic',
