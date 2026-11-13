@@ -640,7 +640,11 @@ export function buildNudgePhaseModel(
   const pool = gameState?.essencePool as Readonly<Record<string, number>> | undefined;
   // THR-2201 — the god's own spheres: the discount list, and the only pools a
   // sphere-less card may be paid from.
-  const homeSpheres = homeSpheresFor(gameState);
+  // Identity runs only — the same condition that sets `budgetSphere` below. A
+  // legacy archetype run has no budget sphere for the hook to check sphere-less
+  // cards against, so narrowing its commit reach would let the hand select what
+  // the commit then refuses (review round 2); it keeps today's whole-pool rules.
+  const homeSpheres = gameState?.ascendantIdentity ? homeSpheresFor(gameState) : [];
   const availableEssenceFor = essenceReader(pool, homeSpheres);
 
   // Accessible spheres are the ones the ascendant actually holds essence in.

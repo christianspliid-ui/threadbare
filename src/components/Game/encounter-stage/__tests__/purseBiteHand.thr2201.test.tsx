@@ -112,4 +112,15 @@ describe('THR-2201 · the hand prices only the god\'s own spheres', () => {
     expect(order().interactive).toBe(true);
     expect(order().state).toBe('playable');
   });
+
+  it('a run with no sphere identity keeps the whole-pool rules (no payableSpheres, the common card stays lit)', () => {
+    const s = step();
+    const g = graph();
+    const legacy = { ...godState(g), ascendantIdentity: undefined } as unknown as GameState;
+    const phase = buildNudgePhaseModel({ template: template(s), activeAction: ACTION, step: s, graph: g, gameState: legacy })!;
+    expect(phase.payableSpheres).toBeUndefined();
+    expect(phase.budgetSphere).toBeUndefined();
+    // Priced against the whole pool, as the commit (no payableSpheres) will charge it.
+    expect(phase.cards.find((c) => c.id === COMMON.id)?.state).toBe('playable');
+  });
 });

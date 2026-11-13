@@ -3470,7 +3470,7 @@ if (import.meta.env.DEV) {
       const { homeSpheresFor, essenceReader } = await import('./engine/views/stage/buildNudgePhaseModel');
       const { NUDGE_ESSENCE_COST_SCALE } = await import('./data/nudge-constants');
       const { SPHERE_NAMES } = await import('./types/index');
-      const homeSpheres = homeSpheresFor(state);
+      const homeSpheres = state.ascendantIdentity ? homeSpheresFor(state) : [];
       const accessibleSpheres = SPHERE_NAMES.filter(
         (s) => ((pool as Record<string, number>)[s] ?? 0) > 0,
       );
