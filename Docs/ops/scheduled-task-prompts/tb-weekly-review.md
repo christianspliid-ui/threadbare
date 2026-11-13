@@ -28,7 +28,7 @@ Load the `retrospective` skill and run its analysis: this week's `drift-scan`-la
 
 Load the `cicd-review` skill and run its Measure and Judge steps: lane runs, `npm run cicd:metrics -- --tsv …`, conflict hot spots, stuck PRs, gate log; a verdict on every open tweak in the ledger. Append the TSV row and update the ledger.
 
-It may ship at most two small, reversible harness tweaks in one PR, each with a ledger hypothesis. **Until 2026-11-13 (the pipeline freeze, THR-1946) a tweak may only remove or loosen machinery** — no new gate, hook, check, rule or lane.
+It may ship at most two small, reversible harness tweaks in one PR, each with a ledger hypothesis. **The pipeline freeze (THR-1946, permanent since 2026-11-13): a tweak may only remove or loosen machinery** — no new gate, hook, check, rule or lane.
 
 ## 3. Queue health (backlog-grooming core checks)
 
