@@ -2656,10 +2656,10 @@ exit
 - **Producer → Consumer:** Essence & Divine Economy → Doom Clock & Journey
 - **UL terms:** *Doom Clock*, *Essence*
 - **Module:** `src/engine/controlEffectSpawn.ts`
-- **Production hits:** 7 total — 2 write, 2 read, 3 unclassified
+- **Production hits:** 8 total — 2 write, 2 read, 4 unclassified
 - **Write sites:** `src/engine/controlEffectSpawn.ts`, `src/engine/phaseControlEffects.ts`
 - **Read sites:** `src/engine/doomClock.ts`, `src/engine/phaseDoom.ts`
-- **Other hits:** `src/data/game-config.ts`, `src/data/unified-action-templates.ts`, `src/types/controlEffect.ts`
+- **Other hits:** `src/data/game-config.ts`, `src/data/unified-action-templates.ts`, `src/types/controlEffect.ts`, `src/types/doomClock.ts`
 - **Verdict:** Verified 2026-11-14: THR-2207. doomStayTheUnmaking.test.ts: spawnControlEffect on the god (targetId = actorId) carries ownerRuleOverride doom_rate_multiplier 0.75 (0.9 on success_at_cost); phaseControlEffects writes the override, and 240 ticks of phaseDoom + phaseControlEffects advance the clock 180 (an unheld run advances 240) while draining 0.15 × 240 from the primary pool; a purse that runs dry lapses the effect with essence_depleted, the override leaves with it, and the next 10 ticks advance 10. Before the fix, phaseDoom wrote the multiplied tickModifier back into state, so a 0.5 multiplier for 100 ticks advanced the clock about 1 tick; after it, 50.
 
 ### `held-lead-draws-a-survey` — 🟢 LIVE
@@ -4035,10 +4035,10 @@ exit
 - **Intent:** The god is what it poured itself into (THR-1749). Remembrance writes the bought sphere vector onto the ascendant node as `spherePoints` (`createAscendant`, with `sphereAlignment` re-derived as the two largest buys); the essence ledger and the essence bar read it through `getSpherePoints` and split income with the one shared `distributeBySpherePoints` (every sphere keeps `UNBOUGHT_SPHERE_INCOME_SHARE`, the rest follows the points), so ledger and readout cannot disagree.
 - **Producer → Consumer:** World Generation, Terrain & Places → Essence & Divine Economy
 - **UL terms:** *Essence*, *Sphere*
-- **Production hits:** 27 total — 1 write, 2 read, 24 unclassified
+- **Production hits:** 28 total — 1 write, 2 read, 25 unclassified
 - **Write sites:** `src/engine/ascendant.ts`
 - **Read sites:** `src/engine/essenceIncome.ts`, `src/engine/influence.ts`
-- **Other hits:** `src/App.tsx`, `src/components/CMS/registry.ts`, `src/components/Remembrance/RemembranceFlow.tsx`, `src/components/Remembrance/RevealBeat.tsx`, `src/components/Remembrance/sphereBuy.ts` +19 more
+- **Other hits:** `src/App.tsx`, `src/components/CMS/registry.ts`, `src/components/Remembrance/RemembranceFlow.tsx`, `src/components/Remembrance/RevealBeat.tsx`, `src/components/Remembrance/sphereBuy.ts` +20 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `sphere-pressure-credits-mandate` — 🔵 UNVERIFIED-OK
