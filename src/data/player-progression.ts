@@ -144,6 +144,19 @@ export const MILESTONE_EMPTY_ROAD_BEAT_ID = 'beat.milestone.the_empty_road';
 export const MILESTONE_GUTTERING_THREAD_BEAT_ID = 'beat.milestone.the_guttering_thread';
 
 /**
+ * The first-stage milestone beat id (THR-2207). Fires once, the first time the Doom
+ * clock stands past its opening stage after the bond (`doomClock.currentStage >= 2` with
+ * `wokeAtTick` set) — the moment the player has seen the Unmaking escalate and has a
+ * reason to answer it. Grants `divine.self.stay_the_unmaking`. Keyed on the state, not
+ * the escalation event, so a beat slot that is busy on that tick only delays the gift.
+ * Deduped through `AscendantProperties.milestoneBeatsFired`.
+ */
+export const MILESTONE_FIRST_STAGE_BEAT_ID = 'beat.milestone.the_first_stage';
+
+/** The Doom stage at or past which the first-stage milestone fires (THR-2207). */
+export const MILESTONE_FIRST_STAGE_DOOM_STAGE = 2;
+
+/**
  * Deterministic Deepening beat id for a reach. Slice 2 authors the matching
  * `UnifiedActionTemplate` content per reach (plan §4.1); Slice 1 enqueues by this id.
  */

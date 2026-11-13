@@ -492,6 +492,8 @@ export type TraceCategory =
   // Which doom the world drew at its making (THR-1774)
   | 'doom.archetype_drawn'
   | 'doom.expiry_held'
+  // Stay the Unmaking slows the clock (THR-2207)
+  | 'doom.stay_applied'
   | 'rival.grace_hold'
   | 'action.unlock.granted'
   // Ascendant expression cards (THR-508)
@@ -1193,6 +1195,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'doom.wake',
   'doom.archetype_drawn',
   'doom.expiry_held',
+  'doom.stay_applied',
   'rival.grace_hold',
   'action.unlock.granted',
   // Ascendant expression cards (THR-508)
@@ -6007,6 +6010,7 @@ export type TraceEntry =
   | DoomWakeTrace
   | DoomArchetypeDrawnTrace
   | DoomExpiryHeldTrace
+  | DoomStayTrace
   | RivalGraceHoldTrace
   | ActionUnlockGrantedTrace
   // Encounter chapter archive (THR-603)
@@ -6739,6 +6743,19 @@ export interface DoomExpiryHeldTrace extends TraceBase {
   wokeAtTick: number;
   /** `wokeAtTick + DOOM_MIN_RUN_TICKS_AFTER_BOND` — the first tick the Unmaking may begin. */
   floorMetAtTick: number;
+}
+
+/**
+ * Trace: Stay the Unmaking is held this tick (THR-2207) — Doom advanced at `rate`
+ * (the product of every `doom_rate_multiplier`, clamped at `DOOM_RATE_FLOOR`).
+ * `upkeepPaid` is the effect's per-tick essence draw. Emitted each held tick.
+ */
+export interface DoomStayTrace extends TraceBase {
+  category: 'doom.stay_applied';
+  rate: number;
+  crooked: boolean;
+  upkeepPaid: number;
+  effectId: string;
 }
 
 /**

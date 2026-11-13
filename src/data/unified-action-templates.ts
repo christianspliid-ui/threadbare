@@ -175,7 +175,15 @@ import {
   ANOINT_SUCCESSOR_ESSENCE_COST,
   KINDLE_CALLING_ESSENCE_COST,
 } from './faction-action-constants';
-import { SCHISM_ESSENCE_COST } from './game-config';
+import {
+  SCHISM_ESSENCE_COST,
+  DOOM_STAY_COST,
+  DOOM_STAY_DIFFICULTY,
+  DOOM_STAY_RATE,
+  DOOM_STAY_RATE_CROOKED,
+  DOOM_STAY_UPKEEP_PER_TICK,
+} from './game-config';
+import { DOOM_STAY_TEMPLATE_ID } from './doom-stay-content';
 import { IMBUE_ESSENCE_COST, CONSECRATE_ESTABLISH_COST, CONSECRATE_PERTICK, CONSECRATE_RELIC_UPFRONT, BESTOW_COST, ANOINT_COST, SANCTIFY_PERTICK, SANCTIFY_DEVOTION_PER_TICK, HEARTH_BLESSING_PERTICK } from './ascendant-expression-constants';
 import { TEACH_SPELL_ESSENCE_COST } from './spell-grant-constants';
 // THR-553: content-only reach signatures (Gold/Shadow/Star/Eye/Heart-stub),
@@ -1781,6 +1789,61 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       initiation: 'withdraws divine attention, letting the world proceed without celestial touch',
       success: 'the stillness completes — essence pools in the quiet',
       failure: 'the stillness cannot hold; the god\'s attention is drawn back before it can settle',
+    },
+  },
+  // THR-2207 — the god's answer to the Doom clock (plan 2026-11-13-thr-2202 slice 2).
+  // A sustained self card held like Claim Dominion: an up-front price, then upkeep
+  // each tick from the primary pool. While held, the god carries a
+  // doom_rate_multiplier override (ControlSpec.ownerRuleOverride) that phaseDoom
+  // folds with every other one. It slows the Unmaking and never stops it (Law 31).
+  {
+    id: DOOM_STAY_TEMPLATE_ID,
+    progression: { tier: 1, offer: 'gift', giftBy: 'milestone', generic: true },
+    name: 'Stay the Unmaking',
+    spellName: 'Hold the Hour',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description: 'Set your will against the ending. While you hold it, the Unmaking comes slower. It never stops.',
+    reach: 'star',
+    crudType: 'update',
+    scale: 'cosmic',
+    steps: [{
+      reach: 'star',
+      duration: { min: 1, max: 1 },
+      difficulty: DOOM_STAY_DIFFICULTY,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: DOOM_STAY_COST,
+    actorAffinities: ['ascendant'],
+    targetCategories: ['actor'],
+    requiredNodeProperties: { actorType: 'ascendant' },
+    trayTier: 'self',
+    durationMode: 'sustained',
+    controlSpec: {
+      // Fallback only: the live cost is DOOM_STAY_UPKEEP_PER_TICK from the primary.
+      perTickCost: {},
+      perTickCostFromPrimary: DOOM_STAY_UPKEEP_PER_TICK,
+      perTickMutations: [],
+      ownerRuleOverride: {
+        rule: 'doom_rate_multiplier',
+        value: DOOM_STAY_RATE,
+        crookedValue: DOOM_STAY_RATE_CROOKED,
+      },
+      narrativeTemplates: {
+        established: 'You set your will against the ending. The Unmaking slows.',
+        crooked: 'Your will holds, but crookedly. The Unmaking slows only a little.',
+        active: 'You hold the hour. The Unmaking comes slower.',
+        lapsed: 'Your purse ran dry and your hold slipped. The Unmaking runs at its own pace again.',
+      },
+    },
+    motivations: [],
+    narrativeTemplates: {
+      initiation: 'sets its will against the ending',
+      success: 'You set your will against the ending. The Unmaking slows.',
+      failure: 'Your will holds, but crookedly. The Unmaking slows only a little.',
     },
   },
   {

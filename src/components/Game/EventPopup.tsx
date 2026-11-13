@@ -6,11 +6,27 @@ import { RevealCard } from '../shared/RevealCard';
 import { SphereIcon } from '../shared/SphereIcon';
 import { REVEAL_CATEGORY_TITLES } from '../../data/reveal-content';
 
+/** THR-2207 — a second, non-default button beside "Acknowledge" on a compact notice. */
+export interface EventPopupSecondaryAction {
+  readonly label: string;
+  readonly onClick: () => void;
+}
+
 interface EventPopupProps {
   popup: PopupItem | null;
   queueLength: number;
   onDismiss: () => void;
   onChoice?: (effect: string) => void;
+  /**
+   * THR-2207 — one more body line under the popup's own body (the Doom notice's
+   * Stay the Unmaking hint). The host decides it; the component holds no rule.
+   */
+  noteLine?: string;
+  /**
+   * THR-2207 — a second button on a choiceless compact notice. "Acknowledge" stays
+   * the default (Law 21): it keeps the stronger variant and the last (primary) position.
+   */
+  secondaryAction?: EventPopupSecondaryAction;
 }
 
 function hasChoices(popup: PopupItem): boolean {
@@ -58,7 +74,7 @@ function QueueBadge({ badge }: { badge: string }) {
   );
 }
 
-export function EventPopup({ popup, queueLength, onDismiss, onChoice }: EventPopupProps) {
+export function EventPopup({ popup, queueLength, onDismiss, onChoice, noteLine, secondaryAction }: EventPopupProps) {
   const isOpen = popup !== null;
   const accentColor = popup?.sphere ? getSphereColor(popup.sphere) : 'var(--accent-gold)';
   const badge = popup ? queueBadge(queueLength) : '';
@@ -119,6 +135,11 @@ export function EventPopup({ popup, queueLength, onDismiss, onChoice }: EventPop
             }}
           >
             {popup.body}
+            {noteLine && (
+              <p className="mt-2" data-testid="event-popup-note" style={{ color: 'var(--text-primary)' }}>
+                {noteLine}
+              </p>
+            )}
           </div>
 
           {/* Actions */}
@@ -144,9 +165,21 @@ export function EventPopup({ popup, queueLength, onDismiss, onChoice }: EventPop
                 </Button>
               ))
             ) : (
-              <Button variant="secondary" size="sm" onClick={onDismiss}>
-                Acknowledge
-              </Button>
+              <>
+                {secondaryAction && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    data-testid="event-popup-secondary"
+                    onClick={secondaryAction.onClick}
+                  >
+                    {secondaryAction.label}
+                  </Button>
+                )}
+                <Button variant="secondary" size="sm" onClick={onDismiss}>
+                  Acknowledge
+                </Button>
+              </>
             )}
           </div>
         </>

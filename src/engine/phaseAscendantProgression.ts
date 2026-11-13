@@ -54,6 +54,8 @@ import {
   MILESTONE_GATHERING_BEAT_ID,
   MILESTONE_EMPTY_ROAD_BEAT_ID,
   MILESTONE_GUTTERING_THREAD_BEAT_ID,
+  MILESTONE_FIRST_STAGE_BEAT_ID,
+  MILESTONE_FIRST_STAGE_DOOM_STAGE,
   WELLSPRING_MILESTONE_BEAT_ID,
   WELLSPRING_MILESTONE_TICKS_AFTER_BOND,
   MILESTONE_HELD_GROUND_BEAT_ID,
@@ -493,6 +495,48 @@ export function phaseAscendantProgression(state: GameState): Partial<GameState> 
           location: '',
           sphere: primarySphere,
           mood: 'reverent',
+        },
+        tick: turn,
+      });
+    }
+  }
+
+  // THR-2207: the first-stage milestone — the Doom clock has escalated past its opening
+  // stage since the bond, so the god is handed its one answer to it, Stay the Unmaking.
+  // Keyed on the clock's state (not the escalation event) so a slot that is busy on the
+  // escalation tick only delays the gift. Same one-per-tick discipline as the above.
+  if (canEnqueue && !pending && !firedMilestones.includes(MILESTONE_FIRST_STAGE_BEAT_ID)) {
+    const doom = state.doomClock;
+    const escalatedSinceBond = !!doom
+      && resolveDoomWokeAtTick(doom) !== null
+      && (doom.currentStage ?? 0) >= MILESTONE_FIRST_STAGE_DOOM_STAGE;
+    if (escalatedSinceBond) {
+      pending = {
+        beatId: MILESTONE_FIRST_STAGE_BEAT_ID,
+        kind: 'milestone',
+        offeredTurn: turn,
+        boundNodeIds: [ascId],
+        trigger: { kind: 'turn', minTurn: turn },
+      };
+      firedMilestones.push(MILESTONE_FIRST_STAGE_BEAT_ID);
+      node.properties.milestoneBeatsFired = firedMilestones;
+      emitTrace({
+        category: 'ascendant.progression.milestone_enqueued',
+        tick: turn,
+        turn,
+        beatId: MILESTONE_FIRST_STAGE_BEAT_ID,
+        summary: `Milestone beat enqueued: ${MILESTONE_FIRST_STAGE_BEAT_ID} (Doom stage ${doom.currentStage} since the bond)`,
+      });
+      newChronicle.push({
+        id: `milestone-${MILESTONE_FIRST_STAGE_BEAT_ID}-${turn}`,
+        tier: 'chronicle',
+        title: 'The First Stage',
+        prose: milestoneChronicleProse(MILESTONE_FIRST_STAGE_BEAT_ID),
+        promptContext: {
+          actors: [ascId],
+          location: '',
+          sphere: primarySphere,
+          mood: 'ominous',
         },
         tick: turn,
       });

@@ -21,6 +21,7 @@ import {
   DOOM_CARD_PROSPERITY_DELTA,
   DOOM_CARD_UNREST_DELTA,
   DOOM_MIN_RUN_TICKS_AFTER_BOND,
+  DOOM_RATE_FLOOR,
   RIVAL_GRACE_TICKS_AFTER_BOND,
 } from '../data/game-config';
 
@@ -733,10 +734,22 @@ export function getDoomClockStage(progress: number): number {
   return 5;
 }
 
-export function advanceDoomClock(state: DoomClockState): DoomClockState {
+/**
+ * Advance the clock one tick.
+ *
+ * `rateMultiplier` (THR-2207) is the product of every active `doom_rate_multiplier`
+ * override this tick. It scales this tick's advance only and is never stored:
+ * `tickModifier` stays the clock's own rate. (Before THR-2207 `phaseDoom` wrote the
+ * multiplied modifier back into state, so a 0.5 multiplier halved the rate every
+ * tick.) A multiplied advance is clamped at `DOOM_RATE_FLOOR` (Law 31).
+ */
+export function advanceDoomClock(state: DoomClockState, rateMultiplier = 1): DoomClockState {
   if (state.expired) return state;
 
-  const newTick = state.currentTick + state.tickModifier;
+  const step = rateMultiplier === 1
+    ? state.tickModifier
+    : Math.max(DOOM_RATE_FLOOR, state.tickModifier * rateMultiplier);
+  const newTick = state.currentTick + step;
   const clampedTick = Math.min(newTick, state.totalTicks);
   const newProgress = clampedTick / state.totalTicks;
   const newStage = getDoomClockStage(newProgress);

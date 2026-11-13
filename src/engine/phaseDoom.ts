@@ -19,12 +19,14 @@ import { applyExecutionResult } from './effects/effectEventDispatch';
 import { executeEffect } from './effectExecutors';
 import { instantiateReward } from './rewardPool';
 import { emitTrace } from './traceBuffer';
+import { DOOM_STAY_TEMPLATE_ID } from '../data/doom-stay-content';
 import { readMultiplierOverride, type RuleOverrideContext } from './effects/ruleOverrideConsumers';
 import type { TraceEntry } from '../types/trace';
 import { getProsperityTier } from './phaseProsperity';
 import {
   DOOM_COUNTER_OMEN_SOFTENING,
   DOOM_MIN_SEVERITY,
+  DOOM_RATE_FLOOR,
 } from '../data/game-config';
 
 const SETTLEMENT_SUBTYPES = new Set(['hamlet', 'town', 'city', 'capital']);
@@ -374,11 +376,11 @@ export function phaseDoom(state: GameState): Partial<GameState> {
     );
   }
 
-  const clockForAdvance = doomRateMultiplier !== 1.0
-    ? { ...doomClockIn, tickModifier: doomClockIn.tickModifier * doomRateMultiplier }
-    : doomClockIn;
-
-  const newDoom = advanceDoomClock(clockForAdvance);
+  // THR-2207: the multiplier scales this tick's advance only. It used to be folded
+  // into a copy of the clock whose `tickModifier` was then written back to state,
+  // so an active multiplier compounded every tick.
+  const newDoom = advanceDoomClock(doomClockIn, doomRateMultiplier);
+  emitDoomStayTrace(state, doomRateMultiplier);
   evaluateIdentityMilestones(state, newDoom.progress);
   const newStage = newDoom.currentStage;
   const events: TickEvent[] = [...wakeEvents];
@@ -469,4 +471,29 @@ export function phaseDoom(state: GameState): Partial<GameState> {
     prosperityShocks,
     pendingHexMutations: hexMutations,
   };
+}
+
+/**
+ * THR-2207 — trace `doom.stay_applied` on every tick the god holds Stay the
+ * Unmaking active. `rate` is this tick's effective multiplier (every
+ * `doom_rate_multiplier` folded, clamped at `DOOM_RATE_FLOOR`), so a World-Tree
+ * held beside it shows in the same number. Fail-soft: no effect, no trace.
+ */
+function emitDoomStayTrace(state: GameState, rateMultiplier: number): void {
+  const held = (state.controlEffects ?? []).find(
+    (e) => e.active && e.templateId === DOOM_STAY_TEMPLATE_ID && e.ownerId === state.ascendantId,
+  );
+  if (!held) return;
+  let upkeepPaid = 0;
+  for (const v of Object.values(held.perTickCost ?? {})) upkeepPaid += typeof v === 'number' ? v : 0;
+  const rate = rateMultiplier === 1 ? 1 : Math.max(DOOM_RATE_FLOOR, rateMultiplier);
+  emitTrace({
+    category: 'doom.stay_applied',
+    tick: state.tick,
+    rate,
+    crooked: held.landedCrooked === true,
+    upkeepPaid,
+    effectId: held.effectId,
+    summary: `doom.stay_applied: Doom runs at ×${rate.toFixed(2)}${held.landedCrooked ? ' (crooked)' : ''} while Stay the Unmaking is held — upkeep ${upkeepPaid}`,
+  });
 }

@@ -46,7 +46,9 @@ import {
   MILESTONE_GUTTERING_THREAD_BEAT_ID,
   WELLSPRING_MILESTONE_BEAT_ID,
   MILESTONE_HELD_GROUND_BEAT_ID,
+  MILESTONE_FIRST_STAGE_BEAT_ID,
 } from './player-progression';
+import { DOOM_STAY_TEMPLATE_ID } from './doom-stay-content';
 import type { SpineBeatPresentation } from './ascendant-beat-content';
 
 /**
@@ -164,6 +166,16 @@ export const ASCENDANT_MILESTONE_BEATS: readonly BeatDefinition[] = [
       'hex.tap_source', 'hex.claim_resource', 'hex.claim_dominion', 'loc.place_of_power',
     ],
   },
+  {
+    // THR-2207: the first-stage milestone. Enqueued by `phaseAscendantProgression` the
+    // first tick the Doom clock stands past its opening stage after the bond. Grants Stay
+    // the Unmaking, the god's one answer to the clock, the moment the clock first bites.
+    beatId: MILESTONE_FIRST_STAGE_BEAT_ID,
+    kind: 'milestone',
+    trigger: { kind: 'turn' },
+    identity: { reach: 'star', sphere: 'time' },
+    grantsActionIds: [DOOM_STAY_TEMPLATE_ID],
+  },
 ];
 
 /** Look a milestone beat up by id. Null when the id is not a milestone beat. */
@@ -190,6 +202,13 @@ export const MILESTONE_BEAT_PRESENTATION: Readonly<Record<string, SpineBeatPrese
     title: 'The Land Has Learned Your Shape',
     prose:
       'Your wellsprings have flowered, and more than one of them. The land around them has learned your shape: roads bend toward them, and the earth answers when you press on it. A god this rooted can do more than tend. You can sink a claim into the land and hold it as yours, bind a vein of the world\'s wealth to your will, draw a steady siphon from a source, and wake the deep lines under a place until power gathers there.',
+    cta: 'Receive',
+  },
+  [MILESTONE_FIRST_STAGE_BEAT_ID]: {
+    eyebrow: 'The First Stage',
+    title: 'The Ending Has Begun to Move',
+    prose:
+      'The Unmaking has taken its first real step. It will take the next one whether you watch or not, and nothing you hold will turn it back. But you are not nothing. You can set your will against it and hold the hour: while you hold, the ending comes slower. Holding costs you every day, from the same essence that moves your mortals, so every day you hold it is a day you chose the world over them.',
     cta: 'Receive',
   },
   [MILESTONE_SOURCE_BEAT_ID]: {
@@ -240,6 +259,9 @@ export function milestoneChronicleProse(beatId: string): string {
   }
   if (beatId === MILESTONE_HELD_GROUND_BEAT_ID) {
     return 'Your wellsprings flowered and the land learned your shape. You learned to hold ground outright, and to draw on it.';
+  }
+  if (beatId === MILESTONE_FIRST_STAGE_BEAT_ID) {
+    return 'The Unmaking took its first step, and you learned to stand against it. It cannot be stopped, but it can be slowed, for as long as you pay to hold it.';
   }
   if (beatId === MILESTONE_SOURCE_BEAT_ID) {
     return 'Your wellsprings came into their own. What you had only held, you now draw upon — and the world began to trade on the strength of it.';

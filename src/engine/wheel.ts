@@ -135,6 +135,11 @@ export interface WheelSlot {
    */
   upkeepWord?: UpkeepWord;
   /**
+   * THR-2207 — the sphere whose pool pays the upkeep band above (the dearest channel).
+   * The card's upkeep chip names it ("light upkeep from Mind"). Absent with no upkeep.
+   */
+  upkeepSphere?: string;
+  /**
    * The template id this slot was built from (THR-1002), unprefixed.
    *
    * The card's name links to the codex entry, and the codex keys its action

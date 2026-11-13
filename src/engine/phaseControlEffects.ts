@@ -37,6 +37,7 @@ import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { CONTROL_PRESSURE_PER_TICK } from '../types/sphereAffinity';
 import { DOMINION_CLAIM_TEMPLATE_ID } from '../data/dominion-content';
 import { emitTrace } from './traceBuffer';
+import { syncControlRuleOverrides } from './controlEffectSpawn';
 import { claimedGoodIncome } from './godsStake';
 import { getUpkeepStatus, applyCoLocatedThreadAura } from './ascendantPrimitives';
 import { mulberry32 } from '../lib/prng';
@@ -150,7 +151,12 @@ export function phaseControlEffects(state: GameState): Partial<GameState> {
   if (effects.length === 0) {
     // Nothing to tick. Still clear any dangling release requests (fail-soft) so a
     // queue entry for an already-removed effect never accumulates.
-    return releaseQueue.length > 0 ? { pendingControlReleases: [] } : {};
+    // THR-2207: an owner override whose effect is gone leaves with it.
+    const staleOverrides = syncControlRuleOverrides(effects, state.activeRuleOverrides, state.tick);
+    return {
+      ...(releaseQueue.length > 0 ? { pendingControlReleases: [] } : {}),
+      ...(staleOverrides ? { activeRuleOverrides: staleOverrides } : {}),
+    };
   }
 
   // Deep copy mutable state
@@ -566,10 +572,14 @@ export function phaseControlEffects(state: GameState): Partial<GameState> {
 
   // Merge active/inactive
   const allEffects = [...updatedEffects, ...inactiveEffects];
+  // THR-2207: the owner carries each active effect's rule override (Stay the
+  // Unmaking's doom_rate_multiplier) and loses it the tick the effect lapses.
+  const syncedOverrides = syncControlRuleOverrides(allEffects, state.activeRuleOverrides, state.tick);
 
   return {
     controlEffects: allEffects,
     essencePool: pool,
+    ...(syncedOverrides ? { activeRuleOverrides: syncedOverrides } : {}),
     pendingHexMutations: [...(state.pendingHexMutations ?? []), ...newMutations],
     tickEvents: [...state.tickEvents, ...newEvents],
     pendingSpherePressures: pressures,

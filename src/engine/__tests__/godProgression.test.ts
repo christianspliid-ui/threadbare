@@ -109,11 +109,12 @@ describe('THR-1811 — the data on the cards', () => {
     // two tier-1 energy market cards (Stoke the Forges, Kindle a Spark), plus THR-2089's
     // three tier-1 cheap place cards (Steel the Walls, Lay the Footings, Keep the Stores),
     // plus THR-2090's three (Tend the Sick, Let the Damp In, Keep the Vigil).
-    expect(report.cardCount).toBe(154);
+    // THR-2207: plus Stay the Unmaking, a tier-1 generic milestone gift.
+    expect(report.cardCount).toBe(155);
     expect(report.counts.market).toBe(104);
-    expect(report.counts.gift).toBe(50);
-    expect(report.counts.generic).toBe(32);
-    expect(report.counts.byTier).toEqual({ 1: 52, 2: 63, 3: 28, 4: 11 });
+    expect(report.counts.gift).toBe(51);
+    expect(report.counts.generic).toBe(33);
+    expect(report.counts.byTier).toEqual({ 1: 53, 2: 63, 3: 28, 4: 11 });
   });
 
   describe('the gate fails on each kind of drift', () => {
