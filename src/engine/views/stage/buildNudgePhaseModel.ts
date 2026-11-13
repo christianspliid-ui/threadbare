@@ -119,6 +119,8 @@ import {
   NUDGE_RIDER_LABELS,
 } from '../../../data/nudge-stage-content';
 import { SPHERE_NAMES } from '../../../types/index';
+import { getSpherePoints, rankSpherePoints } from '../../spherePoints';
+import { NUDGE_ESSENCE_COST_SCALE } from '../../../data/nudge-constants';
 import type {
   EncounterStageCostChannelModel,
   EncounterStageFactorLineModel,
@@ -382,8 +384,11 @@ export function buildNudgeCardModel(
    * correct rendering for a card the encounter authored.
    */
   repertoireSources?: ReadonlyMap<string, RepertoireEntry['source']>,
+  /** THR-2201 — authored-cost multiplier; step cards pass `NUDGE_ESSENCE_COST_SCALE`. Absent ⇒ 1. */
+  costScale?: number,
 ): EncounterStageNudgeCardModel {
-  const cost = effectiveNudgeCost(nudge, accessibleSpheres);
+  const cost = effectiveNudgeCost(nudge, accessibleSpheres, costScale);
+  const undiscounted = effectiveNudgeCost(nudge, [], costScale);
   const keyword = nudgeCardKeyword(nudge.libraryCardId);
   return {
     provenance: dealtProvenanceLine(nudge, repertoireSources),
@@ -395,7 +400,7 @@ export function buildNudgeCardModel(
     name: enrich(nudge.name),
     effectLine: enrich(nudge.effectLine),
     essenceCost: cost,
-    discounted: cost < Math.max(0, nudge.essenceCost),
+    discounted: cost < undiscounted,
     costLabel: costLabelFor(cost),
     costChannels: costChannelsFor(nudge),
     sphere: nudge.sphere,
@@ -447,14 +452,55 @@ function authoredFactorLines(
 }
 
 /**
- * Essence readable per sphere, with the ungated (common-pool) case summing the
- * whole pool. Mirrors the reader `__DEBUG.getEncounterNudges` uses so the hand
- * the bridge reports and the hand the stage renders can never disagree.
+ * THR-2201 — the god's own spheres: the ones it bought points in at Remembrance
+ * (`getSpherePoints` > 0), largest buy first, primary leading. These alone earn
+ * the sphere discount (rulebook §7, Law 37) and alone pay a sphere-less card
+ * (`spendNudgeEssence`'s `payableSpheres`). Holding a little essence in a
+ * sphere — the 4% income floor keeps every pool above 0 — is not owning it.
+ *
+ * Shared by the stage and `__DEBUG.getEncounterNudges` so the two price a card
+ * the same. Fail-soft: no ascendant node or no points ⇒ the identity's primary
+ * alone (when known), else `[]`; never throws.
  */
-function essenceReader(pool: Readonly<Record<string, number>> | undefined) {
+export function homeSpheresFor(
+  gameState: Pick<GameState, 'graph' | 'ascendantId' | 'ascendantIdentity'> | null | undefined,
+): SphereName[] {
+  if (!gameState) return [];
+  const alignment = gameState.ascendantIdentity?.sphereAlignment;
+  const primary = alignment?.primary as SphereName | undefined;
+  let ranked: SphereName[] = [];
+  try {
+    const props = gameState.ascendantId
+      ? (gameState.graph?.getNode(gameState.ascendantId)?.properties as Record<string, unknown> | undefined)
+      : undefined;
+    // No ascendant node (hand-built fixtures, a pre-node state): the identity's
+    // alignment preset, which is what `getSpherePoints` itself falls back to.
+    ranked = rankSpherePoints(getSpherePoints(props ?? (alignment ? { sphereAlignment: alignment } : null)));
+  } catch {
+    ranked = [];
+  }
+  if (ranked.length === 0) return primary ? [primary] : [];
+  if (primary && ranked.includes(primary)) return [primary, ...ranked.filter((s) => s !== primary)];
+  return ranked;
+}
+
+/**
+ * Essence readable per sphere. A sphere-less card reads the sum of the god's own
+ * spheres (THR-2201 — never the twelve pools added together), which is exactly
+ * what `spendNudgeEssence` can reach when it charges one. Mirrors the reader
+ * `__DEBUG.getEncounterNudges` uses so the hand the bridge reports and the hand
+ * the stage renders can never disagree.
+ *
+ * `homeSpheres` empty (legacy run, no identity) ⇒ the whole pool, today's read.
+ */
+export function essenceReader(
+  pool: Readonly<Record<string, number>> | undefined,
+  homeSpheres: readonly SphereName[] = [],
+) {
   return (sphere: SphereName | undefined): number => {
     if (!pool) return 0;
     if (sphere) return pool[sphere] ?? 0;
+    if (homeSpheres.length > 0) return homeSpheres.reduce((sum, s) => sum + (pool[s] ?? 0), 0);
     return Object.values(pool).reduce((sum, v) => sum + (v ?? 0), 0);
   };
 }
@@ -592,12 +638,22 @@ export function buildNudgePhaseModel(
 
   const heldTraits = collectHeldTraitIds(graph, actorId);
   const pool = gameState?.essencePool as Readonly<Record<string, number>> | undefined;
-  const availableEssenceFor = essenceReader(pool);
+  // THR-2201 — the god's own spheres: the discount list, and the only pools a
+  // sphere-less card may be paid from.
+  // Identity runs only — the same condition that sets `budgetSphere` below. A
+  // legacy archetype run has no budget sphere for the hook to check sphere-less
+  // cards against, so narrowing its commit reach would let the hand select what
+  // the commit then refuses (review round 2); it keeps today's whole-pool rules.
+  const homeSpheres = gameState?.ascendantIdentity ? homeSpheresFor(gameState) : [];
+  const availableEssenceFor = essenceReader(pool, homeSpheres);
 
   // Accessible spheres are the ones the ascendant actually holds essence in.
   // An empty/absent pool yields an empty list, which dims every sphere card
-  // rather than throwing — the fail-soft path, not a special case.
+  // rather than throwing — the fail-soft path, not a special case. This is the
+  // `sphere_locked` gate only; the *discount* follows `homeSpheres` (THR-2201).
   const accessibleSpheres = SPHERE_NAMES.filter((s) => (pool?.[s] ?? 0) > 0);
+  // Legacy run with no identity: no home list, so keep today's discount reach.
+  const discountSpheres = homeSpheres.length > 0 ? homeSpheres : accessibleSpheres;
 
   // THR-887 — the god's repertoire, so an authored option signed by a sphere
   // this god does not hold is withheld rather than merely priced.
@@ -656,6 +712,8 @@ export function buildNudgePhaseModel(
   const hand = buildNudgeHand(composedStep, template, {
     availableEssence: availableEssenceFor,
     accessibleSpheres,
+    discountSpheres,
+    costScale: NUDGE_ESSENCE_COST_SCALE,
     unlockedTemplateIds: new Set(gameState?.unlockedActionIds ?? []),
     heldTraits,
     repertoireCardIds,
@@ -781,7 +839,7 @@ export function buildNudgePhaseModel(
 
   for (const entry of hand.playable) {
     cards.push(withResultLine(
-      buildNudgeCardModel(entry.nudge, accessibleSpheres, 'playable', enrich, undefined, repertoireSources),
+      buildNudgeCardModel(entry.nudge, discountSpheres, 'playable', enrich, undefined, repertoireSources, NUDGE_ESSENCE_COST_SCALE),
       entry.nudge,
     ));
   }
@@ -793,7 +851,7 @@ export function buildNudgePhaseModel(
       continue;
     }
     cards.push(withResultLine(
-      buildNudgeCardModel(nudge, accessibleSpheres, 'dimmed', enrich, blocked, repertoireSources),
+      buildNudgeCardModel(nudge, discountSpheres, 'dimmed', enrich, blocked, repertoireSources, NUDGE_ESSENCE_COST_SCALE),
       nudge,
     ));
   }
@@ -997,7 +1055,13 @@ export function buildNudgePhaseModel(
     cards: pricedCards,
     withheld,
     committedIds,
-    availableEssence: availableEssenceFor(undefined),
+    // The pooled total across every sphere, deliberately NOT the home-sphere sum
+    // (THR-2201 review): `useNudgeHand` subtracts *every* selected card from this
+    // as its overall guard, gated cards of unbought spheres included, so narrowing
+    // it dimmed an Order card the Order pool could pay. The home-sphere reach for a
+    // sphere-less card is enforced by `buildNudgeHand` (above), the budget-sphere
+    // check in the hook, and `payableSpheres` at commit.
+    availableEssence: essenceReader(pool)(undefined),
     // `accessibleSpheres` threaded through for the same reason the card models
     // quote the effective price: omitting it re-quotes a discounted hand at its
     // authored cost, so a reopened stage would report a total the commit path
@@ -1006,10 +1070,12 @@ export function buildNudgePhaseModel(
     // any other, and `totalNudgeCost` prices by looking the id up in `nudges`.
     // Reading the authored step here would show a dealt card's price on its face
     // and then charge nothing for it.
-    committedCost: totalNudgeCost(composedStep, committedIds, accessibleSpheres),
+    committedCost: totalNudgeCost(composedStep, committedIds, discountSpheres, NUDGE_ESSENCE_COST_SCALE),
     ...(budgetSphere
       ? { budgetSphere, budgetSphereEssence: availableEssenceFor(budgetSphere) }
       : {}),
     ...(Object.keys(payingSphereEssence).length > 0 ? { payingSphereEssence } : {}),
+    // THR-2201 — the pools a sphere-less card may be charged from at commit.
+    ...(homeSpheres.length > 0 ? { payableSpheres: homeSpheres } : {}),
   };
 }

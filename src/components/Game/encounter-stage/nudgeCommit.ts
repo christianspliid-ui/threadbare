@@ -40,9 +40,13 @@ const EPSILON = 1e-9;
  *
  * Sphere-gated cards draw on their own sphere. A common card draws on
  * `primarySphere` first and then spills across the remaining spheres — the
- * ungated affordability check in `buildNudgeHand` reads the *pooled* total, so
- * the spend has to be able to reach the whole pool or a card the hand called
- * playable could fail to charge.
+ * ungated affordability check in `buildNudgeHand` reads the same reach, so a
+ * card the hand called playable can always be charged.
+ *
+ * THR-2201 — `payableSpheres` limits that spill to the god's own (bought)
+ * spheres, in the order given after the primary: a sphere-less encounter card
+ * never draws on a sphere the god did not buy (rulebook §7). Absent or empty ⇒
+ * the whole pool, which the meeting path keeps (Meet The First is exempt, P4).
  *
  * All-or-nothing: on any shortfall the original pool is returned untouched and
  * `ok` is false. Never mutates its input.
@@ -51,8 +55,12 @@ export function spendNudgeEssence(
   pool: EssencePool,
   requests: readonly NudgeSpendRequest[],
   primarySphere: SphereName,
+  payableSpheres?: readonly SphereName[],
 ): NudgeSpendResult {
   const next: EssencePool = { ...pool };
+  const commonReach: SphereName[] = payableSpheres && payableSpheres.length > 0
+    ? [primarySphere, ...payableSpheres.filter((s) => s !== primarySphere)]
+    : [primarySphere, ...(Object.keys(next) as SphereName[]).filter((s) => s !== primarySphere)];
   let spent = 0;
 
   // Sphere-gated first: they have exactly one funding source, so letting the
@@ -74,11 +82,7 @@ export function spendNudgeEssence(
     let remaining = Math.max(0, request.cost);
     if (remaining <= 0) continue;
 
-    const order: SphereName[] = [
-      primarySphere,
-      ...(Object.keys(next) as SphereName[]).filter((s) => s !== primarySphere),
-    ];
-    for (const sphere of order) {
+    for (const sphere of commonReach) {
       if (remaining <= EPSILON) break;
       const take = Math.min(next[sphere] ?? 0, remaining);
       if (take <= 0) continue;

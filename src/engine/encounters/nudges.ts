@@ -140,6 +140,16 @@ export interface NudgeHandContext {
   readonly availableEssence: (sphere: SphereName | undefined) => number;
   /** Spheres the ascendant can currently draw on. */
   readonly accessibleSpheres: readonly SphereName[];
+  /**
+   * THR-2201 — the god's own (bought) spheres, which alone earn the
+   * {@link SPHERE_DISCOUNT} (rulebook §7, Law 37). Distinct from
+   * `accessibleSpheres`, which is the `sphere_locked` gate: holding a little
+   * essence in a sphere keeps its cards in hand but no longer makes them cheap.
+   * Absent ⇒ `accessibleSpheres` (every pre-THR-2201 caller, NFP #6).
+   */
+  readonly discountSpheres?: readonly SphereName[];
+  /** THR-2201 — authored-cost multiplier for step cards. Absent ⇒ 1. */
+  readonly costScale?: number;
   /** Template ids the ascendant has unlocked (THR-613 milestone grants). */
   readonly unlockedTemplateIds: ReadonlySet<string>;
   /** Trait ids the acting mortal holds. */
@@ -181,8 +191,15 @@ export interface NudgeHandContext {
 export function effectiveNudgeCost(
   nudge: Pick<StepNudge, 'sphere' | 'essenceCost'>,
   accessibleSpheres: readonly SphereName[] | undefined,
+  /**
+   * THR-2201 — multiplies the authored cost before the discount. Encounter-step
+   * callers pass `NUDGE_ESSENCE_COST_SCALE`; the meeting path passes nothing.
+   * Non-finite or non-positive ⇒ 1 (today's prices, fail-soft).
+   */
+  costScale: number = 1,
 ): number {
-  const authored = Math.max(0, nudge.essenceCost);
+  const scale = Number.isFinite(costScale) && costScale > 0 ? costScale : 1;
+  const authored = Math.max(0, nudge.essenceCost) * scale;
   if (!nudge.sphere || !accessibleSpheres?.includes(nudge.sphere)) return authored;
   // Never discount an authored-free card up or down — free is a decision.
   if (authored <= 0) return authored;
@@ -338,7 +355,11 @@ export function buildNudgeHand(
     // THR-885 — the discounted price is the price. Quoting the authored cost here
     // and charging the discounted one at commit (or the reverse) is the bug this
     // shared helper exists to make impossible.
-    const cost = effectiveNudgeCost(nudge, context.accessibleSpheres);
+    const cost = effectiveNudgeCost(
+      nudge,
+      context.discountSpheres ?? context.accessibleSpheres,
+      context.costScale,
+    );
     if (context.availableEssence(nudge.sphere) + 1e-9 < cost) {
       dimmed.push({ nudge, blocked: 'essence_unavailable' });
       continue;
@@ -613,12 +634,14 @@ export function totalNudgeCost(
   step: Pick<ActionStep, 'nudges'>,
   activeNudgeIds: readonly string[] | undefined,
   accessibleSpheres?: readonly SphereName[],
+  /** THR-2201 — see {@link effectiveNudgeCost}. Absent ⇒ 1 (the meeting path). */
+  costScale?: number,
 ): number {
   if (!activeNudgeIds || activeNudgeIds.length === 0 || !step.nudges) return 0;
   const byId = new Map(step.nudges.map((n) => [n.id, n]));
   return activeNudgeIds.reduce((total, id) => {
     const nudge = byId.get(id);
     if (!nudge) return total;
-    return total + effectiveNudgeCost(nudge, accessibleSpheres);
+    return total + effectiveNudgeCost(nudge, accessibleSpheres, costScale);
   }, 0);
 }
