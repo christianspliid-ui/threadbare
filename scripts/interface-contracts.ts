@@ -7007,6 +7007,27 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/phaseDoom.ts', 'src/engine/doomClock.ts'],
     readSites: ['src/engine/orchestrator.ts'],
   },
+  // THR-2207 (plan 2026-11-13-thr-2202 slice 2): Stay the Unmaking — a sustained god
+  // card whose active control effect keeps a doom_rate_multiplier override on the god.
+  {
+    id: 'held-control-slows-doom',
+    producerSystem: 'Essence & Divine Economy',
+    consumerSystem: DOOM,
+    intent:
+      'Stay the Unmaking slows the Unmaking while the god pays to hold it: an active control effect carries a doom_rate_multiplier override on its owner, kept in the persisted rule-override store for exactly as long as the effect is active, and the doom clock applies the folded multiplier to each tick\x27s advance without ever storing it.',
+    ulTerms: ['Doom Clock', 'Essence'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['syncControlRuleOverrides', 'ownerRuleOverride', 'advanceDoomClock'],
+      module: 'src/engine/controlEffectSpawn.ts',
+    },
+    writeSites: ['src/engine/controlEffectSpawn.ts', 'src/engine/phaseControlEffects.ts'],
+    readSites: ['src/engine/phaseDoom.ts', 'src/engine/doomClock.ts'],
+    verifiedLive: {
+      date: '2026-11-14',
+      evidence: 'THR-2207. doomStayTheUnmaking.test.ts: spawnControlEffect on the god (targetId = actorId) carries ownerRuleOverride doom_rate_multiplier 0.75 (0.9 on success_at_cost); phaseControlEffects writes the override, and 240 ticks of phaseDoom + phaseControlEffects advance the clock 180 (an unheld run advances 240) while draining 0.15 × 240 from the primary pool; a purse that runs dry lapses the effect with essence_depleted, the override leaves with it, and the next 10 ticks advance 10. Before the fix, phaseDoom wrote the multiplied tickModifier back into state, so a 0.5 multiplier for 100 ticks advanced the clock about 1 tick; after it, 50.',
+    },
+  },
   {
     id: 'doom-progress-paces-first-journey',
     producerSystem: DOOM,

@@ -181,7 +181,14 @@ neutral, the fold, or the trace, and an inline `?? 1.0` at a `*_bonus` site is a
 test catches, since the number it produces is plausible. `doom_rate_multiplier`, the one key that
 *did* have a consumer, was migrated onto the same reader: its hand-rolled scan saw only
 attachment-declared overrides, folded unclamped, and ignored duration and cooldown state, so the
-single wired key was also the single disagreeing one. One partial reach is stated rather than
+single wired key was also the single disagreeing one. Since THR-2207 (2026-11-14) the key has a
+second, player-held producer: `held-control-slows-doom`. Stay the Unmaking is a sustained god card
+whose active control effect carries an `ownerRuleOverride`, and `phaseControlEffects` keeps the
+matching persisted entry on the god for exactly as long as the effect is active
+(`syncControlRuleOverrides`). The same change fixed the consumer: `phaseDoom` used to write the
+multiplied `tickModifier` back into state, so any active multiplier compounded every tick; the
+multiplier now scales one tick's advance in `advanceDoomClock(state, rateMultiplier)`, clamped at
+`DOOM_RATE_FLOOR`, and is never stored. One partial reach is stated rather than
 hidden — `backlash_severity_multiplier` reads inside `evaluateBacklash`, whose caller
 `activateSpell` still has no production caller, so that key is live in code and goes live in play
 when spell activation does.
