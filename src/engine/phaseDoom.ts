@@ -486,7 +486,11 @@ function emitDoomStayTrace(state: GameState, rateMultiplier: number): void {
   if (!held) return;
   let upkeepPaid = 0;
   for (const v of Object.values(held.perTickCost ?? {})) upkeepPaid += typeof v === 'number' ? v : 0;
-  const rate = rateMultiplier === 1 ? 1 : Math.max(DOOM_RATE_FLOOR, rateMultiplier);
+  // The rate Doom actually ran at: this tick's clamped step over the clock's own rate
+  // (advanceDoomClock clamps the product, not the multiplier alone).
+  const own = state.doomClock.tickModifier;
+  const step = rateMultiplier === 1 ? own : Math.max(DOOM_RATE_FLOOR, own * rateMultiplier);
+  const rate = own > 0 ? step / own : rateMultiplier;
   emitTrace({
     category: 'doom.stay_applied',
     tick: state.tick,

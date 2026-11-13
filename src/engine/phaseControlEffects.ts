@@ -37,7 +37,7 @@ import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { CONTROL_PRESSURE_PER_TICK } from '../types/sphereAffinity';
 import { DOMINION_CLAIM_TEMPLATE_ID } from '../data/dominion-content';
 import { emitTrace } from './traceBuffer';
-import { syncControlRuleOverrides } from './controlEffectSpawn';
+import { syncControlRuleOverrides, SELF_CONTROL_HEX } from './controlEffectSpawn';
 import { claimedGoodIncome } from './godsStake';
 import { getUpkeepStatus, applyCoLocatedThreadAura } from './ascendantPrimitives';
 import { mulberry32 } from '../lib/prng';
@@ -128,6 +128,19 @@ function compareOp(a: number, op: '>=' | '<=' | '>' | '<', b: number): boolean {
   }
 }
 
+/** THR-2207 — a control effect held on its owner, not on the map. */
+function isSelfHeld(effect: ControlEffect): boolean {
+  return effect.targetHexCol === SELF_CONTROL_HEX && effect.targetNodeId === effect.ownerId;
+}
+
+/**
+ * THR-2207 — the event's map anchor. A self-held effect has none: an off-map
+ * `hexCoords` would make the visibility filter drop its lapse line unseen.
+ */
+function effectHexCoords(effect: ControlEffect): { hexCoords?: { col: number; row: number } } {
+  return isSelfHeld(effect) ? {} : { hexCoords: { col: effect.targetHexCol, row: effect.targetHexRow } };
+}
+
 // ─── Phase function ───────────────────────────────────────────────────────────
 
 /** Two income records name the same spheres at the same amounts. */
@@ -204,7 +217,7 @@ export function phaseControlEffects(state: GameState): Partial<GameState> {
         type: 'control_effect_lapsed',
         message: effect.narrativeTemplates.lapsed,
         significance: CONTROL_RELEASE_EVENT_SIGNIFICANCE,
-        hexCoords: { col: effect.targetHexCol, row: effect.targetHexRow },
+        ...effectHexCoords(effect),
       });
 
       continue;
@@ -224,7 +237,7 @@ export function phaseControlEffects(state: GameState): Partial<GameState> {
         type: 'control_effect_lapsed',
         message: effect.narrativeTemplates.lapsed,
         significance: 0.5,
-        hexCoords: { col: effect.targetHexCol, row: effect.targetHexRow },
+        ...effectHexCoords(effect),
       });
       continue;
     }
@@ -259,7 +272,7 @@ export function phaseControlEffects(state: GameState): Partial<GameState> {
           type: 'control_effect_lapsed',
           message: effect.narrativeTemplates.lapsed,
           significance: 0.7,
-          hexCoords: { col: effect.targetHexCol, row: effect.targetHexRow },
+          ...effectHexCoords(effect),
         });
 
         continue;
@@ -296,7 +309,7 @@ export function phaseControlEffects(state: GameState): Partial<GameState> {
         type: 'control_effect_lapsed',
         message: effect.narrativeTemplates.lapsed,
         significance: 0.7,
-        hexCoords: { col: effect.targetHexCol, row: effect.targetHexRow },
+        ...effectHexCoords(effect),
       });
 
       continue;
@@ -451,7 +464,13 @@ export function phaseControlEffects(state: GameState): Partial<GameState> {
     // Only applies to sphere-tagged (non-zero cost) spheres — effects without sphere cost produce no pressure.
     // THR-1748: a Claim's push is the god's bought vector, written by phaseDominion —
     // not its upkeep sphere at the generic rate.
-    if (effect.targetNodeId && effect.templateId !== DOMINION_CLAIM_TEMPLATE_ID) {
+    // THR-2207: a self-held effect (Stay the Unmaking) names its owner as its node only
+    // for the non-stacking guard; it pushes nothing onto the god (no Mandate credit).
+    if (
+      effect.targetNodeId
+      && effect.templateId !== DOMINION_CLAIM_TEMPLATE_ID
+      && !isSelfHeld(effect)
+    ) {
       for (const [sphere, cost] of Object.entries(effect.perTickCost)) {
         const amount = cost as number;
         if (amount > 0) {
@@ -523,7 +542,7 @@ export function phaseControlEffects(state: GameState): Partial<GameState> {
           type: 'narrative',
           message: 'A chaos pulse leaks through the rift, staining the land.',
           significance: RIFT_LEAK_SIGNIFICANCE,
-          hexCoords: { col: effect.targetHexCol, row: effect.targetHexRow },
+          ...effectHexCoords(effect),
         });
       }
     }
@@ -565,7 +584,7 @@ export function phaseControlEffects(state: GameState): Partial<GameState> {
         type: 'control_effect_lapsed',
         message: effect.narrativeTemplates.lapsed,
         significance: 0.7,
-        hexCoords: { col: effect.targetHexCol, row: effect.targetHexRow },
+        ...effectHexCoords(effect),
       });
     }
   }

@@ -371,3 +371,48 @@ describe('THR-2207 — the Doom notice and the first-stage gift', () => {
     expect(fired.ascendantBeats?.pending).toMatchObject({ beatId: MILESTONE_FIRST_STAGE_BEAT_ID, kind: 'milestone' });
   });
 });
+
+describe('THR-2207 — review-gate regressions', () => {
+  beforeEach(() => { resetEventCounter(); clearTraces(); enableTracing(); });
+  afterEach(() => { disableTracing(); });
+
+  it('the lapse line carries no off-map hex, so the visibility filter cannot drop it', () => {
+    const base = makeState();
+    const effect = castStay(base, 'success');
+    const primary = Object.keys(effect.perTickCost)[0] as SphereName;
+    let s: GameState = { ...base, essencePool: { ...base.essencePool, [primary]: 0 }, controlEffects: [effect], tickEvents: [] };
+    s = { ...s, ...phaseControlEffects(s) };
+    const lapse = s.tickEvents.find(e => e.type === 'control_effect_lapsed');
+    expect(lapse?.message).toBe('Your purse ran dry and your hold slipped. The Unmaking runs at its own pace again.');
+    expect(lapse?.hexCoords).toBeUndefined();
+  });
+
+  it('a held Stay pushes no sphere pressure onto the god', () => {
+    const base = makeState();
+    const effect = castStay(base, 'success');
+    const primary = Object.keys(effect.perTickCost)[0] as SphereName;
+    const s: GameState = { ...base, essencePool: { ...base.essencePool, [primary]: 100 }, controlEffects: [effect], pendingSpherePressures: [] };
+    const out = phaseControlEffects(s);
+    expect((out.pendingSpherePressures ?? []).filter(p => p.targetEntityId === base.ascendantId)).toEqual([]);
+  });
+
+  it('doom.stay_applied reports the rate Doom actually ran at when the floor binds', () => {
+    const base = makeState();
+    const effect = castStay(base, 'success');
+    const primary = Object.keys(effect.perTickCost)[0] as SphereName;
+    let s: GameState = {
+      ...base,
+      essencePool: { ...base.essencePool, [primary]: 100 },
+      controlEffects: [effect],
+      doomClock: { ...base.doomClock, tickModifier: 0.12 },
+    };
+    s = { ...s, ...phaseControlEffects(s) };
+    clearTraces();
+    const before = s.doomClock.currentTick;
+    const after = { ...s, ...phaseDoom({ ...s, tickEvents: [] }) };
+    const step = after.doomClock.currentTick - before;
+    expect(step).toBeCloseTo(DOOM_RATE_FLOOR, 9);
+    const trace = getTraces().find(t => t.category === 'doom.stay_applied') as unknown as { rate: number };
+    expect(trace.rate).toBeCloseTo(DOOM_RATE_FLOOR / 0.12, 9);
+  });
+});
