@@ -3267,12 +3267,18 @@ export interface DebugBridge {
       templateId: string;
       stepIndex: number;
       attended: boolean;
-      playable: Array<{ id: string; name: string; cost: number; rider: string | null }>;
-      dimmed: Array<{ id: string; name: string; blocked: string | null }>;
+      /** `cost` is the effective price the stage shows and the commit charges (THR-2201:
+       *  scaled by `NUDGE_ESSENCE_COST_SCALE`, discounted only on `homeSpheres`);
+       *  `authoredCost` is the number written on the card's content. */
+      playable: Array<{ id: string; name: string; cost: number; authoredCost: number; rider: string | null }>;
+      dimmed: Array<{ id: string; name: string; cost: number; authoredCost: number; blocked: string | null }>;
       hidden: string[];
       activeNudges: string[];
       activeRider?: string | null;
       committedCost?: number;
+      /** THR-2201 — the god's own (bought) spheres, primary first: the discount list and
+       *  the only pools a sphere-less card is paid from. */
+      homeSpheres?: string[];
       traitVariants?: Array<{ traitId: string; factorLine: string }>;
       modifiers: Array<{ source: string; delta: number }>;
       modifierTotal: number;

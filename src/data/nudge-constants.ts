@@ -154,6 +154,18 @@ export const SPHERE_DISCOUNT = 1;
  */
 export const SPHERE_DISCOUNT_MIN_COST = 1;
 
+/**
+ * THR-2201 — make the purse bite. Multiplies an authored **encounter-step** card's
+ * essence cost before the sphere discount (`effectiveNudgeCost`'s `costScale`).
+ *
+ * Meeting cards are exempt: Meet The First prices against `meetingNudgeCostCap`
+ * and its callers pass no scale (default 1). Authored-free cards stay free —
+ * the scale multiplies zero. Tuned against the scarcity predicate P1–P4
+ * (`npm run census:essence-scarcity`); range 1–4.
+ * Plan: Docs/plans/2026-11-13-thr-2201-make-the-purse-bite.md
+ */
+export const NUDGE_ESSENCE_COST_SCALE = 3;
+
 // ─── The Repertoire (THR-887) ────────────────────────────────────────
 
 /**

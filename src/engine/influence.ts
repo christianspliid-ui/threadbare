@@ -28,7 +28,7 @@ import { computeThreadYield } from './dominion';
 // ─── Pool Operations ─────────────────────────────────────────────────
 
 /** Starting essence per sphere for new ascendants. */
-export const INITIAL_ESSENCE_PER_SPHERE = 50;
+export const INITIAL_ESSENCE_PER_SPHERE = 35;
 
 /** Create an empty essence pool (all spheres at 0). */
 export function createEmptyEssencePool(): EssencePool {
