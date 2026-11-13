@@ -1,7 +1,5 @@
 # Briefing
-**Generated:** 2026-11-13 14:59 local (13:59 UTC) · keep-work-flowing-cc
-
-> **The board could not be read this hour — the Linear connection is down.** The queue below is the last live read (12:58 UTC), not current. Nothing is lost: every ready ticket is held for your veto until this evening anyway.
+**Generated:** 2026-11-13 15:59 local (14:59 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -50,20 +48,18 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-*Last live read 12:58 UTC — Linear unreachable this run.*
-
 **Healthy but paused: 5 tickets ready, none being built.** All five are held for your veto (three until about 20:45 UTC, two until 23:40 UTC), so the builder is idle on purpose until then.
 
 - Ready, held until ~20:45 UTC: [THR-2201 Make the purse bite](https://linear.app/threadbare/issue/THR-2201/make-the-purse-bite-a-full-hand-should-cost-more-than-the-god-can), [THR-2207 Stay the Unmaking](https://linear.app/threadbare/issue/THR-2207/stay-the-unmaking-a-god-card-that-slows-doom-while-you-hold-it-and-the), [THR-2208 A bound mortal's deeds fill the Mandate](https://linear.app/threadbare/issue/THR-2208/a-bound-mortals-deeds-fill-the-mandate-a-threaded-chapter-credits-it).
 - Ready, held until 23:40 UTC: [THR-2211 An ending the god had no part in waits on its badge](https://linear.app/threadbare/issue/THR-2211/an-ending-the-god-had-no-part-in-waits-on-its-badge-and-a-fated-step), [THR-2212 A dealt hand reads how hard the step is](https://linear.app/threadbare/issue/THR-2212/a-dealt-hand-reads-how-hard-the-step-is-guard-cards-on-easy-steps-the).
 - Not yet ready: [THR-2209 Rebuke](https://linear.app/threadbare/issue/THR-2209/rebuke-a-god-card-that-answers-a-rival-on-the-place-it-just-pressed) is not in Ready for Dev; the orchestrator promotes it when it is unblocked.
-- Nothing shipped since the last brief (main is still at 35e7db7d). The builder's 12:31 and 12:51 UTC runs found every ready ticket inside its veto window; its 13:11 and 13:31 runs could not read the board at all; a run started 13:51 is still going.
+- No game change shipped since the last brief; main only gained impediment-log notes. The builder's 14:21 UTC run found every ready ticket inside its veto window, and a run started 14:51 UTC is still going.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (24 days; In Dev since 15 Oct). No pushed branch and no local worktree names it (checked this run); nothing has touched the ticket since 8 Nov. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- **The Linear connection is down since about 13:11 UTC.** Two builder runs and this brief all failed to read the board. It costs nothing yet, since every ready ticket is held for veto until 20:43 UTC; if it is still down then, the builder cannot pick them up. An agent matter, not yours.
-- Otherwise green: the live site serves the latest game build (80720d45; the newer commits are docs only), checks on main and the 3 scheduled background jobs pass, no PRs are waiting, all 10 scheduled tasks are on time, and engine speed is normal (167 ms/tick, +16% on the 7-day median, under the 25% line).
+- All green. The Linear connection is back: this run read the board live, after it failed from about 13:11 to 14:11 UTC. That cost nothing, since every ready ticket is held for veto anyway.
+- The live site serves the latest game build (80720d45; the newer commits are docs only). Checks on main and the 3 scheduled background jobs pass. One docs PR ([#2811](https://github.com/christianspliid-ui/threadbare/pull/2811)) is waiting on checks and will merge on green. All 10 scheduled tasks are on time, and engine speed is normal (155 ms/tick, +8% on the 7-day median).
 - The overnight quiet from 23:04 to 07:49 UTC is normal and needs nothing.
