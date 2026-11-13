@@ -466,13 +466,16 @@ export function homeSpheresFor(
   gameState: Pick<GameState, 'graph' | 'ascendantId' | 'ascendantIdentity'> | null | undefined,
 ): SphereName[] {
   if (!gameState) return [];
-  const primary = gameState.ascendantIdentity?.sphereAlignment?.primary as SphereName | undefined;
+  const alignment = gameState.ascendantIdentity?.sphereAlignment;
+  const primary = alignment?.primary as SphereName | undefined;
   let ranked: SphereName[] = [];
   try {
     const props = gameState.ascendantId
       ? (gameState.graph?.getNode(gameState.ascendantId)?.properties as Record<string, unknown> | undefined)
       : undefined;
-    ranked = rankSpherePoints(getSpherePoints(props ?? null));
+    // No ascendant node (hand-built fixtures, a pre-node state): the identity's
+    // alignment preset, which is what `getSpherePoints` itself falls back to.
+    ranked = rankSpherePoints(getSpherePoints(props ?? (alignment ? { sphereAlignment: alignment } : null)));
   } catch {
     ranked = [];
   }

@@ -12,7 +12,7 @@ import type { InfluenceTier } from '../types/influence';
 // ─── Economy Constants ────────────────────────────────────────────
 
 /** Base generation rate: 1 essence per tick. */
-export const BASE_ESSENCE_PER_TICK = 0.5;
+export const BASE_ESSENCE_PER_TICK = 1.0;
 
 /** Essence per threaded mortal per tick. */
 export const ESSENCE_PER_THREAD = 0.1;
@@ -30,7 +30,7 @@ export const ESSENCE_PER_PLACE_OF_POWER = 0.5;
  * (non-place-of-power) location as the seat raises per-tick essence by exactly
  * this amount.
  */
-export const ESSENCE_PER_SEAT = 0.5;
+export const ESSENCE_PER_SEAT = 1.0;
 
 /**
  * THR-1792 — how far (in hexes) the Seat beat looks for a settlement when The First
@@ -41,7 +41,7 @@ export const ESSENCE_PER_SEAT = 0.5;
 export const HOME_SEAT_MAX_SEARCH_RADIUS_HEXES = 6;
 
 /** Maximum essence pool scales with total influence level. */
-export const BASE_MAX_ESSENCE = 35;
+export const BASE_MAX_ESSENCE = 50;
 export const MAX_ESSENCE_PER_THREAD = 5;
 /** @deprecated Use MAX_ESSENCE_PER_THREAD */
 export const MAX_ESSENCE_PER_WORSHIPPER = MAX_ESSENCE_PER_THREAD;
