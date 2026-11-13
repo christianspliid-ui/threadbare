@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-13 12:58 local (11:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-13 13:58 local (12:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -51,14 +51,14 @@ Say "veto <title>" to reverse any of these.
 **Healthy but paused: 5 tickets ready, none being built.** All five are held for your veto (three until about 20:45 UTC, two until 23:40 UTC), so the builder is idle on purpose until then.
 
 - Ready, held until ~20:45 UTC: [THR-2201 Make the purse bite](https://linear.app/threadbare/issue/THR-2201/make-the-purse-bite-a-full-hand-should-cost-more-than-the-god-can), [THR-2207 Stay the Unmaking](https://linear.app/threadbare/issue/THR-2207/stay-the-unmaking-a-god-card-that-slows-doom-while-you-hold-it-and-the), [THR-2208 A bound mortal's deeds fill the Mandate](https://linear.app/threadbare/issue/THR-2208/a-bound-mortals-deeds-fill-the-mandate-a-threaded-chapter-credits-it).
-- Ready, held until 23:40 UTC (new this hour): [THR-2211 An ending the god had no part in waits on its badge](https://linear.app/threadbare/issue/THR-2211/an-ending-the-god-had-no-part-in-waits-on-its-badge-and-a-fated-step), [THR-2212 A dealt hand reads how hard the step is](https://linear.app/threadbare/issue/THR-2212/a-dealt-hand-reads-how-hard-the-step-is-guard-cards-on-easy-steps-the).
+- Ready, held until 23:40 UTC: [THR-2211 An ending the god had no part in waits on its badge](https://linear.app/threadbare/issue/THR-2211/an-ending-the-god-had-no-part-in-waits-on-its-badge-and-a-fated-step), [THR-2212 A dealt hand reads how hard the step is](https://linear.app/threadbare/issue/THR-2212/a-dealt-hand-reads-how-hard-the-step-is-guard-cards-on-easy-steps-the).
 - Not yet ready: [THR-2209 Rebuke](https://linear.app/threadbare/issue/THR-2209/rebuke-a-god-card-that-answers-a-rival-on-the-place-it-just-pressed) is not in Ready for Dev; the orchestrator promotes it when it is unblocked.
-- Shipped since the last brief: the "stop the world only for real decisions" plan ([PR #2808](https://github.com/christianspliid-ui/threadbare/pull/2808)), docs only.
+- Nothing shipped since the last brief; the builder's last four runs each found every ready ticket still inside its veto window.
 
 Items for agents, not you:
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (24 days; In Dev since 15 Oct). No pushed branch and no local worktree names it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (24 days; In Dev since 15 Oct). No pushed branch and no local worktree names it (checked this run); nothing has touched the ticket since 8 Nov. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- All green: the live site serves the latest game build (80720d45; the one newer commit is docs only), checks on main and the 3 scheduled background jobs pass, no PRs are waiting, all 10 scheduled tasks are on time, and engine speed is normal (150 ms/tick, +5% on the 7-day median).
+- All green: the live site serves the latest game build (80720d45; the one newer commit is docs only), checks on main and the 3 scheduled background jobs pass, no PRs are waiting, all 10 scheduled tasks are on time, and engine speed is normal (141 ms/tick, -2% on the 7-day median).
 - The overnight quiet from 23:04 to 07:49 UTC is normal and needs nothing.
