@@ -344,7 +344,8 @@ export function dealHand(
     }
 
     const sphereTerm = sphereTermFor(member, context);
-    const tagTerm = tagTermFor(profile, context);
+    const __d=(step as any).difficulty; const __t=member.typeId; const __arm=process.env.ARM||"A"; const __stake = ((__arm==="C"||__arm==="D") && !member.sphere && typeof __d==="number") ? ((__d>=0.5 && (__t==="boost"||__t==="trait_card")) || (__d<0.25 && (__t==="mercy"||__t==="insurance")) || (__arm==="D" && __d>=0.25 && __d<0.5 && __t==="trait_card") ? 2 : 0) : 0;
+    const tagTerm = tagTermFor(profile, context) + __stake;
     const provenanceTerm = EARNED_SOURCES.has(entry.source) ? DEAL_PROVENANCE_BONUS : 0;
     scored.push({
       cardId: member.id,
@@ -395,6 +396,7 @@ export function dealHand(
   for (const c of scored) {
     if (taken.length >= requested) break;
     if (spheresSoFar.size >= DEAL_SPHERE_COVERAGE_MIN) break;
+    if ((process.env.ARM==="B"||process.env.ARM==="C"||process.env.ARM==="D") && c.member.sphere !== context.primarySphere) continue;
     if (takenIds.has(c.cardId)) continue;
     if (!c.member.sphere || spheresSoFar.has(c.member.sphere)) continue;
     if (!wouldFit(c)) continue;
