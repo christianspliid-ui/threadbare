@@ -83,7 +83,7 @@ export const COMPULSION_MIN_STORY_OPTIONS = 2;
  * `themeAxes`): ×(1 + FIRST_PATH_PULL) on the live board and `finalScore`.
  * Below the trade's lean plus arrival commitment, far below a paid whisper.
  * @range 0.2–1.0 */
-export const FIRST_PATH_PULL = 0.5;
+export const FIRST_PATH_PULL = Number((globalThis as any).process?.env?.FPP ?? 0.5); // proto: env lever
 
 /** THR-1781 — how long a paid Compulsion waits for the mortal's next real decision.
  * The mortal is often mid-chapter when the player pays (the popup shows
