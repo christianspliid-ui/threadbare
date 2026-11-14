@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-14 15:58 local (14:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-14 16:58 local (15:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -46,11 +46,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 4 tickets in Ready for Dev, all held for your veto.** Four builds went live this hour: [the purse tuning](https://linear.app/threadbare/issue/THR-2216) ([#2830](https://github.com/christianspliid-ui/threadbare/pull/2830)), [the map no longer pans to Kael](https://linear.app/threadbare/issue/THR-2221) ([#2831](https://github.com/christianspliid-ui/threadbare/pull/2831)), [two promises the screen broke](https://linear.app/threadbare/issue/THR-2222) ([#2832](https://github.com/christianspliid-ui/threadbare/pull/2832)) and [a ruler's Story tab no longer repeats one chapter](https://linear.app/threadbare/issue/THR-2223) ([#2833](https://github.com/christianspliid-ui/threadbare/pull/2833)). The two climax builds ([THR-2226](https://linear.app/threadbare/issue/THR-2226), [THR-2227](https://linear.app/threadbare/issue/THR-2227)) open at 23:53 UTC; the two warm-playtest fixes ([THR-2230](https://linear.app/threadbare/issue/THR-2230), [THR-2231](https://linear.app/threadbare/issue/THR-2231)) at 02:40 UTC. The builder idles until then, by design.
+**Healthy: 4 tickets in Ready for Dev, all held for your veto.** Nothing new shipped this hour; the last build to go live was [a ruler's Story tab no longer repeats one chapter](https://linear.app/threadbare/issue/THR-2223) ([#2833](https://github.com/christianspliid-ui/threadbare/pull/2833)). The two climax builds ([THR-2226](https://linear.app/threadbare/issue/THR-2226), [THR-2227](https://linear.app/threadbare/issue/THR-2227)) open at 23:53 UTC; the two warm-playtest fixes ([THR-2230](https://linear.app/threadbare/issue/THR-2230), [THR-2231](https://linear.app/threadbare/issue/THR-2231)) at 02:40 UTC. The builder idles until then, by design.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (25 days; In Dev since 15 Oct). No pushed branch or local worktree names it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- All green. The live site serves the latest commit on main (3d128efd). Checks on main and the 3 scheduled background jobs pass; no PRs are waiting. All 10 enabled scheduled tasks are on schedule, and the worktree reaper ran at 15:40 local. Engine speed: 160 ms/tick, +3% on the 7-day median (155). Linear read live this run.
+- All green. The live site serves the latest commit on main (3d128efd). Checks on main and the 3 scheduled background jobs pass; no PRs are waiting. All 10 enabled scheduled tasks are on schedule, and the worktree reaper ran at 16:48 local. The builder's last three runs stood down because every ready ticket is inside its veto window, which is correct. Engine speed: 163 ms/tick, +4% on the 7-day median (157). Linear read live this run.
