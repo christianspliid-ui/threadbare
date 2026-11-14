@@ -76,6 +76,15 @@ export interface DebugChapterAnswer {
  */
 export const CHAPTER_ANSWER_OPEN_GRACE_TICKS = 2;
 
+/**
+ * THR-2222 — ticks an answered step may wait for its answer beat to be posted
+ * before the run calls the answer dropped. The engine resolves the step on one
+ * tick and posts its next beat or Aftermath on a later one, so a run that
+ * looked only on the resolving tick toasted "ended without an answer" over an
+ * answer that was about to appear.
+ */
+export const CHAPTER_ANSWER_DROP_GRACE_TICKS = 2;
+
 export interface ChapterAnswerInputs {
   unifiedActions: readonly UnifiedAction[];
   encounterNotifications: readonly EncounterNotification[];
@@ -156,6 +165,24 @@ export function findPendingAnswerBeat(
 }
 
 /**
+ * THR-2222 — this chapter's answer reached the player by another route, so a
+ * missing auto-open beat is not a dropped answer: the Aftermath (already read on
+ * the veil, so marked resolved, or posted as a record), or a *Lives on* beat for a
+ * later step (it carries an `autoResolveTick` and never auto-opens, but it is on
+ * the thread). A moveless beat is a record of a step playing out, not the answer.
+ */
+export function isAnswerDeliveredElsewhere(
+  notifications: readonly EncounterNotification[],
+  target: Pick<ChapterAnswerTarget, 'actionId' | 'notificationId' | 'stepIndex'>,
+): boolean {
+  return notifications.some(n =>
+    n.actionId === target.actionId
+    && n.id !== target.notificationId
+    && n.noPlayerMove !== true
+    && (n.kind === 'aftermath' || (typeof n.stepIndex === 'number' && n.stepIndex > target.stepIndex)));
+}
+
+/**
  * THR-2140 — the action is playing out a step that offers the player no move
  * (its beat posted `noPlayerMove`), past the committed one. That beat never
  * opens, but the chapter is still live: its answer is the next move-bearing
@@ -193,6 +220,16 @@ export function stepChapterAnswer(
     message: chapterAnswerText(CHAPTER_ANSWER_DROPPED_TOAST, record.chapterName),
   };
 
+  // THR-2222 — the step answered and no beat will auto-open. An answer delivered
+  // another way ends the record quietly; otherwise wait out the grace window for
+  // the answer beat to be posted, and only then call it dropped.
+  const answeredWithoutBeat = (endEffects: ChapterAnswerEffect[], current: ChapterAnswerRecord): ChapterAnswerStep => {
+    if (isAnswerDeliveredElsewhere(inputs.encounterNotifications, record)) return none(endEffects);
+    const at = answeredAtTick ?? inputs.tick;
+    if (inputs.tick - at >= CHAPTER_ANSWER_DROP_GRACE_TICKS) return none([...endEffects, dropped]);
+    return keep(current, at);
+  };
+
   switch (record.phase) {
     case 'answering_card':
       // The card is the veil. Closed by any route other than its own two
@@ -211,7 +248,7 @@ export function stepChapterAnswer(
         // D2 — the answer opens in the card's place, before anything else (D3).
         const beat = findPendingAnswerBeat(inputs.encounterNotifications, record, inputs.unifiedActions);
         if (beat) return none([{ kind: 'open_answer', notificationId: beat.id }]);
-        return none([{ kind: 'close_card' }, dropped]);
+        return answeredWithoutBeat([{ kind: 'close_card' }], record);
       }
       // The live card stops no time and cannot share the screen with anything that
       // does. An arrival held behind it (premonition, vignette, story beat, moment) or a
@@ -240,7 +277,7 @@ export function stepChapterAnswer(
       // The answer opened (or will open) by itself; a veil records the paused
       // clock as its return state, so nothing more to do.
       if (inputs.veilOpen || hasPendingAnswerBeat(inputs.encounterNotifications, record, inputs.unifiedActions)) return none([]);
-      return none([dropped]);
+      return answeredWithoutBeat([], record);
     }
 
     case 'running': {
@@ -264,7 +301,7 @@ export function stepChapterAnswer(
           if (inputs.tick - at >= CHAPTER_ANSWER_OPEN_GRACE_TICKS) return none([{ kind: 'stop_clock' }]);
           return keep(current, at);
         }
-        return none([{ kind: 'stop_clock' }, dropped]);
+        return answeredWithoutBeat([{ kind: 'stop_clock' }], current);
       }
 
       // The player took the clock back: Pause on the map, or a pause pressed

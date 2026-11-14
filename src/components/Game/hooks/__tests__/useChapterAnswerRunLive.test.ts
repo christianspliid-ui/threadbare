@@ -14,6 +14,7 @@ import {
   useChapterAnswerRun,
   stepChapterAnswer,
   chapterAnswerStatus,
+  CHAPTER_ANSWER_DROP_GRACE_TICKS,
   type ChapterAnswerInputs,
   type ChapterAnswerRecord,
   type ChapterAnswerTarget,
@@ -86,8 +87,17 @@ describe('stepChapterAnswer — answering_live (THR-2151)', () => {
     expect(step.effects).toEqual([{ kind: 'open_answer', notificationId: 'n_after' }]);
   });
 
-  it('answered with no beat to open: closes the card with the dropped toast', () => {
-    const step = stepChapterAnswer(LIVE, inputs({ unifiedActions: [action(0, true)] }), null);
+  it('answered with no beat to open: waits out the grace window, then closes the card with the dropped toast', () => {
+    // THR-2222 — the answer beat may be posted a tick after the step resolves.
+    const early = stepChapterAnswer(LIVE, inputs({ unifiedActions: [action(0, true)] }), null);
+    expect(early.record).toBe(LIVE);
+    expect(early.effects).toEqual([]);
+    expect(early.answeredAtTick).toBe(101);
+    const step = stepChapterAnswer(
+      LIVE,
+      inputs({ unifiedActions: [action(0, true)], tick: 101 + CHAPTER_ANSWER_DROP_GRACE_TICKS }),
+      early.answeredAtTick,
+    );
     expect(step.record).toBeNull();
     expect(step.effects).toEqual([
       { kind: 'close_card' },
