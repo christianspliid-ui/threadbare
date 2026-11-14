@@ -13,7 +13,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WorldGraph } from '../graph';
 import type { GameState } from '../../types/gameState';
 import type { EncounterNotification } from '../../types/encounterVisibility';
-import type { ThreadEdgeProperties } from '../../types/influence';
 import type { ForecastTier } from '../../types/traces/encounter-traces';
 import type {
   ActionStep,
@@ -105,9 +104,9 @@ const NO_MOVE = template('test.thr2211.no_move', [step({ deal: undefined })]);
 
 function makeGraph(attentionMode: 'pause' | 'auto_resolve' = 'pause'): WorldGraph {
   const g = new WorldGraph();
-  g.addNode({ id: 'asc_1', name: 'The God', type: 'actor', category: 'ascendant', properties: { actorType: 'ascendant' } });
-  g.addNode({ id: ACTOR, name: 'Kael Thornweaver', type: 'actor', category: 'individual', properties: { actorType: 'individual' } });
-  g.addNode({ id: 'loc_1', name: 'The Ford', type: 'location', category: 'wilds', properties: {} });
+  g.addNode({ id: 'asc_1', name: 'The God', type: 'actor', properties: { actorType: 'ascendant' } });
+  g.addNode({ id: ACTOR, name: 'Kael Thornweaver', type: 'actor', properties: { actorType: 'individual' } });
+  g.addNode({ id: 'loc_1', name: 'The Ford', type: 'location', properties: {} });
   g.addEdge({ id: 'loc_edge_1', source: ACTOR, target: 'loc_1', type: 'located_at', properties: {} });
   g.addEdge({
     id: 'thread_1', source: 'asc_1', target: ACTOR, type: 'thread',
@@ -120,7 +119,7 @@ function makeGraph(attentionMode: 'pause' | 'auto_resolve' = 'pause'): WorldGrap
       totalEssenceSpent: 0,
       maintenanceCurrent: true,
       readBackstoryTier: 0,
-    } as ThreadEdgeProperties,
+    } as unknown as Record<string, unknown>,
   });
   return g;
 }
