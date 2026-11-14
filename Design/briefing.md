@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-14 23:57 local (22:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-15 00:58 local (23:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -21,6 +21,13 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
+- [The Mandate bar says the mortal's deeds fill it, but they never do](https://linear.app/threadbare/issue/THR-2199/the-mandate-bar-says-the-mortals-deeds-fill-it-but-they-never-do-after): **the Mandate now says what moves it.** *(new this hour)*
+  - **What went wrong:** in warm round 4 the Mandate still read "Holding" for most of the session. This was the veteran's quit point. The skimmer said "it says it's filled by Mind and Spirit, but my pools are full and the bar looks empty".
+  - **What is really happening:** playing any card on Kael's chapter already raises the Mandate. Without a card, nothing moves. The screen says the opposite: "Filled by what you and the one mortal bound to you raise". Full pools mean nothing was spent.
+  - **The fix:** the line now names the act: "Rises when you spend Mind or Spirit essence on Kael's chapters, or on places." "Rising" now lasts three days instead of one, so it no longer fades before your next chance to play.
+  - **Kept as it is:** the rule itself. Only chapters you put essence into count, as decided in [Give both clocks a verb](https://linear.app/threadbare/issue/THR-2202).
+  - Built in [The Mandate says what moves it](https://linear.app/threadbare/issue/THR-2236/the-mandate-says-what-moves-it-the-fill-line-names-the-spend-rising).
+  - **Veto:** say "the mortal alone should fill it" if Kael's chapters should count even when you play nothing. Held until 11:30 UTC tomorrow. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-14f.md)*
 - [Read the Threads returns only a tally](https://linear.app/threadbare/issue/THR-2225/read-the-threads-costs-a-dozen-essence-and-a-short-look-back-returns): **paying more for Read the Threads now always shows more, never less.**
   - **What went wrong:** the story tester paid 12 essence for the longest look back (3 days). That read blurred everything it covered into counts like "2 encounters: 2 succeeded", even the last half day, which the cheapest read (2 essence) shows in full. The most expensive read gave the least.
   - **The fix:** each chapter fades by its own age. A 3-day read shows the last half day in full and lets only older days fade. Each faded group opens with one story line about its biggest chapter, naming the mortal; the count sits under it.
@@ -36,11 +43,11 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
   - **Warm testers have been playing a showcase world** (11 made-up "Hooks" and a little essence in every pool). From now on the warm start skips that kit: [Warm playtests arrive in a real world](https://linear.app/threadbare/issue/THR-2230/warm-playtests-arrive-in-a-real-world-the-warm-start-stops-loading-the).
   - **On a chapter screen, dots mean only the odds; the Elder powers row shows up the first time a card's price names an elder pool; card-tag hovers get checked on cards you can't afford.** Built in [One mark, one meaning on the Stage](https://linear.app/threadbare/issue/THR-2231/one-mark-one-meaning-on-the-stage-the-steps-standing-reads-as-a-word).
   - **Veto:** say "keep the test kit" if warm rounds should keep the showcase world on purpose. Held until 02:40 UTC tomorrow. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-14c.md)*
-- [Put the god in the climax](https://linear.app/threadbare/issue/THR-2204/put-the-god-in-the-climax-the-journey-visions-read-from-the-scene-the): **the run's big moments now need the god, and the ending says what the god did.**
-  - **The Ordeal is no longer bought.** Each choice leans on a roll and shows its odds before you pay: [The Ordeal is rolled](https://linear.app/threadbare/issue/THR-2226/the-ordeal-is-rolled-and-journey-visions-read-the-scene-the-god-leans).
+- [Put the god in the climax](https://linear.app/threadbare/issue/THR-2204/put-the-god-in-the-climax-the-journey-visions-read-from-the-scene-the): **the run's big moments now need the god, and the ending says what the god did.** Its veto window closed at 23:53 UTC and the first build has started.
+  - **The Ordeal is no longer bought.** Each choice leans on a roll and shows its odds before you pay: [The Ordeal is rolled](https://linear.app/threadbare/issue/THR-2226/the-ordeal-is-rolled-and-journey-visions-read-the-scene-the-god-leans) (being built now).
   - **The Apotheosis is in doubt, and its deciding step has the run's largest hand:** [The Apotheosis deals the run's largest hand](https://linear.app/threadbare/issue/THR-2227/the-apotheosis-deals-the-runs-largest-hand-at-the-step-that-decides-it).
   - **Visions happen where the First is. The Return gets a "Go on" button** ([THR-2228](https://linear.app/threadbare/issue/THR-2228/the-return-has-a-go-on-button-and-says-what-the-age-has-left-today)). **The ending names what you did** ([THR-2229](https://linear.app/threadbare/issue/THR-2229/the-ending-tells-what-this-god-did-with-its-first-the-ordeal-and-the)).
-  - **Veto:** say "veto climax" to keep today's Ordeal choices, or "a great mortal walks through" to make the Apotheosis easier for stronger mortals. Held until 23:53 UTC today. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-14b.md)*
+  - **Veto:** "veto climax" still reverses it, though the build is now under way. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-14b.md)*
 
 Say "veto <title>" to reverse any of these.
 
@@ -50,11 +57,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 7 tickets in Ready for Dev, all held for your veto.** Nothing changed this hour. The Read the Threads fix ([THR-2235](https://linear.app/threadbare/issue/THR-2235)) is held until 08:35 UTC tomorrow. The two climax builds ([THR-2226](https://linear.app/threadbare/issue/THR-2226), [THR-2227](https://linear.app/threadbare/issue/THR-2227)) open first, at 23:53 UTC (within the hour); the two warm-playtest fixes ([THR-2230](https://linear.app/threadbare/issue/THR-2230), [THR-2231](https://linear.app/threadbare/issue/THR-2231)) at 02:40 UTC; the two pacing builds ([THR-2233](https://linear.app/threadbare/issue/THR-2233), [THR-2234](https://linear.app/threadbare/issue/THR-2234)) at 05:45 UTC. The builder idles until then, by design. Nothing new shipped this hour.
+**Healthy: 7 tickets in Ready for Dev, and the builder is working again.** The climax veto window closed at 23:53 UTC, and the builder claimed [The Ordeal is rolled](https://linear.app/threadbare/issue/THR-2226/the-ordeal-is-rolled-and-journey-visions-read-the-scene-the-god-leans) at 23:52 UTC; that run is live now. Next up: [The Apotheosis deals the run's largest hand](https://linear.app/threadbare/issue/THR-2227) is claimable now. The rest are held for your veto: the warm-playtest fixes ([THR-2230](https://linear.app/threadbare/issue/THR-2230), [THR-2231](https://linear.app/threadbare/issue/THR-2231)) until 02:40 UTC, the pacing builds ([THR-2233](https://linear.app/threadbare/issue/THR-2233), [THR-2234](https://linear.app/threadbare/issue/THR-2234)) until 05:45 UTC, Read the Threads ([THR-2235](https://linear.app/threadbare/issue/THR-2235)) until 08:35 UTC, and the new Mandate fix ([THR-2236](https://linear.app/threadbare/issue/THR-2236)) until 11:30 UTC.
 
 Items for agents, not you:
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (25 days; In Dev since 15 Oct). No pushed branch and no local worktree names it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (26 days; In Dev since 15 Oct). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- All green. The live site serves the latest commit on main (b7ab4c12). Checks on main and the 3 scheduled background jobs pass; no PRs are waiting. All 9 scheduled lanes are on time. The worktree reaper ran at 23:40 local. The builder's recent runs all stood down because every ready ticket is inside its veto window, which is correct. Engine speed: 150 ms/tick, -6% on the 7-day median (159), inside the normal range. Linear read live this run.
+- All green. The live site serves the latest commit on main (b7ab4c12). Checks on main and the 3 scheduled background jobs pass; no PRs are waiting. All 10 scheduled lanes are on time. The worktree reaper ran at 00:53 local. Engine speed: 152 ms/tick, -4% on the 7-day median (159), inside the normal range. Linear read live this run.
