@@ -153,6 +153,7 @@ export type TraceCategory =
   | 'encounter.tellings_capped' // THR-1218
   | 'agent.restless_road' // THR-1959
   | 'first_path_recalled' // THR-1988
+  | 'first_path_road' // THR-2214
   | 'encounter_scoring' | 'road_hex_transition' | 'agent_reroute'
   | 'return_resolution' | 'ripple_consequence' | 'control_effect'
   | 'doom_card' | 'mandate_checkpoint' | 'mandate_milestone_prose'
@@ -829,6 +830,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'encounter.tellings_capped',
   'agent.restless_road',
   'first_path_recalled',
+  'first_path_road',
   'encounter_scoring', 'road_hex_transition', 'agent_reroute',
   'return_resolution', 'ripple_consequence', 'control_effect',
   'doom_card', 'mandate_checkpoint', 'mandate_milestone_prose',
@@ -2950,6 +2952,29 @@ export interface FirstPathRecalledTrace extends TraceBase {
   /** The chapter that carries the recall line. */
   actionId: string;
   templateId: string;
+}
+
+/**
+ * Trace: the path's road (THR-2214). Emitted each time The First's path road is
+ * due (cooldown and story breath permitting): `set_out` when she took the road
+ * toward a story that fits her path, `no_destination` when no place in reach
+ * holds one she may still draw (or no path leads there).
+ */
+export interface FirstPathRoadTrace extends TraceBase {
+  category: 'first_path_road';
+  agentId: string;
+  /** The chosen spark vision. */
+  visionId: string;
+  /** Why the road was due: no chapter of hers has resolved since the bond, or a drought of fitting chapters. */
+  dueReason: 'no_chapter_yet' | 'path_drought';
+  /** Ticks since her latest path-fitting chapter started (else since the bond). */
+  droughtTicks: number;
+  outcome: 'set_out' | 'no_destination';
+  fromLocationId: string;
+  toLocationId: string | null;
+  hexDistance: number | null;
+  /** `set_out`: the story she sets out for. */
+  targetTemplateId: string | null;
 }
 
 /**
@@ -5682,6 +5707,7 @@ export type TraceEntry =
   | TellingsCappedTrace
   | RestlessRoadTrace
   | FirstPathRecalledTrace
+  | FirstPathRoadTrace
   | RoutineSuppressedTrace
   | ScoringTrace
   | MovementTrace

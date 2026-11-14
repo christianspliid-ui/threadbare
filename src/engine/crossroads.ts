@@ -61,6 +61,11 @@ export interface CrossroadsOption extends CrossroadsIdentity {
   score: number;
   /** Prices and tints the lean (`REACH_TO_SPHERE`). */
   reach: ReachDomain;
+  /**
+   * THR-2214 — the road fits The First's chosen path: its board entry carried
+   * `firstPathPull > 1`. Absent otherwise (and on every other mortal).
+   */
+  fitsPath?: true;
 }
 
 /** Written on the mortal at each full decision (node property `crossroads`). */
@@ -180,7 +185,12 @@ export function buildCrossroadsSnapshotDetailed(
     const reach = identity.family === 'encounter'
       ? encounterCandidates[entry.candidateIndex]?.entry.reachPrimary
       : pickPrimaryReach(getStrategicTemplate(identity.templateId));
-    options.push({ ...identity, score, reach: isReach(reach) ? reach : 'iron' });
+    options.push({
+      ...identity,
+      score,
+      reach: isReach(reach) ? reach : 'iron',
+      ...((entry.firstPathPull ?? 1) > 1 ? { fitsPath: true as const } : {}),
+    });
   }
   return { snapshot: { tick, options }, excludedTaken, excludedSecret };
 }

@@ -334,7 +334,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `failure` (1) | `failureStoryArtifact.ts` | `THR-470`, `THR-571` |
 | `familiarity` (1) | `familiarity.ts` | — |
 | `fights` (17) | `fights/bountyCollect.ts`, `fights/calibrationCardPins.ts`, `fights/fightAdvantages.ts`, `fights/fightAllies.ts`, `fights/fightClock.ts`, `fights/fightEnding.ts`, `fights/fightEvents.ts`, `fights/fightForks.ts`, `fights/fightHarm.ts`, `fights/fightOutcome.ts`, `fights/fightParticipants.ts`, `fights/fightRecord.ts`, `fights/fightState.ts`, `fights/fightStepInputs.ts`, `fights/grudgeDuelTrigger.ts`, `fights/opponentCard.ts`, `fights/opposedRoll.ts` | `THR-1261`, `THR-1264`, `THR-1267`, `THR-1271`, `THR-1528`, `THR-1530`, `THR-1531`, `THR-1532`, `THR-1535`, `THR-1537`, `THR-1538`, `THR-1539`, `THR-1540`, `THR-1541`, `THR-1543`, `THR-1548`, `THR-1549`, `THR-1556`, `THR-1558`, `THR-1574`, `THR-1581`, `THR-1628`, `THR-2072` |
-| `first` (3) | `firstMark.ts`, `firstPath.ts`, `firstTrade.ts` | `THR-1644`, `THR-1755`, `THR-1982`, `THR-1988` |
+| `first` (4) | `firstMark.ts`, `firstPath.ts`, `firstPathRoad.ts`, `firstTrade.ts` | `THR-1644`, `THR-1755`, `THR-1982`, `THR-1988`, `THR-2200`, `THR-2214` |
 | `followed` (1) | `followedAgents.ts` | `THR-1292`, `THR-1299` |
 | `force` (1) | `forceField.ts` | — |
 | `foreshadowing` (10) | `foreshadowing/attributeRecentInterventions.ts`, `foreshadowing/composeGeneric.ts`, `foreshadowing/composeReceipt.ts`, `foreshadowing/constants.ts`, `foreshadowing/encounterForeshadowing.ts`, `foreshadowing/genericFallback.ts`, `foreshadowing/motiveReceipt.ts`, `foreshadowing/realizer.ts`, `foreshadowing/receiptRead.ts`, `foreshadowing/types.ts` | `Phase 1`, `Phase 3`, `THR-1857`, `THR-389`, `THR-631`, `THR-640`, `THR-642` |
@@ -487,4 +487,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 115 tick phases · 240 engine domains · 816 modules._
+_Counts: 28 registered subsystems (2 dormant) · 115 tick phases · 240 engine domains · 817 modules._

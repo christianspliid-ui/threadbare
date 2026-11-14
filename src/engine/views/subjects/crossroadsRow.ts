@@ -51,6 +51,7 @@ import { worldRefKindOf } from '../../undertakingDeed';
 import { getStrategicTemplate } from '../../strategicActionCandidates';
 import { getEncounterForeshadowingById } from '../../foreshadowing/encounterForeshadowing';
 import { isLocationNode, isPlaceNode } from '../../sublocationShape';
+import { formatFirstPathFitLine, getFirstPathFor } from '../../firstPath';
 
 /** The Inspector registry id of the row (and the badge's scroll target). */
 export const CROSSROADS_ROW_TYPE_ID = 'crossroads';
@@ -161,6 +162,11 @@ export function buildCrossroadsSection(
   if (!snapshot || snapshot.options.length === 0) return null;
   const lean = readCrossroadsLean(node.properties.crossroadsLean);
   const name = node.name;
+  // THR-2214: a road that fits The First's path says so, in the same muted line God's
+  // Will shows ("Fits the uniter of the clans."). State-backed (Law 56), no new hue
+  // (Law 17), and the row is never filtered (Law 45).
+  const path = snapshot.options.some(o => o.fitsPath) ? getFirstPathFor(state.graph, state.ascendantId, agentId) : null;
+  const fitLine = path ? formatFirstPathFitLine(path.title) : null;
 
   const tiles: CardTile[] = snapshot.options.map((option, rank) => {
     const ref = roadTarget(state, option);
@@ -175,6 +181,7 @@ export function buildCrossroadsSection(
       title: roadName,
       kindWord: CROSSROADS_KIND_WORD[option.family],
       lines: line ? [line] : [],
+      ...(option.fitsPath && fitLine ? { subline: fitLine } : {}),
       // The road's place or target, as a link (Law 21).
       ...(ref ? { byLine: { lead: CROSSROADS_TARGET_LEAD, name: ref.name ?? '', ref } } : {}),
       offers,

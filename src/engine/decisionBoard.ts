@@ -422,7 +422,7 @@ export interface BoardEntry {
    */
   readonly roleAffinityPull?: number;
   /**
-   * THR-2068 — The First's chosen path's lean (`firstPathPull`, ×1.5 on a scene in one
+   * THR-2068 — The First's chosen path's lean (`firstPathPull`, ×(1 + FIRST_PATH_PULL) on a scene in one
    * of the path's two Reaches), already folded into `score`; absent when it is 1.
    */
   readonly firstPathPull?: number;

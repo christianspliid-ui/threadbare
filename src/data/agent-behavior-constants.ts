@@ -791,6 +791,15 @@ export const RESTLESS_ROAD_COOLDOWN_TICKS = 48;
 export const RESTLESS_ROAD_MAX_HEXES = 12;
 
 /**
+ * THR-2214 — the path's road: ticks since The First's latest path-fitting chapter
+ * started (else since the bond) after which, with no fitting story among her
+ * candidates, she sets out for the nearest place that holds one. Shares the
+ * restless road's cooldown (RESTLESS_ROAD_COOLDOWN_TICKS) and reach
+ * (RESTLESS_ROAD_MAX_HEXES). Lower = she walks to her path's work more often.
+ * @range 12–144 */
+export const FIRST_PATH_ROAD_DROUGHT_TICKS = 36;
+
+/**
  * THR-1218 D5 — ticks with no story chapter after which the tellings cap
  * relaxes for that mortal, until her next story chapter starts. 96 = eight
  * days. The cap never starves her for longer than this. Tuned down from the

@@ -157,12 +157,12 @@ describe('THR-2068 E2/E3/C1 — compelled work says how it ended', () => {
 });
 
 describe('THR-2068 E4 — the path leans The First\'s chapters', () => {
-  it('firstPathPullFor is ×1.5 on each of Unseen blade\'s two Reaches and 1 elsewhere', () => {
+  it('firstPathPullFor is ×(1 + FIRST_PATH_PULL) on each of Unseen blade\'s two Reaches and 1 elsewhere', () => {
     const path = firstPathFromRecord({ sparkVisionId: UNSEEN_BLADE } as never);
     expect(path?.reach).toBe('iron');
     expect(path?.requiredReach).toBe('shadow');
-    expect(firstPathPullFor(path, 'shadow', ['honesty_cunning'])).toBeCloseTo(1.5, 10);
-    expect(firstPathPullFor(path, 'iron', ['mercy_ruthlessness'])).toBeCloseTo(1.5, 10);
+    expect(firstPathPullFor(path, 'shadow', ['honesty_cunning'])).toBeCloseTo(1 + FIRST_PATH_PULL, 10);
+    expect(firstPathPullFor(path, 'iron', ['mercy_ruthlessness'])).toBeCloseTo(1 + FIRST_PATH_PULL, 10);
     expect(firstPathPullFor(path, 'gold', ['honesty_cunning'])).toBe(1);
     expect(firstPathPullFor(null, 'shadow')).toBe(1);
   });
@@ -185,8 +185,8 @@ describe('THR-2068 E4 — the path leans The First\'s chapters', () => {
   it('a shadow scene outranks an equal-EVT gold scene for The First', () => {
     const board = decide('morthane');
     expect(board.winner?.id).toBe('enc.shadow');
-    expect(board.winner?.firstPathPull).toBeCloseTo(1.5, 10);
-    expect(board.winner?.score).toBeCloseTo(0.4 * 1.5, 10);
+    expect(board.winner?.firstPathPull).toBeCloseTo(1 + FIRST_PATH_PULL, 10);
+    expect(board.winner?.score).toBeCloseTo(0.4 * (1 + FIRST_PATH_PULL), 10);
     expect(board.entries.find(e => e.id === 'enc.gold')?.firstPathPull).toBeUndefined();
   });
 

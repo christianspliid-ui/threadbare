@@ -15,3 +15,12 @@ export const RESTLESS_ROAD_FALLBACK_PLACE = 'a far place';
 
 /** Stands in for an unresolvable mortal name. */
 export const RESTLESS_ROAD_FALLBACK_NAME = 'A mortal';
+
+/**
+ * THR-2214 — the path's road: The First sets out for the nearest place whose
+ * stories fit the path the god chose. `{name}` and `{place}` are segments with
+ * references (links, as the restless road's); `{path}` is `firstPathInLine`
+ * ("the uniter of the clans"). Unresolvable names use the restless road's
+ * fallbacks (UI Law 43).
+ */
+export const FIRST_PATH_ROAD_LINE = '{name} takes the road to {place}, where {path} has work.';

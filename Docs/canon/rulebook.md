@@ -371,7 +371,7 @@ The opening move of a run, and the only encounter that is guaranteed to happen. 
 
 **The First keeps the trade you met her in** [IMPL — THR-1984, [Docs/plans/2026-10-18-thr-1982-the-first-keeps-her-trade.md](../plans/2026-10-18-thr-1982-the-first-keeps-her-trade.md); `src/engine/firstTrade.ts`]. A healer stays a healer to the world, and the chapters that need a particular trade wait for a mortal who has it. Each of the 24 candidates carries an authored trade (a role and the word you read, *Healer*); the bond writes both onto her before her Means is born. Her trade weighs which chapters she reaches for, as any mortal's does, and never walls one off — except the five regional chapters whose premise is a fixed job (archivist, prophet, magistrate, mason-lord, merchant-prince), which a mortal outside their `protagonistRoles` list does not draw; a mortal with no trade still draws everything. Her sheet names the trade once; her *calling* is a different fact and may still change with her life.
 
-**Her chapters lean toward the path you chose** [IMPL — THR-2068, `firstPathPullFor` / `FIRST_PATH_PULL` in [src/engine/firstPath.ts](../../src/engine/firstPath.ts)]. A path is two Reaches, who she is and what she becomes; a scene in either weighs half again as much in her own choice and in God's Will's ranking, and a God's Will option that fits says *"Fits the unseen blade."* It is a lean, never a filter — her own values stay in charge.
+**Her chapters lean toward the path you chose** [IMPL — THR-2068, `firstPathPullFor` / `FIRST_PATH_PULL` in [src/engine/firstPath.ts](../../src/engine/firstPath.ts)]. A path is two Reaches, who she is and what she becomes; a scene in either weighs three times as much (half again before THR-2214) in her own choice and in God's Will's ranking, and a God's Will option that fits says *"Fits the unseen blade."* It is a lean, never a filter — her own values stay in charge. When no scene she weighs fits the path and none of her chapters has fitted it for three days, she takes the road to the nearest place where the path has work (*"Seren takes the road to Harrowmere, where the uniter of the clans has work."*) [IMPL — THR-2214, `firstPathRoadDue` in [src/engine/firstPathRoad.ts](../../src/engine/firstPathRoad.ts)]. On the crossroads, a road that fits says *"Fits the uniter of the clans."*
 
 **A First can never start broken** [IMPL — `MEETING_QUINTESSENCE_FLOOR`]. Failure bands scar the mortal's starting quintessence, but the total is clamped: two catastrophes and a doomed bond still hand you someone who can act. The pre-clamp value is traced for inspection.
 
@@ -705,6 +705,8 @@ When the next quarterly architecture-assessment runs, the deferred item (5) is t
 ---
 
 ## Last-reviewed
+
+2026-11-14 by Claude Code (THR-2214 — the path draws The First to its work. §7 *Her chapters lean toward the path you chose* gains the ×3 lean, the path's road and the crossroads fit line, all `[IMPL]`.)
 
 2026-11-07 by Claude Code (THR-1928 — the Crossroads on screen. §4 *You can stand at a threaded mortal’s crossroads* is now `[IMPL]` end to end: the page row, the torn mark, and God’s Will switched off; the God’s Will paragraph says it is off.)
 
