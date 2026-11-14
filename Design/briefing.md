@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-14 08:58 local (07:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-14 09:56 local (08:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -26,11 +26,6 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
   - **Why the earlier attempt failed:** the counting script was wrong, not the economy. It let a no-sphere card drain every pool, which the real hand never allows. Once it counted the way the hand does, every setting tried left a playable card at every step.
   - **Why 0.6:** at 0.7 two worlds sat one or two steps from failing. At 0.5 the full hand was almost never affordable, harsher than the goal asks. At 0.6 the god's home pool sits at about a fifth full at a typical step, so it picks one or two home cards per step.
   - **Veto:** say "veto purse numbers" to keep income at 1.0, or "richer purse" to step income to 0.7. The build is held for your veto until 12:17 UTC today: [Tune the purse — card prices ×3, pool cap 35, income 0.6](https://linear.app/threadbare/issue/THR-2216/tune-the-purse-card-prices-3-pool-cap-35-base-and-seat-income-06). *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-14a.md)*
-- [The chosen path still doesn't steer](https://linear.app/threadbare/issue/THR-2200/recurs-after-fix-twice-the-chosen-path-still-doesnt-steer-a-uniter-of): **the path The First was given at the bond now draws her toward its work.** Until now it only weighted what happened to be near her.
-  - **What was measured:** The First on four different paths, with no god input, on three worlds. Today, 46 of her 105 chapters fit her path, and the unseen blade fit only 8 of 26. A fitting story was among her top five options in as few as 13% of her decisions, and when one was there it usually lost by more than double.
-  - **What changes:** the path's lean goes from ×1.5 to ×2.5, so it clearly beats her trade's ×1.4. If no fitting story is near her, she takes the road to the nearest place that has one, and the Chronicle says so: "Seren takes the road to Harrowmere, where the uniter of the clans has work."
-  - **What does not change:** nothing is filtered or damped. She still weighs every road, and forks stay hers.
-  - **Veto:** say "veto path road" to keep the path as a lean only. The build is held until 08:55 UTC today: [The path draws The First to its work](https://linear.app/threadbare/issue/THR-2214/the-path-draws-the-first-to-its-work-a-stronger-lean-a-road-to-the). *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-13e.md)*
 
 Say "veto <title>" to reverse any of these.
 
@@ -40,11 +35,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Thin, by design.** [THR-2213 Ship the agency census](https://linear.app/threadbare/issue/THR-2213/ship-the-agency-census-a-hands-off-run-and-a-played-run-on-the-same) shipped and is live ([#2822](https://github.com/christianspliid-ui/threadbare/pull/2822)). One ticket is left in Ready for Dev, held for your veto: [THR-2216 Tune the purse](https://linear.app/threadbare/issue/THR-2216/tune-the-purse-card-prices-3-pool-cap-35-base-and-seat-income-06) (until 12:17 UTC). [THR-2214 The path draws The First to its work](https://linear.app/threadbare/issue/THR-2214/the-path-draws-the-first-to-its-work-a-stronger-lean-a-road-to-the) waits in Todo and joins it after 08:55 UTC. The builder's last three runs stood down only because of these veto windows.
+**Thin, by design.** One ticket is in Ready for Dev, held for your veto: [THR-2216 Tune the purse](https://linear.app/threadbare/issue/THR-2216/tune-the-purse-card-prices-3-pool-cap-35-base-and-seat-income-06) (until 12:17 UTC). The veto window on [THR-2214 The path draws The First to its work](https://linear.app/threadbare/issue/THR-2214/the-path-draws-the-first-to-its-work-a-stronger-lean-a-road-to-the) closed at 08:55 UTC with no veto; it is still in Todo, and the orchestrator's next run (about 09:28 UTC) should move it to Ready for Dev. The builder's last five runs stood down only because of these veto windows.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (25 days; In Dev since 15 Oct), and nothing has touched it since 8 Nov. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-All green. Linear read live this run. The live site serves the latest commit on main (1416a3b6). Checks on main and the 3 scheduled background jobs pass, no PRs are waiting to merge, all 10 scheduled tasks are on time, and the worktree reaper ran at 08:40 local. Engine speed is normal: 129 ms/tick, 15% under the 7-day median.
+All green. Linear read live this run. The live site serves the latest commit on main (1416a3b6). Checks on main and the 3 scheduled background jobs pass, no PRs are waiting to merge, all 10 scheduled tasks are on time, and the worktree reaper ran at 09:51 local. Engine speed is normal: 131 ms/tick, 14% under the 7-day median.
