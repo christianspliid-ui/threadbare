@@ -604,6 +604,25 @@ if (import.meta.env.DEV) {
 
     // THR-1985 — each sphere's refill band (net as a share of total gross income),
     // and the deepest sphere, which pays upkeep and carries "pays your upkeep".
+    // THR-2208 — the Mandate's deed credits and the one-day trend the rail reads.
+    getMandateDeeds: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const { selectMandateRow } = await import('./engine/views/subjects/godSheet');
+      const row = selectMandateRow(state);
+      const ms = state.mandateState;
+      const pendingSpend = (state.unifiedActions ?? [])
+        .filter(a => !a.resolved && a.mandateSphereSpend)
+        .map(a => ({ actionId: a.actionId, actorId: a.actorId, spend: { ...a.mandateSphereSpend } }));
+      return {
+        trend: row?.trend ?? null,
+        recentLedgerDelta: ms?.recentLedgerDelta ?? 0,
+        godLedger: ms?.godLedger ?? { primary: 0, secondary: 0 },
+        recentDeeds: [...(ms?.recentDeeds ?? [])],
+        recentDeedLines: row?.recentDeedLines ?? [],
+        pendingSpend,
+      };
+    },
     getEssenceRefill: async () => {
       const state = _gameStateProvider?.();
       if (!state) return { error: 'no live game state' };

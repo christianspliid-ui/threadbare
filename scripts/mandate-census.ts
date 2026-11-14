@@ -15,6 +15,11 @@
 //   godfit  — godloc on the seeded route with the Mandate unable to end (targets set out of
 //             reach after the settle), so the ledger can be read at doom 0.5 / 0.75 to fit
 //             the point constants (Done-when 2).
+//   deeds   — THR-2208 slice 1: the seeded route, 300 ticks. A scripted policy pays one
+//             Mandate-sphere card's essence (1, primary first) on each chapter of a mortal
+//             the god threads, as the nudge commit does. Done-when: `mandate.deed_credit`
+//             points > 0 on ≥ 3 chapters, and the Mandate word reads Rising within a day
+//             of each. `deeds-none` plays nothing: only the base credits.
 //
 // THR-2089: the god casts only where a player could — a card with `targetSubtypes` draws its
 // targets from the place tier filtered to those subtypes — and stops casting on a sphere
@@ -35,7 +40,9 @@ import { UNIFIED_ACTION_TEMPLATES } from '../src/data/unified-action-templates';
 import { HUNGER_CATALOG } from '../src/data/hunger-catalog';
 import { preparePlayerCast, commitPlayerCast } from '../src/engine/playerCastDispatch';
 import { getPlaceNodes, getLocationNodes } from '../src/engine/sublocationShape';
-import { MANDATE_PRIMARY_TARGET_POINTS, MANDATE_SECONDARY_TARGET_POINTS } from '../src/data/game-config';
+import { MANDATE_PRIMARY_TARGET_POINTS, MANDATE_SECONDARY_TARGET_POINTS, MANDATE_TREND_WINDOW_TICKS } from '../src/data/game-config';
+import { addMandateSphereSpend, mandateDeedSpheres } from '../src/engine/mandateLedger';
+import { selectMandateRow } from '../src/engine/views/subjects/godSheet';
 
 const arm = process.argv[2] ?? 'idle';
 const world = process.argv[3] ?? 'all';
@@ -145,7 +152,53 @@ function cliFor(seed: number): () => any {
   return () => initializeGameState(generateArchetypes(4, seed)[0], 'T', createBalancedCosmology(), seed, 32, 24).state;
 }
 
+/** THR-2208 — the deed census (see the header). Prints one row per credited chapter. */
+function runDeeds(play: boolean, ticks = 300): void {
+  resetEventCounter(); resetReputationTraitInit(); resetDecisionCache();
+  const rt = createSimulationRuntime();
+  let state = seededFor()();
+  const P = state.mandateDefinition.primarySphere; const S = state.mandateDefinition.secondarySphere;
+  const played = new Set<string>();
+  const credited = new Map<string, { tick: number; points: number; risingBy: number | null }>();
+  let baseOnly = 0;
+  console.log(`
+## deeds play=${play} mandate="${state.mandateDefinition.name}" P=${P} S=${S}`);
+  for (let i = 0; i < ticks; i++) {
+    if (play) {
+      state = {
+        ...state,
+        unifiedActions: (state.unifiedActions ?? []).map((a: any) => {
+          if (a.resolved || played.has(a.actionId)) return a;
+          if (mandateDeedSpheres(state, state.graph, a.actorId).size === 0) return a;
+          const sp = (state.essencePool[P] ?? 0) >= 1 ? P : (state.essencePool[S] ?? 0) >= 1 ? S : null;
+          if (!sp) return a;
+          played.add(a.actionId);
+          state.essencePool = { ...state.essencePool, [sp]: state.essencePool[sp] - 1 };
+          return { ...a, mandateSphereSpend: addMandateSphereSpend(a.mandateSphereSpend, { [sp]: 1 }) };
+        }),
+      };
+    }
+    state = unattended(runTick(state, [], rt));
+    for (const a of (state.unifiedActions ?? []) as any[]) {
+      if (!a.resolved || !a.mandateDeedCredits?.length || credited.has(a.actionId)) continue;
+      const points = a.mandateDeedCredits.reduce((sum: number, c: any) => sum + c.points, 0);
+      credited.set(a.actionId, { tick: state.tick, points, risingBy: null });
+      if (!a.mandateSphereSpend) baseOnly++;
+      console.log(`deed t${state.tick} ${a.templateId} outcome=${a.outcome} points=${points.toFixed(2)} spend=${JSON.stringify(a.mandateSphereSpend ?? {})}`);
+    }
+    const trend = selectMandateRow(state)?.trend;
+    for (const c of credited.values()) {
+      if (c.risingBy == null && trend === 'rising' && state.tick - c.tick < MANDATE_TREND_WINDOW_TICKS) c.risingBy = state.tick;
+    }
+    if (state.phase !== 'playing') break;
+  }
+  const rows = [...credited.values()];
+  const rose = rows.filter(r => r.risingBy != null).length;
+  console.log(`deeds FINAL t${state.tick} credited chapters=${rows.length} (base-only ${baseOnly}) rising-within-a-day=${rose}/${rows.length} ledger=${(state.mandateState?.godLedger?.primary ?? 0).toFixed(1)}/${(state.mandateState?.godLedger?.secondary ?? 0).toFixed(1)}`);
+}
+
 const results: RunResult[] = [];
+if (arm === 'deeds' || arm === 'deeds-none') runDeeds(arm === 'deeds');
 if (arm === 'idle' || arm === 'godloc') {
   const god = arm === 'godloc';
   if (world === 'all' || world === 'seeded') {

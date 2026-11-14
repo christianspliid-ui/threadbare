@@ -3299,6 +3299,19 @@ export function mandateDeedForChapter(
   const top = credits.reduce((best, c) => (c.points > best.points ? c : best), credits[0]);
   const total = credits.reduce((sum, c) => sum + c.points, 0);
   const detail = mandateDeedLine(actorName, sphereWord(top.sphere), total >= MANDATE_DEED_STRONG_POINTS);
+  const change: EncounterAftermathChange = {
+    id: `${action.actionId}:mandate_deed`,
+    kind: 'shell_state',
+    title: MANDATE_DEED_TITLE,
+    detail,
+    polarity: 'gain',
+    category: 'boon',
+    direction: 'gain',
+    stateNoun: { text: 'Mandate', tooltipId: 'ui.mandate_tracker' },
+    storyWeight: 'beat',
+    actorId: action.actorId,
+    ...(actorName ? { actorName } : {}),
+  };
   emitTrace({
     category: 'mandate.deed_credit',
     tick,
@@ -3313,22 +3326,7 @@ export function mandateDeedForChapter(
     spend,
     credits: credits.map(c => ({ sphere: c.sphere, points: c.points })),
   });
-  return {
-    credits,
-    change: {
-      id: `${action.actionId}:mandate_deed`,
-      kind: 'shell_state',
-      title: MANDATE_DEED_TITLE,
-      detail,
-      polarity: 'gain',
-      category: 'boon',
-      direction: 'gain',
-      stateNoun: { text: 'Mandate', tooltipId: 'ui.mandate_tracker' },
-      storyWeight: 'beat',
-      actorId: action.actorId,
-      ...(actorName ? { actorName } : {}),
-    },
-  };
+  return { credits, change };
 }
 
 /**

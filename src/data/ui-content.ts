@@ -397,7 +397,7 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     // THR-2004 — a mandate neither slows the Doom nor grants essence: a checkpoint kept
     // well banks counter-omens that soften the next stage (phaseDoom computeEscalationSeverity).
     // THR-2208 — the trend word reads the last day, and a bound mortal's deeds count.
-    desc: 'Divine objectives — the second clock, racing the {{ui.doom_bar}}. Keep a checkpoint well and you blunt the doom\'s next blow. Rising, Holding or Slipping says how it moved in the last day. Cards in its spheres count toward it when you play them for a mortal bound to you.',
+    desc: 'The second clock, racing the {{ui.doom_bar}}; keep a checkpoint well to blunt the doom\'s next blow. Rising or Slipping: how it moved today. Cards in its spheres count for a mortal bound to you.',
   },
 
   // ─── Ascendant identity (THR-1118) ─────────────────────────────

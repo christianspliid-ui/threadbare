@@ -2198,6 +2198,23 @@ export interface DebugBridge {
    * THR-2061 — each sphere also carries `direction`, the way its row's arrow
    * points: `ebbing` when it drains, `rising` below the cap, else `steady`.
    */
+  /**
+   * THR-2208 — the Mandate's deed credits: the trend word's key (read off the ledger's
+   * last day), `recentLedgerDelta`, the god ledger, the last deeds (records and the
+   * lines the player reads), and the Mandate-sphere spend open chapters carry so far.
+   */
+  getMandateDeeds: () => Promise<
+    | {
+        trend: 'rising' | 'steady' | 'ebbing' | null;
+        recentLedgerDelta: number;
+        godLedger: { primary: number; secondary: number };
+        recentDeeds: import('./types/mandate').MandateDeedRecord[];
+        recentDeedLines: string[];
+        pendingSpend: Array<{ actionId: string; actorId: string; spend: Partial<Record<import('./types').SphereName, number>> }>;
+      }
+    | { error: string }
+  >;
+
   getEssenceRefill: () => Promise<
     | (Omit<import('./engine/views/essenceRefill').EssenceRefillReading, 'spheres'> & {
         spheres: Partial<Record<
