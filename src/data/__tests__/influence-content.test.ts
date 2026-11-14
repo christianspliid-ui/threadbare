@@ -39,7 +39,7 @@ describe('influence-content', () => {
   });
 
   it('exports economy constants', () => {
-    expect(BASE_ESSENCE_PER_TICK).toBe(0.6);
+    expect(BASE_ESSENCE_PER_TICK).toBe(0.5);
     expect(ESSENCE_PER_WORSHIPPER).toBe(0.1);
     expect(ESSENCE_PER_PLACE_OF_POWER).toBe(0.5);
     expect(BASE_MAX_ESSENCE).toBe(35);

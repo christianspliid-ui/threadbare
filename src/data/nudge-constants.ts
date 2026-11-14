@@ -163,10 +163,11 @@ export const SPHERE_DISCOUNT_MIN_COST = 1;
  * the scale multiplies zero. Tuned against the scarcity predicate P1–P4
  * (`npm run census:essence-scarcity`); range 1–4.
  *
- * **3 (THR-2216, decided on THR-2215).** Paired with a 35 pool cap and 0.6 base
- * and seat income (`influence-content.ts`). On the corrected census (sphere-less
- * cards charged to the primary only), five seeds (42, 99, 7, 13, 2026) pass P1–P3:
- * the full hand is affordable on 11–40% of attended steps, some card on 100%.
+ * **3 (THR-2216, decided on THR-2215).** Paired with a 35 pool cap and 0.5 base
+ * and seat income (`influence-content.ts`). The lane chose 0.6 income; on the
+ * 2026-11-14 main, 0.6 failed P1 on seeds 42 and 99 (54%, 53%), so the build took
+ * 0.5, the lane's next measured row. Five seeds (42, 99, 7, 13, 2026) pass P1–P3:
+ * the full hand is affordable on 9–43% of attended steps, some card on 95–100%.
  * The earlier 2026-11-13 settings that failed are on THR-2201.
  * Plan: Docs/plans/2026-11-13-thr-2201-make-the-purse-bite.md
  */

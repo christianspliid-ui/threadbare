@@ -19,7 +19,7 @@
  * Foreign ground, so a later retune that makes the band pointless still fails loudly.
  * (Recorded as a finding on THR-1748, § Decided 6.)
  *
- * THR-2216 (the purse tuning: base and seat income 1.0 → 0.6, cap 50 → 35) moved it
+ * THR-2216 (the purse tuning: base and seat income 1.0 → 0.5, cap 50 → 35) moved it
  * back: two Enthralled threads cost 1.0 a tick from the primary, more than the primary
  * receives with no ground and no source, so the arm now pins that one goes unpaid, and
  * keeps the band guard by comparing what each arm holds across the run.
@@ -194,7 +194,7 @@ describe('THR-1747 divine economy ledger (1,080 ticks, no casts)', () => {
   it('Arm C — Arm B without the source (THR-2216 purse): two tier-4 threads outrun base and seat income on Foreign ground; Hostile ground drains faster', () => {
     const foreign = runArm({ threads: 2, source: false });
     expect(foreign.allTier4At).not.toBeNull();
-    // THR-2216 cut base and seat income to 0.6 a tick each. Two Enthralled threads
+    // THR-2216 cut base and seat income to 0.5 a tick each. Two Enthralled threads
     // (1.0 upkeep from the primary) now outrun what a god with no ground and no
     // source earns, so one goes unpaid after both reach tier 4: ground is needed
     // again, as THR-1747 first pinned. Measured: the primary runs dry near tick 600.

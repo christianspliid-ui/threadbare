@@ -89,9 +89,9 @@ describe('Essence Generation', () => {
     expect(gen.life).toBeGreaterThan(gen.force);
     // Secondary sphere (spirit) gets second largest
     expect(gen.spirit).toBeGreaterThan(gen.force);
-    // All spheres sum to BASE_ESSENCE_PER_TICK (0.6)
+    // All spheres sum to BASE_ESSENCE_PER_TICK (0.5)
     const total = SPHERE_NAMES.reduce((sum, s) => sum + gen[s], 0);
-    expect(total).toBeCloseTo(0.6, 5);
+    expect(total).toBeCloseTo(0.5, 5);
   });
 
   it('threaded agents increase generation', () => {

@@ -11,8 +11,8 @@ import type { InfluenceTier } from '../types/influence';
 
 // ─── Economy Constants ────────────────────────────────────────────
 
-/** Base generation rate: 0.6 essence per tick (THR-2216; was 1.0). */
-export const BASE_ESSENCE_PER_TICK = 0.6;
+/** Base generation rate: 0.5 essence per tick (THR-2216; was 1.0). */
+export const BASE_ESSENCE_PER_TICK = 0.5;
 
 /** Essence per threaded mortal per tick. */
 export const ESSENCE_PER_THREAD = 0.1;
@@ -30,7 +30,7 @@ export const ESSENCE_PER_PLACE_OF_POWER = 0.5;
  * (non-place-of-power) location as the seat raises per-tick essence by exactly
  * this amount.
  */
-export const ESSENCE_PER_SEAT = 0.6;
+export const ESSENCE_PER_SEAT = 0.5;
 
 /**
  * THR-1792 — how far (in hexes) the Seat beat looks for a settlement when The First
