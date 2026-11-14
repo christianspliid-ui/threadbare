@@ -107,7 +107,7 @@ describe('useStageCamera — open (THR-2221)', () => {
     const hook = run(map);
     await settleOpen();
     expect(map.centerHexesAt).toHaveBeenCalledTimes(1);
-    expect(map.centerHexesAt.mock.calls[0][1]).toEqual({ x: WINDOW.x + WINDOW.w / 2, y: WINDOW.y + WINDOW.h / 2 });
+    expect((map.centerHexesAt.mock.calls[0] as unknown[])[1]).toEqual({ x: WINDOW.x + WINDOW.w / 2, y: WINDOW.y + WINDOW.h / 2 });
     expect(hook.result.current.stage.cameraMode).toBe('eased');
   });
 

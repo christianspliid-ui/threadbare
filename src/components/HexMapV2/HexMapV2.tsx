@@ -660,6 +660,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const cameraRef   = useRef<THREE.OrthographicCamera | null>(null);
     const zoomRef     = useRef<import('d3').ZoomBehavior<HTMLCanvasElement, unknown> | null>(null);
     const destroyZoomRef = useRef<(() => void) | null>(null);
+    /** THR-2221 — the camera as the last scene build left it; a rebuild of the same grid restores it. */
+    const keptCameraRef = useRef<{ transform: import('d3').ZoomTransform; cols: number; rows: number } | null>(null);
     const setZoomTargetRef   = useRef<((wx: number, wy: number) => void) | null>(null);
     const clearZoomTargetRef = useRef<(() => void) | null>(null);
 
@@ -1475,7 +1477,18 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         // retired: the run opens centred on the First with all known land in view
         // (k = clamp(fitKnownLand, 6, 10)), applied with no animation; falls back to the seat,
         // the known land's centre, or (fog off) the whole-grid fit.
-        mapCamera.applyOpening(firstHexRef.current, seatHexRef.current);
+        // THR-2221 — but only on the first build. The scene rebuilds when its inputs change
+        // (locations, anomalies, the realm projection…), which a running clock does often;
+        // re-applying the opening each time snapped the camera back to the First on every
+        // rebuild — the "camera that follows Kael" of warm playtest round 4. A rebuild of the
+        // same grid keeps the camera where the player (or the Stage) left it.
+        const kept = keptCameraRef.current;
+        keptCameraRef.current = null;
+        if (kept && kept.cols === cols && kept.rows === rows) {
+          d3.select(canvas).call(zoom.transform, kept.transform);
+        } else {
+          mapCamera.applyOpening(firstHexRef.current, seatHexRef.current);
+        }
 
         // Render loop
         const clock = new THREE.Clock();
@@ -1584,6 +1597,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             clearTimeout(cameraCenterDebounceRef.current);
             cameraCenterDebounceRef.current = null;
           }
+          // THR-2221 — keep the camera for the next scene build of the same grid.
+          keptCameraRef.current = { transform: d3.zoomTransform(canvas), cols, rows };
           destroy();
           zoomRef.current = null;
           destroyZoomRef.current = null;
