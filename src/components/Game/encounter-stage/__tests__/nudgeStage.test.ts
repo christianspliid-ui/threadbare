@@ -35,6 +35,7 @@ import {
 } from '../../../../data/nudge-card-display';
 import { NUDGE_CARD_TYPES, NUDGE_CARD_LIBRARY } from '../../../../data/nudge-card-library';
 import { effectiveNudgeCost } from '../../../../engine/encounters/nudges';
+import { NUDGE_ESSENCE_COST_SCALE } from '../../../../data/nudge-constants';
 
 // ─── Fixtures ─────────────────────────────────────────────────────
 
@@ -151,8 +152,8 @@ function buildAction(overrides?: Partial<UnifiedAction>): UnifiedAction {
   };
 }
 
-/** A pool holding only `force` — so `entropy` cards are sphere-locked. */
-function buildState(force = 3): Partial<GameState> {
+/** A pool holding only `force` — so `entropy` cards are sphere-locked. Sized to the encounter-step price scale (THR-2216). */
+function buildState(force = 3 * NUDGE_ESSENCE_COST_SCALE): Partial<GameState> {
   return {
     essencePool: { force } as unknown as GameState['essencePool'],
     unlockedActionIds: [],
@@ -224,7 +225,7 @@ describe('buildNudgePhaseModel — per-NudgeBlockedCode render policy', () => {
   it('restores an already-committed hand when the stage reopens', () => {
     const phase = buildPhase(undefined, buildAction({ activeNudges: ['steady_hand'] }))!;
     expect(phase.committedIds).toEqual(['steady_hand']);
-    expect(phase.committedCost).toBe(1);
+    expect(phase.committedCost).toBe(NUDGE_ESSENCE_COST_SCALE);
   });
 
   it('fails soft on an absent essence pool rather than throwing', () => {
@@ -337,17 +338,17 @@ describe('buildNudgePhaseModel — card-row display model', () => {
     const phase = buildPhase()!;
     const card = phase.cards.find((c) => c.id === 'force_surge')!;
     const authored = NUDGES.find((n) => n.id === 'force_surge')!.essenceCost;
-    const expected = effectiveNudgeCost({ sphere: 'force', essenceCost: authored }, ['force']);
+    const expected = effectiveNudgeCost({ sphere: 'force', essenceCost: authored }, ['force'], NUDGE_ESSENCE_COST_SCALE);
 
-    expect(expected).toBeLessThan(authored);
+    expect(expected).toBeLessThan(authored * NUDGE_ESSENCE_COST_SCALE);
     expect(card.essenceCost).toBe(expected);
     expect(card.discounted).toBe(true);
     expect(card.costLabel).toBe(`${expected} essence`);
   });
 
-  it('leaves an undiscounted card at its authored price', () => {
+  it('leaves an undiscounted card at its authored price (times the step scale)', () => {
     const card = buildPhase()!.cards.find((c) => c.id === 'steady_hand')!;
-    expect(card.essenceCost).toBe(1);
+    expect(card.essenceCost).toBe(1 * NUDGE_ESSENCE_COST_SCALE);
     expect(card.discounted).toBe(false);
   });
 

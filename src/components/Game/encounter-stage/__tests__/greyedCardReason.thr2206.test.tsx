@@ -26,6 +26,7 @@ import { readEssenceRefill } from '../../../../engine/views/essenceRefill';
 import { sphereWord } from '../../../../data/essence-format';
 import { NUDGE_BLOCKED_REASONS } from '../../../../data/nudge-stage-content';
 import { NudgePhaseShell } from '../shells/NudgePhaseShell';
+import { NUDGE_ESSENCE_COST_SCALE } from '../../../../data/nudge-constants';
 
 const ORDER: StepNudge = { id: 'nothing_breaks', name: 'Nothing Breaks Tonight', sphere: 'order', essenceCost: 3, forecastDelta: 0.05, effectLine: 'The night holds.' };
 const MIND: StepNudge = { id: 'count_the_cost', name: 'Count What It Costs', sphere: 'mind', essenceCost: 3, forecastDelta: 0.05, effectLine: 'She reckons it.' };
@@ -138,8 +139,11 @@ describe('THR-2206 · a dimmed card\'s reason names the pool `shortSphere` repor
   it('after the hand\'s live remainder greys a card', () => {
     const s = step([MIND, MIND_SMALL]);
     const g = graph();
-    // Mind pays 2 + 1 = 3 for both; 2.5 covers either but not both.
-    const phase = buildNudgePhaseModel({ template: template(s), activeAction: ACTION, step: s, graph: g, gameState: godState(g, 2.5, 1) })!;
+    // Each Mind card is its authored price times the step scale, less the one-point
+    // home discount (THR-2216). A pool half a point over the dearer card covers
+    // either but not both.
+    const dear = MIND.essenceCost * NUDGE_ESSENCE_COST_SCALE - 1;
+    const phase = buildNudgePhaseModel({ template: template(s), activeAction: ACTION, step: s, graph: g, gameState: godState(g, dear + 0.5, 1) })!;
     const { result } = renderHook(({ p }) => useNudgeHand(p), { initialProps: { p: phase } });
     const small = () => result.current.cards.find((c) => c.id === MIND_SMALL.id)!;
     expect(small().state).toBe('playable');
