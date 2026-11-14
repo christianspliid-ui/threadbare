@@ -10,6 +10,7 @@ import {
   CAUSE_GOD_ON_STEP,
   buildAftermathCauseLine,
   decidingStepIndex,
+  priceRowFor,
   type CauseLineStep,
 } from '../aftermathWords';
 
@@ -45,6 +46,21 @@ describe('THR-2218 — a band tie on a won chapter goes to the step the cards we
     ];
     expect(line('success_at_cost', steps))
       .toBe('Kael won Flawed Steel, at a price. The work on Iron nearly broke, and your cards held it.');
+  });
+});
+
+describe('THR-2218 — the cause line and the price row name the same step on a tie', () => {
+  it('a won-at-a-price tie with no at-cost step: both lines name the touched step', () => {
+    const steps: CauseLineStep[] = [
+      { band: 'near_miss', reach: 'iron', godTouched: true },
+      { band: 'near_miss', reach: 'gold', godTouched: false },
+    ];
+    expect(line('success_at_cost', steps)).toContain('The work on Iron nearly broke');
+    const row = priceRowFor({
+      outcome: 'success_at_cost', actorId: 'agent_kael', actorName: 'Kael', changes: [],
+      drewComplication: false, paidAtCostStep: false, steps,
+    });
+    expect(row?.detail.startsWith('The work on Iron nearly broke')).toBe(true);
   });
 });
 

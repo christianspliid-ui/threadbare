@@ -1245,8 +1245,12 @@ function costStepDetail(actorName: string, steps: readonly CauseLineStep[]): str
   let worst: CauseLineStep | undefined;
   for (const step of steps) {
     if (step.band !== 'near_miss' && step.band !== 'failure' && step.band !== 'critical_failure') continue;
-    // `>=` so a tie goes to the later step, as `decidingStepIndex` does.
-    if (!worst || STEP_OUTCOMES.indexOf(step.band) >= STEP_OUTCOMES.indexOf(worst.band)) worst = step;
+    // A tie goes to the later step unless that would trade a god-touched step for
+    // an untouched one — the won-ending tie-break `decidingStepIndex` uses
+    // (THR-2218), so the price row names the step the cause line names.
+    const rank = STEP_OUTCOMES.indexOf(step.band);
+    const worstRank = worst ? STEP_OUTCOMES.indexOf(worst.band) : -1;
+    if (!worst || rank > worstRank || (rank === worstRank && !(worst.godTouched && !step.godTouched))) worst = step;
   }
   if (!worst) return null;
   const noun = causeStepNoun(worst) ?? 'One part of it';
