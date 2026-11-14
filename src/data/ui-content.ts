@@ -1201,7 +1201,7 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   },
   'ui.warm_recap.next_held': {
     label: 'It waits',
-    desc: 'It opens when you begin.',
+    desc: 'Find it under Needs you on the top bar.',
   },
   'ui.warm_recap.next_paused': {
     label: 'Paused',

@@ -17,6 +17,7 @@ import {
   useChapterAnswerRun,
   stepChapterAnswer,
   CHAPTER_ANSWER_OPEN_GRACE_TICKS,
+  CHAPTER_ANSWER_DROP_GRACE_TICKS,
   type ChapterAnswerTarget,
 } from '../useChapterAnswerRun';
 import {
@@ -132,6 +133,10 @@ describe('THR-1812 — useChapterAnswerRun', () => {
     const view = setup();
     commitAndRun(view, START);
     view.rerender({ actions: [], notifications: [], tick: 103, veilOpen: false });
+    // THR-2222 — inside the grace window the run keeps waiting for the answer beat.
+    expect(view.pushToast).not.toHaveBeenCalled();
+    expect(view.result.current.running).toBe(true);
+    view.rerender({ actions: [], notifications: [], tick: 103 + CHAPTER_ANSWER_DROP_GRACE_TICKS, veilOpen: false });
 
     expect(view.result.current.running).toBe(false);
     expect(view.result.current.answer.getDebugState().state).toBe('none');
@@ -186,6 +191,8 @@ describe('THR-1812 — useChapterAnswerRun', () => {
     act(() => view.result.current.answer.backToMap());
     view.rerender({ ...START, veilOpen: false });
     view.rerender({ actions: [], notifications: [], tick: 100, veilOpen: false });
+    expect(view.pushToast).not.toHaveBeenCalled();
+    view.rerender({ actions: [], notifications: [], tick: 100 + CHAPTER_ANSWER_DROP_GRACE_TICKS, veilOpen: false });
 
     expect(view.pushToast).toHaveBeenCalledTimes(1);
     expect(view.result.current.answer.getDebugState().state).toBe('none');
@@ -206,6 +213,7 @@ describe('THR-1812 — useChapterAnswerRun', () => {
 
     expect(view.result.current.answer.answerStatus).toBe('turning · until this chapter answers');
     view.rerender({ actions: [], notifications: [], tick: 102, veilOpen: false });
+    view.rerender({ actions: [], notifications: [], tick: 102 + CHAPTER_ANSWER_DROP_GRACE_TICKS, veilOpen: false });
     expect(view.pushToast).toHaveBeenCalledWith(
       'This chapter ended without an answer on screen. Its record is in the Chapter Ledger.',
     );
@@ -264,17 +272,14 @@ describe('THR-1812 — stepChapterAnswer (pure)', () => {
     expect(step.effects).toEqual([{ kind: 'pause_if_held' }]);
   });
 
-  it('a Lives on beat (autoResolveTick set) never auto-opens, so the run ends with the dropped toast, not a silent stop', () => {
+  it('THR-2222 — a Lives on beat (autoResolveTick set) never auto-opens, but it is the answer: the run stops quietly', () => {
     const step = stepChapterAnswer(
       running,
       { ...answeredInputs, encounterNotifications: [notif('n_step1', { stepIndex: 1, autoResolveTick: 130 })], tick: 101 },
       null,
     );
     expect(step.record).toBeNull();
-    expect(step.effects).toEqual([
-      { kind: 'stop_clock' },
-      { kind: 'toast', message: chapterAnswerText(CHAPTER_ANSWER_DROPPED_TOAST, TARGET.chapterName) },
-    ]);
+    expect(step.effects).toEqual([{ kind: 'stop_clock' }]);
   });
 
   it('an earlier step\'s spent notification (never marked resolved) is not an answer: action gone → dropped toast', () => {
@@ -282,7 +287,7 @@ describe('THR-1812 — stepChapterAnswer (pure)', () => {
     const step = stepChapterAnswer(
       step1,
       { ...answeredInputs, unifiedActions: [], encounterNotifications: [notif('n_step0', { stepIndex: 0 }), notif('n_step1', { stepIndex: 1 })], tick: 101 },
-      null,
+      101 - CHAPTER_ANSWER_DROP_GRACE_TICKS,
     );
     expect(step.effects).toEqual([
       { kind: 'stop_clock' },
@@ -294,10 +299,61 @@ describe('THR-1812 — stepChapterAnswer (pure)', () => {
     const step = stepChapterAnswer(
       running,
       { ...answeredInputs, unifiedActions: [], encounterNotifications: [notif('n_step0')], tick: 101 },
-      null,
+      101 - CHAPTER_ANSWER_DROP_GRACE_TICKS,
     );
     expect(step.effects).toEqual([
       { kind: 'stop_clock' },
+      { kind: 'toast', message: chapterAnswerText(CHAPTER_ANSWER_DROPPED_TOAST, TARGET.chapterName) },
+    ]);
+  });
+});
+
+describe('THR-2222 — no dropped toast over an answer that is coming or already shown', () => {
+  it('a step that resolves on tick T with its answer beat posted at T+1 fires no dropped toast', () => {
+    const view = setup();
+    commitAndRun(view, START);
+    // Tick T = 101: step 0 resolves, its answer beat is not posted yet.
+    view.rerender({ actions: [action(1)], notifications: [notif('n_step0')], tick: 101, veilOpen: false });
+    expect(view.result.current.answer.getDebugState().state).toBe('running');
+    // T+1: the beat is posted; the auto-open scan opens it on the veil.
+    const posted = [notif('n_step0'), notif('n_step1', { stepIndex: 1 })];
+    view.rerender({ actions: [action(1)], notifications: posted, tick: 102, veilOpen: false });
+    view.rerender({ actions: [action(1)], notifications: posted, tick: 102, veilOpen: true });
+
+    expect(view.result.current.answer.getDebugState().state).toBe('none');
+    expect(view.pushToast).not.toHaveBeenCalled();
+  });
+
+  it('an Aftermath already delivered (read on the veil, marked resolved) fires no dropped toast', () => {
+    const view = setup();
+    commitAndRun(view, START);
+    const shown = [notif('n_step0'), notif('n_after', { kind: 'aftermath', resolved: true })];
+    view.rerender({ actions: [action(0, true)], notifications: shown, tick: 104, veilOpen: false });
+
+    expect(view.result.current.answer.getDebugState().state).toBe('none');
+    expect(view.result.current.running).toBe(false);
+    expect(view.pushToast).not.toHaveBeenCalled();
+  });
+
+  it('a waiting answer whose Aftermath was delivered closes quietly', () => {
+    const waiting = { ...TARGET, phase: 'waiting' as const, startedAtTick: null, sawRunning: false };
+    const step = stepChapterAnswer(waiting, {
+      unifiedActions: [],
+      encounterNotifications: [notif('n_after', { kind: 'aftermath', resolved: true })],
+      tick: 110, running: false, veilOpen: false, heldRunning: null,
+    }, null);
+    expect(step.record).toBeNull();
+    expect(step.effects).toEqual([]);
+  });
+
+  it('a moveless beat is a record, not the answer: action gone after the grace window still drops', () => {
+    const waiting = { ...TARGET, phase: 'waiting' as const, startedAtTick: null, sawRunning: false };
+    const step = stepChapterAnswer(waiting, {
+      unifiedActions: [],
+      encounterNotifications: [notif('n_step1', { stepIndex: 1, noPlayerMove: true, resolved: true })],
+      tick: 110, running: true, veilOpen: false, heldRunning: null,
+    }, 110 - CHAPTER_ANSWER_DROP_GRACE_TICKS);
+    expect(step.effects).toEqual([
       { kind: 'toast', message: chapterAnswerText(CHAPTER_ANSWER_DROPPED_TOAST, TARGET.chapterName) },
     ]);
   });
