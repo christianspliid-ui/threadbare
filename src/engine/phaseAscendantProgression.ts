@@ -44,6 +44,7 @@ import type { ChronicleEntry } from '../types/narrative';
 import type { SphereName } from '../types/index';
 import { computeReachShare, computeTier } from './domainCapability';
 import { rankedAffinityReaches } from './reachPractice';
+import { rebukablePlaceIds } from './rivalRebuke';
 import { emitTrace } from './traceBuffer';
 import {
   DEEPENING_BEAT_MAX_PER_TICK,
@@ -55,6 +56,7 @@ import {
   MILESTONE_EMPTY_ROAD_BEAT_ID,
   MILESTONE_GUTTERING_THREAD_BEAT_ID,
   MILESTONE_FIRST_STAGE_BEAT_ID,
+  MILESTONE_FIRST_REBUKE_BEAT_ID,
   MILESTONE_FIRST_STAGE_DOOM_STAGE,
   WELLSPRING_MILESTONE_BEAT_ID,
   WELLSPRING_MILESTONE_TICKS_AFTER_BOND,
@@ -532,6 +534,49 @@ export function phaseAscendantProgression(state: GameState): Partial<GameState> 
         tier: 'chronicle',
         title: 'The First Stage',
         prose: milestoneChronicleProse(MILESTONE_FIRST_STAGE_BEAT_ID),
+        promptContext: {
+          actors: [ascId],
+          location: '',
+          sphere: primarySphere,
+          mood: 'ominous',
+        },
+        tick: turn,
+      });
+    }
+  }
+
+  // THR-2209: the first-rebuke milestone — a rival's hand has landed unabsorbed on the
+  // god's ground since the bond (rivals hold their hand until well after it), so the
+  // god is handed its answer, Rebuke, while the place can still be rebuked. Keyed on
+  // the rival states (not the toast) so a busy slot only delays the gift.
+  if (canEnqueue && !pending && !firedMilestones.includes(MILESTONE_FIRST_REBUKE_BEAT_ID)) {
+    const doom = state.doomClock;
+    const landed = !!doom && resolveDoomWokeAtTick(doom) !== null
+      // Only while some place is rebukable (window, active, unabsorbed, unanswered), so the
+      // gift's "go and rebuke it there" always has a place to go (review gate round 2).
+      && rebukablePlaceIds(state).size > 0;
+    if (landed) {
+      pending = {
+        beatId: MILESTONE_FIRST_REBUKE_BEAT_ID,
+        kind: 'milestone',
+        offeredTurn: turn,
+        boundNodeIds: [ascId],
+        trigger: { kind: 'turn', minTurn: turn },
+      };
+      firedMilestones.push(MILESTONE_FIRST_REBUKE_BEAT_ID);
+      node.properties.milestoneBeatsFired = firedMilestones;
+      emitTrace({
+        category: 'ascendant.progression.milestone_enqueued',
+        tick: turn,
+        turn,
+        beatId: MILESTONE_FIRST_REBUKE_BEAT_ID,
+        summary: `Milestone beat enqueued: ${MILESTONE_FIRST_REBUKE_BEAT_ID} (a rival's hand landed on untended ground)`,
+      });
+      newChronicle.push({
+        id: `milestone-${MILESTONE_FIRST_REBUKE_BEAT_ID}-${turn}`,
+        tier: 'chronicle',
+        title: "A Rival's Hand",
+        prose: milestoneChronicleProse(MILESTONE_FIRST_REBUKE_BEAT_ID),
         promptContext: {
           actors: [ascId],
           location: '',

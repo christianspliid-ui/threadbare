@@ -23,7 +23,7 @@ import { DOOM_STAY_TEMPLATE_ID, doomStayHint } from '../../data/doom-stay-conten
 import { doomStayNotice } from '../views/doomStayNotice';
 import { phaseAscendantProgression } from '../phaseAscendantProgression';
 import { getMilestoneBeatById, MILESTONE_BEAT_PRESENTATION } from '../../data/ascendant-milestone-beats';
-import { MILESTONE_FIRST_STAGE_BEAT_ID } from '../../data/player-progression';
+import { MILESTONE_FIRST_STAGE_BEAT_ID, MILESTONE_FIRST_REBUKE_BEAT_ID } from '../../data/player-progression';
 import type { UnifiedAction } from '../../types/unifiedAction';
 import type { ControlEffect } from '../../types/controlEffect';
 import type { SphereName } from '../../types/index';
@@ -430,5 +430,37 @@ describe('THR-2207 — review-gate round 2 regressions', () => {
     const base = makeState();
     const effect = castStay(base, 'success');
     expect(getSustainedControlNodes(base.graph, base.ascendantId, [effect], {}, 0)).toEqual([]);
+  });
+});
+
+describe('THR-2209 — the first-rebuke milestone (slice 3, same fixture)', () => {
+  it('enqueues once a rival hand has landed unabsorbed after the bond, never on an absorbed one', () => {
+    const beats = { spineCursor: -1, pending: null, lastBeatTurn: 0, history: [] } as unknown as GameState['ascendantBeats'];
+    const pressedBy = (s: GameState, absorbed: boolean) => s.rivalStates.map((rs, i) => (i === 0
+      ? { ...rs, lastPressed: { placeId: 'loc.start', tick: 0, ...(absorbed ? { absorbed: true } : {}) } }
+      : rs));
+
+    const a = makeState();
+    const held = phaseAscendantProgression({
+      ...a, ascendantBeats: beats, doomClock: { ...a.doomClock, wokeAtTick: 0, currentStage: 1 },
+      rivalStates: pressedBy(a, true),
+    });
+    expect(held.ascendantBeats?.pending?.beatId).not.toBe(MILESTONE_FIRST_REBUKE_BEAT_ID);
+
+    const b = makeState();
+    const fired = phaseAscendantProgression({
+      ...b, ascendantBeats: beats, doomClock: { ...b.doomClock, wokeAtTick: 0, currentStage: 1 },
+      rivalStates: pressedBy(b, false),
+    });
+    expect(fired.ascendantBeats?.pending).toMatchObject({ beatId: MILESTONE_FIRST_REBUKE_BEAT_ID, kind: 'milestone' });
+    expect(getMilestoneBeatById(MILESTONE_FIRST_REBUKE_BEAT_ID)?.grantsActionIds).toEqual(['loc.rebuke_rival']);
+
+    // A landing already past the rebuke window gives no gift: there is nowhere to rebuke.
+    const c = makeState();
+    const stale = phaseAscendantProgression({
+      ...c, tick: 12 * 10, ascendantBeats: beats, doomClock: { ...c.doomClock, wokeAtTick: 0, currentStage: 1 },
+      rivalStates: pressedBy(c, false),
+    });
+    expect(stale.ascendantBeats?.pending?.beatId).not.toBe(MILESTONE_FIRST_REBUKE_BEAT_ID);
   });
 });

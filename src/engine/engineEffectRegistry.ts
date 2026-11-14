@@ -35,6 +35,7 @@ import { TEMPLATE_REVELATION_MAP } from './revelationResolver';
 import { PERCEIVE_RELAY_TEMPLATE_IDS } from './ruins/perceiveRelay';
 import { SELF_ACTION_TEMPLATE_IDS } from './unifiedActionResolution';
 import { DOMINION_SHIFT_TEMPLATE_ID } from '../data/dominion-content';
+import { RIVAL_REBUKE_TEMPLATE_ID } from '../data/rival-rebuke-content';
 
 /**
  * Union of every template id the engine bridges implement outside the template's
@@ -48,4 +49,6 @@ export const ENGINE_EFFECT_TEMPLATE_IDS: ReadonlySet<string> = new Set<string>([
   ...SELF_ACTION_TEMPLATE_IDS,
   // THR-1748: Shift Dominion's break push lives in unifiedActionResolution.
   DOMINION_SHIFT_TEMPLATE_ID,
+  // THR-2209: Rebuke's tending, push and temper live in unifiedActionResolution → rivalRebuke.
+  RIVAL_REBUKE_TEMPLATE_ID,
 ]);

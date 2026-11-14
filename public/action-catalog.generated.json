@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
   "totals": {
-    "total": 192,
+    "total": 193,
     "byCategory": {
       "action": 69,
       "artifact": 5,
       "company": 4,
       "divine": 22,
       "hex": 49,
-      "location": 31,
+      "location": 32,
       "threads": 12
     },
     "byReach": {
@@ -19,20 +19,20 @@
       "heart": 32,
       "eye": 28,
       "stone": 11,
-      "star": 35,
+      "star": 36,
       "life": 1
     },
     "byBucket": {
-      "unlockable-generic": 189,
+      "unlockable-generic": 190,
       "generic": 3
     },
     "byEffectSource": {
       "template-ops": 123,
       "aftermath-only": 6,
       "control-spec": 20,
-      "engine-bridge": 43
+      "engine-bridge": 44
     },
-    "beatGranted": 44,
+    "beatGranted": 45,
     "starters": 0,
     "unauthoredEffects": 0
   },
@@ -5453,6 +5453,36 @@
       "description": "Drives off whatever has been bleeding a source of yours and shores up what was lost. A contested source leaks; a warded one holds.",
       "technicalEffect": "Clears any rival contestation or desecration on the source and restores a measure of its sanctity, returning it to an uncontested tier.",
       "effectSource": "template-ops"
+    },
+    {
+      "id": "loc.rebuke_rival",
+      "name": "Rebuke",
+      "spellName": "The Turned Hand",
+      "category": "location",
+      "reach": "star",
+      "sphereAffinity": null,
+      "crudType": "update",
+      "scale": "regional",
+      "rarityTier": 2,
+      "rarityName": "Storied",
+      "intrinsicTier": "shaping",
+      "apCost": 1,
+      "essenceCost": 3,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "aftermathReactionCount": 0,
+      "targetCategories": [
+        "location"
+      ],
+      "targetSubtypes": [],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": true,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": true,
+      "description": "Answer a rival god where it pressed. The place holds against them for a few days, and some of what was taken comes back. The rival will remember.",
+      "technicalEffect": "Offered only on a top-level place a rival's probe landed on, unabsorbed, within RIVAL_REBUKE_WINDOW_DAYS (`rebukablePlaceIds`, engine/rivalRebuke.ts). On a landed cast writes `GameState.rebukedPlaces[place] = tick + RIVAL_REBUKE_HOLD_DAYS × TICKS_PER_DAY`, which `buildTendingIndex` reads as a fifth TendedBy (`rebuke`), so the next rival landing there is absorbed. A clean landing (not `success_at_cost`) also pushes RIVAL_REBUKE_PUSH in the god's primary sphere at the place (`divine_action`, causedBy the god). Any landing raises that rival's temper by RIVAL_REBUKE_TEMPER_RISE with cause `rebuked`. Traces `rival.rebuked`.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "loc.sanctify_source",

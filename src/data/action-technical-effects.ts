@@ -154,6 +154,9 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
     "Post-processed after resolution: restores the ascendant's own essence pool for its primary sphere by STILLNESS_ESSENCE_REGEN, clamped to `maxEssence`. No world-graph change.",
   'divine.self.stay_the_unmaking':
     "Sustained self card (THR-2207). On a landed cast spawns a ControlEffect held on the ascendant (no hex; `SELF_CONTROL_HEX`) with upkeep DOOM_STAY_UPKEEP_PER_TICK from the primary pool. While active, `phaseControlEffects` keeps a persisted `doom_rate_multiplier` rule override on the ascendant (DOOM_STAY_RATE, or DOOM_STAY_RATE_CROOKED on a `success_at_cost` landing), which `phaseDoom` folds with every other one and applies to that tick's advance (clamped at DOOM_RATE_FLOOR). Lapses when upkeep cannot be paid; the override leaves with it. Non-stacking. Traces `doom.stay_applied` each held tick.",
+  // ─── loc.rebuke_rival — THR-2209 ──────────────────────────────────────────
+  'loc.rebuke_rival':
+    "Offered only on a top-level place a rival's probe landed on, unabsorbed, within RIVAL_REBUKE_WINDOW_DAYS (`rebukablePlaceIds`, engine/rivalRebuke.ts). On a landed cast writes `GameState.rebukedPlaces[place] = tick + RIVAL_REBUKE_HOLD_DAYS × TICKS_PER_DAY`, which `buildTendingIndex` reads as a fifth TendedBy (`rebuke`), so the next rival landing there is absorbed. A clean landing (not `success_at_cost`) also pushes RIVAL_REBUKE_PUSH in the god's primary sphere at the place (`divine_action`, causedBy the god). Any landing raises that rival's temper by RIVAL_REBUKE_TEMPER_RISE with cause `rebuked`. Traces `rival.rebuked`.",
   'divine.self.recede':
     "Stores a `nextActionDiscount` (RECEDE_DISCOUNT_FRACTION) on the ascendant node — the next divine action's essence cost is reduced by that fraction. Self-only.",
   'divine.self.focus':

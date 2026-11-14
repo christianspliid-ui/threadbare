@@ -88,6 +88,8 @@ export const DOMINION_TEND_LINES = {
   claim: 'Tended by your Claim.',
   mortal: 'Tended by {name}.',
   faction: 'Tended by {faction}.',
+  /** THR-2209: a Rebuke still holds the place against rivals. */
+  rebuke: 'Held against rivals by your rebuke.',
   /** A `{name}` / `{faction}` slot with no name to fill (PC-3: never a raw slot). */
   unnamed: 'Tended by one of yours.',
   /** Touched or better, nobody tending: what will happen on its own (PC-4). */

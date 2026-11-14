@@ -110,16 +110,20 @@ export const ACTION_TYPES: RivalAction['type'][] = [
  * place it pressed, `{tender}` the word for how the god tends it (`RIVAL_TENDER_WORDS`).
  */
 export const RIVAL_LANDING_LINES = {
-  landed: '{rival} pressed {Sphere} on {place}. Tend it and the next blow breaks.',
+  /** THR-2209: the god holds Rebuke, so the toast names both real answers. */
+  landed: '{rival} pressed {Sphere} on {place}. Rebuke it there, or tend the place, and its next blow is turned.',
+  /** THR-2209: the god does not hold Rebuke yet; the one answer it has (Law 45). */
+  landedNoCard: '{rival} pressed {Sphere} on {place}. A place you tend turns its next blow.',
   absorbed: '{rival} pressed on {place}, but your {tender} held it.',
 } as const;
 
 /** How each way of tending a place is said in a held toast (`TendedBy`, engine/dominion.ts). */
-export const RIVAL_TENDER_WORDS: Record<'claim' | 'seat' | 'carry' | 'anointed', string> = {
+export const RIVAL_TENDER_WORDS: Record<'claim' | 'seat' | 'carry' | 'anointed' | 'rebuke', string> = {
   claim: 'claim',
   seat: 'seat',
   carry: 'thread',
   anointed: 'anointed faction',
+  rebuke: 'rebuke',
 };
 
 /** Said in place of a landed place's name when it has none (the drop line's own words). */

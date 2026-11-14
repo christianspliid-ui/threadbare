@@ -469,6 +469,15 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'You broke its scheme',
     desc: 'You broke one of its schemes.',
   },
+  // THR-2209: the god answered the rival's landing with Rebuke.
+  'ui.rival.cause_rebuked': {
+    label: 'You rebuked it',
+    desc: 'You rebuked it at {place}.',
+  },
+  'ui.rival.cause_rebuked_noplace': {
+    label: 'You rebuked it',
+    desc: 'You rebuked it.',
+  },
   'ui.rival.cause_cooling': {
     label: 'Cooling',
     desc: 'and cooling',

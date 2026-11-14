@@ -184,6 +184,8 @@ import {
   DOOM_STAY_UPKEEP_PER_TICK,
 } from './game-config';
 import { DOOM_STAY_TEMPLATE_ID } from './doom-stay-content';
+import { RIVAL_REBUKE_TEMPLATE_ID } from './rival-rebuke-content';
+import { RIVAL_REBUKE_COST, RIVAL_REBUKE_DIFFICULTY } from './rival-scheme-config';
 import { IMBUE_ESSENCE_COST, CONSECRATE_ESTABLISH_COST, CONSECRATE_PERTICK, CONSECRATE_RELIC_UPFRONT, BESTOW_COST, ANOINT_COST, SANCTIFY_PERTICK, SANCTIFY_DEVOTION_PER_TICK, HEARTH_BLESSING_PERTICK } from './ascendant-expression-constants';
 import { TEACH_SPELL_ESSENCE_COST } from './spell-grant-constants';
 // THR-553: content-only reach signatures (Gold/Shadow/Star/Eye/Heart-stub),
@@ -2025,6 +2027,41 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       initiation: 'channels divine essence into the ley lines beneath this location',
       success: 'a place of power awakens — essence flows freely here',
       failure: 'the ley lines resist; the consecration fades',
+    },
+  },
+  // THR-2209 — the god's answer to a rival's landed hand (plan 2026-11-13-thr-2202
+  // slice 3). Offered only on a place a rival pressed, unabsorbed, within
+  // RIVAL_REBUKE_WINDOW_DAYS (targetActions `rebukeTargets`). On a landing it tends the
+  // place for RIVAL_REBUKE_HOLD_DAYS, pushes the god's primary back on a clean landing,
+  // and raises the rival's temper — unifiedActionResolution → engine/rivalRebuke.ts.
+  {
+    id: RIVAL_REBUKE_TEMPLATE_ID,
+    progression: { tier: 1, offer: 'gift', giftBy: 'milestone', generic: true },
+    name: 'Rebuke',
+    spellName: 'The Turned Hand',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description: 'Answer a rival god where it pressed. The place holds against them for a few days, and some of what was taken comes back. The rival will remember.',
+    reach: 'star',
+    crudType: 'update',
+    scale: 'regional',
+    steps: [{
+      reach: 'star',
+      duration: { min: 1, max: 1 },
+      difficulty: RIVAL_REBUKE_DIFFICULTY,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: RIVAL_REBUKE_COST,
+    actorAffinities: ['ascendant'],
+    targetCategories: ['location'],
+    motivations: ['courage_prudence', 'loyalty_ambition'],
+    narrativeTemplates: {
+      initiation: 'turns to face the rival hand that pressed here',
+      success: "You turned the rival's hand from this place. It holds against it for a few days.",
+      failure: 'Your rebuke does not take. The place stands as the rival left it.',
     },
   },
   {

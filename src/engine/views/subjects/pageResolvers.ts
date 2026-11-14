@@ -26,6 +26,7 @@ import { SIGNATURE_STATE_COPY } from '../../../data/ascendant-bar-content';
 import { DIVINE_NATURE_PHRASES, essenceToProseDescriptor } from '../../../data/divine-nature-content';
 import { INSPECTOR_WORDS } from '../../../data/view-content';
 import { dominionSheetVM } from '../../dominionViewModels';
+import { rebukeTendingOf } from '../../dominion';
 import { selectOpeningReveal } from '../../openingReveal';
 import { readOpeningRevealShowAllSetting, readPublishedOpeningArrivalLedger } from '../../../data/opening-reveal-table';
 
@@ -274,7 +275,7 @@ function dominionResolverFor(withTend: boolean): SectionResolver {
     // THR-2060: read against the screen's arrival ledger, so the row waits while Dominion is queued.
     const ledger = readPublishedOpeningArrivalLedger() ?? undefined;
     if (ctx.state && !selectOpeningReveal(ctx.state, { showAll: readOpeningRevealShowAllSetting(), ledger }).rows.dominion?.revealed) return null;
-    const vm = dominionSheetVM(ctx.graph, ascendantId, ctx.nodeId, ctx.state?.controlEffects, withTend);
+    const vm = dominionSheetVM(ctx.graph, ascendantId, ctx.nodeId, ctx.state?.controlEffects, withTend, rebukeTendingOf(ctx.state));
     if (!vm) return null;
     // THR-2097 (rule R6): one line, not label-and-value rows — "Foreign ground. Neither yours
     // nor set against you." The hold word keeps its tooltip (Law 17).

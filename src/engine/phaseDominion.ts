@@ -40,6 +40,7 @@ import {
   dominionOf,
   isTended,
   placeOf,
+  rebukeTendingOf,
 } from './dominion';
 import {
   DOMINION_BAND_RANK,
@@ -269,7 +270,7 @@ export function phaseDominion(state: GameState): Partial<GameState> {
     recordSeededScores(graph);
     const ledger = readDominionLedger(graph, ascendantId);
     const bandOf = (placeId: string): DominionBand => ledger.bands[placeId] ?? dominionOf(graph, ascendantId, placeId).band;
-    const index = buildTendingIndex(graph, ascendantId, state.controlEffects, bandOf);
+    const index = buildTendingIndex(graph, ascendantId, state.controlEffects, bandOf, rebukeTendingOf(state));
     const causes: Record<string, DominionBandChangeCause> = {};
     const rivals: Record<string, string> = {};
 

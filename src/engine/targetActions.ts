@@ -42,6 +42,7 @@ import { ACTION_SCALE_WORDS, upkeepWord } from '../data/action-card-display';
 import { tierScaledEssenceCost, tierScaledDifficulty } from './targetTierScaling';
 import { castTargetBand, dominionScaledCost, dominionSphereFactor } from './dominion';
 import { DOMINION_PLACE_ONLY_TEMPLATE_IDS } from '../data/dominion-content';
+import { RIVAL_REBUKE_TEMPLATE_ID } from '../data/rival-rebuke-content';
 import type { ControlEffect } from '../types/controlEffect';
 import { findHeldNonStackingEffect, findPendingNonStackingCast, resolvePerTickCost } from './controlEffectSpawn';
 
@@ -238,6 +239,13 @@ export interface TargetActionParams {
    */
   pendingActions?: readonly Pick<UnifiedAction, 'actorId' | 'templateId' | 'targetId' | 'resolved'>[];
   /**
+   * THR-2209 — the places Rebuke can be played on now (`rebukablePlaceIds`): a rival
+   * landed there, unabsorbed, inside the window. Fail-closed, unlike the viewer gates
+   * above: with no set, Rebuke is never offered, because a Rebuke on a place no rival
+   * pressed would charge its price and answer nothing.
+   */
+  rebukeTargets?: ReadonlySet<string>;
+  /**
    * THR-1672 — the spell a teaching card (a template whose step teaches, `teach_spell`)
    * would teach this target now, from `pickDivineSpell` on the current state. The god
    * chooses the gift, so the god sees it: the card's line names the spell (and says
@@ -346,6 +354,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     heldControlEffects,
     controlOwnerId,
     pendingActions,
+    rebukeTargets,
   } = params;
 
   const counts: FilterCounts = {
@@ -391,6 +400,12 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
 
     // THR-1748: Claim and Shift Dominion hold a place, never a bare hex.
     if (!nodeTypeMatches || (isHexTarget && DOMINION_PLACE_ONLY_TEMPLATE_IDS.has(template.id))) {
+      counts.byNodeType++;
+      continue;
+    }
+
+    // 1b. Rebuke gate (THR-2209): only on a place a rival just pressed.
+    if (template.id === RIVAL_REBUKE_TEMPLATE_ID && !rebukeTargets?.has(target.nodeId)) {
       counts.byNodeType++;
       continue;
     }

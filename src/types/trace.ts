@@ -654,6 +654,8 @@ export type TraceCategory =
   | 'rival.scheme_materialized'
   // Rival temper (THR-2185)
   | 'rival.hostility_changed'
+  // Rebuke landed on a rival-pressed place (THR-2209)
+  | 'rival.rebuked'
   // Effect vocabulary activation (THR-1239)
   | 'effect.event_raised'
   | 'effect.charge_spent'
@@ -1348,6 +1350,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'rival.scheme_phase_advanced',
   'rival.scheme_materialized',
   'rival.hostility_changed',
+  'rival.rebuked',
   'effect.event_raised',
   'effect.charge_spent',
   'effect.overlay_applied',
@@ -5860,6 +5863,7 @@ export type TraceEntry =
   | RivalSchemeCompletedTrace
   | RivalSchemeMaterializedTrace
   | RivalHostilityChangedTrace
+  | RivalRebukedTrace
   // Economic scheme family traces (THR-619)
   | RivalSchemeStockDrainedTrace
   | RivalSchemeRouteSeveredTrace
@@ -7439,8 +7443,25 @@ export interface RivalHostilityChangedTrace extends TraceBase {
   rivalId: string;
   from: number;
   to: number;
-  cause: 'scheme' | 'countered' | 'cooled';
+  cause: 'scheme' | 'countered' | 'rebuked' | 'cooled';
   placeId?: string;
+}
+
+/**
+ * Trace (THR-2209): the god's Rebuke landed on a place a rival just pressed. The place
+ * is tended until `heldUntil`; `pushed` is the primary-sphere push back (0 on a crooked
+ * landing, or when the place was no longer that rival's last landing); the temper fields
+ * are absent when no rival's temper was raised.
+ */
+export interface RivalRebukedTrace extends TraceBase {
+  category: 'rival.rebuked';
+  rivalId: string | null;
+  placeId: string;
+  band: string;
+  heldUntil: number;
+  pushed: number;
+  temperBefore?: number;
+  temperAfter?: number;
 }
 
 // ─── Economic scheme family traces (THR-619) ─────────────────────

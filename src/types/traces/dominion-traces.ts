@@ -26,7 +26,7 @@ export interface DominionBandChangeTrace extends TraceBase {
 export interface DominionTendTrace extends TraceBase {
   category: 'dominion.tend';
   placeId: string;
-  by: Array<'claim' | 'seat' | 'carry' | 'anointed'>;
+  by: Array<'claim' | 'seat' | 'carry' | 'anointed' | 'rebuke'>;
   pushed: Partial<Record<SphereName, number>>;
   capped: boolean;
 }

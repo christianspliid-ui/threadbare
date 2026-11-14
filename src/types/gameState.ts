@@ -448,6 +448,11 @@ export interface GameState {
   // phaseSpherePressure, folded and cleared by phaseMandate the same tick
   pendingMandateCredits?: MandateCredit[];
 
+  // THR-2209: places the god rebuked, keyed by top-level place id, to the tick the
+  // rebuke stops tending them. Written by a landed Rebuke cast; read by
+  // `buildTendingIndex` (`rebukeTendingOf`). Absent on old saves = none.
+  rebukedPlaces?: Record<string, number>;
+
   // Pending quintessence events — accumulated by overchannel/encounter failure phases, consumed by phaseQuintessence
   pendingQuintessenceEvents?: QuintessenceEvent[];
 

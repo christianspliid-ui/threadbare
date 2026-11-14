@@ -117,7 +117,7 @@ describe('the probe toast fires only when the hand lands (E1, E2)', () => {
     const toast = events[0];
     expect(toast.type).toBe('rival_action');
     expect(toast.refs).toEqual([{ kind: 'location', id: 't0' }]);
-    expect(toast.message).toBe('The Hollow Warden pressed Death on Town 0. Tend it and the next blow breaks.');
+    expect(toast.message).toBe('The Hollow Warden pressed Death on Town 0. A place you tend turns its next blow.');
     expect(out.lastPressed).toEqual({ placeId: 't0', tick: DAY * 3 });
   });
 
@@ -137,7 +137,7 @@ describe('the probe toast fires only when the hand lands (E1, E2)', () => {
     expect(rivalLandingLine('R', { ...base, tendedBy: ['carry'] })).toBe('R pressed on Ashford, but your thread held it.');
     expect(rivalLandingLine('R', { ...base, tendedBy: ['anointed'] })).toBe('R pressed on Ashford, but your anointed faction held it.');
     expect(rivalLandingLine('R', { ...base, tendedBy: ['claim'] })).toBe('R pressed on Ashford, but your claim held it.');
-    expect(rivalLandingLine('R', { ...base, placeName: '', tendedBy: null })).toBe('R pressed Death on a place of yours. Tend it and the next blow breaks.');
+    expect(rivalLandingLine('R', { ...base, placeName: '', tendedBy: null })).toBe('R pressed Death on a place of yours. A place you tend turns its next blow.');
   });
 });
 

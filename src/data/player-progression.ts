@@ -157,6 +157,15 @@ export const MILESTONE_FIRST_STAGE_BEAT_ID = 'beat.milestone.the_first_stage';
 export const MILESTONE_FIRST_STAGE_DOOM_STAGE = 2;
 
 /**
+ * The first-rebuke milestone beat id (THR-2209). Fires once, the first time a rival's
+ * probe lands unabsorbed on the god's ground after the bond (some `RivalState.lastPressed`
+ * not `absorbed`, with the Doom clock awake). Grants `loc.rebuke_rival`. Keyed on the
+ * state, not the toast, so a busy beat slot only delays the gift. Deduped through
+ * `AscendantProperties.milestoneBeatsFired`.
+ */
+export const MILESTONE_FIRST_REBUKE_BEAT_ID = 'beat.milestone.the_first_rebuke_due';
+
+/**
  * Deterministic Deepening beat id for a reach. Slice 2 authors the matching
  * `UnifiedActionTemplate` content per reach (plan §4.1); Slice 1 enqueues by this id.
  */

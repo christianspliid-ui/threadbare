@@ -820,7 +820,7 @@ export interface DebugDominionResult {
   kind: string;
   /** Whose scores were read, e.g. 'own', 'faction-of-army', 'bearer', 'no-god'. */
   readThrough: string;
-  /** Who tends the object's top-level place this tick ('claim' | 'seat' | 'carry' | 'anointed'), or null. */
+  /** Who tends the object's top-level place this tick ('claim' | 'seat' | 'carry' | 'anointed' | 'rebuke'), or null. */
   tendedBy: string[] | null;
 }
 

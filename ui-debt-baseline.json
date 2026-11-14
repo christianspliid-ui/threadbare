@@ -54,7 +54,7 @@
       }
     },
     "colour-hex": {
-      "total": 233,
+      "total": 232,
       "perFile": {
         "src/components/Ascendant/ArchetypeCard.tsx": 1,
         "src/components/Ascendant/AscendantSelection.tsx": 1,
@@ -77,7 +77,7 @@
         "src/components/Game/NotablesPanel.tsx": 2,
         "src/components/Game/OmenIndicator.tsx": 1,
         "src/components/Game/outcomeBandAccent.ts": 1,
-        "src/components/Game/RivalPanel.tsx": 3,
+        "src/components/Game/RivalPanel.tsx": 2,
         "src/components/Game/SimulationControls.tsx": 2,
         "src/components/Game/ThreadsPanel.tsx": 6,
         "src/components/HexMapV2/HexMapV2.tsx": 2,
@@ -109,14 +109,12 @@
       }
     },
     "display-face-small": {
-      "total": 9,
+      "total": 7,
       "perFile": {
         "src/components/Game/IdentityChip.tsx": 1,
         "src/components/Game/SimulationControls.tsx": 1,
-        "src/components/Game/ThreadsPanel.tsx": 1,
         "src/components/HexMapV2/overlay/RegionLabelOverlay.tsx": 2,
         "src/components/shared/CardFace.tsx": 2,
-        "src/components/shared/Tooltip.tsx": 1,
         "src/components/UI/InfoPanel.tsx": 1
       }
     },
@@ -135,7 +133,7 @@
       }
     },
     "glyph-icon": {
-      "total": 29,
+      "total": 24,
       "perFile": {
         "src/components/Ascendant/ArchetypeCard.tsx": 1,
         "src/components/Cosmology/CosmologyPanel.tsx": 1,
@@ -147,7 +145,6 @@
         "src/components/Game/RivalPanel.tsx": 1,
         "src/components/Game/ScryOverlay.tsx": 1,
         "src/components/Game/SimulationControls.tsx": 9,
-        "src/components/Game/StrandView.tsx": 5,
         "src/components/HexMapV2/interaction/HexTooltip.tsx": 2
       }
     },
@@ -165,12 +162,12 @@
       }
     },
     "graph-query-in-ui": {
-      "total": 57,
+      "total": 56,
       "perFile": {
         "src/components/Game/ascendant-bar/HooksBlock.tsx": 5,
         "src/components/Game/cameraInteractionGate.ts": 2,
         "src/components/Game/GameView.tsx": 18,
-        "src/components/Game/hooks/useAgentInteraction.ts": 7,
+        "src/components/Game/hooks/useAgentInteraction.ts": 6,
         "src/components/Game/hooks/useAvatarData.ts": 3,
         "src/components/Game/hosts/StageHost.tsx": 1,
         "src/components/Game/NotablesPanel.tsx": 4,
@@ -188,21 +185,19 @@
       "perFile": {}
     },
     "hand-overlay": {
-      "total": 3,
+      "total": 2,
       "perFile": {
         "src/components/Game/AgendaPicker.tsx": 1,
-        "src/components/Game/InterventionConfirm.tsx": 1,
-        "src/components/Game/StrandView.tsx": 1
+        "src/components/Game/InterventionConfirm.tsx": 1
       }
     },
     "literal-font-size": {
-      "total": 82,
+      "total": 77,
       "perFile": {
         "src/components/Game/DoomClockDetail.tsx": 1,
         "src/components/Game/encounter-stage/shells/ClearanceGatePanel.tsx": 1,
         "src/components/Game/EncounterVeil.tsx": 1,
         "src/components/Game/InterventionConfirm.tsx": 1,
-        "src/components/Game/ThreadsPanel.tsx": 4,
         "src/components/HexMapV2/overlay/RegionLabelOverlay.tsx": 1,
         "src/components/MeetTheFirst/BondBeat.tsx": 7,
         "src/components/MeetTheFirst/FormativeTestBeat.tsx": 4,
@@ -217,7 +212,6 @@
         "src/components/Remembrance/StirringBeat.tsx": 2,
         "src/components/Remembrance/TransformationBeat.tsx": 11,
         "src/components/ruins/DelveProgressPanel.tsx": 9,
-        "src/components/shared/HoverCard.tsx": 1,
         "src/components/shared/Medallion.tsx": 1,
         "src/components/ThreadingRite/ThreadingRite.tsx": 4,
         "src/components/UI/MagicGlowTiles.tsx": 2
@@ -238,7 +232,7 @@
       }
     },
     "radius-literal": {
-      "total": 170,
+      "total": 169,
       "perFile": {
         "src/components/Ascendant/ArchetypeCard.tsx": 1,
         "src/components/Ascendant/AscendantSelection.tsx": 2,
@@ -256,7 +250,6 @@
         "src/components/Game/ChapterLedger.tsx": 3,
         "src/components/Game/ChapterView.tsx": 1,
         "src/components/Game/ChoiceSetModal.tsx": 1,
-        "src/components/Game/ChroniclePanel.tsx": 1,
         "src/components/Game/DivineReceiptModal.tsx": 1,
         "src/components/Game/DoomClockDetail.tsx": 3,
         "src/components/Game/encounter-stage/shells/ClearanceGatePanel.tsx": 2,
@@ -286,10 +279,9 @@
         "src/components/Game/SimulationControls.tsx": 1,
         "src/components/Game/stage/StageSubjectPortrait.tsx": 1,
         "src/components/Game/StoryBeatModal.tsx": 3,
-        "src/components/Game/StrandView.tsx": 1,
         "src/components/Game/ThreadsPanel.tsx": 10,
         "src/components/Game/ToastStack.tsx": 1,
-        "src/components/Game/WarmStartOverlay.tsx": 1,
+        "src/components/Game/WarmStartOverlay.tsx": 2,
         "src/components/HexMapV2/chrome/MapLensSwitch.tsx": 1,
         "src/components/HexMapV2/interaction/HexTooltip.tsx": 1,
         "src/components/MeetTheFirst/BondBeat.tsx": 2,
@@ -318,7 +310,7 @@
       }
     },
     "raw-button": {
-      "total": 135,
+      "total": 134,
       "perFile": {
         "src/components/Ascendant/ArchetypeCard.tsx": 1,
         "src/components/Ascendant/AscendantSelection.tsx": 1,
@@ -358,9 +350,8 @@
         "src/components/Game/ScryOverlay.tsx": 6,
         "src/components/Game/SettingsPanel.tsx": 11,
         "src/components/Game/StoryBeatModal.tsx": 1,
-        "src/components/Game/StrandView.tsx": 2,
         "src/components/Game/ThreadsPanel.tsx": 4,
-        "src/components/Game/ToastStack.tsx": 1,
+        "src/components/Game/ToastStack.tsx": 2,
         "src/components/MeetTheFirst/BondBeat.tsx": 2,
         "src/components/MeetTheFirst/FormativeTestBeat.tsx": 1,
         "src/components/MeetTheFirst/SensingBeat.tsx": 3,
@@ -423,7 +414,7 @@
       }
     },
     "uppercase": {
-      "total": 23,
+      "total": 22,
       "perFile": {
         "src/components/Game/encounter-stage/OpponentHeader.tsx": 1,
         "src/components/Game/encounter-stage/shells/ClearanceGatePanel.tsx": 4,
@@ -433,8 +424,7 @@
         "src/components/Game/EventLog.tsx": 1,
         "src/components/Game/ScryOverlay.tsx": 1,
         "src/components/Game/SettingsPanel.tsx": 1,
-        "src/components/Game/SimulationControls.tsx": 1,
-        "src/components/Game/ThreadsPanel.tsx": 1
+        "src/components/Game/SimulationControls.tsx": 1
       }
     }
   }

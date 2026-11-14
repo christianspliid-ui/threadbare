@@ -77,8 +77,23 @@ export interface DominionRead {
   reason: DominionReadReason;
 }
 
-/** Who tends a place this tick. */
-export type TendedBy = 'claim' | 'seat' | 'carry' | 'anointed';
+/** Who tends a place this tick. THR-2209: `rebuke` — a Rebuke still holding it against rivals. */
+export type TendedBy = 'claim' | 'seat' | 'carry' | 'anointed' | 'rebuke';
+
+/**
+ * The live rebukes a tending index reads (THR-2209): `GameState.rebukedPlaces` (place id
+ * → the tick the rebuke stops) and the current tick. Built by `rebukeTendingOf`.
+ */
+export interface RebukeTending {
+  readonly rebukedPlaces?: Readonly<Record<string, number>>;
+  readonly tick: number;
+}
+
+/** The rebuke half of a tending read, from any state carrying the two fields (THR-2209). */
+export function rebukeTendingOf(state: { rebukedPlaces?: Readonly<Record<string, number>>; tick: number } | null | undefined): RebukeTending | undefined {
+  if (!state || !state.rebukedPlaces) return undefined;
+  return { rebukedPlaces: state.rebukedPlaces, tick: state.tick };
+}
 
 // ─── Band arithmetic ─────────────────────────────────────────────────
 
@@ -362,13 +377,15 @@ export function claimedPlaces(
 /**
  * Every top-level place tended this tick, and by whom. Built once per tick by the
  * caller; `isTended` reads it. `bandOf` answers the anointed-faction rule (a place
- * Touched or better, `controls`-held by an anointed faction).
+ * Touched or better, `controls`-held by an anointed faction). `rebuke` (THR-2209,
+ * optional) adds every place a Rebuke still holds; omitted, no place is rebuke-tended.
  */
 export function buildTendingIndex(
   graph: WorldGraph,
   ascendantId: string,
   controlEffects: readonly ControlEffect[] | undefined,
   bandOf: (placeId: string) => DominionBand,
+  rebuke?: RebukeTending,
 ): Map<string, TendedBy[]> {
   const index = new Map<string, TendedBy[]>();
   const add = (placeId: string | undefined, by: TendedBy) => {
@@ -394,6 +411,9 @@ export function buildTendingIndex(
         const place = placeOf(graph, e.target);
         if (place && bandAtLeast(bandOf(place.id), DOMINION_ANOINTED_TENDS_MIN_BAND)) add(place.id, 'anointed');
       }
+    }
+    for (const [placeId, until] of Object.entries(rebuke?.rebukedPlaces ?? {})) {
+      if (typeof until === 'number' && until > rebuke!.tick) add(placeId, 'rebuke');
     }
   } catch {
     // Fail-soft: a partial index tends fewer places; it never throws into the tick.

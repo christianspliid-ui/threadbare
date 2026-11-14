@@ -19,7 +19,7 @@ import {
   DOMINION_TOOLTIP_IDS,
   dominionBandTooltipId,
 } from '../data/dominion-ui-content';
-import { dominionOf, buildTendingIndex, isTended, placeOf, type TendedBy } from './dominion';
+import { dominionOf, buildTendingIndex, isTended, placeOf, type RebukeTending, type TendedBy } from './dominion';
 import { getSpherePoints, rankSpherePoints } from './spherePoints';
 import { SPHERE_NAMES } from '../types';
 import { DOMINION_OPPOSITION_WEIGHT } from '../data/dominion-content';
@@ -63,7 +63,7 @@ export function dominionBandColorVar(band: DominionBand, godSphere: SphereName |
   return `var(--sphere-${godSphere}-bright)`;
 }
 
-const TEND_ORDER: readonly TendedBy[] = ['seat', 'claim', 'carry', 'anointed'];
+const TEND_ORDER: readonly TendedBy[] = ['seat', 'claim', 'carry', 'anointed', 'rebuke'];
 
 /** The name of the threaded mortal who carries this place, highest tier first. */
 function carrierName(graph: WorldGraph, ascendantId: string, placeId: string): string | undefined {
@@ -102,14 +102,16 @@ export function dominionTendLine(
   placeId: string,
   band: DominionBand,
   controlEffects: readonly ControlEffect[] | undefined,
+  rebuke?: RebukeTending,
 ): string | null {
   try {
-    const index = buildTendingIndex(graph, ascendantId, controlEffects, id => dominionOf(graph, ascendantId, id).band);
+    const index = buildTendingIndex(graph, ascendantId, controlEffects, id => dominionOf(graph, ascendantId, id).band, rebuke);
     const by = isTended(index, placeId);
     if (!by) return isTurfBand(band) ? DOMINION_TEND_LINES.untended : null;
     const first = TEND_ORDER.find(t => by.includes(t)) ?? by[0];
     if (first === 'seat') return DOMINION_TEND_LINES.seat;
     if (first === 'claim') return DOMINION_TEND_LINES.claim;
+    if (first === 'rebuke') return DOMINION_TEND_LINES.rebuke;
     if (first === 'carry') {
       const name = carrierName(graph, ascendantId, placeId);
       return name ? DOMINION_TEND_LINES.mortal.replace('{name}', name) : DOMINION_TEND_LINES.unnamed;
@@ -132,6 +134,7 @@ export function dominionSheetVM(
   objectId: string | null | undefined,
   controlEffects?: readonly ControlEffect[],
   withTend = false,
+  rebuke?: RebukeTending,
 ): DominionSheetVM | null {
   if (!graph || !ascendantId || !objectId || !graph.getNode(objectId)) return null;
   try {
@@ -141,7 +144,7 @@ export function dominionSheetVM(
     let tendLine: string | null = null;
     if (withTend) {
       const place = placeOf(graph, objectId);
-      if (place) tendLine = dominionTendLine(graph, ascendantId, place.id, band, controlEffects);
+      if (place) tendLine = dominionTendLine(graph, ascendantId, place.id, band, controlEffects, rebuke);
     }
     return {
       band,

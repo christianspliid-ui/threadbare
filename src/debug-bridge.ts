@@ -1183,13 +1183,13 @@ if (import.meta.env.DEV) {
     // ── Dominion (THR-1748) ──────────────────────────────────────────────────
     /** The Dominion band of any object for the god, with the debug-only reasons. */
     getDominion: async (objectId: string) => {
-      const { dominionOf, buildTendingIndex, isTended, placeOf } = await import('./engine/dominion');
+      const { dominionOf, buildTendingIndex, isTended, placeOf, rebukeTendingOf } = await import('./engine/dominion');
       const state = _gameStateProvider?.();
       const graph = _graphProvider?.();
       if (!state || !graph || !graph.getNode(objectId)) return null;
       const read = dominionOf(graph, state.ascendantId, objectId);
       const index = buildTendingIndex(graph, state.ascendantId, state.controlEffects,
-        (id) => dominionOf(graph, state.ascendantId, id).band);
+        (id) => dominionOf(graph, state.ascendantId, id).band, rebukeTendingOf(state));
       const place = placeOf(graph, objectId);
       return {
         band: read.band,
@@ -4860,7 +4860,7 @@ if (import.meta.env.DEV) {
         escalationTier: number;
         status: 'active' | 'completed' | 'failed';
         hostility: number;
-        hostilityCause?: { kind: 'scheme' | 'countered'; placeId?: string; tick: number };
+        hostilityCause?: { kind: 'scheme' | 'countered' | 'rebuked'; placeId?: string; tick: number };
         lastPressed?: { placeId: string; tick: number };
       }> = [];
       for (const rs of state.rivalStates ?? []) {

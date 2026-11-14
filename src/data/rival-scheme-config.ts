@@ -80,6 +80,28 @@ export const RIVAL_HOSTILITY_COOL_PER_DAY = 0.02;
 /** Days without a rise before the panel's cause line says "and cooling". */
 export const RIVAL_HOSTILITY_CAUSE_STALE_DAYS = 3;
 
+// ─── Rebuke (THR-2209) ─────────────────────────────────────────────
+// The god's answer to a rival's landed hand: a card played on the place it just
+// pressed. Plan: Docs/plans/2026-11-13-thr-2202-give-both-clocks-a-verb.md, slice 3.
+
+/** Up-front essence, charged to the primary pool (a `generic: true` card). */
+export const RIVAL_REBUKE_COST = 3;
+
+/** The card's one step difficulty. */
+export const RIVAL_REBUKE_DIFFICULTY = 0.35;
+
+/** Days after a rival's unabsorbed landing during which that place can be rebuked. */
+export const RIVAL_REBUKE_WINDOW_DAYS = 3;
+
+/** Days a rebuke tends the place, so a rival landing there is absorbed. */
+export const RIVAL_REBUKE_HOLD_DAYS = 4;
+
+/** The god's primary-sphere push back on the place on a clean landing (one probe's magnitude). */
+export const RIVAL_REBUKE_PUSH = 4;
+
+/** Temper rise on the rebuked rival: the same as breaking one of its schemes. */
+export const RIVAL_REBUKE_TEMPER_RISE = RIVAL_HOSTILITY_ON_COUNTER;
+
 /** Tier index (0-based, 0..RIVAL_MAX_ESCALATION_TIER) at or above which the more
  *  ambitious scheme families (territorial siege beats) unlock. */
 export const RIVAL_SCHEME_AMBITIOUS_FAMILY_MIN_TIER = 1;
