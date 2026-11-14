@@ -16,7 +16,7 @@
  *
  * Determinism: variant selection is seeded on (agentId, templateId) XOR the
  * receipt's decidedAtTick — the same decision yields the same prose; a new
- * decision (new tick) yields fresh variety (NFP #3). No `Math.random()`.
+ * decision (new tick) yields fresh variety (NFP #3).
  * Fail-soft: a missing clause key falls back to the `personality` / default
  * pools; the composer never throws (NFP #4).
  */

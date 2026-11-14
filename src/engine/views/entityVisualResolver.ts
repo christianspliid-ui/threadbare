@@ -15,7 +15,7 @@
  * — a trace per modal render would spam the buffer at UI frequency). Never throws.
  *
  * NFP #3 (determinism): the fallback gradient is chosen by a stable hash of the
- *   entity id; `pickConceptArt` scores deterministically. No `Math.random`.
+ *   entity id; `pickConceptArt` scores deterministically.
  * NFP #4 (fail-soft): every failure case falls through to the glyph tier; a
  *   missing node, unknown kind, or absent art all resolve to a designed tile.
  */

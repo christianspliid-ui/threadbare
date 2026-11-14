@@ -214,14 +214,14 @@ describe('processEffectEvent — resource_manipulate one_shot', () => {
     let states: ReadonlyMap<string, EffectRuntimeState> = new Map();
 
     const first = processEffectEvent(
-      graph, 'a1', { type: 'encounter_outcome', reach: 'iron', success: true }, states, 1,
+      graph, 'a1', { type: 'encounter_outcome', reach: 'iron', success: true }, states, 1, () => 0.5,
     );
     states = first.updatedStates;
     expect(graph.getNode('a1')?.properties.essence).toBeCloseTo(0.8, 6);
     expect(states.get('charm')?.oneShotFired).toBe(true);
 
     const second = processEffectEvent(
-      graph, 'a1', { type: 'encounter_outcome', reach: 'iron', success: true }, states, 2,
+      graph, 'a1', { type: 'encounter_outcome', reach: 'iron', success: true }, states, 2, () => 0.5,
     );
     // Spent means spent — the second outcome must not drain again.
     expect(graph.getNode('a1')?.properties.essence).toBeCloseTo(0.8, 6);
@@ -243,7 +243,7 @@ describe('processEffectEvent — resource_manipulate one_shot', () => {
     const graph = worldWithOneShot('other_agent');
 
     const result = processEffectEvent(
-      graph, 'a1', { type: 'encounter_outcome', reach: 'iron', success: true }, new Map(), 1,
+      graph, 'a1', { type: 'encounter_outcome', reach: 'iron', success: true }, new Map(), 1, () => 0.5,
     );
 
     expect(result.updatedStates.get('charm')?.oneShotFired).toBe(true);
@@ -253,7 +253,7 @@ describe('processEffectEvent — resource_manipulate one_shot', () => {
   it('does not fire on a non-encounter event', () => {
     const graph = worldWithOneShot('self');
 
-    const result = processEffectEvent(graph, 'a1', { type: 'combat_started' }, new Map(), 1);
+    const result = processEffectEvent(graph, 'a1', { type: 'combat_started' }, new Map(), 1, () => 0.5);
 
     expect(result.updatedStates.get('charm')?.oneShotFired).toBeUndefined();
     expect(graph.getNode('a1')?.properties.essence).toBe(1);
@@ -267,7 +267,7 @@ describe('processEffectEvent — resource_manipulate one_shot', () => {
     graph.updateNode('a1', { properties: { actorType: 'individual', essence: 1 } });
 
     const result = processEffectEvent(
-      graph, 'a1', { type: 'encounter_outcome', reach: 'iron', success: true }, new Map(), 1,
+      graph, 'a1', { type: 'encounter_outcome', reach: 'iron', success: true }, new Map(), 1, () => 0.5,
     );
 
     expect(graph.getNode('a1')?.properties.essence).toBe(1);

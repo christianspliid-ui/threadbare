@@ -27,7 +27,7 @@
  *
  * ─── Determinism (NFP #3) ───────────────────────────────────────────────────────
  * Pure arithmetic over stored numbers. Argmax with a lowest-array-index tie-break.
- * No PRNG, no clock, no Math.random.
+ * No PRNG, no clock.
  *
  * ─── Tunability (NFP #1) ────────────────────────────────────────────────────────
  * `PERSONALITY_REACTION_WEIGHT` scales every option's score (kill-criteria lever).

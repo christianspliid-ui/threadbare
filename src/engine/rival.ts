@@ -201,14 +201,12 @@ export function coolRivalHostility(state: RivalState, tick: number): RivalState 
 export function selectRivalAction(
   rival: RivalDefinition,
   state: RivalState,
-  deterministicRoll?: number,
+  deterministicRoll: number,
   /** Doom identity rival-behavior bias — weight deltas scaled by IDENTITY_RIVAL_BIAS_WEIGHT. */
   identityBias?: Partial<Record<string, number>>,
 ): RivalAction {
   const weights = BEHAVIOR_WEIGHTS[rival.behavior];
-  // @deprecated fallback — all production callers must pass deterministicRoll (seeded via RNG).
-  // Math.random() here is a safety net only; it breaks determinism (NFP #3).
-  const roll = deterministicRoll ?? Math.random();
+  const roll = deterministicRoll;
 
   const adjustedWeights = { ...weights };
   if (state.hostilityToPlayer > 0.7) {
@@ -272,7 +270,7 @@ export function updateRivalState(
 // runner activates armed phases; phaseRivalActions executes each phase's
 // concrete move on activation. Selection, escalation, and the launch builder
 // below are pure + deterministic (NFP #3): all randomness comes from the
-// seeded rival rng passed in — no Math.random().
+// seeded rival rng passed in.
 
 /** World-flag key helpers — the single source of truth for scheme flag names,
  *  shared by the launch builder and phaseRivalActions so they never drift. */

@@ -494,6 +494,12 @@ jobs:
       - name: Typecheck (ratchet)
         run: npm run check:typecheck
 
+      # Engine laws (NFP #3 seeded randomness, engine never imports UI) as lint
+      # instead of prose. Freeze exception granted by Christian 2026-11-14 as a
+      # strict swap: see Docs/canon/session-protocol.md § Process-work throttle.
+      - name: Engine laws (lint)
+        run: npm run lint:laws
+
       # `Docs/impediments.md` is `merge=union` (THR-691) so concurrent appends from
       # different lanes merge without conflict — and union keeps BOTH sides of a
       # conflicting hunk, which is right for the rows and wrong for their hand-assigned

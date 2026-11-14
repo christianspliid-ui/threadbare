@@ -7,8 +7,8 @@
  * starting cohesion the formation scan assigned (its formation-quality read); the
  * exact line is a seeded pick from the matching pool.
  *
- * Sibling of `groupParting.ts` / `groupFray.ts`: no graph access, no
- * `Math.random()` — takes a seeded `rng` so a replay of the same state tells the
+ * Sibling of `groupParting.ts` / `groupFray.ts`: no graph access —
+ * takes a seeded `rng` so a replay of the same state tells the
  * same founding (NFP #3).
  */
 

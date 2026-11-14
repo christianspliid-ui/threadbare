@@ -225,7 +225,7 @@ export function executeIntervention(params: {
   actorType: Exclude<ActorType, 'ascendant'>;
   pool: EssencePool;
   priorInterventions?: number;
-  detectionRoll?: number;
+  detectionRoll: number;
 }): InterventionResult {
   const cost = computeInterventionCost({
     baseCost: params.baseCost,
@@ -251,9 +251,7 @@ export function executeIntervention(params: {
 
   essenceSpent[params.sphere] = cost.finalCost;
 
-  // @deprecated fallback — all production callers must pass detectionRoll (seeded via RNG).
-  // Math.random() here is a safety net only; it breaks determinism (NFP #3).
-  const roll = params.detectionRoll ?? Math.random();
+  const roll = params.detectionRoll;
   const detection = computeDetection(
     params.interventionType,
     params.priorInterventions ?? 0,

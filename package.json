@@ -42,6 +42,7 @@
     "check:guidance-freshness": "node --experimental-strip-types scripts/check-guidance-freshness.ts",
     "typecheck": "tsc -b",
     "lint": "eslint .",
+    "lint:laws": "eslint --no-config-lookup -c eslint.laws.config.js src/engine",
     "preview": "vite preview",
     "test": "vitest run --project node --project node-isolated --project dom",
     "test:heavy": "vitest run --project heavy",

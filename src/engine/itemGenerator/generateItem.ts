@@ -9,7 +9,7 @@
  * Pure: reads a request and returns an item or `null`. Never touches the graph and never
  * throws on missing world data — a line that names a missing thing is simply ineligible.
  *
- * **Determinism (NFP #3).** No `Math.random()`. Every table is its own stream off the
+ * **Determinism (NFP #3).** Every table is its own stream off the
  * item's seed key through `drawFromTable` / `rollTableUnit`, so cutting a core or a
  * material never reshuffles another table, and the lifecycle's own `rng` is never
  * consumed — a world with the generator switched off differs only in its masterworks.

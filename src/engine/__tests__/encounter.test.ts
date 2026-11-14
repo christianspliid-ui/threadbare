@@ -450,7 +450,7 @@ describe('Encounter Engine', () => {
       const spy = vi.spyOn(encounterContent, 'getAnyEncounterById').mockReturnValue(undefined);
 
       const progress = initiateEncounter(state, actorId, 'nonexistent', 0);
-      const result = resolveEncounter(state, progress);
+      const result = resolveEncounter(state, progress, 100);
 
       spy.mockRestore();
       expect(result.woundApplied).toBe(false);

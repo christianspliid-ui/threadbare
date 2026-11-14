@@ -307,7 +307,7 @@ export function initiateEncounter(
 export function resolveEncounter(
   state: GameState,
   progress: EncounterProgress,
-  deterministicRoll?: number,
+  deterministicRoll: number,
 ): {
   success: boolean;
   outcome: EncounterOutcome;
@@ -326,7 +326,7 @@ export function resolveEncounter(
     difficulty: number,
   ): { resolution: ResolutionResult; resolutionSnapshot: EncounterResolutionSnapshot } => {
     const probability = 0;
-    const roll = deterministicRoll ?? 100;
+    const roll = deterministicRoll;
     const resolution: ResolutionResult = {
       outcome: 'failure',
       roll,
@@ -480,13 +480,10 @@ export function resolveEncounter(
     testShapers: modifiers.testShapers,
   };
 
-  // The orchestrator always provides deterministicRoll (pre-computed from seeded RNG).
-  // The rng fallback is for test callers that omit the roll — Math.random is acceptable
-  // since NFP #3 determinism is enforced at the orchestrator level, not here.
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   const resolution = resolveActionShared(
     resolutionInput,
-    Math.random,
+    () => (deterministicRoll - 1) / 100,
     deterministicRoll,
     'encounter',
   );

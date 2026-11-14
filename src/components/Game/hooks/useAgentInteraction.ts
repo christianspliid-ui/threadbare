@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
+import { mulberry32, hashString } from '../../../lib/prng';
 import type { GameState } from '../../../types/gameState';
 import type { AscendantArchetype } from '../../../types/influence';
 import type { LocalEncounterMode, InterventionType } from '../../../types/dream';
@@ -511,6 +512,9 @@ export function useAgentInteraction({
         alignmentFactor: 1.0,
         actorType: 'individual',
         pool: gameState.essencePool,
+        detectionRoll: mulberry32(
+          hashString(`${gameState.seed}:${gameState.tick}:${selectedAgentId}:${pendingIntervention.interventionType}`),
+        )(),
       });
 
       if (result.success) {

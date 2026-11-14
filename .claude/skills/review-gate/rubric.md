@@ -22,7 +22,7 @@ A finding needs **all three**: a `file:line` in the diff, the check it breaks, a
 ## C. Non-Functional Priorities (CLAUDE.md § Non-Functional Priorities)
 
 10. **Unnamed tuning number** — a magic number that changes game feel, inline in logic. (NFP 1.)
-11. **Unseeded randomness** — `Math.random()`, `Date.now()` or iteration-order dependence feeding a simulation outcome. (NFP 3.)
+11. **Unseeded randomness** — `Date.now()` or iteration-order dependence feeding a simulation outcome. (NFP 3; `Math.random` in `src/engine` is lint-enforced.)
 12. **Throw on the tick path** — a `throw`, an unguarded `JSON.parse`, or a non-null assertion on data that can be missing, reachable from `runTick`. (NFP 4.)
 13. **No trace** for a new decision or state change the player could ask "why?" about. (NFP 2.)
 

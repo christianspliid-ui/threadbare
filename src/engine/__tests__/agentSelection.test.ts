@@ -93,7 +93,7 @@ describe('Agent Action Selection', () => {
 
   describe('runSelectionPipeline', () => {
     it('returns a selected action and candidate list', () => {
-      const result = runSelectionPipeline(graph, 'actor.thorin', mockCandidates, { topN: 3, survivalThreshold: 0.8 });
+      const result = runSelectionPipeline(graph, 'actor.thorin', mockCandidates, { topN: 3, survivalThreshold: 0.8 }, 0, 0.5);
       expect(result.selected).toBeDefined();
       expect(result.candidates.length).toBeLessThanOrEqual(3);
       expect(result.wasSurvivalOverride).toBe(false);

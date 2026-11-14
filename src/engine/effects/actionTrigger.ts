@@ -33,7 +33,7 @@ export interface ActionTriggerContext {
   agentResources: ResourceDeltaInput;
   predicateContext?: PredicateContext;
   /**
-   * Seeded roll source for `probability` guards — NEVER `Math.random()` (NFP #3).
+   * Seeded roll source for `probability` guards (NFP #3).
    * Call sites thread their resolution `rng`, or a `mulberry32` seeded on
    * (seed, tick, agentId). Absent = probability guards fail OPEN (the trigger
    * fires). Fail-open is deliberate: this whole primitive exists because triggers

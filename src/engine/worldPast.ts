@@ -29,7 +29,7 @@
  *   6. names — commanders, then founders;
  *   7. descent (every individual sorted by id — the draw is consumed even when it cannot apply);
  *   8. wonder finders' names.
- * Every candidate list is sorted by id before a draw. `Math.random()` is never used.
+ * Every candidate list is sorted by id before a draw.
  *
  * **Fail-soft (NFP #4).** `gameInit` wraps the call; inside, every miss is recorded in the
  * summary by id rather than thrown.

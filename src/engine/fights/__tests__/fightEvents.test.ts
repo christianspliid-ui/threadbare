@@ -342,9 +342,9 @@ describe('a Soulfire-style reach-swapped exchange still stacks `combat_success`'
   it('the event\'s `combat` field, not its reach, classifies it', () => {
     const graph = fightWorld();
     giveItem(graph, 'hero', 'item.soulfire', [soulfire]);
-    const star = processEffectEvent(graph, 'hero', { type: 'encounter_outcome', reach: 'star', success: true }, new Map(), TICK);
+    const star = processEffectEvent(graph, 'hero', { type: 'encounter_outcome', reach: 'star', success: true }, new Map(), TICK, () => 0.5);
     expect(star.updatedStates.get('item.soulfire')?.stacks).toBeUndefined();
-    const fought = processEffectEvent(graph, 'hero', { type: 'encounter_outcome', reach: 'star', success: true, combat: true }, new Map(), TICK);
+    const fought = processEffectEvent(graph, 'hero', { type: 'encounter_outcome', reach: 'star', success: true, combat: true }, new Map(), TICK, () => 0.5);
     expect(fought.updatedStates.get('item.soulfire')?.stacks).toBe(1);
   });
 

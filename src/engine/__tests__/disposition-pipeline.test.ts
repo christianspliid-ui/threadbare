@@ -95,7 +95,7 @@ describe('Disposition modifier pipeline integration', () => {
       const result = runSelectionPipeline(graph, 'actor.generous', candidates, {
         topN: 2,
         survivalThreshold: 0.8,
-      });
+      }, 0, 0.5);
 
       // Find the cooperative and defective candidates in the result
       const cooperativeResult = result.candidates.find(
@@ -156,7 +156,7 @@ describe('Disposition modifier pipeline integration', () => {
         runSelectionPipeline(graph, 'actor.simple', candidates, {
           topN: 1,
           survivalThreshold: 0.8,
-        });
+        }, 0, 0.5);
       }).not.toThrow();
     });
 
@@ -199,7 +199,7 @@ describe('Disposition modifier pipeline integration', () => {
       const result = runSelectionPipeline(graph, 'actor.strategic', candidates, {
         topN: 1,
         survivalThreshold: 0.8,
-      });
+      }, 0, 0.5);
 
       // Score should remain at 0 (not modified by disposition since no socialOrientation)
       // After scoreByGoalAlignment: tradition_novelty (0.0) → score 0
@@ -266,7 +266,7 @@ describe('Disposition modifier pipeline integration', () => {
       const result = runSelectionPipeline(graph, 'actor.nice', candidates, {
         topN: 2,
         survivalThreshold: 0.8,
-      });
+      }, 0, 0.5);
 
       const cooperativeResult = result.candidates.find(
         (c) => c.templateId === 'cooperate_action'
@@ -334,7 +334,7 @@ describe('Disposition modifier pipeline integration', () => {
       const result = runSelectionPipeline(graph, 'actor.mean', candidates, {
         topN: 2,
         survivalThreshold: 0.8,
-      });
+      }, 0, 0.5);
 
       const cooperativeResult = result.candidates.find(
         (c) => c.templateId === 'help'
@@ -416,7 +416,7 @@ describe('Disposition modifier pipeline integration', () => {
         runSelectionPipeline(graph, 'actor.a', candidates, {
           topN: 1,
           survivalThreshold: 0.8,
-        });
+        }, 0, 0.5);
       }).not.toThrow();
     });
 
@@ -481,7 +481,7 @@ describe('Disposition modifier pipeline integration', () => {
         runSelectionPipeline(graph, 'actor.x', candidates, {
           topN: 1,
           survivalThreshold: 0.8,
-        });
+        }, 0, 0.5);
       }).not.toThrow();
     });
   });

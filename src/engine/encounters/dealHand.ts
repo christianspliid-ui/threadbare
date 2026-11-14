@@ -26,8 +26,7 @@
  * state), which preserves WS0's zero-rng hand property and makes a dealt hand
  * replayable from a save exactly as an authored one is. Variety across
  * encounters comes from context tags and the god's evolving repertoire, not
- * dice. Shuffle-feel is a *new decision* needing a seeded stream — named here
- * so nobody adds `Math.random()` in passing.
+ * dice. Shuffle-feel is a *new decision* needing a seeded stream.
  *
  * Plan: `Docs/plans/2026-08-25-thr-1247-dealt-hands.md`
  */
