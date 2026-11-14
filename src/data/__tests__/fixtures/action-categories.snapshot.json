@@ -739,6 +739,10 @@
     "catalog": "location",
     "codex": "location"
   },
+  "loc.rebuke_rival": {
+    "catalog": "location",
+    "codex": "location"
+  },
   "loc.reveal_vein": {
     "catalog": "location",
     "codex": "location"

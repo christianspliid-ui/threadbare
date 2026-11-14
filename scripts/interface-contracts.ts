@@ -1903,6 +1903,23 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/dominion.ts', 'src/engine/phaseDominion.ts'],
     readSites: ['src/engine/orchestrator.ts', 'src/engine/phaseSpherePressure.ts'],
   },
+  // THR-2209 (plan 2026-11-13-thr-2202 slice 3): Rebuke — a god card on a place a rival
+  // just pressed tends it, pushes the god's primary back, and raises the rival's temper.
+  {
+    id: 'rebuke-tends-rival-pressed-place',
+    producerSystem: 'Essence & Divine Economy',
+    consumerSystem: 'Rival Gods & Schemes',
+    intent:
+      'A god answers a rival on the place it just pressed. The card is offered only on a place whose latest unabsorbed rival landing is inside RIVAL_REBUKE_WINDOW_DAYS (`rebukablePlaceIds` over `RivalState.lastPressed`). A landed cast writes `GameState.rebukedPlaces[place]`, which `buildTendingIndex` reads as the fifth TendedBy (`rebuke`) until it lapses, so the next rival landing there is absorbed exactly as any tending absorbs it; a clean landing also pushes RIVAL_REBUKE_PUSH of the god's primary sphere at the place (causedBy the god), and any landing raises that rival's temper by RIVAL_REBUKE_TEMPER_RISE with the cause `rebuked`, which the Rival gods panel says.',
+    ulTerms: ['Dominion', 'Opposing Dominion'],
+    mechanism: { kind: 'function', symbols: ['resolveRebuke', 'rebukablePlaceIds', 'rebukeTendingOf', 'raiseRivalHostility'], module: 'src/engine/rivalRebuke.ts' },
+    writeSites: ['src/engine/rivalRebuke.ts', 'src/engine/unifiedActionResolution.ts'],
+    readSites: ['src/engine/dominion.ts', 'src/engine/phaseSpherePressure.ts', 'src/engine/orchestrator.ts', 'src/engine/views/subjects/actOn.ts', 'src/engine/views/rivalEntry.ts'],
+    verifiedLive: {
+      date: '2026-11-14',
+      evidence: 'THR-2209. rivalRebuke.thr2209.test.ts: a probe lands on untended t0 (lastPressed, not absorbed) → rebukablePlaceIds = {t0}; resolveRebuke on a clean landing writes rebukedPlaces.t0 = tick + 4 days, pushes 4 mind at t0 causedBy the god, raises the rival 0.30 → 0.38 with cause rebuked (panel: "You rebuked it at Town 0."), traces rival.rebuked; the next probe that draws t0 reads tendedBy [rebuke], is absorbed (dominion.raid absorbed: true), toasts "…but your rebuke held it.", and records lastPressed absorbed, so t0 is no longer rebukable. getTargetActionSlots offers the card only on a place in the rebuke set.',
+    },
+  },
   {
     id: 'world-events-mint-ambitions',
     producerSystem: 'Encounters & Dilemmas',

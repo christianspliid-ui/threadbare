@@ -2057,7 +2057,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     essenceCost: RIVAL_REBUKE_COST,
     actorAffinities: ['ascendant'],
     targetCategories: ['location'],
-    motivations: [],
+    motivations: ['courage_prudence', 'loyalty_ambition'],
     narrativeTemplates: {
       initiation: 'turns to face the rival hand that pressed here',
       success: "You turned the rival's hand from this place. It holds against it for a few days.",

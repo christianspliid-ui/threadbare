@@ -15,7 +15,7 @@ import type { GameState, TickEvent } from '../../types/gameState';
 import type { RivalDefinition, RivalState } from '../../types/rival';
 import type { SphereAffinity } from '../../types/sphereAffinity';
 import type { SpherePressureEvent } from '../../types/sphereAffinity';
-import type { TargetContext } from '../../types/influence';
+import type { TargetContext } from '../../types/targetContext';
 import { createDefaultSphereAffinity } from '../../types/sphereAffinity';
 import { landRivalProbe, rivalProbeMove, rivalLandingLine } from '../orchestrator';
 import { createRivalState } from '../rival';

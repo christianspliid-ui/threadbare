@@ -110,11 +110,12 @@ describe('THR-1811 — the data on the cards', () => {
     // three tier-1 cheap place cards (Steel the Walls, Lay the Footings, Keep the Stores),
     // plus THR-2090's three (Tend the Sick, Let the Damp In, Keep the Vigil).
     // THR-2207: plus Stay the Unmaking, a tier-1 generic milestone gift.
-    expect(report.cardCount).toBe(155);
+    // THR-2209: plus Rebuke, a tier-1 generic milestone gift.
+    expect(report.cardCount).toBe(156);
     expect(report.counts.market).toBe(104);
-    expect(report.counts.gift).toBe(51);
-    expect(report.counts.generic).toBe(33);
-    expect(report.counts.byTier).toEqual({ 1: 53, 2: 63, 3: 28, 4: 11 });
+    expect(report.counts.gift).toBe(52);
+    expect(report.counts.generic).toBe(34);
+    expect(report.counts.byTier).toEqual({ 1: 54, 2: 63, 3: 28, 4: 11 });
   });
 
   describe('the gate fails on each kind of drift', () => {
