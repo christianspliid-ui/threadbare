@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-14 22:57 local (21:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-14 23:57 local (22:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -50,11 +50,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 7 tickets in Ready for Dev, all held for your veto.** Nothing changed this hour. The Read the Threads fix ([THR-2235](https://linear.app/threadbare/issue/THR-2235)) is held until 08:35 UTC tomorrow. The two climax builds ([THR-2226](https://linear.app/threadbare/issue/THR-2226), [THR-2227](https://linear.app/threadbare/issue/THR-2227)) open first, at 23:53 UTC; the two warm-playtest fixes ([THR-2230](https://linear.app/threadbare/issue/THR-2230), [THR-2231](https://linear.app/threadbare/issue/THR-2231)) at 02:40 UTC; the two pacing builds ([THR-2233](https://linear.app/threadbare/issue/THR-2233), [THR-2234](https://linear.app/threadbare/issue/THR-2234)) at 05:45 UTC. The builder idles until then, by design. Nothing new shipped this hour.
+**Healthy: 7 tickets in Ready for Dev, all held for your veto.** Nothing changed this hour. The Read the Threads fix ([THR-2235](https://linear.app/threadbare/issue/THR-2235)) is held until 08:35 UTC tomorrow. The two climax builds ([THR-2226](https://linear.app/threadbare/issue/THR-2226), [THR-2227](https://linear.app/threadbare/issue/THR-2227)) open first, at 23:53 UTC (within the hour); the two warm-playtest fixes ([THR-2230](https://linear.app/threadbare/issue/THR-2230), [THR-2231](https://linear.app/threadbare/issue/THR-2231)) at 02:40 UTC; the two pacing builds ([THR-2233](https://linear.app/threadbare/issue/THR-2233), [THR-2234](https://linear.app/threadbare/issue/THR-2234)) at 05:45 UTC. The builder idles until then, by design. Nothing new shipped this hour.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (25 days; In Dev since 15 Oct). No pushed branch and no local worktree names it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- All green. The live site serves the latest commit on main (b7ab4c12). Checks on main and the 3 scheduled background jobs pass; no PRs are waiting. The worktree reaper ran at 22:40 local. The builder's last ten runs all stood down because every ready ticket is inside its veto window, which is correct. Engine speed: 153 ms/tick, -4% on the 7-day median (159), inside the normal range. Linear read live this run.
+- All green. The live site serves the latest commit on main (b7ab4c12). Checks on main and the 3 scheduled background jobs pass; no PRs are waiting. All 9 scheduled lanes are on time. The worktree reaper ran at 23:40 local. The builder's recent runs all stood down because every ready ticket is inside its veto window, which is correct. Engine speed: 150 ms/tick, -6% on the 7-day median (159), inside the normal range. Linear read live this run.
