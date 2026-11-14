@@ -130,15 +130,18 @@ describe('THR-2139 — 5: one Story row per action instance', () => {
         stepIndex, outcome: 'success', tick,
       });
     }
-    // A second, separate Forage stays its own row.
+    const single = buildConnections(graph, null, { cls: 'person', id: AGENT }).groups.find(g => g.id === 'story');
+    expect(single?.rows.map(r => r.ref.id)).toEqual([`${EVENT_NODE_ID_PREFIX}${AGENT}_12_1`]);
+    expect(single?.rows[0].fact).toBe('');
+    // A second, separate Forage is a second run: since THR-2223 the runs fold into one row
+    // that counts them — and the two-step chapter above still counts as one run, not two.
     createUnifiedActionEventNode({
       graph, actorId: AGENT, actionId: 'ua.forage.2', templateId: 'forage', templateName: 'Forage',
       stepIndex: 0, outcome: 'success', tick: 30,
     });
     const story = buildConnections(graph, null, { cls: 'person', id: AGENT }).groups.find(g => g.id === 'story');
-    const ids = story?.rows.map(r => r.ref.id) ?? [];
-    expect(ids).toHaveLength(2);
-    expect(ids).toContain(`${EVENT_NODE_ID_PREFIX}${AGENT}_12_1`);
-    expect(ids).not.toContain(`${EVENT_NODE_ID_PREFIX}${AGENT}_10_0`);
+    expect(story?.rows).toHaveLength(1);
+    expect(story?.rows[0].ref.id).toBe(`${EVENT_NODE_ID_PREFIX}${AGENT}_30_0`);
+    expect(story?.rows[0].fact).toBe('twice');
   });
 });
