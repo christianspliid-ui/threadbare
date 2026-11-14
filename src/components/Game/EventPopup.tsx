@@ -127,7 +127,7 @@ export function EventPopup({ popup, queueLength, onDismiss, onChoice, noteLine, 
 
           {/* Body */}
           <div
-            className="px-5 pb-4 leading-relaxed"
+            className="px-5 pb-4 leading-relaxed whitespace-pre-line"
             style={{
               fontSize: 'var(--text-sm)',
               color: 'var(--text-secondary)',

@@ -318,6 +318,35 @@ describe('THR-1646 — the doom clock waits for The First', () => {
     }
   });
 
+  it('a stage popup tells each card in full: title, what happens, and what it does (THR-2219)', () => {
+    resetEventCounter();
+    let s = { ...makeState(), doomDefinition: generateDoomClock('breach', TOTAL_TICKS, 42), doomClock: createDoomClockState('breach', TOTAL_TICKS) };
+    bondTheFirst(s);
+    let checked = 0;
+    for (let i = 0; i < TOTAL_TICKS * 2 && !s.doomClock.expired; i++) {
+      const stageBefore = s.doomClock.currentStage;
+      s = { ...s, tickEvents: [] };
+      const partial = phaseDoom(s);
+      const escalations = (partial.tickEvents ?? []).filter((e) => e.type === 'doom_escalation');
+      const stageAfter = partial.doomClock?.currentStage ?? stageBefore;
+      escalations.forEach((e, k) => {
+        const cards = s.doomDefinition.stages[stageBefore + k]?.events ?? [];
+        const body = e.notification?.popup?.body ?? '';
+        for (const card of cards) {
+          if (card.title) expect(body).toContain(card.title);
+          expect(body).toContain(card.description);
+          if (card.effectSummary) {
+            expect(body).toContain(card.effectSummary);
+            checked++;
+          }
+        }
+      });
+      expect(escalations.length).toBe(stageAfter - stageBefore);
+      s = { ...s, ...partial, tick: s.tick + 1 };
+    }
+    expect(checked).toBeGreaterThan(0);
+  });
+
   it('authors one wake line per doom archetype', () => {
     for (const archetype of DOOM_CLOCK_ARCHETYPES) {
       expect(DOOM_WAKES_LINES[archetype]?.length ?? 0).toBeGreaterThan(0);
