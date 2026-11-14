@@ -366,6 +366,8 @@ export function NudgeCard({
         // THR-1706 — name the pool that pays, in words, on the cost row.
         ...(card.payingSphere ? { costSphere: card.payingSphere } : {}),
         costEmphasised: dimmed && card.blockedCode === 'essence_unavailable',
+        // THR-2206 — the price hover says where the price is drawn from.
+        ...(card.costNote ? { costNote: card.costNote } : {}),
         ...(card.costChannels ? { costChannels: card.costChannels } : {}),
         ...(card.provenance ? { provenance: card.provenance } : {}),
         name: card.name,

@@ -278,6 +278,12 @@ export interface CardFaceModel {
   /** Emphasise the price, as an unaffordable card does. */
   readonly costEmphasised?: boolean;
   /**
+   * THR-2206 — a line the price hover adds under the price (where a sphere-less
+   * card is paid from, or why a home-sphere card is cheaper). Needs
+   * {@link markTooltips}; absent ⇒ the registry text alone.
+   */
+  readonly costNote?: string;
+  /**
    * THR-1750 — the target's Dominion band against par. Set only when the band
    * changes the price (never on Foreign ground, never on a free card — Law 56):
    * a chip after the pips, ghost pips when cheaper, red pips when dearer. The
@@ -584,6 +590,7 @@ export function CardFace({
               framed
               emphasised={model.costEmphasised ?? false}
               tooltipId={model.markTooltips ? 'ui.card.cost' : undefined}
+              {...(model.costNote ? { tooltipNote: model.costNote } : {})}
               {...(model.dominion && model.dominion.parCost > model.cost ? { ghostFrom: model.dominion.parCost } : {})}
               {...(model.dominion && model.dominion.parCost < model.cost ? { dearFrom: model.dominion.parCost } : {})}
               data-testid={`${p}-cost-${id}`}

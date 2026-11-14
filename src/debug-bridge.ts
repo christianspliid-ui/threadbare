@@ -3467,7 +3467,7 @@ if (import.meta.env.DEV) {
       // THR-2201 — the stage's own pricing rules, through the stage's own
       // helpers: the discount and a sphere-less card's reach are the god's
       // bought spheres, and step cards carry NUDGE_ESSENCE_COST_SCALE.
-      const { homeSpheresFor, essenceReader } = await import('./engine/views/stage/buildNudgePhaseModel');
+      const { homeSpheresFor, essenceReader, nudgeShortSphere } = await import('./engine/views/stage/buildNudgePhaseModel');
       const { NUDGE_ESSENCE_COST_SCALE } = await import('./data/nudge-constants');
       const { SPHERE_NAMES } = await import('./types/index');
       const homeSpheres = state.ascendantIdentity ? homeSpheresFor(state) : [];
@@ -3496,7 +3496,13 @@ if (import.meta.env.DEV) {
         // hand is authored but the scope rule says it is not in play.
         attended: action.effectiveTier === 'story_beat',
         playable: hand.playable.map(e => ({ id: e.nudge.id, name: e.nudge.name, cost: priceOf(e.nudge), authoredCost: e.nudge.essenceCost, rider: e.nudge.rider ?? null })),
-        dimmed: hand.dimmed.map(e => ({ id: e.nudge.id, name: e.nudge.name, cost: priceOf(e.nudge), authoredCost: e.nudge.essenceCost, blocked: e.blocked ?? null })),
+        // THR-2206 — the pool a greyed card's reason names, through the stage's own helper.
+        dimmed: hand.dimmed.map(e => ({
+          id: e.nudge.id, name: e.nudge.name, cost: priceOf(e.nudge), authoredCost: e.nudge.essenceCost, blocked: e.blocked ?? null,
+          shortSphere: e.blocked === 'essence_unavailable' && state.ascendantIdentity
+            ? nudgeShortSphere(e.nudge, state.ascendantIdentity.sphereAlignment?.primary as import('./types/index').SphereName | undefined) ?? null
+            : null,
+        })),
         hidden: [...hand.hidden],
         activeNudges: [...(action.activeNudges ?? [])],
         activeRider: selectActiveRider(step, action.activeNudges, template.id) ?? null,

@@ -733,6 +733,25 @@ export interface EncounterStageNudgeCardModel {
   /** Plain-language reason shown on a dimmed card. */
   blockedReason?: string;
   /**
+   * THR-2206 — on a card dimmed for want of essence, the pool its reason names:
+   * the card's own sphere, or the god's primary for a sphere-less card. Absent
+   * on any other card, and on a legacy run with no identity (the reason then
+   * reads the generic "Not enough essence").
+   */
+  shortSphere?: SphereName;
+  /**
+   * THR-2206 — the reason this card would read if the hand's live remainder
+   * dimmed it ("Not enough Mind — refills slowly"). Precomputed for every card
+   * with a known payer so `useNudgeHand`'s live dimming names the same pool the
+   * engine would. Absent ⇒ the generic reason.
+   */
+  essenceShortReason?: string;
+  /**
+   * THR-2206 — the line the price hover adds under the price: where a sphere-less
+   * card is paid from, or why a home-sphere card is one cheaper. Words only.
+   */
+  costNote?: string;
+  /**
    * THR-1247 — where this card came from, when it came from the god rather than
    * the scene.
    *

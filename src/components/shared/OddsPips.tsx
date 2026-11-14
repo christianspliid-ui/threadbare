@@ -26,6 +26,7 @@ import {
 import { NUDGE_FREE_COST_LABEL } from '../../data/nudge-stage-content';
 import { oddsPips, pipReadingLabel } from '../../data/nudge-pip-vocabulary';
 import { Tooltip } from './Tooltip';
+import { resolveTooltip } from '../../engine/tooltipResolver';
 
 /** Gold, matching the veil's essence accent (Law 30 — the token, not a copy). */
 const ESSENCE_COLOR = 'var(--veil-gold)';
@@ -136,6 +137,11 @@ export interface CostPipsProps {
    */
   tooltipId?: string;
   /**
+   * THR-2206 — a line the price hover adds after the registry entry's own text
+   * ("Paid from your own spheres, Mind first."). Ignored without {@link tooltipId}.
+   */
+  tooltipNote?: string;
+  /**
    * THR-1750 — the par (Foreign-ground) price when this one is **cheaper**: the
    * difference is drawn as struck, faint pips after the paid ones, so "cheaper
    * here" is visible before the spend. Ignored unless greater than `cost`.
@@ -160,11 +166,18 @@ export const CostPips = memo(function CostPips({
   emphasised = false,
   framed = false,
   tooltipId,
+  tooltipNote,
   ghostFrom,
   dearFrom,
   'data-testid': dataTestId,
 }: CostPipsProps) {
-  const wrap = (node: React.ReactElement) => (tooltipId ? <Tooltip id={tooltipId} fit>{node}</Tooltip> : node);
+  // THR-2206 — the note joins the registry entry's text; the label stays the registry's.
+  const noteDesc = tooltipId && tooltipNote
+    ? [resolveTooltip(tooltipId)?.desc, tooltipNote].filter(Boolean).join(' ')
+    : undefined;
+  const wrap = (node: React.ReactElement) => (tooltipId
+    ? <Tooltip id={tooltipId} fit {...(noteDesc ? { desc: noteDesc } : {})}>{node}</Tooltip>
+    : node);
   const rounded = Math.max(0, Math.round(cost));
 
   // The badge chrome, shared by the "Free" and priced branches so a free card
