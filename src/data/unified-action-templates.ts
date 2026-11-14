@@ -1836,7 +1836,9 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
         established: 'You set your will against the ending. The Unmaking slows.',
         crooked: 'Your will holds, but crookedly. The Unmaking slows only a little.',
         active: 'You hold the hour. The Unmaking comes slower.',
-        lapsed: 'Your purse ran dry and your hold slipped. The Unmaking runs at its own pace again.',
+        // One line serves both endings (an empty purse, and a deliberate Release on
+        // the god sheet's covenant row), so it names neither cause.
+        lapsed: 'Your hold on the hour slips. The Unmaking runs at its own pace again.',
       },
     },
     motivations: [],

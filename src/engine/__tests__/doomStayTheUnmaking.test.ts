@@ -384,7 +384,7 @@ describe('THR-2207 — review-gate regressions', () => {
     let s: GameState = { ...base, essencePool: { ...base.essencePool, [primary]: 0 }, controlEffects: [effect], tickEvents: [] };
     s = { ...s, ...phaseControlEffects(s) };
     const lapse = s.tickEvents.find(e => e.type === 'control_effect_lapsed');
-    expect(lapse?.message).toBe('Your purse ran dry and your hold slipped. The Unmaking runs at its own pace again.');
+    expect(lapse?.message).toBe('Your hold on the hour slips. The Unmaking runs at its own pace again.');
     expect(lapse?.hexCoords).toBeUndefined();
   });
 
