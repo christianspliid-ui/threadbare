@@ -94,7 +94,7 @@ function WarmRecapCard({ recap, heldDecisionWaiting, onBegin, onOpenLedger }: {
 }) {
   const title = resolveTooltip('ui.warm_recap.title')?.label ?? 'While you were away';
   const heldLine = resolveTooltip('ui.warm_start.held')?.desc ?? 'Anything that needs your choice has waited for you.';
-  const nextHeld = resolveTooltip('ui.warm_recap.next_held')?.desc ?? 'It opens when you begin.';
+  const nextHeld = resolveTooltip('ui.warm_recap.next_held')?.desc ?? 'Find it under Needs you on the top bar.';
   const nextPaused = resolveTooltip('ui.warm_recap.next_paused')?.desc
     ?? 'The world is paused. Press play when you are ready.';
   const nextLine = heldDecisionWaiting ? `${heldLine} ${nextHeld}` : nextPaused;

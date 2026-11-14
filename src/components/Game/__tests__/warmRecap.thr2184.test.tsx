@@ -62,7 +62,7 @@ describe('WarmStartOverlay — the recap state (THR-2184)', () => {
   it('says what happens next: the held decision, else the paused world', () => {
     renderRecap({ heldDecisionWaiting: true });
     expect(screen.getByTestId('warm-recap-next').textContent)
-      .toBe('Anything that needs your choice has waited for you. It opens when you begin.');
+      .toBe('Anything that needs your choice has waited for you. Find it under Needs you on the top bar.');
   });
 
   it('names the paused clock when nothing waits', () => {
