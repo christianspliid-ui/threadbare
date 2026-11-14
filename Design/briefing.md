@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-14 03:56 local (02:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-14 04:58 local (03:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -45,9 +45,9 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: building.** [THR-2208 A bound mortal's deeds fill the Mandate](https://linear.app/threadbare/issue/THR-2208/a-bound-mortals-deeds-fill-the-mandate-a-threaded-chapter-credits-it) merged and is live. [THR-2209 Rebuke](https://linear.app/threadbare/issue/THR-2209/rebuke-a-god-card-that-answers-a-rival-on-the-place-it-just-pressed) is built, passed its code review, and will merge when its checks pass ([PR #2819](https://github.com/christianspliid-ui/threadbare/pull/2819)). 2 more are ready now and 2 are held.
+**Healthy: building.** [THR-2209 Rebuke](https://linear.app/threadbare/issue/THR-2209/rebuke-a-god-card-that-answers-a-rival-on-the-place-it-just-pressed) merged ([PR #2819](https://github.com/christianspliid-ui/threadbare/pull/2819)) and is live. [THR-2211 An ending the god had no part in waits on its badge](https://linear.app/threadbare/issue/THR-2211/an-ending-the-god-had-no-part-in-waits-on-its-badge-and-a-fated-step) is being built now. 1 more is ready now and 2 are held.
 
-- Ready now: [THR-2211 An ending the god had no part in waits on its badge](https://linear.app/threadbare/issue/THR-2211/an-ending-the-god-had-no-part-in-waits-on-its-badge-and-a-fated-step), [THR-2212 A dealt hand reads how hard the step is](https://linear.app/threadbare/issue/THR-2212/a-dealt-hand-reads-how-hard-the-step-is-guard-cards-on-easy-steps-the).
+- Ready now: [THR-2212 A dealt hand reads how hard the step is](https://linear.app/threadbare/issue/THR-2212/a-dealt-hand-reads-how-hard-the-step-is-guard-cards-on-easy-steps-the).
 - Ready, held for veto: [THR-2213 Ship the agency census](https://linear.app/threadbare/issue/THR-2213/ship-the-agency-census-a-hands-off-run-and-a-played-run-on-the-same) (until 06:20 UTC), [THR-2216 Tune the purse](https://linear.app/threadbare/issue/THR-2216/tune-the-purse-card-prices-3-pool-cap-35-base-and-seat-income-06) (until 12:17 UTC).
 - Not yet ready: [THR-2214 The path draws The First to its work](https://linear.app/threadbare/issue/THR-2214/the-path-draws-the-first-to-its-work-a-stronger-lean-a-road-to-the) (held until 08:55 UTC).
 
@@ -56,5 +56,5 @@ Items for agents, not you:
 
 ## Health
 
-- All green. Linear read live this run. The live site serves the latest commit on main (7f77b895, THR-2208). Checks on main and the 3 scheduled background jobs pass, all 10 scheduled lanes are on time, and the one open PR ([#2819](https://github.com/christianspliid-ui/threadbare/pull/2819)) is waiting on checks with auto-merge armed.
-- Engine speed is normal: 168 ms/tick steady on 7f77b895, 12% over the 7-day median (150), inside the 25% drift line.
+- Linear read live this run. The live site serves the latest commit on main (3f7a04bf, THR-2209). Checks on main and the 3 scheduled background jobs pass, all 10 scheduled lanes are on time, and no PRs are waiting to merge.
+- **Engine speed, for the builder:** tick cost 214 ms/tick steady, 41% above the 7-day median (151, 56 rows since 1b958ba5); top phase agent_decision, 638 agents. Name the merges between 1b958ba5 and 3f7a04bf: git log --oneline --merges 1b958ba5..3f7a04bf. One caution: a build run (THR-2211) was working on this computer while it measured, and the hour before read 168 ms/tick, so the next measurement will show whether this is real.

@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-14 03:56 local (02:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-14 04:58 local (03:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
 
@@ -50,6 +50,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-14: Rebuke is in. A god card now answers a rival on the place it just struck, and it is live** ([THR-2209](https://linear.app/threadbare/issue/THR-2209)). Merged via [#2819](https://github.com/christianspliid-ui/threadbare/pull/2819).
 - **2026-11-14: a bound mortal's deeds now fill the Mandate, and it is live** ([THR-2208](https://linear.app/threadbare/issue/THR-2208)). Merged via [#2818](https://github.com/christianspliid-ui/threadbare/pull/2818).
 - **2026-11-14: a card you can't afford now says which pool is short and how fast it refills, and it is live** ([THR-2206](https://linear.app/threadbare/issue/THR-2206)). Merged via [#2817](https://github.com/christianspliid-ui/threadbare/pull/2817).
 - **2026-11-14: Stay the Unmaking is in. A god card now slows Doom while you hold it, and Doom's speed no longer snowballs. It is live** ([THR-2207](https://linear.app/threadbare/issue/THR-2207)). Merged via [#2816](https://github.com/christianspliid-ui/threadbare/pull/2816).
@@ -59,7 +60,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-12: several rulers' agendas coming due now fold into one toast that opens to each ruler's line, and it is live** ([THR-2194](https://linear.app/threadbare/issue/THR-2194)). Merged via [#2803](https://github.com/christianspliid-ui/threadbare/pull/2803).
 - **2026-11-12: four small faults from playtest round 7 are fixed, and it is live** ([THR-2198](https://linear.app/threadbare/issue/THR-2198)). Merged via [#2802](https://github.com/christianspliid-ui/threadbare/pull/2802).
 - **2026-11-12: popups now wait for the player's hand to go quiet instead of opening under it, and it is live** ([THR-2197](https://linear.app/threadbare/issue/THR-2197)). Merged via [#2801](https://github.com/christianspliid-ui/threadbare/pull/2801).
-- **2026-11-12: The First's first chapter no longer contradicts itself, and it is live** ([THR-2196](https://linear.app/threadbare/issue/THR-2196)). Merged via [#2800](https://github.com/christianspliid-ui/threadbare/pull/2800).
 
 ---
 
