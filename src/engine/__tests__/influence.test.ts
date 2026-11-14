@@ -89,9 +89,9 @@ describe('Essence Generation', () => {
     expect(gen.life).toBeGreaterThan(gen.force);
     // Secondary sphere (spirit) gets second largest
     expect(gen.spirit).toBeGreaterThan(gen.force);
-    // All spheres sum to BASE_ESSENCE_PER_TICK (1.0)
+    // All spheres sum to BASE_ESSENCE_PER_TICK (0.5)
     const total = SPHERE_NAMES.reduce((sum, s) => sum + gen[s], 0);
-    expect(total).toBeCloseTo(1.0, 5);
+    expect(total).toBeCloseTo(0.5, 5);
   });
 
   it('threaded agents increase generation', () => {
@@ -228,7 +228,7 @@ describe('Essence Generation', () => {
 
   it('computeMaxEssence scales with threaded agents', () => {
     const base = computeMaxEssence(graph, ascendantId);
-    expect(base).toBe(50); // BASE_MAX_ESSENCE with no threaded agents
+    expect(base).toBe(35); // BASE_MAX_ESSENCE with no threaded agents
 
     graph.addNode({
       id: 'actor.w1',
@@ -245,7 +245,7 @@ describe('Essence Generation', () => {
     });
 
     const boosted = computeMaxEssence(graph, ascendantId);
-    expect(boosted).toBe(55); // 50 + 5 per threaded agent
+    expect(boosted).toBe(40); // 35 + 5 per threaded agent
   });
 });
 

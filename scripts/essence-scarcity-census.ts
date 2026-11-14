@@ -62,6 +62,7 @@ import { buildNudgePhaseModel } from '../src/engine/views/stage/buildNudgePhaseM
 import { spendNudgeEssence } from '../src/components/Game/encounter-stage/nudgeCommit';
 import { withEssenceSpend } from '../src/engine/essenceMovement';
 import { computeMaxEssence, computeEssenceGeneration } from '../src/engine/influence';
+import { readEssenceRefill } from '../src/engine/views/essenceRefill';
 import { TIER_MAINTENANCE } from '../src/data/influence-content';
 import { SPHERE_NAMES } from '../src/types/index';
 import { TICKS_PER_SEASON } from '../src/types/temporal';
@@ -89,7 +90,7 @@ const ESSENCE_SCARCITY_FULL_HAND_MAX_SHARE = 0.5;
 const ESSENCE_SCARCITY_ANY_CARD_MIN_SHARE = 0.9;
 /** P3 — with the god playing nothing, thread upkeep is paid in full on this share of ticks or more. */
 const ESSENCE_SCARCITY_UPKEEP_PAID_MIN_SHARE = 0.95;
-const DEFAULT_SEEDS = '42,99,7';
+const DEFAULT_SEEDS = '42,99,7,13,2026';
 
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
 const median = (xs: number[]) => { if (!xs.length) return NaN; const s = [...xs].sort((a, b) => a - b); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
@@ -258,9 +259,18 @@ function playHeldSteps(): void {
 const t0 = Date.now();
 let stopReason = 'ticks';
 let restored = false;
+/** THR-2216 — the essence bar's refill word per sphere at the warm tick (what `getEssenceRefill` reads in the browser). */
+let refillAtWarm = '';
 for (let i = 0; i < TICKS; i++) {
   if (Date.now() - t0 > BUDGET_MS) { stopReason = 'budget'; break; }
   const warming = state.tick < WARM;
+  if (!warming && !refillAtWarm) {
+    try {
+      const rd = readEssenceRefill(state.graph, state.ascendantId, state.controlEffects);
+      refillAtWarm = `t${state.tick}: ` + Object.entries(rd.spheres)
+        .map(([sp, r]: [string, any]) => `${sp}=${r?.band ?? '—'}${(r?.drawnPerTick ?? 0) > 0 ? `(pays ${Number(r.drawnPerTick).toFixed(2)}/tick)` : ''}`).join(' ');
+    } catch { refillAtWarm = 'unreadable'; }
+  }
   if (!warming && toggledForWarm && !restored) {
     const e = firstEdge();
     if (e) toggleAttentionMode(state.graph, e.id, state.ascendantId, state.tick);
@@ -325,6 +335,7 @@ const firstSeasonEnd = TICKS_PER_SEASON;
 const lines: string[] = [];
 lines.push(`seed ${SEED}${NO_PLAY ? ' (no play)' : ''} warm=${WARM} ran ${ticks.length} ticks to t${state.tick} in ${(ms / 1000).toFixed(0)} s (stop: ${stopReason}); opening settled [${settled.join(', ')}]; First toggled for warm ${toggledForWarm}`);
 lines.push(`  identity ${primary}/${secondary}; threads at end ${ticks.at(-1)?.threads}; season = ${TICKS_PER_SEASON} ticks`);
+if (refillAtWarm) lines.push(`  refill words at the warm tick ${refillAtWarm}`);
 lines.push(...block('whole run', ticks, steps));
 if (WARM > 0) lines.push(...block(`attended (after warm t${WARM})`, attTicks, steps));
 lines.push(...block(`first season (t≤${firstSeasonEnd})`, ticks.filter(r => r.tick <= firstSeasonEnd), steps.filter(s => s.tick <= firstSeasonEnd)));

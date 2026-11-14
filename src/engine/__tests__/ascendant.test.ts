@@ -140,7 +140,7 @@ describe('Ascendant Creation', () => {
     expect(props.essencePool).toBeDefined();
 
     for (const sphere of SPHERE_NAMES) {
-      expect(props.essencePool[sphere]).toBe(50);
+      expect(props.essencePool[sphere]).toBe(35);
     }
   });
 

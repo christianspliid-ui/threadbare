@@ -27,8 +27,8 @@ import type { BondTest } from '../types/meetingEncounter';
  * A lean here would be inert, and an inert authored field is how dead content
  * starts. Cards move the odds; the band names how the mortal takes it.
  *
- * Costs run 0–4 against a 50-per-sphere starting pool, well under the
- * `meetingNudgeCostCap` ceiling of ~8.
+ * Costs run 0–4 against a 35-per-sphere starting pool, under the
+ * `meetingNudgeCostCap` ceiling of about 5.8 (THR-2216).
  */
 const BOND_NUDGES: BondTest['nudges'] = [
   {
