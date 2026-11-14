@@ -48,6 +48,7 @@ import { createStandingModifierReader, forecastEncounterExpectedUtility } from '
 import { isEncounterAction } from './chapterArchive';
 import { isPausedThreadActor, applyStoryTellingsCap, recordStoryChapterStart, isRoutineTemplate, isTellingsCapRelaxed } from './attentionCadence';
 import { restlessRoadDue, findRestlessRoadDestination, recordRestlessRoad, emitRestlessRoadTrace, buildRestlessRoadEvent } from './restlessRoad';
+import { firstPathRoadDue, firstPathChapters, fittingEntries, recordFirstPathRoad, emitFirstPathRoadTrace, buildFirstPathRoadEvent } from './firstPathRoad';
 import { FAILED_TEMPLATE_COOLDOWN_MULT, ENGAGE_WINDOW_LOW, ENGAGE_WINDOW_HIGH, ENGAGE_PERSONALITY_SHIFT } from '../data/agent-behavior-constants';
 import { META_VALUE_PAIR } from '../types/agent';
 import type { EngagementDecisionTrace } from '../types/trace';
@@ -1135,44 +1136,50 @@ export function phaseAgentDecision(
       // list (after the tellings cap and cooldown), so "no story in reach" is the
       // decision's own verdict. A mortal with an appointment keeps it (THR-1479).
       const roadDrought = appointmentCtx ? null : restlessRoadDue(graph, agentId, state.tick);
-      if (roadDrought !== null) {
-        // A story she would refuse (forecast under the engagement window's refuse
-        // edge, fit 0 in scoring) is not a story she can draw — at home or there.
-        // Same reader scoreAndSelect builds below (no effect states), so the verdict
-        // matches the forecast the board will use.
-        const roadStanding = createStandingModifierReader(graph, agentId);
-        const engages = (e: EncounterCacheEntry): boolean => computeEngagementFit(
+      // A story she would refuse (forecast under the engagement window's refuse
+      // edge, fit 0 in scoring) is not a story she can draw — at home or there.
+      // Same reader scoreAndSelect builds below (no effect states), so the verdict
+      // matches the forecast the board will use. Built only when a road is checked.
+      let roadStanding: ReturnType<typeof createStandingModifierReader> | null = null;
+      const engages = (e: EncounterCacheEntry): boolean => {
+        roadStanding ??= createStandingModifierReader(graph, agentId);
+        return computeEngagementFit(
           forecastEncounterExpectedUtility(e, agentId, graph, undefined, roadStanding).engagementForecast,
           0, 0,
         ).fit > 0;
+      };
+      // The stories at a far place she could draw standing there — shared by both roads.
+      const mayStillDraw = (storyEntries: EncounterCacheEntry[], placeId: string): EncounterCacheEntry[] => {
+        // Her own checks first (retirement, the tellings cap, cooldown), so the
+        // pipeline's candidate cap below never cuts the stories she can still tell.
+        // The tellings cap binds a paused mortal only (as applyStoryTellingsCap).
+        const relaxed = !isPausedThreadActor(graph, agentId) || isTellingsCapRelaxed(graph, agentId, state.tick);
+        const open = storyEntries.filter(e => {
+          const told = familiarityRecord.attemptCount[e.templateId] ?? 0;
+          return told < MAX_COMPLETIONS_PER_TEMPLATE && (relaxed || told < PAUSED_STORY_MAX_TELLINGS);
+        });
+        // The floor without filterByCooldown's fail-soft drop: this list holds
+        // stories only, so an empty floored list means every story here is one
+        // the floor would hold back on arrival too — not a reason to lift it.
+        const cooled = applyCooldowns(
+          open, agentId, state.encounterProgress, state.unifiedActions, state.tick,
+          rawCandidates.length, state.chapterArchive ?? [], PAUSED_STORY_REPEAT_FLOOR_TICKS,
+        ).filter(engages);
+        if (cooled.length === 0) return cooled;
+        // Then the real pipeline, as if she stood there (no runtime: the eligibility
+        // funnel counts her actual decisions only). A story her own pipeline already
+        // rejected for a prerequisite or a gate is rejected here too.
+        return runFilterPipeline(
+          cooled, agentId, placeId, graph, state.tick, mapCols, mapRows, undefined, holdReader,
+        ).candidates;
+      };
+      let roadChecked = false;
+      if (roadDrought !== null) {
         const homeStories = candidates.filter(c => !isRoutineTemplate(c.templateId) && engages(c)).map(c => c.templateId);
         if (homeStories.length > 0) {
           recordRestlessRoad(graph, agentId, state.tick, 'story_at_home');
           emitRestlessRoadTrace(state.tick, agentId, roadDrought, 'story_at_home', locationId, null, homeStories);
         } else {
-          const relaxed = isTellingsCapRelaxed(graph, agentId, state.tick);
-          const mayStillDraw = (storyEntries: EncounterCacheEntry[], placeId: string): EncounterCacheEntry[] => {
-            // Her own checks first (retirement, the tellings cap, cooldown), so the
-            // pipeline's candidate cap below never cuts the stories she can still tell.
-            const open = storyEntries.filter(e => {
-              const told = familiarityRecord.attemptCount[e.templateId] ?? 0;
-              return told < MAX_COMPLETIONS_PER_TEMPLATE && (relaxed || told < PAUSED_STORY_MAX_TELLINGS);
-            });
-            // The floor without filterByCooldown's fail-soft drop: this list holds
-            // stories only, so an empty floored list means every story here is one
-            // the floor would hold back on arrival too — not a reason to lift it.
-            const cooled = applyCooldowns(
-              open, agentId, state.encounterProgress, state.unifiedActions, state.tick,
-              rawCandidates.length, state.chapterArchive ?? [], PAUSED_STORY_REPEAT_FLOOR_TICKS,
-            ).filter(engages);
-            if (cooled.length === 0) return cooled;
-            // Then the real pipeline, as if she stood there (no runtime: the eligibility
-            // funnel counts her actual decisions only). A story her own pipeline already
-            // rejected for a prerequisite or a gate is rejected here too.
-            return runFilterPipeline(
-              cooled, agentId, placeId, graph, state.tick, mapCols, mapRows, undefined, holdReader,
-            ).candidates;
-          };
           const dest = findRestlessRoadDestination(graph, locationId, encounterCache.getAllEntries(), mayStillDraw);
           const setOut = dest !== null
             && startTravelTo(graph, agentId, graph.getNode(agentId) ?? actor, locationId, dest.locationId, state.tiles, state.tick);
@@ -1214,6 +1221,7 @@ export function phaseAgentDecision(
             continue;
           }
         }
+        roadChecked = true; // checked this decision (any outcome): the path road waits for the next
       }
 
       // Combine doom identity + omen encounter biases (additive; each capped at ±IDENTITY_ENCOUNTER_BIAS_CAP)
@@ -1321,6 +1329,82 @@ export function phaseAgentDecision(
         applyFirstPathPull(decision, getFirstPathFor(graph, state.ascendantId, agentId), IDLE_SCORE_THRESHOLD);
       } catch {
         // Fail-soft: the path is a lean, never a reason to drop the decision.
+      }
+
+      // ── THR-2214: the path's road ─────────────────────────────────────
+      // The First, with no scene on her shortlist that the path pulls and her path gone
+      // quiet (no chapter yet since the bond, or FIRST_PATH_ROAD_DROUGHT_TICKS since her
+      // latest fitting one started), sets out for the nearest place whose stories fit it:
+      // the restless road's search, filtered to fitting entries. After the path's lean,
+      // because `firstPathPull` lives on the scored shortlist (the census on THR-2200:
+      // the lean only fails when no fitting scene is on it). The restless road was
+      // checked first and shares the cooldown: one road per decision. The player's own
+      // steer outranks it: an arriving journey, a held whisper, a held paid Compulsion or a
+      // held Crossroads lean keeps her here.
+      const playerSteers = !!journeyGoalId
+        || actor.properties?.crossroadsLean !== undefined
+        // A held paid Compulsion (target or compelled journey) resolves below; the road must not spend it.
+        || actor.properties?.compulsionTargetTemplateId !== undefined
+        || actor.properties?.compelledJourneyTemplateId !== undefined
+        || decision.rankedCandidates.some(c => (c.whisperPull ?? 1) > 1);
+      const pathRoad = appointmentCtx || roadChecked || playerSteers ? null : (() => {
+        let sceneIndex: Map<string, EncounterCacheEntry> | null = null;
+        const sceneOf = (templateId: string): EncounterCacheEntry | undefined => {
+          if (!sceneIndex) {
+            sceneIndex = new Map();
+            for (const e of encounterCache.getAllEntries()) if (!sceneIndex.has(e.templateId)) sceneIndex.set(e.templateId, e);
+          }
+          return sceneIndex.get(templateId);
+        };
+        return firstPathRoadDue(
+          graph, state.ascendantId, agentId, state.tick,
+          decision.topCandidates,
+          () => firstPathChapters(graph, state.ascendantId, agentId, state.chapterArchive, state.unifiedActions),
+          sceneOf,
+        );
+      })();
+      if (pathRoad) {
+        const dest = findRestlessRoadDestination(
+          graph, locationId, encounterCache.getAllEntries(),
+          (entries, placeId) => mayStillDraw(fittingEntries(pathRoad.path, entries), placeId),
+        );
+        const setOut = dest !== null
+          && startTravelTo(graph, agentId, graph.getNode(agentId) ?? actor, locationId, dest.locationId, state.tiles, state.tick);
+        const outcome = setOut ? 'set_out' : 'no_destination';
+        recordFirstPathRoad(graph, state.ascendantId, agentId, state.tick, outcome);
+        emitFirstPathRoadTrace(state.tick, agentId, pathRoad, outcome, locationId, setOut ? dest : null);
+        if (setOut && dest) {
+          // The journey names its story and carries the restless road's arrival
+          // precedence (`restlessRoad` → the board's `restlessRoadGoal`), so the board
+          // takes the target on arrival if it still clears BOARD_SCORE_FLOOR.
+          const travellerNode = graph.getNode(agentId);
+          const travelling = travellerNode?.properties?.movementState as MovementState | undefined;
+          if (travellerNode && travelling) {
+            graph.updateNode(agentId, {
+              properties: {
+                ...travellerNode.properties,
+                movementState: {
+                  ...travelling,
+                  targetEncounterId: dest.targetEntry.templateId,
+                  targetSublocationId: dest.targetEntry.sublocationId ?? undefined,
+                  restlessRoad: true,
+                  ...(Number.isFinite(dest.targetEntry.questPriority) ? { motivationPull: dest.targetEntry.questPriority } : {}),
+                },
+              },
+            });
+          }
+          // Law 45: the line lands only once the move is set.
+          newEvents.push(buildFirstPathRoadEvent(graph, agentId, dest.locationId, pathRoad.path, state.tick));
+          appendEvent(agentId, {
+            phase: 'IDLE',
+            tick: state.tick,
+            reason: 'first_path_road',
+            idleAction: 'first_path_road',
+            driftTarget: graph.getNode(dest.locationId)?.name ?? dest.locationId,
+          });
+          if (runtime) touchWorld(runtime);
+          continue;
+        }
       }
 
       // ── THR-1639: a journey keeps its goal on arrival ─────────────────

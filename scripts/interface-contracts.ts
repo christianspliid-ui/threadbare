@@ -7309,7 +7309,8 @@ export const CONTRACTS: readonly Contract[] = [
       symbols: ['buildRestlessRoadEvent', 'segments', 'lastRestlessRoadTick', 'restlessRoadCheckTick'],
       module: 'src/engine/restlessRoad.ts',
     },
-    writeSites: ['src/engine/phaseAgentDecision.ts', 'src/engine/restlessRoad.ts'],
+    // THR-2214: the path's road is a second producer — The First walks to her path's work.
+    writeSites: ['src/engine/phaseAgentDecision.ts', 'src/engine/restlessRoad.ts', 'src/engine/firstPathRoad.ts'],
     readSites: ['src/engine/orchestrator.ts', 'src/components/Game/ChronicleEntryCard.tsx', 'src/debug-bridge.ts'],
   },
   // ── The chosen path comes back (THR-1988) ─────────────────────────────────
@@ -7326,7 +7327,8 @@ export const CONTRACTS: readonly Contract[] = [
       module: 'src/engine/firstPath.ts',
     },
     writeSites: ['src/engine/firstPath.ts', 'src/engine/orchestrator.ts'],
-    readSites: ['src/engine/views/stage/buildUnifiedEncounterStageModel.ts', 'src/engine/views/subjects/personRows.ts', 'src/debug-bridge.ts'],
+    // THR-2214: the Crossroads row reads the snapshot's fitsPath and shows the same fit line.
+    readSites: ['src/engine/views/stage/buildUnifiedEncounterStageModel.ts', 'src/engine/views/subjects/personRows.ts', 'src/engine/views/subjects/crossroadsRow.ts', 'src/debug-bridge.ts'],
   },
   // ── A minimised moment waits (THR-1730) ───────────────────────────────────
   {

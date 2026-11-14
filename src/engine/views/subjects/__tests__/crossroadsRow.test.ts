@@ -203,3 +203,26 @@ describe('the torn badge reads the same snapshot (PC-6, Law 15)', () => {
     expect([...map.keys()]).toEqual([KAEL]);
   });
 });
+
+describe('THR-2214: a road that fits The First\'s path says so', () => {
+  const firstState = (snapshot: CrossroadsSnapshot): GameState => {
+    const state = makeState({ snapshot });
+    const thread = state.graph.getEdge('thr')!;
+    state.graph.updateEdge('thr', {
+      properties: { ...thread.properties, courtPosition: 'the_first', meetingChoiceRecord: { sparkVisionId: 'vision.heart.unifier' } },
+    });
+    return state;
+  };
+
+  it('puts the God\'s Will fit line under the fitting road only, and keeps every road (Law 45)', () => {
+    const snapshot: CrossroadsSnapshot = { tick: 9, options: [{ ...TORN.options[0] }, { ...TORN.options[1], fitsPath: true }, { ...TORN.options[2] }] };
+    const section = buildCrossroadsSection(firstState(snapshot), KAEL)!;
+    expect(section.tiles.map(t => t.subline ?? null)).toEqual([null, 'Fits the uniter of the clans.', null]);
+  });
+
+  it('shows no fit line for a mortal who is not The First, even if a stale flag is set', () => {
+    const snapshot: CrossroadsSnapshot = { tick: 9, options: [{ ...TORN.options[0], fitsPath: true }] };
+    const section = buildCrossroadsSection(makeState({ snapshot }), KAEL)!;
+    expect(section.tiles[0].subline).toBeUndefined();
+  });
+});
