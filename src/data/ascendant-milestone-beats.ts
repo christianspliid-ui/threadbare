@@ -47,8 +47,10 @@ import {
   WELLSPRING_MILESTONE_BEAT_ID,
   MILESTONE_HELD_GROUND_BEAT_ID,
   MILESTONE_FIRST_STAGE_BEAT_ID,
+  MILESTONE_FIRST_REBUKE_BEAT_ID,
 } from './player-progression';
 import { DOOM_STAY_TEMPLATE_ID } from './doom-stay-content';
+import { RIVAL_REBUKE_TEMPLATE_ID } from './rival-rebuke-content';
 import type { SpineBeatPresentation } from './ascendant-beat-content';
 
 /**
@@ -176,6 +178,16 @@ export const ASCENDANT_MILESTONE_BEATS: readonly BeatDefinition[] = [
     identity: { reach: 'star', sphere: 'time' },
     grantsActionIds: [DOOM_STAY_TEMPLATE_ID],
   },
+  {
+    // THR-2209: the first-rebuke milestone. Enqueued by `phaseAscendantProgression` the
+    // first tick a rival's hand has landed unabsorbed on the god's ground since the bond.
+    // Grants Rebuke, the god's answer to that hand, while the place can still be rebuked.
+    beatId: MILESTONE_FIRST_REBUKE_BEAT_ID,
+    kind: 'milestone',
+    trigger: { kind: 'turn' },
+    identity: { reach: 'star', sphere: 'force' },
+    grantsActionIds: [RIVAL_REBUKE_TEMPLATE_ID],
+  },
 ];
 
 /** Look a milestone beat up by id. Null when the id is not a milestone beat. */
@@ -209,6 +221,13 @@ export const MILESTONE_BEAT_PRESENTATION: Readonly<Record<string, SpineBeatPrese
     title: 'The Ending Has Begun to Move',
     prose:
       'The Unmaking has taken its first real step. It will take the next one whether you watch or not, and nothing you hold will turn it back. But you are not nothing. You can set your will against it and hold the hour: while you hold, the ending comes slower. Holding costs you every day, from the same essence that moves your mortals, so every day you hold it is a day you chose the world over them.',
+    cta: 'Receive',
+  },
+  [MILESTONE_FIRST_REBUKE_BEAT_ID]: {
+    eyebrow: "A Rival's Hand",
+    title: 'Another God Has Touched What Is Yours',
+    prose:
+      'A rival god has pressed its will on a place of yours, and the place gave ground. It will come again where you are not watching. But a god can answer a god. Go to the place it pressed and rebuke it there: the place will hold against it for a few days, and some of what it took comes back. The rival will remember that you did.',
     cta: 'Receive',
   },
   [MILESTONE_SOURCE_BEAT_ID]: {
@@ -262,6 +281,9 @@ export function milestoneChronicleProse(beatId: string): string {
   }
   if (beatId === MILESTONE_FIRST_STAGE_BEAT_ID) {
     return 'The Unmaking took its first step, and you learned to stand against it. It cannot be stopped, but it can be slowed, for as long as you pay to hold it.';
+  }
+  if (beatId === MILESTONE_FIRST_REBUKE_BEAT_ID) {
+    return 'A rival god pressed on a place of yours, and you learned to answer it there.';
   }
   if (beatId === MILESTONE_SOURCE_BEAT_ID) {
     return 'Your wellsprings came into their own. What you had only held, you now draw upon — and the world began to trade on the strength of it.';

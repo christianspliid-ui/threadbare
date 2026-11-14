@@ -75,7 +75,9 @@ export function rivalCauseSegments(
   }
   const name = cause.placeId ? placeName(cause.placeId) : undefined;
   const place = cause.placeId && name ? { placeId: cause.placeId, name } : null;
-  const key = cause.kind === 'countered' ? 'ui.rival.cause_countered' : 'ui.rival.cause_scheme';
+  const key = cause.kind === 'countered' ? 'ui.rival.cause_countered'
+    : cause.kind === 'rebuked' ? 'ui.rival.cause_rebuked'
+      : 'ui.rival.cause_scheme';
   return [{ text: '. ' }, ...withPlace(rivalWords(place ? key : `${key}_noplace`), place)];
 }
 

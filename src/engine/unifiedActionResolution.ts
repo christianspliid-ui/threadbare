@@ -95,6 +95,8 @@ import { applyImbueItem, applyBestowPower, applyTeachSpell, applyAnointFaction, 
 import { TEACH_SPELL_RECEIPT_SIGNIFICANCE } from '../data/spell-grant-constants';
 import { recordDetectionCrossings } from './orchestrator/phaseDetectionPressure';
 import { applyQuintessenceRestore } from './rekindleThread';
+import { resolveRebuke } from './rivalRebuke';
+import { RIVAL_REBUKE_TEMPLATE_ID } from '../data/rival-rebuke-content';
 import { revealBestSecret } from './secretsFavorsConsequences';
 import { SCHISM_PENDING_DURATION_TICKS } from '../data/game-config';
 import { GATE_DUTY_NUDGE_IDS } from '../data/civic-guard-encounter-content';
@@ -4150,6 +4152,10 @@ export function phaseUnifiedActionProgress(
   const digestBuffer: DigestEntry[] = [...(state.digestBuffer ?? [])];
   // THR-1753 — Foundation spheres an elder reveal finds this phase.
   const foundationSpheresFoundBefore = state.foundationSpheresFound;
+  // THR-2209 — Rebuke writes: the places it holds and the rivals' raised tempers.
+  // Carried across this phase's completions so two rebukes in one tick compound.
+  let rebukedPlaces = state.rebukedPlaces;
+  let rebukeRivalStates = state.rivalStates;
   let foundationSpheresFound = foundationSpheresFoundBefore;
 
   // Phase 1: Progress all (defensive: state may not have unifiedActions yet).
@@ -4581,6 +4587,35 @@ export function phaseUnifiedActionProgress(
       }
     }
 
+    // THR-2209: Rebuke holds the place a rival just pressed, pushes the god's primary
+    // back on a clean landing, and raises that rival's temper (engine/rivalRebuke.ts).
+    if (
+      updatedAction.resolved &&
+      isActionSuccess(updatedAction.outcome) &&
+      completing_action.templateId === RIVAL_REBUKE_TEMPLATE_ID &&
+      completing_action.actorId === state.ascendantId
+    ) {
+      try {
+        const rebuke = resolveRebuke(
+          { ...state, rebukedPlaces, rivalStates: rebukeRivalStates },
+          {
+            actorId: completing_action.actorId,
+            targetId: completing_action.targetId,
+            outcome: updatedAction.outcome as StepOutcome,
+            actionId: completing_action.actionId,
+          },
+        );
+        if (rebuke) {
+          rebukedPlaces = rebuke.rebukedPlaces;
+          if (rebuke.rivalStates) rebukeRivalStates = rebuke.rivalStates;
+          if (rebuke.pressure) spherePressures.push(rebuke.pressure);
+          updatedAction = appendAftermathChanges(updatedAction, [rebuke.change]);
+        }
+      } catch (rebukeErr) {
+        console.warn('[unifiedActionResolution] rebuke error:', rebukeErr);
+      }
+    }
+
     // THR-1935: a successful player cast of an answering card answers the town's open
     // prayer (push 2, split by bought points) or aids a hungry town off the god's
     // ground (push 1); the receipt gains one line. Fail-soft inside the resolver.
@@ -4727,6 +4762,8 @@ export function phaseUnifiedActionProgress(
       ? { pendingSpherePressures: [...(state.pendingSpherePressures ?? []), ...spherePressures] }
       : {}),
     ...(foundationSpheresFound !== foundationSpheresFoundBefore ? { foundationSpheresFound } : {}),
+    ...(rebukedPlaces !== state.rebukedPlaces ? { rebukedPlaces } : {}),
+    ...(rebukeRivalStates !== state.rivalStates ? { rivalStates: rebukeRivalStates } : {}),
     ...(mandateDeedCredits.length > 0
       ? { pendingMandateCredits: [...(state.pendingMandateCredits ?? []), ...mandateDeedCredits] }
       : {}),

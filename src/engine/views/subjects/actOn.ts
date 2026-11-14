@@ -40,6 +40,7 @@ import { FORECAST_TIER_WORDS } from '../../../data/nudge-stage-content';
 import type { ActOnCardVM, ActOnVM } from './subjectTypes';
 import { godSpheres } from './pageResolvers';
 import { tileAt } from './pageResolvers';
+import { rebukablePlaceIds } from '../../rivalRebuke';
 
 /** What the row is for: a person, a place (either tier), an artifact or a bare hex. */
 export type ActOnTarget =
@@ -160,6 +161,8 @@ export function actOnSlots(
     pendingActions: state.unifiedActions,
     spellTeachingPreview: teachSpellPreview(graph, state.ascendantId, ctx.nodeId, Number(state.seed ?? 0)),
     observeNothingLeft: observeHasNothingLeft(state.agentKnowledge, ctx.nodeId),
+    // THR-2209 — Rebuke is offered only on a place a rival just pressed.
+    rebukeTargets: rebukablePlaceIds(state),
   });
   return { ctx, slots };
 }

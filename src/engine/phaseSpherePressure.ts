@@ -34,7 +34,7 @@ import { getNodeSphereAffinity, backfillSphereAffinity } from './sphereAffinity'
 import { emitTrace } from './traceBuffer';
 import type { QuintessenceEvent } from '../types/quintessence';
 import { QUINTESSENCE_OVERCHANNEL_EROSION } from '../types/quintessence';
-import { buildTendingIndex, dominionOf, isTended } from './dominion';
+import { buildTendingIndex, dominionOf, isTended, rebukeTendingOf } from './dominion';
 import { DOMINION_TENDED_RAID_ABSORB } from '../data/dominion-content';
 import type { MandateCredit } from '../types/sphereAffinity';
 import { MANDATE_GOD_LEDGER_ENABLED } from '../data/game-config';
@@ -476,7 +476,7 @@ export function phaseSpherePressure(state: GameState): Partial<GameState> {
   if (pressures.some(p => p.source === 'rival')) {
     try {
       const index = buildTendingIndex(graph, state.ascendantId, state.controlEffects,
-        placeId => dominionOf(graph, state.ascendantId, placeId).band);
+        placeId => dominionOf(graph, state.ascendantId, placeId).band, rebukeTendingOf(state));
       for (const [entityId, list] of byEntity) {
         if (!isTended(index, entityId)) continue;
         byEntity.set(entityId, absorbTendedRaid(list, DOMINION_TENDED_RAID_ABSORB));

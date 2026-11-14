@@ -19,6 +19,8 @@ import {
 } from './influence';
 import { recalcVisibility, collectLOSSources } from './visibility';
 import { RIVAL_LANDING_LINES, RIVAL_TENDER_WORDS, RIVAL_PLACE_FALLBACK } from '../data/rival-content';
+import { RIVAL_REBUKE_TEMPLATE_ID } from '../data/rival-rebuke-content';
+import { raiseRivalHostility } from './rivalRebuke';
 import {
   selectRivalAction,
   computeRivalEscalationTier,
@@ -42,7 +44,7 @@ import { buildTierUpProse, eventSkipsChronicle, shouldSkipForChronicle } from '.
 import { phaseAlertChronicle } from './alertChronicle';
 import { ARCHETYPE_STAGE_NAMES } from '../data/doom-content';
 import { DOOM_ENDING_FALLBACK_TITLE, MANDATE_FALLBACK_NAME, TWILIGHT_WORDS } from '../data/twilight-content';
-import type { RivalSchemeSummary, RivalDefinition, RivalState, RivalHostilityCause } from '../types/rival';
+import type { RivalSchemeSummary, RivalDefinition, RivalState } from '../types/rival';
 import {
   RIVAL_SCHEME_PHASE_INVEST_TICKS,
   RIVAL_SCHEME_STALL_TICKS,
@@ -51,8 +53,6 @@ import {
   RIVAL_SCHEME_CRACK_PRESSURE_MULTIPLIER,
   RIVAL_SCHEME_HOSTILITY_PER_MOVE,
   RIVAL_HOSTILITY_ON_COUNTER,
-  RIVAL_HOSTILITY_START,
-  RIVAL_SCHEME_HOSTILITY_CEILING,
   RIVAL_SCHEME_STOCK_DRAIN_FRACTION,
   RIVAL_SCHEME_STOCK_DRAIN_FLOOR,
   RIVAL_SCHEME_MAX_ROUTES_SEVERED,
@@ -85,7 +85,7 @@ import { emitTrace, emitTiming, emitPhaseTiming, getTimingTraces, isProfilingEna
 import { phaseDominion, afterSpherePressure, raidAllowanceLeft, recordRaidLanding } from './phaseDominion';
 import { getLocationNodes } from './sublocationShape';
 import type { GraphNode } from '../types/graph';
-import { bandAtLeast, buildTendingIndex, computeThreadYield, dominionOf, dominionPower, isTended, type TendedBy } from './dominion';
+import { bandAtLeast, buildTendingIndex, computeThreadYield, dominionOf, dominionPower, isTended, rebukeTendingOf, type TendedBy } from './dominion';
 import { TICKS_PER_DAY as RIVAL_DAY_TICKS } from '../data/attention-constants';
 import {
   DOMINION_RAID_PLACES_PER_DAILY_BURST,
@@ -2084,12 +2084,17 @@ export function rivalProbeMove(
     id: nextEventId(),
     tick: state.tick,
     type: 'rival_action',
-    message: rivalLandingLine(rival.name, landing),
+    // THR-2209: the line names Rebuke only when the god holds it (Law 45).
+    message: rivalLandingLine(rival.name, landing, (state.unlockedActionIds ?? []).includes(RIVAL_REBUKE_TEMPLATE_ID)),
     significance: 0.7,
     notification: { channel: 'toast' },
     refs: [{ kind: 'location', id: landing.placeId }],
   });
-  return { ...rivalState, lastPressed: { placeId: landing.placeId, tick: state.tick } };
+  // THR-2209: an absorbed landing took nothing, so it is not a place to rebuke.
+  return {
+    ...rivalState,
+    lastPressed: { placeId: landing.placeId, tick: state.tick, ...(landing.tendedBy ? { absorbed: true } : {}) },
+  };
 }
 
 /** What a landed probe did (THR-2185). `tendedBy` is null when the place was untended. */
@@ -2100,8 +2105,12 @@ export interface RivalProbeLanding {
   tendedBy: TendedBy[] | null;
 }
 
-/** The landing toast's words (THR-2185): pressed-and-tend-it, or held-by-your-tending. */
-export function rivalLandingLine(rivalName: string, landing: RivalProbeLanding): string {
+/**
+ * The landing toast's words (THR-2185): pressed-and-answer-it, or held-by-your-tending.
+ * THR-2209: a god holding Rebuke reads both answers (`landed`); one without it reads only
+ * tending (`landedNoCard`), so the toast never names a card the player cannot play.
+ */
+export function rivalLandingLine(rivalName: string, landing: RivalProbeLanding, holdsRebuke = false): string {
   const place = landing.placeName || RIVAL_PLACE_FALLBACK;
   const tender = landing.tendedBy?.[0];
   if (tender) {
@@ -2109,48 +2118,8 @@ export function rivalLandingLine(rivalName: string, landing: RivalProbeLanding):
       .replace('{rival}', rivalName).replace('{place}', place).replace('{tender}', RIVAL_TENDER_WORDS[tender] ?? 'tending');
   }
   const sphereWord = landing.sphere.charAt(0).toUpperCase() + landing.sphere.slice(1);
-  return RIVAL_LANDING_LINES.landed
+  return (holdsRebuke ? RIVAL_LANDING_LINES.landed : RIVAL_LANDING_LINES.landedNoCard)
     .replace('{rival}', rivalName).replace('{Sphere}', sphereWord).replace('{place}', place);
-}
-
-/**
- * THR-2185: raise a rival's temper with its cause, and trace the change. A rise from
- * the rival's own scheme stops at `RIVAL_SCHEME_HOSTILITY_CEILING` (never lowering a
- * temper already above it); only the god breaking a scheme reaches "wrathful". The cause
- * is recorded either way, so a capped rival still says what it is doing. Pure over the
- * rival state; the trace (only when the number moved) is the only side effect.
- */
-function raiseRivalHostility(
-  rival: RivalDefinition,
-  rivalState: RivalState,
-  by: number,
-  cause: RivalHostilityCause,
-  placeName: string | undefined,
-): RivalState {
-  // Fail-soft: a state with no temper (a hand-built fixture, a damaged save) rises from the start.
-  const from = Number.isFinite(rivalState.hostilityToPlayer) ? rivalState.hostilityToPlayer : RIVAL_HOSTILITY_START;
-  const ceiling = cause.kind === 'scheme' ? RIVAL_SCHEME_HOSTILITY_CEILING : 1.0;
-  const to = Math.max(from, Math.min(ceiling, from + by));
-  if (to === from) {
-    // A scheme beat that cannot lift a temper the god's counter put above the ceiling
-    // leaves that counter as the reason: the rival is wrathful because you broke its scheme.
-    if (rivalState.hostilityCause?.kind === 'countered' && from > ceiling) return rivalState;
-    // A capped beat names the current scheme but is not a rise: it keeps the last rise's
-    // tick, so a quiet day still cools and the next beat is a real rise again.
-    const lastRise = rivalState.hostilityCause?.tick;
-    return { ...rivalState, hostilityToPlayer: from, hostilityCause: { ...cause, tick: lastRise ?? cause.tick } };
-  }
-  emitRivalTrace({
-    category: 'rival.hostility_changed' as const,
-    tick: cause.tick,
-    rivalId: rival.id,
-    from,
-    to,
-    cause: cause.kind,
-    ...(cause.placeId ? { placeId: cause.placeId } : {}),
-    summary: `${rival.name}: ${from.toFixed(2)} → ${to.toFixed(2)} (${cause.kind}${placeName ? ` at ${placeName}` : ''})`,
-  });
-  return { ...rivalState, hostilityToPlayer: to, hostilityCause: cause };
 }
 
 /** The god's top-level places at Touched or better, split by whether they are tended. */
@@ -2159,7 +2128,7 @@ function godTurf(state: GameState): { untended: GraphNode[]; tended: GraphNode[]
   const turf = getLocationNodes(graph).filter(p => bandAtLeast(dominionOf(graph, ascendantId, p.id).band, 'touched'));
   if (turf.length === 0) return { untended: [], tended: [], index: new Map() };
   const index = buildTendingIndex(graph, ascendantId, state.controlEffects,
-    placeId => dominionOf(graph, ascendantId, placeId).band);
+    placeId => dominionOf(graph, ascendantId, placeId).band, rebukeTendingOf(state));
   return {
     untended: turf.filter(p => !isTended(index, p.id)),
     tended: turf.filter(p => !!isTended(index, p.id)),

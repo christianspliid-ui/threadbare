@@ -132,6 +132,8 @@ export const ACTION_EFFECTS_PROSE: Record<string, string> = {
     'Draws your attention inward and lets essence pool in the space of that letting-go.',
   'divine.self.stay_the_unmaking':
     'Sets your will against the ending, so the Unmaking comes slower for as long as you pay to hold it.',
+  'loc.rebuke_rival':
+    'Answers a rival god on the place it just pressed: the place holds against rivals for a few days, and some of what was taken comes back.',
   'divine.self.recede':
     'Gathers your power inward, so the next working you attempt asks less of you.',
   'divine.self.focus':
