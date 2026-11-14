@@ -17,6 +17,7 @@
 import type { EncounterAftermathChangeKind } from '../types/unifiedAction';
 import type { RarityTier } from '../types/rarity';
 import type { OutcomeBand } from '../engine/outcomeConsequences';
+import { outcomeBandWord } from './outcome-band-content';
 
 // ─── Presentation-tier constants (NFP #1: Tunability) ───────────────────────────
 
@@ -110,6 +111,27 @@ export const RECEIPT_FRAME_LINES_NO_HOLD: readonly string[] = [
   'The working went out whole, and found nothing to take hold of.',
   'Your reach arrived where you sent it. There was nothing there for it to move.',
 ];
+
+/**
+ * THR-2220 — the one-word verdict under a receipt's title. Receipts drop the shared
+ * band lexicon's "held" (`OUTCOME_BAND_WORDS`), because "Held" is also a Dominion
+ * tier on the map: "Dream · held" read as a place word, and as success on a cast
+ * whose frame line said it found nothing. Bands absent here fall through to
+ * `outcomeBandWord`.
+ */
+export const RECEIPT_BAND_WORD_OVERRIDES: Readonly<Partial<Record<OutcomeBand, string>>> = {
+  neutral: 'landed',
+  strained: 'landed at a cost',
+};
+
+/** THR-2220 — the verdict on a cast that landed but found nothing to take hold of. */
+export const RECEIPT_BAND_WORD_NO_HOLD = 'found no hold';
+
+/** THR-2220 — the receipt's verdict word: no-hold first, then the receipt overrides, then the shared lexicon. */
+export function receiptBandWord(band: OutcomeBand | string | undefined, tookNoHold?: boolean): string {
+  if (tookNoHold) return RECEIPT_BAND_WORD_NO_HOLD;
+  return (band && RECEIPT_BAND_WORD_OVERRIDES[band as OutcomeBand]) || outcomeBandWord(band);
+}
 
 export function selectReceiptFrameLine(
   band: OutcomeBand | string | undefined,
