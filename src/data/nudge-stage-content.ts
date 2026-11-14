@@ -302,6 +302,18 @@ export const NUDGE_COMMIT_LABEL = 'Play your hand, let fate answer';
 /** The commit verb with nothing staged — silence is a choice with odds (THR-1714). */
 export const NUDGE_COMMIT_LABEL_SILENT = 'Stay silent, let fate answer';
 
+/**
+ * THR-2218 — which step a played hand lands on, said on the hand bar before
+ * Play. Cards always count for the current step; the only cue was the veil
+ * tracker's "1 of 2", far from the hand. Reuses the tracker's words ("{n} of
+ * {total}"), no new noun. Null on a one-step chapter, where there is no other
+ * step to land on.
+ */
+export function nudgeHandStepLine(stepNumber: number, totalSteps: number): string | null {
+  if (!(totalSteps > 1) || !(stepNumber >= 1) || stepNumber > totalSteps) return null;
+  return `These cards go to step ${stepNumber} of ${totalSteps}.`;
+}
+
 // ── The chapter answering card (THR-1812, plan 2026-10-11-thr-1806) ──
 // A step committed on a paused clock waits for world time. The veil stays up
 // and says so, and offers to run the clock until the step answers.

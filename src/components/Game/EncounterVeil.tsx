@@ -2680,6 +2680,7 @@ export function EncounterVeil({
               // both subtrees read it.
               renderTestHeader={false}
               hand={nudgeHand}
+              totalSteps={totalSteps}
             />
           ) : (
             <>

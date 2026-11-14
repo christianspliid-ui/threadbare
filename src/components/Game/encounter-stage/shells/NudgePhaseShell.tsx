@@ -30,6 +30,7 @@ import {
   NUDGE_COMMIT_LABEL_SILENT,
   NUDGE_EMPTY_HAND_LINE,
   nudgeHandMoreLine,
+  nudgeHandStepLine,
 } from '../../../../data/nudge-stage-content';
 import { usePrefersReducedMotion } from '../../../../hooks/usePrefersReducedMotion';
 import { NudgeBalance, NudgeReadingMarks } from './NudgeStageHeader';
@@ -286,6 +287,12 @@ export interface NudgePhaseShellProps {
    * `FormativeTestBeat`; every other host writes no pole and passes nothing.
    */
   missLine?: string;
+  /**
+   * THR-2218 — the chapter's step count, so the hand bar can say which step the
+   * cards land on ("These cards go to step 1 of 2."). The veil passes its
+   * tracker's total; hosts that omit it (one-step meeting beats) show nothing.
+   */
+  totalSteps?: number;
 }
 
 // ── Card ───────────────────────────────────────────────────────────
@@ -439,7 +446,10 @@ export function NudgePhaseShell({
   renderTestHeader = true,
   hand: externalHand,
   missLine,
+  totalSteps,
 }: NudgePhaseShellProps) {
+  // THR-2218 — said only when a hand is dealt: an empty hand plays no cards.
+  const stepLine = totalSteps !== undefined ? nudgeHandStepLine(phase.stepIndex + 1, totalSteps) : null;
   const designerView = useSyncExternalStore(
     subscribeNudgeDesignerView,
     isNudgeDesignerViewEnabled,
@@ -632,6 +642,17 @@ export function NudgePhaseShell({
             style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER, fontStyle: 'italic', margin: '0 0 8px' }}
           >
             {missLine}
+          </p>
+        )}
+        {/* THR-2218 — which step the hand lands on, in the tracker's words, on
+            the bar the hand is played from. Cards always count for the current
+            step; the god should know that before paying, not read it after. */}
+        {stepLine && hand.cards.length > 0 && (
+          <p
+            data-testid="nudge-hand-step"
+            style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER, fontStyle: 'italic', margin: '0 0 8px' }}
+          >
+            {stepLine}
           </p>
         )}
         {/* THR-1942 — a two-row hand scrolls under this bar; the bar says how

@@ -1075,6 +1075,13 @@ export const CAUSE_ALONE = (actorName: string): string => `${actorName} faced it
  * not the deciding one. "Faced it alone" there contradicted the essence the god paid.
  */
 export const CAUSE_GOD_ELSEWHERE = 'your cards were on another step, not this one';
+/**
+ * THR-2218 — on a chapter that was won, the step the god's hand was on, named in
+ * its own sentence after the deciding step. "Your cards were on another step"
+ * read as "your cards did nothing" on a chapter they helped win, so a won ending
+ * never says it. `{noun}` is the touched step's noun ("The work on Iron").
+ */
+export const CAUSE_GOD_ON_STEP = (stepNoun: string): string => `${stepNoun} had your cards behind it.`;
 /** The step's noun when it has no title of its own. `{reach}` is the Reach's player name. */
 export const CAUSE_UNTITLED_STEP = (reachName: string): string => `The work on ${reachName}`;
 
@@ -1117,19 +1124,32 @@ export function causeBandAgrees(outcome: UnifiedActionOutcome, band: StepOutcome
   return rank <= STEP_OUTCOMES.indexOf('success_at_cost');
 }
 
-/** Index of the deciding step: the last step holding the worst (or best) band. */
+/**
+ * Index of the deciding step: the last step holding the worst (or best) band.
+ *
+ * THR-2218 — on an ending that was won, a tie goes to a step the god's hand was
+ * on before it goes to the later step: two steps that both held are equally the
+ * reason, and the one the cards were on is the one worth naming. A lost ending
+ * keeps the plain later-step tie-break, so an untouched step that lost it is
+ * still named.
+ */
 export function decidingStepIndex(
   outcome: UnifiedActionOutcome,
   steps: readonly CauseLineStep[],
 ): number {
   const readsWorst = CAUSE_READS_WORST.has(outcome);
+  const preferTouched = !CAUSE_LOST_OUTCOMES.has(outcome);
   let chosen = -1;
   let chosenRank = readsWorst ? -1 : Number.POSITIVE_INFINITY;
   steps.forEach((step, index) => {
     const rank = STEP_OUTCOMES.indexOf(step.band);
     if (rank < 0) return;
-    // `>=` / `<=` so a tie goes to the later step — the one the ending turned on last.
-    if (readsWorst ? rank >= chosenRank : rank <= chosenRank) {
+    const better = readsWorst ? rank > chosenRank : rank < chosenRank;
+    // A tie goes to the later step — the one the ending turned on last — unless
+    // a won ending would trade a god-touched step for an untouched one.
+    const tieTakes = rank === chosenRank
+      && !(preferTouched && steps[chosen]?.godTouched && !step.godTouched);
+    if (better || tieTakes) {
       chosen = index;
       chosenRank = rank;
     }
@@ -1191,6 +1211,19 @@ export function buildAftermathCauseLine(args: {
   const failedRank = STEP_OUTCOMES.indexOf('failure');
   const failedSteps = args.steps.filter(s => STEP_OUTCOMES.indexOf(s.band) >= failedRank).length;
   const oneStepOfSeveral = !lost && stepFailed && failedSteps === 1 && args.steps.length > 1;
+  const scope = oneStepOfSeveral ? ` ${CAUSE_ONE_STEP_WENT_WRONG}` : '';
+  // THR-2218 — a won ending whose deciding step the hand was not on, while
+  // another step had it: name the deciding step plainly, then credit the step
+  // the cards were on in its own sentence. Never "on another step, not this
+  // one" — on a win that read as "your cards did nothing".
+  if (!lost && !step.godTouched) {
+    const touched = [...args.steps].reverse().find(s => s.godTouched);
+    if (touched) {
+      const touchedNoun = causeStepNoun(touched);
+      const credit = touchedNoun ? ` ${CAUSE_GOD_ON_STEP(touchedNoun)}` : '';
+      return `${lead}${scope} ${noun} ${CAUSE_STEP_VERBS[step.band]}.${credit}${finalOdds(true)}`;
+    }
+  }
   const clause = step.godTouched
     ? (oneStepOfSeveral
         ? CAUSE_GOD_COULD_NOT_SAVE_STEP
@@ -1198,7 +1231,6 @@ export function buildAftermathCauseLine(args: {
     : args.steps.some(s => s.godTouched)
       ? CAUSE_GOD_ELSEWHERE
       : CAUSE_ALONE(args.actorName);
-  const scope = oneStepOfSeveral ? ` ${CAUSE_ONE_STEP_WENT_WRONG}` : '';
   return `${lead}${scope} ${noun} ${CAUSE_STEP_VERBS[step.band]}, and ${clause}.${finalOdds(true)}`;
 }
 
