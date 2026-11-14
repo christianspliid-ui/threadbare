@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-14 18:58 local (17:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-14 19:58 local (18:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -46,11 +46,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 6 tickets in Ready for Dev, all held for your veto.** The design lane acted on your pacing note within the hour: it measured six whole runs and filed two new builds ([THR-2233](https://linear.app/threadbare/issue/THR-2233), [THR-2234](https://linear.app/threadbare/issue/THR-2234)), held until 05:45 UTC tomorrow (see *Decided for you*). The two climax builds ([THR-2226](https://linear.app/threadbare/issue/THR-2226), [THR-2227](https://linear.app/threadbare/issue/THR-2227)) open at 23:53 UTC; the two warm-playtest fixes ([THR-2230](https://linear.app/threadbare/issue/THR-2230), [THR-2231](https://linear.app/threadbare/issue/THR-2231)) at 02:40 UTC. The builder idles until then, by design. Nothing new shipped this hour.
+**Healthy: 6 tickets in Ready for Dev, all held for your veto.** No change this hour. The two pacing builds ([THR-2233](https://linear.app/threadbare/issue/THR-2233), [THR-2234](https://linear.app/threadbare/issue/THR-2234)) are held until 05:45 UTC tomorrow (see *Decided for you*). The two climax builds ([THR-2226](https://linear.app/threadbare/issue/THR-2226), [THR-2227](https://linear.app/threadbare/issue/THR-2227)) open at 23:53 UTC; the two warm-playtest fixes ([THR-2230](https://linear.app/threadbare/issue/THR-2230), [THR-2231](https://linear.app/threadbare/issue/THR-2231)) at 02:40 UTC. The builder idles until then, by design. Nothing new shipped this hour.
 
 Items for agents, not you:
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (25 days; In Dev since 15 Oct). No pushed branch names it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (25 days; In Dev since 15 Oct). No pushed branch and no local worktree names it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- All green. The live site serves the latest commit on main (3d128efd). Checks on main and the 3 scheduled background jobs pass; no PRs are waiting. All 10 enabled scheduled tasks are on schedule, and the worktree reaper ran at 18:40 local. The builder's last five runs stood down because every ready ticket is inside its veto window, which is correct. Engine speed: 169 ms/tick, +7% on the 7-day median (158), inside the normal range. Linear read live this run.
+- All green. The live site serves the latest commit on main (3d128efd). Checks on main and the 3 scheduled background jobs pass; no PRs are waiting. All 10 enabled scheduled tasks are on schedule, and the worktree reaper ran at 19:40 local. The builder's last six runs stood down because every ready ticket is inside its veto window, which is correct. Engine speed: 162 ms/tick, +2% on the 7-day median (159), inside the normal range. Linear read live this run.
