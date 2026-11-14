@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-14 11:58 local (10:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-14 12:58 local (11:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -21,11 +21,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-- [Re-decide the purse tuning](https://linear.app/threadbare/issue/THR-2215/re-decide-the-purse-tuning-no-setting-met-p1-p3-on-all-three-seeds-so): **the purse gets its numbers. Cards cost three times as much, each pool holds at most 35, and the god earns 0.6 where it earned 1.0.**
-  - **What was measured:** five worlds, with a god who plays every card it can afford. It could pay for its whole hand at only 11–40% of chapter steps, and it always had at least one card it could play. A god who plays nothing still keeps every thread paid.
-  - **Why the earlier attempt failed:** the counting script was wrong, not the economy. It let a no-sphere card drain every pool, which the real hand never allows. Once it counted the way the hand does, every setting tried left a playable card at every step.
-  - **Why 0.6:** at 0.7 two worlds sat one or two steps from failing. At 0.5 the full hand was almost never affordable, harsher than the goal asks. At 0.6 the god's home pool sits at about a fifth full at a typical step, so it picks one or two home cards per step.
-  - **Veto:** say "veto purse numbers" to keep income at 1.0, or "richer purse" to step income to 0.7. The build is held for your veto until 12:17 UTC today: [Tune the purse — card prices ×3, pool cap 35, income 0.6](https://linear.app/threadbare/issue/THR-2216/tune-the-purse-card-prices-3-pool-cap-35-base-and-seat-income-06). *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-14a.md)*
+- [Re-decide the purse tuning](https://linear.app/threadbare/issue/THR-2215/re-decide-the-purse-tuning-no-setting-met-p1-p3-on-all-three-seeds-so): **the purse gets its numbers. Cards cost three times as much, each pool holds at most 35, and the god earns 0.6 where it earned 1.0.** Measured on five worlds: at 0.6 the god can pay for its whole hand only some of the time but always has a card it can play. **Veto:** say "veto purse numbers" to keep income at 1.0, or "richer purse" to step it to 0.7. The build is held for your veto until **12:17 UTC today (about 20 minutes from now)**: [Tune the purse](https://linear.app/threadbare/issue/THR-2216/tune-the-purse-card-prices-3-pool-cap-35-base-and-seat-income-06). *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-14a.md)*
 
 Say "veto <title>" to reverse any of these.
 
@@ -35,13 +31,13 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 8 tickets in Ready for Dev.** This morning's [warm playtest, round 4](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/warm-playtest-round-4.md) filed seven screen and wording bugs, ready to build now. The biggest: a won chapter tells you your cards ["were on another step"](https://linear.app/threadbare/issue/THR-2218), and new Doom stages arrive [as bare titles with no word of what they do](https://linear.app/threadbare/issue/THR-2219). The eighth, [THR-2216 Tune the purse](https://linear.app/threadbare/issue/THR-2216/tune-the-purse-card-prices-3-pool-cap-35-base-and-seat-income-06), is held for your veto until 12:17 UTC.
+**Healthy: 5 tickets in Ready for Dev.** Three shipped in the last hour: [the path draws The First to its work](https://linear.app/threadbare/issue/THR-2214) ([#2824](https://github.com/christianspliid-ui/threadbare/pull/2824)), [the garbled dashes](https://linear.app/threadbare/issue/THR-2217) ([#2825](https://github.com/christianspliid-ui/threadbare/pull/2825)) and [a won chapter credits the cards](https://linear.app/threadbare/issue/THR-2218) ([#2826](https://github.com/christianspliid-ui/threadbare/pull/2826)). The builder is now on [new Doom stages arrive as bare titles](https://linear.app/threadbare/issue/THR-2219) ([branch](https://github.com/christianspliid-ui/threadbare/tree/thr-2219-doom-words)). Next up are four more round-4 playtest bugs, two of them [recurring](https://linear.app/threadbare/issue/THR-2220) [after a fix](https://linear.app/threadbare/issue/THR-2221), then [THR-2216 Tune the purse](https://linear.app/threadbare/issue/THR-2216/tune-the-purse-card-prices-3-pool-cap-35-base-and-seat-income-06) once its veto window closes.
 
-The builder is mid-build on [THR-2214 The path draws The First to its work](https://linear.app/threadbare/issue/THR-2214/the-path-draws-the-first-to-its-work-a-stronger-lean-a-road-to-the): a checkpoint is pushed ([branch](https://github.com/christianspliid-ui/threadbare/tree/thr-2214-path-road)), and a new pickup run started at 10:54 UTC to carry it on.
+The design lane has a new plan open: [put the god in the climax](https://github.com/christianspliid-ui/threadbare/pull/2827), waiting on its checks.
 
 Items for agents, not you:
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (25 days; In Dev since 15 Oct), and nothing has touched it since 8 Nov. No pushed branch or local worktree names it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (25 days; In Dev since 15 Oct). No pushed branch or local worktree names it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-All green. Linear read live this run. The live site is current (commits since the last publish touched only docs). Checks on main and the 3 scheduled background jobs pass, no PRs are waiting to merge, all 10 scheduled tasks are on time, and the worktree reaper ran at 11:40 local. Engine speed is back in range: 179 ms/tick, +19% on the 7-day median (151), under the 25% line, so last hour's high reading was machine load.
+All green. Linear read live this run. The live site serves the latest commit on main (5fbfb9f9). Checks on main and the 3 scheduled background jobs pass; one PR (the design plan above) is waiting on checks and will merge on green. All 10 scheduled tasks are on time, and the worktree reaper ran at 12:40 local. Engine speed: 159 ms/tick, +5% on the 7-day median (152).
