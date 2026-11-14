@@ -139,10 +139,10 @@ When a moment opens on the Stage (`src/components/Game/stage/`), the camera ease
 | Step | Full motion | Reduced motion (Law 44) |
 |---|---|---|
 | Rails settle | `STAGE_LAYOUT_SETTLE_FRAMES` (2) animation frames, then the window is measured | same |
-| Camera | `centerHexesAt` eases over `JUMP_TO_DURATION_MS` (500 ms); the player's zoom is kept when the place is legible there (k ≥ 5 and the hex ≤ 0.8 of the window), else `FOCUS_ZOOM` 10 | **cut** — the camera jumps (`camera.mode === 'cut'`) |
+| Camera | only when a framed place is not already inside the Stage's window (THR-2221: a place the player can see stays put, `camera.mode === 'stayed'`) — then `centerHexesAt` eases over `JUMP_TO_DURATION_MS` (500 ms); the player's zoom is kept when the place is legible there (k ≥ 5 and the hex ≤ 0.8 of the window), else `FOCUS_ZOOM` 10 | **cut** — the camera jumps (`camera.mode === 'cut'`) |
 | Map dim | fades to `STAGE_MAP_DIM` (0.7) over `STAGE_DIM_FADE_MS` (500 ms), with the camera | appears at once |
 | Panel | enters on the ceremonial tier, `opacity` over `STAGE_PANEL_ENTRANCE_S` (0.6 s), when the camera lands or after `STAGE_CAMERA_SETTLE_TIMEOUT_MS` (800 ms) | `--anim-fast` fade |
-| Close | the dim goes; the camera never goes back to its pre-Stage view (THR-1829 § 5) — a place still inside the visible map's middle third (`STAGE_CLOSE_CENTRE_BAND_FRACTION`) stays put, one outside it eases to the visible map's centre, so chapters that open by themselves never drift the map to the edge (THR-2056) | cut |
+| Close | the dim goes; the camera does not move at all (THR-2221) — not back to its pre-Stage view (THR-1829 § 5), and no longer re-centred (the THR-2056 middle-third re-centre is retired: on a running clock it made the camera follow the bonded mortal). The map cannot drift, because the open frames only a place outside the window and the frame puts it inside. After any programmatic pan, the hover re-aims at the hex under the still pointer | n/a |
 
 Nothing is carried by the motion alone: the ring and the place tag say where. The constants live in `src/data/stage-content.ts`.
 

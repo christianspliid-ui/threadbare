@@ -660,6 +660,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const cameraRef   = useRef<THREE.OrthographicCamera | null>(null);
     const zoomRef     = useRef<import('d3').ZoomBehavior<HTMLCanvasElement, unknown> | null>(null);
     const destroyZoomRef = useRef<(() => void) | null>(null);
+    /** THR-2221 — the camera as the last scene build left it; a rebuild of the same grid restores it. */
+    const keptCameraRef = useRef<{ transform: import('d3').ZoomTransform; cols: number; rows: number } | null>(null);
     const setZoomTargetRef   = useRef<((wx: number, wy: number) => void) | null>(null);
     const clearZoomTargetRef = useRef<(() => void) | null>(null);
 
@@ -681,6 +683,11 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const [stageFocus, setStageFocusState] = useState<{ focus: StageMapFocus; fadeMs: number } | null>(null);
     // THR-1897 — the premonition option the player is hovering, re-applied when the layer rebuilds.
     const stageOptionHoverRef = useRef<string | null>(null);
+    // THR-2221 — the pointer over the canvas (canvas-local px), so a programmatic pan under a
+    // still pointer re-aims the hover; mouse moves alone never see the map slide under them.
+    const pointerRef = useRef<{ x: number; y: number } | null>(null);
+    const onHexHoverRef = useRef(onHexHover);
+    onHexHoverRef.current = onHexHover;
     const dominionDropLayerRef = useRef<DominionDropLayer | null>(null);
     // Bumped after every scene build so incremental layers re-attach to the new scene.
     const [sceneEpoch, setSceneEpoch] = useState(0);
@@ -1030,8 +1037,16 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         if (Math.abs(now.k - next.k) < 1e-6 && Math.abs(now.x - next.x) < 0.5 && Math.abs(now.y - next.y) < 0.5) {
           return Promise.resolve('stayed' as const);
         }
+        // THR-2221 — the map moved under a still pointer: re-aim the hover at what is under it now.
+        const reaimHover = () => {
+          const p = pointerRef.current;
+          const camera = cameraRef.current;
+          if (!p || !camera) return;
+          onHexHoverRef.current(screenToHex(p.x, p.y, camera, canvas) ?? null);
+        };
         if (options.instant) {
           d3.select(canvas).interrupt().call(zoom.transform, next);
+          reaimHover();
           return Promise.resolve('cut' as const);
         }
         return new Promise<'eased'>(resolve => {
@@ -1039,8 +1054,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             .transition()
             .duration(CAMERA_CONSTANTS.JUMP_TO_DURATION_MS)
             .call(zoom.transform, next)
-            .on('end', () => resolve('eased'))
-            .on('interrupt', () => resolve('eased'));
+            .on('end', () => { reaimHover(); resolve('eased'); })
+            .on('interrupt', () => { reaimHover(); resolve('eased'); });
         });
       },
       triggerAnomalyReveal(hexCol: number, hexRow: number, sphereColor: string): void {
@@ -1462,7 +1477,18 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         // retired: the run opens centred on the First with all known land in view
         // (k = clamp(fitKnownLand, 6, 10)), applied with no animation; falls back to the seat,
         // the known land's centre, or (fog off) the whole-grid fit.
-        mapCamera.applyOpening(firstHexRef.current, seatHexRef.current);
+        // THR-2221 — but only on the first build. The scene rebuilds when its inputs change
+        // (locations, anomalies, the realm projection…), which a running clock does often;
+        // re-applying the opening each time snapped the camera back to the First on every
+        // rebuild — the "camera that follows Kael" of warm playtest round 4. A rebuild of the
+        // same grid keeps the camera where the player (or the Stage) left it.
+        const kept = keptCameraRef.current;
+        keptCameraRef.current = null;
+        if (kept && kept.cols === cols && kept.rows === rows) {
+          d3.select(canvas).call(zoom.transform, kept.transform);
+        } else {
+          mapCamera.applyOpening(firstHexRef.current, seatHexRef.current);
+        }
 
         // Render loop
         const clock = new THREE.Clock();
@@ -1571,6 +1597,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             clearTimeout(cameraCenterDebounceRef.current);
             cameraCenterDebounceRef.current = null;
           }
+          // THR-2221 — keep the camera for the next scene build of the same grid.
+          keptCameraRef.current = { transform: d3.zoomTransform(canvas), cols, rows };
           destroy();
           zoomRef.current = null;
           destroyZoomRef.current = null;
@@ -2180,6 +2208,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       const camera = cameraRef.current;
       if (!canvas || !camera) return;
 
+      pointerRef.current = { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY };
       const hex = screenToHex(e.nativeEvent.offsetX, e.nativeEvent.offsetY, camera, canvas);
       onHexHover(hex ?? null);
     };
@@ -2233,6 +2262,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     };
 
     const handleMouseLeave = () => {
+      pointerRef.current = null;
       onHexHover(null);
     };
 
