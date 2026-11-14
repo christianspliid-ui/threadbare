@@ -155,6 +155,37 @@ export const CHAPTER_LEDGER_NO_RECORD = 'This chapter has no record to show yet.
 export const CHAPTER_ALONE_AFTERMATH_LINE = "This chapter was {name}'s alone. Nothing in it waited on your hand.";
 
 /**
+ * THR-2211 — the Aftermath's opening line on a chapter that offered the god a move
+ * (`waits`) and ended without the god's hand on it (`godTouchedEncounter` false).
+ * The alone line above would be false here: cards could have entered.
+ */
+export const CHAPTER_UNPLAYED_AFTERMATH_LINE = '{name} played this chapter out without your hand.';
+
+/**
+ * THR-2211 — the Aftermath's opening line when a step posted on the Fated fuse
+ * played out alone and landed below success (THR-2171: "a Fated step broke and
+ * nothing said why").
+ */
+export const FATED_FUSE_FAILED_AFTERMATH_LINE =
+  'This step was Fated, and Fated is likely, never certain. It went against {name} while it played out alone.';
+
+/** THR-2211 — a fused step's badge meta (tooltip body and aria line). */
+export const BADGE_FATED_FUSE_META = 'Fated — plays out soon unless you step in';
+
+/** THR-2211 — the badge meta of an ending the god took no part in. */
+export const BADGE_UNTOUCHED_ENDING_META = {
+  /** The chapter word was "Theirs alone". */
+  alone: 'theirs alone · open to read',
+  /** The chapter word was "Waits for you"; nobody played it. */
+  unplayed: 'played out without your hand · open to read',
+  /** Either word, and the final band is near-miss or worse. */
+  bad: 'went badly without your hand · open to read',
+} as const;
+
+/** THR-2211 — the chapter name a badge line falls back to when the slot is empty (PC-3). */
+export const BADGE_CHAPTER_FALLBACK = 'A chapter';
+
+/**
  * THR-1809 — the offer pill's wording while a ready opening gift waits for a quiet
  * moment (`ui.gift.waits.eyebrow` / `.cta` / `.tooltip`). The pill's middle line is
  * the gift's own eyebrow from `SPINE_BEAT_PRESENTATION`.
@@ -817,6 +848,12 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   'ui.encounter_waiting': {
     label: 'Waiting for you',
     desc: 'This moment waits for you. Open it to play your hand, or let fate decide.',
+  },
+  // THR-2211 — a Fated step whose whole hand is dealt, on its short fuse. No
+  // probability (Law 7); FATED_STEP_FUSE_TICKS (8 = 16 hours) keeps "within the day" true.
+  'ui.badge.fated_fuse': {
+    label: 'Fated',
+    desc: 'Fated: their odds are high before any card of yours. It plays out on its own within the day unless you open it. Your cards can still guard against the worst.',
   },
   'ui.encounter_progress': {
     label: 'Encounter Progress',

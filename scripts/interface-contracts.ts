@@ -7334,7 +7334,7 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: NARRATIVE,
     consumerSystem: ENCOUNTERS,
     intent:
-      'The player sets a pause-tier encounter step down (Escape, or Show on map) and it waits for them: the minimise writes a per-step hold on the unified action, and Phase 1 of the unified-action pipeline does not advance a step whose hold is live. A commit or a dismiss clears it; the engine releases it when the step changes, the thread is switched to Lives on, or the action ends. Without it a minimise is a second, accidental "let fate decide". THR-2052: the engine also writes the hold the tick a pause-tier step\x27s beat is posted (holdStepsForPostedBeats, after both visibility passes), so a step whose veil never opened or was replaced waits too. THR-2140: a step that offers the player no move (no authored choices, nudges or dealt hand) is posted resolved with noPlayerMove, is never held and never auto-opens; it plays out.',
+      'The player sets a pause-tier encounter step down (Escape, or Show on map) and it waits for them: the minimise writes a per-step hold on the unified action, and Phase 1 of the unified-action pipeline does not advance a step whose hold is live. A commit or a dismiss clears it; the engine releases it when the step changes, the thread is switched to Lives on, or the action ends. Without it a minimise is a second, accidental "let fate decide". THR-2052: the engine also writes the hold the tick a pause-tier step\x27s beat is posted (holdStepsForPostedBeats, after both visibility passes), so a step whose veil never opened or was replaced waits too. THR-2140: a step that offers the player no move (no authored choices, nudges or dealt hand) is posted resolved with noPlayerMove, is never held and never auto-opens; it plays out. THR-2211: a Fated step whose whole hand is dealt is posted with a fuse deadline, so it is never held either.',
     ulTerms: ['Encounter'],
     mechanism: {
       kind: 'state-field',
@@ -7346,6 +7346,27 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/unifiedActionResolution.ts',
       'src/components/Game/GameView.tsx',
       'src/components/Game/encounterBadgeModel.ts',
+      'src/debug-bridge.ts',
+    ],
+  },
+  // ── Stop the world only for real decisions (THR-2211, plan 2026-11-13-thr-2203 slice A) ──
+  {
+    id: 'stop-only-for-real-decisions',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      'A pause-thread beat stops the world only when it offers the god a move or reports the god's own hand. The step poster gives a step whose whole hand is dealt (no authored nudges) and whose forecast before any card reads Fated a fuse: fatedFuse, and autoResolveTick = tick + FATED_STEP_FUSE_TICKS, so it badges, is never held and never auto-opens, and plays out alone unless opened. The tier comes from baseStepForecastTier, the same call the Stage makes (Law 18). The aftermath poster marks an ending the god took no part in (godTouchedEncounter false) badgeOnly with its chapter waitWord; the auto-open gate declines it, the badge model reads it as "theirs alone" / "played out without your hand" / "went badly without your hand", and the ending line says the same.',
+    ulTerms: ['Encounter'],
+    mechanism: {
+      kind: 'state-field',
+      symbols: ['fatedFuse', 'badgeOnly', 'baseStepForecastTier', 'godTouchedEncounter'],
+      module: 'src/engine/encounterVisibility.ts',
+    },
+    writeSites: ['src/engine/encounterVisibility.ts'],
+    readSites: [
+      'src/engine/views/stage/encounterNotificationRuntime.ts',
+      'src/components/Game/encounterBadgeModel.ts',
+      'src/engine/views/stage/buildUnifiedEncounterStageModel.ts',
       'src/debug-bridge.ts',
     ],
   },

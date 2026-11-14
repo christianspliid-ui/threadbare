@@ -2029,6 +2029,11 @@ if (import.meta.env.DEV) {
           viewed: n.viewed,
           resolved: n.resolved,
           autoResolveTick: n.autoResolveTick,
+          // THR-2211 — a beat that did not stop the world, and why.
+          kind: n.kind,
+          stepIndex: n.stepIndex,
+          ...(n.fatedFuse ? { fatedFuse: true as const } : {}),
+          ...(n.badgeOnly ? { badgeOnly: n.badgeOnly } : {}),
         }));
 
       return { threads, activeEncounters, notifications, tick: state.tick };

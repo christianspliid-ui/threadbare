@@ -32,10 +32,17 @@ import { emitTrace } from './traceBuffer';
 import { getAnyEncounterById } from '../data/encounter-content';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { resolveStepDefinition } from './unifiedActionLifecycle';
-import { SKIP_STEPS_WITHOUT_PLAYER_MOVE, stepOffersPlayerMove } from './playerStepHold';
+import { SKIP_STEPS_WITHOUT_PLAYER_MOVE, chapterWaitWord, stepOffersPlayerMove } from './playerStepHold';
 import { resolveLocationToHex } from './encounterAwareness';
 import { isForceFullEncounterVisibility } from './debugVisibilityOverride';
 import { stepOutcomeToOutcomeBand } from '../data/outcome-band-content';
+import {
+  FATED_STEP_FUSE_ENABLED,
+  FATED_STEP_FUSE_TICKS,
+  UNTOUCHED_ENDING_BADGE_ENABLED,
+} from '../data/encounter-experience-constants';
+import { godTouchedEncounter } from './unifiedActionResolution';
+import { baseStepForecastTier } from './views/stage/baseStepForecast';
 
 // ─── Notification Generation ───────────────────────────────────────
 
@@ -701,6 +708,33 @@ export function phaseEncounterVisibility(
       ) {
         notification.noPlayerMove = true;
         notification.resolved = true;
+      } else if (
+        FATED_STEP_FUSE_ENABLED
+        && resolvedTemplate
+        && currentStep
+        && notification.autoResolveTick === null
+        && resolveAttentionMode(threadInfo.props) === 'pause'
+        && (currentStep.nudges?.length ?? 0) === 0
+        && currentStep.deal !== undefined
+        && baseStepForecastTier(graph, state, action, resolvedTemplate, stepIndex) === 'fated'
+      ) {
+        // THR-2211 — a Fated step whose whole hand is dealt plays out on a short
+        // fuse instead of stopping the world: the non-null deadline keeps it off
+        // the auto-open scan and the post-time hold, and the expiry retires its
+        // badge at the deadline. Opening it by hand stops the world as usual.
+        notification.autoResolveTick = tick + FATED_STEP_FUSE_TICKS;
+        notification.fatedFuse = true;
+        emitTrace({
+          category: 'encounter.stop_skipped',
+          tick,
+          actionId: action.actionId,
+          actorId: action.actorId,
+          stepIndex,
+          reason: 'fated_fuse',
+          forecastTier: 'fated',
+          fuseUntil: notification.autoResolveTick,
+          summary: `${agentNode.name}'s ${encounterName} step ${stepIndex + 1} is Fated with a dealt hand — plays out by tick ${notification.autoResolveTick} unless opened`,
+        });
       }
 
       notifications.push(notification);
@@ -774,11 +808,39 @@ export function phaseEncounterVisibility(
     );
 
     if (notification) {
+      // THR-2211 — an ending the god took no part in waits on its badge. A pause
+      // thread's ending otherwise has no deadline and auto-opens; this one never
+      // does, and never stops the world. An ending the god touched (any committed
+      // hand, even an empty one) still stops: the player chose to be there.
+      const untouched = UNTOUCHED_ENDING_BADGE_ENABLED
+        && notification.autoResolveTick === null
+        && !godTouchedEncounter(action);
+      let waitWord: 'waits' | 'theirs_alone' | undefined;
+      if (untouched) {
+        try {
+          waitWord = chapterWaitWord(graph, action.actorId, aftermathStepTemplate ?? undefined, action.choiceHistory, action.effectiveTier);
+        } catch {
+          waitWord = undefined;
+        }
+      }
       notifications.push({
         ...notification,
         prose: action.aftermathSummary.overview,
         choices: [],
+        ...(untouched ? { badgeOnly: 'untouched_ending' as const } : {}),
+        ...(waitWord ? { waitWord } : {}),
       });
+      if (untouched) {
+        emitTrace({
+          category: 'encounter.stop_skipped',
+          tick,
+          actionId: action.actionId,
+          actorId: action.actorId,
+          stepIndex: action.currentStep,
+          reason: 'untouched_ending',
+          summary: `${agentNode.name}'s ${encounterName} ended without the god's hand — waits on its badge`,
+        });
+      }
       events.push({
         id: `evt_enc_aftermath_${action.actorId}_${tick}`,
         tick,

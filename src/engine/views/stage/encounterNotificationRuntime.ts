@@ -97,10 +97,13 @@ export function selectEncounterRuntimeForNotification(
 }
 
 export function shouldAutoOpenEncounterNotification(
-  notif: Pick<EncounterNotification, 'resolved' | 'autoResolveTick' | 'noPlayerMove'>,
+  notif: Pick<EncounterNotification, 'resolved' | 'autoResolveTick' | 'noPlayerMove' | 'badgeOnly'>,
 ): boolean {
   // THR-2140 — a step with no player move never opens (it is posted resolved too).
   if (notif.noPlayerMove) return false;
+  // THR-2211 — an ending the god took no part in waits on its badge. (A Fated
+  // fused step already fails the deadline test below.)
+  if (notif.badgeOnly) return false;
   return !notif.resolved && notif.autoResolveTick === null;
 }
 

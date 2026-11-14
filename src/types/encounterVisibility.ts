@@ -125,6 +125,22 @@ export interface EncounterNotification {
    * auto-opened. Absent on older records ⇒ unchanged behaviour.
    */
   noPlayerMove?: boolean;
+  /**
+   * THR-2211 — an ending the god took no part in. Posted to its badge: never
+   * auto-opens, never stops the world. Absent ⇒ unchanged behaviour.
+   */
+  badgeOnly?: 'untouched_ending';
+  /**
+   * THR-2211 — the chapter's wait word (THR-2178), stamped on a `badgeOnly`
+   * ending so the badge meta reads the same word as the Ledger row.
+   */
+  waitWord?: 'waits' | 'theirs_alone';
+  /**
+   * THR-2211 — a Fated step whose whole hand is dealt, on a pause thread. Posted
+   * with a fuse (`autoResolveTick` = post tick + `FATED_STEP_FUSE_TICKS`): it
+   * badges, never holds, and plays out alone unless opened.
+   */
+  fatedFuse?: true;
 }
 
 /**
