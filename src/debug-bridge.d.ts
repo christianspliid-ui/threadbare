@@ -3271,7 +3271,12 @@ export interface DebugBridge {
        *  scaled by `NUDGE_ESSENCE_COST_SCALE`, discounted only on `homeSpheres`);
        *  `authoredCost` is the number written on the card's content. */
       playable: Array<{ id: string; name: string; cost: number; authoredCost: number; rider: string | null }>;
-      dimmed: Array<{ id: string; name: string; cost: number; authoredCost: number; blocked: string | null }>;
+      /**
+       * THR-2206 — `shortSphere`: on a card dimmed for want of essence, the pool
+       * the card's greyed reason names (its own sphere, or the god's primary for a
+       * sphere-less card); null otherwise, or on a run with no primary.
+       */
+      dimmed: Array<{ id: string; name: string; cost: number; authoredCost: number; blocked: string | null; shortSphere: string | null }>;
       hidden: string[];
       activeNudges: string[];
       activeRider?: string | null;

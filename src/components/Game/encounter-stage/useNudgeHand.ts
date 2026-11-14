@@ -256,8 +256,13 @@ export function useNudgeHand(
         interactive: selected || !blocked,
         state: (selected || affordable) ? card.state : 'dimmed',
         blockedCode: card.blockedCode ?? (affordable ? undefined : 'essence_unavailable'),
+        // THR-2206 — a card the live remainder greys names its short pool, in the
+        // words the engine precomputed for it; no payer ⇒ the generic reason.
         blockedReason: card.blockedReason
-          ?? (affordable ? undefined : NUDGE_BLOCKED_REASONS.essence_unavailable),
+          ?? (affordable ? undefined : (card.essenceShortReason ?? NUDGE_BLOCKED_REASONS.essence_unavailable)),
+        ...(card.shortSphere || affordable || !card.essenceShortReason || !card.payingSphere
+          ? {}
+          : { shortSphere: card.payingSphere }),
       };
     });
   }, [phase, selectedIds, remainingEssence, budget, payers]);

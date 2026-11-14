@@ -115,9 +115,14 @@ import {
   MOTIVE_CHIP_LABELS,
   MOTIVE_FALLBACK_SENTENCES,
   NUDGE_BLOCKED_REASONS,
+  NUDGE_COST_NOTES,
+  NUDGE_ESSENCE_SHORT_REASONS,
   NUDGE_FREE_COST_LABEL,
   NUDGE_RIDER_LABELS,
 } from '../../../data/nudge-stage-content';
+import { ESSENCE_REFILL_WORDS, type EssenceRefillBand } from '../../../data/essence-refill-content';
+import { sphereWord } from '../../../data/essence-format';
+import { readEssenceRefill } from '../essenceRefill';
 import { SPHERE_NAMES } from '../../../types/index';
 import { getSpherePoints, rankSpherePoints } from '../../spherePoints';
 import { NUDGE_ESSENCE_COST_SCALE } from '../../../data/nudge-constants';
@@ -503,6 +508,56 @@ export function essenceReader(
     if (homeSpheres.length > 0) return homeSpheres.reduce((sum, s) => sum + (pool[s] ?? 0), 0);
     return Object.values(pool).reduce((sum, v) => sum + (v ?? 0), 0);
   };
+}
+
+/**
+ * THR-2206 — the pool a card short of essence is short in: its own sphere, or,
+ * for a sphere-less card, the god's primary (which `spendNudgeEssence` bills
+ * first). Undefined for a sphere-less card on a run with no primary — the
+ * reason then stays generic rather than naming a pool it cannot vouch for.
+ * Shared by the stage and `__DEBUG.getEncounterNudges` so the reason and the
+ * bridge's `shortSphere` can never name different pools.
+ */
+export function nudgeShortSphere(
+  nudge: { sphere?: SphereName },
+  primary: SphereName | undefined,
+): SphereName | undefined {
+  return nudge.sphere ?? primary;
+}
+
+/**
+ * THR-2206 — the greyed card's reason, naming the short pool and its refill word
+ * (plan § Player-facing text). `signed` ⇒ the card's own sphere is short;
+ * otherwise `sphere` is the god's primary, paying first for a sphere-less card.
+ * No band (the ledger read failed) ⇒ the bare form, never an invented word.
+ */
+export function essenceShortReason(
+  sphere: SphereName,
+  signed: boolean,
+  band: EssenceRefillBand | undefined,
+): string {
+  const name = sphereWord(sphere);
+  const row = band ? ESSENCE_REFILL_WORDS[band].row : '';
+  const refill = row ? row.charAt(0).toLowerCase() + row.slice(1) : '';
+  const template = signed
+    ? (refill ? NUDGE_ESSENCE_SHORT_REASONS.signed : NUDGE_ESSENCE_SHORT_REASONS.signedBare)
+    : (refill ? NUDGE_ESSENCE_SHORT_REASONS.common : NUDGE_ESSENCE_SHORT_REASONS.commonBare);
+  return template.replace('{sphere}', name).replace('{refill}', refill);
+}
+
+/**
+ * THR-2206 — the price hover's extra line. A sphere-less card on an identity run
+ * says it is paid from the god's own spheres, primary first; a discounted card
+ * says which home sphere made it one cheaper. Anything else ⇒ no line.
+ */
+export function nudgeCostNote(
+  card: { sphere?: SphereName; discounted?: boolean },
+  primary: SphereName | undefined,
+): string | undefined {
+  if (!card.sphere) {
+    return primary ? NUDGE_COST_NOTES.common.replace('{sphere}', sphereWord(primary)) : undefined;
+  }
+  return card.discounted ? NUDGE_COST_NOTES.discounted.replace('{sphere}', sphereWord(card.sphere)) : undefined;
 }
 
 /**
@@ -1022,9 +1077,29 @@ export function buildNudgePhaseModel(
   // (`spendNudgeEssence`), and the commit path reads `budgetSphere` off this
   // model, so the name on the card and the pool that is charged cannot drift.
   const budgetSphere = identity?.sphereAlignment?.primary;
+  // THR-2206 — each pool's refill band, in the essence bar's own words, so a
+  // card greyed for want of essence names its short pool and how fast it
+  // refills. `readEssenceRefill` is fail-soft (an empty reading ⇒ bare reasons).
+  const refill = budgetSphere && gameState?.ascendantId
+    ? readEssenceRefill(graph, gameState.ascendantId, gameState.controlEffects)
+    : undefined;
   const pricedCards = cards.map((card) => {
     const payingSphere = card.sphere ?? budgetSphere;
-    return payingSphere ? { ...card, payingSphere } : card;
+    if (!payingSphere) return card;
+    const costNote = nudgeCostNote(card, budgetSphere);
+    // Identity runs only (`budgetSphere` set): a legacy run keeps the generic reason.
+    const shortSphere = budgetSphere ? nudgeShortSphere(card, budgetSphere) : undefined;
+    const shortReason = shortSphere
+      ? essenceShortReason(shortSphere, card.sphere !== undefined, refill?.spheres[shortSphere]?.band)
+      : undefined;
+    const short = card.state === 'dimmed' && card.blockedCode === 'essence_unavailable' && shortReason;
+    return {
+      ...card,
+      payingSphere,
+      ...(costNote ? { costNote } : {}),
+      ...(shortReason ? { essenceShortReason: shortReason } : {}),
+      ...(short ? { blockedReason: shortReason, shortSphere } : {}),
+    };
   });
   // THR-1858 — each paying sphere's own pool, for the footer's per-sphere line.
   const payingSphereEssence: Partial<Record<SphereName, number>> = {};

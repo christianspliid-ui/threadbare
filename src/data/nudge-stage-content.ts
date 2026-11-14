@@ -247,6 +247,36 @@ export const NUDGE_BLOCKED_REASONS: Readonly<Record<NudgeBlockedCode, string>> =
   no_target: 'Nothing here for it to end',
 };
 
+/**
+ * THR-2206 (plan `2026-11-13-thr-2201-make-the-purse-bite.md` § Player-facing
+ * text, PC-1) — a card greyed for want of essence names the pool that is short
+ * and how fast it refills, in the essence bar's own refill words
+ * (`ESSENCE_REFILL_WORDS`, Law 43: no new vocabulary). `{sphere}` is the pool's
+ * name ("Mind"); `{refill}` the bar's row word in lower case ("refills slowly").
+ * The `bare` forms are the fail-soft lines when no refill band can be read.
+ */
+export const NUDGE_ESSENCE_SHORT_REASONS = {
+  /** A card signed by a sphere: its own pool is short. */
+  signed: 'Not enough {sphere} — {refill}',
+  signedBare: 'Not enough {sphere}',
+  /** A sphere-less card: the god's own spheres are short; `{sphere}` is the primary, which pays first. */
+  common: 'Not enough in your spheres — {sphere} {refill}',
+  // Still names the pool `shortSphere` reports, in the price hover's own words.
+  commonBare: 'Not enough in your spheres — {sphere} pays first',
+} as const;
+
+/**
+ * THR-2206 — the line a card's price hover adds under the price. Words only
+ * (Law 13): where the price is drawn from, and why a home-sphere card is cheaper
+ * (Law 37).
+ */
+export const NUDGE_COST_NOTES = {
+  /** A sphere-less card: paid from the god's own spheres, primary first. */
+  common: 'Paid from your own spheres, {sphere} first.',
+  /** A card the god's home sphere discounted. */
+  discounted: 'One less: {sphere} is yours.',
+} as const;
+
 /** Rider display names — designer view only; riders never announce themselves. */
 export const NUDGE_RIDER_LABELS: Readonly<Record<NudgeRider, string>> = {
   no_crit_fail: 'No catastrophe',
