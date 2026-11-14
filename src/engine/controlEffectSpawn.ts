@@ -19,6 +19,7 @@ import { claimedGoodAt } from './godsStake';
 import type { UnifiedAction, UnifiedActionTemplate } from '../types/unifiedAction';
 import type { ControlEffect, ControlSpec, MintUpkeepRelicSpec } from '../types/controlEffect';
 import type { TickEvent } from '../types/gameState';
+import type { ActiveRuleOverride } from '../types/effects';
 import type { WorldGraph } from './graph';
 import { emitTrace } from './traceBuffer';
 import { isHexTargetId, parseHexTargetId } from './hexActionBridge';
@@ -41,7 +42,75 @@ let effectCounter = 0;
  */
 export const NON_STACKING_CONTROL_TEMPLATE_IDS: ReadonlySet<string> = new Set([
   'sub.sanctify_tavern',
+  // THR-2207: two holds would multiply the Doom rate twice for twice the upkeep.
+  'divine.self.stay_the_unmaking',
 ]);
+
+/**
+ * THR-2207 — the hex coordinate a self-held control effect carries (it is held on
+ * the god, not on a tile). No tile has a negative coordinate, so every hex-keyed
+ * reader finds nothing there and skips it.
+ */
+export const SELF_CONTROL_HEX = -1;
+
+/** Prefix of the `sourceAttachmentId` a control effect's owner override is stored under. */
+export const CONTROL_RULE_OVERRIDE_SOURCE_PREFIX = 'control:';
+
+/**
+ * THR-2207 — project every active effect's `ownerRuleOverride` into the persisted
+ * rule-override store, and drop the entries of effects that are no longer active.
+ *
+ * Pure: returns the next store, or `undefined` when nothing changed (so the phase
+ * writes no field). Entries not written by a control effect are left untouched.
+ * The entry is permanent (`expiryTick: null`); it leaves only through this sync,
+ * when its effect lapses, is released or is removed.
+ */
+export function syncControlRuleOverrides(
+  effects: readonly ControlEffect[] | undefined,
+  store: Readonly<Record<string, readonly ActiveRuleOverride[]>> | undefined,
+  tick: number,
+): Record<string, ActiveRuleOverride[]> | undefined {
+  const wanted = new Map<string, ControlEffect>();
+  for (const e of effects ?? []) {
+    if (e.active && e.ownerRuleOverride) {
+      wanted.set(`${CONTROL_RULE_OVERRIDE_SOURCE_PREFIX}${e.effectId}`, e);
+    }
+  }
+
+  let changed = false;
+  const next: Record<string, ActiveRuleOverride[]> = {};
+  const present = new Set<string>();
+  for (const [agentId, list] of Object.entries(store ?? {})) {
+    const kept = list.filter((o) => {
+      if (!o.sourceAttachmentId.startsWith(CONTROL_RULE_OVERRIDE_SOURCE_PREFIX)) return true;
+      if (wanted.has(o.sourceAttachmentId)) {
+        present.add(o.sourceAttachmentId);
+        return true;
+      }
+      changed = true;
+      return false;
+    });
+    if (kept.length > 0) next[agentId] = [...kept];
+    else if (list.length > 0) changed = true;
+  }
+
+  for (const [source, e] of wanted) {
+    if (present.has(source) || !e.ownerRuleOverride) continue;
+    const entry: ActiveRuleOverride = {
+      sourceAttachmentId: source,
+      sourceAgentId: e.ownerId,
+      rule: e.ownerRuleOverride.rule,
+      value: e.ownerRuleOverride.value,
+      scope: { scope: 'self' },
+      expiryTick: null,
+      establishedTick: tick,
+    } as ActiveRuleOverride;
+    next[e.ownerId] = [...(next[e.ownerId] ?? []), entry];
+    changed = true;
+  }
+
+  return changed ? next : undefined;
+}
 
 /**
  * The active non-stacking effect `ownerId` already holds with `templateId` on
@@ -157,6 +226,13 @@ export function spawnControlEffect(
     if (!coords) return null;
     col = coords.col;
     row = coords.row;
+  } else if (action.targetId === action.actorId && template.controlSpec.ownerRuleOverride) {
+    // THR-2207: a self-held control (Stay the Unmaking) lives on the god, not on the
+    // map. It carries no hex; `SELF_CONTROL_HEX` marks that, and `targetNodeId` names
+    // the owner so the non-stacking guard reads "held by this god".
+    col = SELF_CONTROL_HEX;
+    row = SELF_CONTROL_HEX;
+    targetNodeId = action.targetId;
   } else if (graph) {
     // Location-node target (THR-511): resolve the location's hex coords and
     // record the node id so node-scoped per-tick effects target it.
@@ -201,6 +277,8 @@ export function spawnControlEffect(
 
   const spec: ControlSpec = template.controlSpec;
   const effectId = `ctrl_${++effectCounter}`;
+  // Law 26: a losing roll on a god card lands crooked — the price stands.
+  const crooked = action.outcome === 'success_at_cost';
 
   // THR-518 relic variant: mint a permanent relic and bind it as this effect's
   // dynamic upkeep substitute. A static `spec.upkeepArtifactId` cannot reference
@@ -253,6 +331,18 @@ export function spawnControlEffect(
     perTickLeak: spec.perTickLeak,
     // THR-518: a freshly-minted relic overrides any static upkeep artifact id.
     upkeepArtifactId: mintedRelicId ?? spec.upkeepArtifactId,
+    // THR-2207: the owner's rule override, crooked value chosen by the landing band.
+    ...(spec.ownerRuleOverride
+      ? {
+          ownerRuleOverride: {
+            rule: spec.ownerRuleOverride.rule,
+            value: crooked && spec.ownerRuleOverride.crookedValue !== undefined
+              ? spec.ownerRuleOverride.crookedValue
+              : spec.ownerRuleOverride.value,
+          },
+          landedCrooked: crooked,
+        }
+      : {}),
 
     // State — starts active
     active: true,
@@ -286,7 +376,10 @@ export function spawnControlEffect(
     id: `ctrl_established_${effectId}`,
     tick,
     type: 'control_effect_established',
-    message: `${template.name} established — sustained divine presence on hex (${col},${row}).`,
+    // THR-2207: a self-held control has no hex to name — its own prose says what it did.
+    message: col === SELF_CONTROL_HEX
+      ? (crooked ? spec.narrativeTemplates.crooked ?? spec.narrativeTemplates.established : spec.narrativeTemplates.established)
+      : `${template.name} established — sustained divine presence on hex (${col},${row}).`,
     significance: 0.7,
   };
 

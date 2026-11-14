@@ -70,6 +70,7 @@ import { AscendantBeatModal } from '../AscendantBeatModal';
 import { DoomClockDetail } from '../DoomClockDetail';
 import { MandateDetail } from '../MandateDetail';
 import { EventPopup } from '../EventPopup';
+import { doomStayNotice, DOOM_STAY_NOTICE_EVENT_TYPE } from '../../../engine/views/doomStayNotice';
 import { AgendaPicker } from '../AgendaPicker';
 import { InterventionConfirm } from '../InterventionConfirm';
 import { ChoiceSetModal } from '../ChoiceSetModal';
@@ -316,14 +317,23 @@ export function DialogHost({
       );
 
       /* Event popup overlay */
-    case 'event-popup': return (
+    case 'event-popup': {
+      // THR-2207: a Doom notice offers Stay the Unmaking while the god holds it. "Stay it"
+      // dismisses the notice and opens the god's page, whose Act row holds the card.
+      const stay = currentPopup?.eventType === DOOM_STAY_NOTICE_EVENT_TYPE ? doomStayNotice(gameState) : {};
+      return (
       <EventPopup
         popup={renders.has(kind) ? currentPopup : null}
         queueLength={notificationState.popupQueue.length}
         onDismiss={handleDismissPopup}
         onChoice={handlePopupChoice}
+        noteLine={stay.line}
+        secondaryAction={stay.button
+          ? { label: stay.button, onClick: () => { handleDismissPopup(); openAgentSheetForId(gameState.ascendantId); } }
+          : undefined}
       />
       );
+    }
 
     case 'choice-set': return null;
 

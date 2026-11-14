@@ -6,6 +6,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import { SELF_CONTROL_HEX } from './controlEffectSpawn';
 import type { AxiologicalProfile } from '../types/agent';
 import type { ReachDomain } from '../types/traits';
 import type { InfluenceTier, ThreadEdgeProperties, CourtPosition } from '../types/influence';
@@ -789,6 +790,9 @@ export function getSustainedControlNodes(
   for (const effect of controlEffects) {
     if (!effect.active) continue;
     if (effect.ownerId !== ascendantId) continue;
+    // THR-2207: a control held on the god itself (Stay the Unmaking) has no place on
+    // the map; it is not a covenant row (its hex is the off-map SELF_CONTROL_HEX).
+    if (effect.targetHexCol === SELF_CONTROL_HEX && effect.targetNodeId === ascendantId) continue;
 
     // ── Resolve target node + category ──
     let category: SustainedControlCategory = 'hex';

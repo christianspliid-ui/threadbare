@@ -373,6 +373,7 @@ export function routeNotifications(
           choices: popup.choices,
           sourceEventId: event.id,
           tick: event.tick,
+          eventType: event.type,
         };
         newPopupQueue.push(popupItem);
         break;

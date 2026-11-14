@@ -588,6 +588,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     // the band answers "how costly is holding this open", and the worst channel is
     // what decides that.
     let maxPerTickCost = 0;
+    let maxPerTickSphere: string | undefined;
     if (template.durationMode === 'sustained' && template.controlSpec) {
       const parts: string[] = [];
       // THR-1748: the upkeep the effect will actually charge — Claim's comes from the
@@ -596,7 +597,10 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       for (const [sphere, cost] of Object.entries(upkeep)) {
         if (cost && cost > 0) {
           parts.push(`${cost} ${sphere}`);
-          if (cost > maxPerTickCost) maxPerTickCost = cost;
+          if (cost > maxPerTickCost) {
+            maxPerTickCost = cost;
+            maxPerTickSphere = sphere;
+          }
         }
       }
       if (parts.length > 0) perTickCostLabel = `${parts.join(' + ')}/tick`;
@@ -630,6 +634,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       // THR-1002: the band the card prints. `perTickCostLabel` keeps the numeral
       // for the designer view, which is the only place it is allowed (Law 13).
       upkeepWord: upkeepWord(maxPerTickCost),
+      ...(maxPerTickSphere ? { upkeepSphere: maxPerTickSphere } : {}),
       // THR-1002: carried, not re-derived. The card links its name to the codex
       // entry, which is keyed on the bare template id — and the verb chip reads
       // the declared CRUD type rather than the third dot-segment of the slot id.

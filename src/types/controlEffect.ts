@@ -20,6 +20,7 @@ import type { SphereName } from './index';
 import type { ReachDomain } from './traits';
 import type { GraphOp } from './graphOp';
 import type { CoLocatedThreadAuraSpec } from './ascendantPrimitives';
+import type { RuleOverrideKey } from './effects';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -202,6 +203,20 @@ export interface ControlSpec {
    */
   readonly mintUpkeepRelic?: MintUpkeepRelicSpec;
 
+  /**
+   * THR-2207 — a numeric rule override the **owner** carries for as long as the
+   * effect is active (e.g. Stay the Unmaking's `doom_rate_multiplier`). Resolved
+   * at establishment: `crookedValue` when the cast landed `success_at_cost`, else
+   * `value`. `phaseControlEffects` keeps a matching persisted entry in
+   * `GameState.activeRuleOverrides` while the effect is active and drops it on lapse,
+   * so every consumer reads it through the one shared rule-override reader.
+   */
+  readonly ownerRuleOverride?: {
+    readonly rule: RuleOverrideKey;
+    readonly value: number;
+    readonly crookedValue?: number;
+  };
+
   /** Prerequisites for rivals to contest this effect. */
   readonly contestPrerequisites?: {
     readonly usurp?: ActorPrerequisites;
@@ -211,6 +226,8 @@ export interface ControlSpec {
   /** Prose shown when the effect is established, active, and lapsed. */
   readonly narrativeTemplates: {
     readonly established: string;
+    /** THR-2207 — the established line when the cast landed crooked (`success_at_cost`). */
+    readonly crooked?: string;
     readonly active: string;
     readonly lapsed: string;
     readonly usurped?: string;
@@ -272,6 +289,13 @@ export interface ControlEffect {
   readonly perTickLeak?: ControlLeakSpec;
   /** Sustaining relic that waives `perTickCost` while it exists (THR-509). */
   readonly upkeepArtifactId?: string;
+  /**
+   * THR-2207 — the owner's rule override while active, resolved from
+   * `ControlSpec.ownerRuleOverride` at establishment (crooked value already chosen).
+   */
+  readonly ownerRuleOverride?: { readonly rule: RuleOverrideKey; readonly value: number };
+  /** THR-2207 — the establishing cast landed `success_at_cost` (crooked). */
+  readonly landedCrooked?: boolean;
 
   // ── State ──
   readonly active: boolean;
@@ -289,6 +313,8 @@ export interface ControlEffect {
   // ── Narrative ──
   readonly narrativeTemplates: {
     readonly established: string;
+    /** THR-2207 — the established line when the cast landed crooked (`success_at_cost`). */
+    readonly crooked?: string;
     readonly active: string;
     readonly lapsed: string;
     readonly usurped?: string;

@@ -204,10 +204,12 @@ describe('THR-1646 — the doom clock waits for The First', () => {
     } as GameState['activeRuleOverrides'];
     const wokeAt = s.tick;
 
-    // 360 total ticks at ×10 expires in ~36 ticks — far inside the 720-tick floor.
+    // ×10 folds to the RULE_OVERRIDE_VALUE_CAP of ×3, so 360 total ticks expire in
+    // ~120 ticks — far inside the 720-tick floor. (Before THR-2207 the multiplier
+    // compounded every tick, which is why this loop once got away with 60.)
     let heldPhases = 0;
     let traced = 0;
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 200; i++) {
       s = { ...s, tickEvents: [] };
       s = { ...s, ...phaseDoom(s) };
       const expiry = phaseDoomExpiry(s);

@@ -37,6 +37,29 @@ import type { OmenCategory } from '../types/omen';
 export const DEFAULT_DOOM_TICKS = 1080;
 
 /**
+ * THR-2207 — the lowest effective Doom rate any `doom_rate_multiplier` product can
+ * produce. `advanceDoomClock(state, rateMultiplier)` clamps the per-tick advance
+ * here; the same value `decelerateDoomClock` floors `tickModifier` at. Law 31:
+ * nothing the god holds stops the Unmaking.
+ */
+export const DOOM_RATE_FLOOR = 0.1;
+
+/**
+ * THR-2207 — Stay the Unmaking (`divine.self.stay_the_unmaking`), the god's one
+ * answer to the Doom clock. A sustained self card: an up-front price and per-tick
+ * upkeep, both from the primary pool (the same purse the nudge cards draw on,
+ * Law 30). While held, Doom runs at `DOOM_STAY_RATE` through the ascendant's
+ * `doom_rate_multiplier` override; a crooked landing (`success_at_cost`) holds it
+ * at `DOOM_STAY_RATE_CROOKED`. Starting points — THR-2201's purse tuning may move
+ * the prices.
+ */
+export const DOOM_STAY_COST = 4;
+export const DOOM_STAY_UPKEEP_PER_TICK = 0.15;
+export const DOOM_STAY_RATE = 0.75;
+export const DOOM_STAY_RATE_CROOKED = 0.9;
+export const DOOM_STAY_DIFFICULTY = 0.35;
+
+/**
  * THR-1646 — the floor under the Unmaking. `phaseDoomExpiry` will not move the
  * game to `twilight` until this many ticks have run since the doom clock woke at
  * the bond, whatever accelerated the clock (`doom_rate_multiplier`, nudge doom

@@ -16,6 +16,7 @@
  */
 
 import type { ActionScale, NarrativeLayer, UnifiedActionTemplate } from '../types/unifiedAction';
+import { sphereWord } from './essence-format';
 
 /** The CRUD axis a template declares. Mirrors `UnifiedActionTemplate.crudType`. */
 export type ActionCrudType = UnifiedActionTemplate['crudType'];
@@ -114,9 +115,15 @@ export function upkeepWord(perTickCost: number | undefined): UpkeepWord | undefi
   return 'heavy';
 }
 
-/** Label for an upkeep channel, in words — never the numeral it was banded from. */
-export function upkeepChannelLabel(word: UpkeepWord): string {
-  return `${word} upkeep`;
+/**
+ * Label for an upkeep channel, in words — never the numeral it was banded from.
+ *
+ * THR-2207: with the paying pool's sphere, the label names it ("light upkeep from
+ * Mind"), so a sustained god card says which purse it draws on before the cast
+ * (PC-1, Law 17). Without one it reads as before.
+ */
+export function upkeepChannelLabel(word: UpkeepWord, sphere?: string): string {
+  return sphere ? `${word} upkeep from ${sphereWord(sphere)}` : `${word} upkeep`;
 }
 
 /**

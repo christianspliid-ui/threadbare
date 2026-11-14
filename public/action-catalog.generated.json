@@ -1,12 +1,12 @@
 {
   "schemaVersion": 3,
   "totals": {
-    "total": 191,
+    "total": 192,
     "byCategory": {
       "action": 69,
       "artifact": 5,
       "company": 4,
-      "divine": 21,
+      "divine": 22,
       "hex": 49,
       "location": 31,
       "threads": 12
@@ -19,20 +19,20 @@
       "heart": 32,
       "eye": 28,
       "stone": 11,
-      "star": 34,
+      "star": 35,
       "life": 1
     },
     "byBucket": {
-      "unlockable-generic": 188,
+      "unlockable-generic": 189,
       "generic": 3
     },
     "byEffectSource": {
       "template-ops": 123,
       "aftermath-only": 6,
-      "control-spec": 19,
+      "control-spec": 20,
       "engine-bridge": 43
     },
-    "beatGranted": 43,
+    "beatGranted": 44,
     "starters": 0,
     "unauthoredEffects": 0
   },
@@ -2914,6 +2914,36 @@
       "description": "The god briefly strips away the veils of immanence and allows its true nature to shine through — not through a mortal vessel but as raw divine presence. Mortals within range cannot look away and cannot pretend they did not see. The moment passes, but those who witnessed it carry the impression forward: reverence or terror, or both at once.",
       "technicalEffect": "Post-processed after resolution: manifests the ascendant's avatar openly at the avatar's hex, projecting a divine-presence effect from that location. No-op when the ascendant has no avatar.",
       "effectSource": "engine-bridge"
+    },
+    {
+      "id": "divine.self.stay_the_unmaking",
+      "name": "Stay the Unmaking",
+      "spellName": "Hold the Hour",
+      "category": "divine",
+      "reach": "star",
+      "sphereAffinity": null,
+      "crudType": "update",
+      "scale": "cosmic",
+      "rarityTier": 2,
+      "rarityName": "Storied",
+      "intrinsicTier": "shaping",
+      "apCost": 1,
+      "essenceCost": 4,
+      "durationMode": "sustained",
+      "hasControlSpec": true,
+      "aftermathReactionCount": 0,
+      "targetCategories": [
+        "actor"
+      ],
+      "targetSubtypes": [],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": true,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": true,
+      "description": "Set your will against the ending. While you hold it, the Unmaking comes slower. It never stops.",
+      "technicalEffect": "Sustained self card (THR-2207). On a landed cast spawns a ControlEffect held on the ascendant (no hex; `SELF_CONTROL_HEX`) with upkeep DOOM_STAY_UPKEEP_PER_TICK from the primary pool. While active, `phaseControlEffects` keeps a persisted `doom_rate_multiplier` rule override on the ascendant (DOOM_STAY_RATE, or DOOM_STAY_RATE_CROOKED on a `success_at_cost` landing), which `phaseDoom` folds with every other one and applies to that tick's advance (clamped at DOOM_RATE_FLOOR). Lapses when upkeep cannot be paid; the override leaves with it. Non-stacking. Traces `doom.stay_applied` each held tick.",
+      "effectSource": "control-spec"
     },
     {
       "id": "divine.afflict_bless",

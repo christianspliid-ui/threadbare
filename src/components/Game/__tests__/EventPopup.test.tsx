@@ -99,3 +99,34 @@ describe('EventPopup presentation tier (THR-799)', () => {
     expect(screen.getByText('+2')).toBeTruthy();
   });
 });
+
+// THR-2207 — the Doom notice's Stay the Unmaking line and button.
+describe('EventPopup — a second action on a compact notice (THR-2207)', () => {
+  it('renders the note line and the second button beside Acknowledge', () => {
+    let clicked = 0;
+    render(
+      <EventPopup
+        popup={{ ...basePopup, title: 'Reality Cracks', body: 'Hairline Rifts • Borrowed Voices', eventType: 'doom_escalation' }}
+        queueLength={1}
+        onDismiss={() => {}}
+        noteLine="Stay the Unmaking slows it. Holding it draws on your Mind essence every day."
+        secondaryAction={{ label: 'Stay it', onClick: () => { clicked++; } }}
+      />,
+    );
+    expect(screen.getByTestId('event-popup-note').textContent)
+      .toBe('Stay the Unmaking slows it. Holding it draws on your Mind essence every day.');
+    const stay = screen.getByTestId('event-popup-secondary');
+    expect(stay.textContent).toBe('Stay it');
+    stay.click();
+    expect(clicked).toBe(1);
+    // Acknowledge stays, and stays last (Law 21: the default keeps its place).
+    const buttons = screen.getAllByRole('button').map(b => b.textContent);
+    expect(buttons.at(-1)).toBe('Acknowledge');
+  });
+
+  it('renders neither when the host passes nothing', () => {
+    render(<EventPopup popup={basePopup} queueLength={1} onDismiss={() => {}} />);
+    expect(screen.queryByTestId('event-popup-note')).toBeNull();
+    expect(screen.queryByTestId('event-popup-secondary')).toBeNull();
+  });
+});

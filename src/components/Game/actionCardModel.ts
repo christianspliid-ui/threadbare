@@ -139,7 +139,7 @@ export function actionCardModel(slot: WheelSlot, opts: ActionCardModelOptions = 
     costChannels.push({
       id: 'upkeep',
       icon: UPKEEP_CHANNEL_ICON,
-      label: upkeepChannelLabel(slot.upkeepWord),
+      label: upkeepChannelLabel(slot.upkeepWord, slot.upkeepSphere),
       // An upkeep band is not a worsening of *these* odds — it is a standing
       // price. Its whole reading is in the word, so it draws no penalty pips.
       delta: 0,

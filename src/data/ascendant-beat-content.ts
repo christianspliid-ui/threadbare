@@ -746,6 +746,9 @@ export const ASCENDANT_ACTION_BUCKETS: Readonly<Record<string, ActionBucketEntry
   // `reach: 'heart'` is its cosmic-energy axis, not a `requiresReach` gate — so it
   // surfaces for every run once unlocked, like the company verbs above.
   'divine.rekindle_thread': { bucket: 'unlockable-generic' },
+  // THR-2207: Stay the Unmaking, granted by `beat.milestone.the_first_stage` the first
+  // time the Doom clock escalates after the bond. A breadth card, like Rekindle.
+  'divine.self.stay_the_unmaking': { bucket: 'unlockable-generic' },
   // ─── Reach signatures (THR-523) — one per Reach, `reach-gated` on `requiresReach`.
   //     Acquired via the acquisition beats (Beat 4 = primary, the reach-signature
   //     pool beat = secondary); hidden entirely for out-of-domain reaches. Ids +

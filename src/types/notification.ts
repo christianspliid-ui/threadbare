@@ -184,6 +184,11 @@ export interface PopupItem {
   choices?: PopupChoice[];
   sourceEventId: string;
   tick: number;
+  /**
+   * THR-2207 — the source tick event's `type` (e.g. `doom_escalation`), so a host can
+   * decorate one kind of notice without matching on its prose. Absent on old saves.
+   */
+  eventType?: string;
 }
 
 /**

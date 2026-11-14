@@ -130,6 +130,8 @@ export const ACTION_EFFECTS_PROSE: Record<string, string> = {
   // — The god acting on itself —
   'divine.self.stillness':
     'Draws your attention inward and lets essence pool in the space of that letting-go.',
+  'divine.self.stay_the_unmaking':
+    'Sets your will against the ending, so the Unmaking comes slower for as long as you pay to hold it.',
   'divine.self.recede':
     'Gathers your power inward, so the next working you attempt asks less of you.',
   'divine.self.focus':
