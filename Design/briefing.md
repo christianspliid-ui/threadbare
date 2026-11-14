@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-14 07:58 local (06:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-14 08:58 local (07:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -40,11 +40,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Thin, by design.** The agency census veto window closed at 06:20 UTC and the builder picked it up at 06:32: [THR-2213 Ship the agency census](https://linear.app/threadbare/issue/THR-2213/ship-the-agency-census-a-hands-off-run-and-a-played-run-on-the-same) is now being built. One ticket is left in Ready for Dev, held for your veto: [THR-2216 Tune the purse](https://linear.app/threadbare/issue/THR-2216/tune-the-purse-card-prices-3-pool-cap-35-base-and-seat-income-06) (until 12:17 UTC). [THR-2214 The path draws The First to its work](https://linear.app/threadbare/issue/THR-2214/the-path-draws-the-first-to-its-work-a-stronger-lean-a-road-to-the) joins it after 08:55 UTC.
+**Thin, by design.** [THR-2213 Ship the agency census](https://linear.app/threadbare/issue/THR-2213/ship-the-agency-census-a-hands-off-run-and-a-played-run-on-the-same) shipped and is live ([#2822](https://github.com/christianspliid-ui/threadbare/pull/2822)). One ticket is left in Ready for Dev, held for your veto: [THR-2216 Tune the purse](https://linear.app/threadbare/issue/THR-2216/tune-the-purse-card-prices-3-pool-cap-35-base-and-seat-income-06) (until 12:17 UTC). [THR-2214 The path draws The First to its work](https://linear.app/threadbare/issue/THR-2214/the-path-draws-the-first-to-its-work-a-stronger-lean-a-road-to-the) waits in Todo and joins it after 08:55 UTC. The builder's last three runs stood down only because of these veto windows.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (25 days; In Dev since 15 Oct), and nothing has touched it since 8 Nov. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-All green. Linear read live this run. The live site serves the latest commit on main (37954022). Checks on main and the 3 scheduled background jobs pass, no PRs are waiting to merge, all 10 scheduled tasks are on time, and the worktree reaper ran at 07:54 local. Engine speed is normal: 145 ms/tick, 5% under the 7-day median.
+All green. Linear read live this run. The live site serves the latest commit on main (1416a3b6). Checks on main and the 3 scheduled background jobs pass, no PRs are waiting to merge, all 10 scheduled tasks are on time, and the worktree reaper ran at 08:40 local. Engine speed is normal: 129 ms/tick, 15% under the 7-day median.
