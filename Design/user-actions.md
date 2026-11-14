@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-14 04:58 local (03:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-14 05:58 local (04:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
 
@@ -50,6 +50,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-14: a dealt hand now reads how hard the step is, and it is live** ([THR-2212](https://linear.app/threadbare/issue/THR-2212)). Merged via [#2821](https://github.com/christianspliid-ui/threadbare/pull/2821).
+- **2026-11-14: an ending the god had no part in now waits on its badge, and it is live** ([THR-2211](https://linear.app/threadbare/issue/THR-2211)). Merged via [#2820](https://github.com/christianspliid-ui/threadbare/pull/2820).
 - **2026-11-14: Rebuke is in. A god card now answers a rival on the place it just struck, and it is live** ([THR-2209](https://linear.app/threadbare/issue/THR-2209)). Merged via [#2819](https://github.com/christianspliid-ui/threadbare/pull/2819).
 - **2026-11-14: a bound mortal's deeds now fill the Mandate, and it is live** ([THR-2208](https://linear.app/threadbare/issue/THR-2208)). Merged via [#2818](https://github.com/christianspliid-ui/threadbare/pull/2818).
 - **2026-11-14: a card you can't afford now says which pool is short and how fast it refills, and it is live** ([THR-2206](https://linear.app/threadbare/issue/THR-2206)). Merged via [#2817](https://github.com/christianspliid-ui/threadbare/pull/2817).
@@ -58,8 +60,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-13: a mortal's lines in the Threads rail now wrap instead of cutting to "raising a p…", and it is live** ([THR-2193](https://linear.app/threadbare/issue/THR-2193)). Merged via [#2807](https://github.com/christianspliid-ui/threadbare/pull/2807).
 - **2026-11-12: the writing check that wrongly failed every "master everyday" brief now reads only the shape column; all three master briefs pass** ([THR-1938](https://linear.app/threadbare/issue/THR-1938)). Merged via [#2804](https://github.com/christianspliid-ui/threadbare/pull/2804).
 - **2026-11-12: several rulers' agendas coming due now fold into one toast that opens to each ruler's line, and it is live** ([THR-2194](https://linear.app/threadbare/issue/THR-2194)). Merged via [#2803](https://github.com/christianspliid-ui/threadbare/pull/2803).
-- **2026-11-12: four small faults from playtest round 7 are fixed, and it is live** ([THR-2198](https://linear.app/threadbare/issue/THR-2198)). Merged via [#2802](https://github.com/christianspliid-ui/threadbare/pull/2802).
-- **2026-11-12: popups now wait for the player's hand to go quiet instead of opening under it, and it is live** ([THR-2197](https://linear.app/threadbare/issue/THR-2197)). Merged via [#2801](https://github.com/christianspliid-ui/threadbare/pull/2801).
 
 ---
 

@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-14 04:58 local (03:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-14 05:58 local (04:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -45,9 +45,8 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: building.** [THR-2209 Rebuke](https://linear.app/threadbare/issue/THR-2209/rebuke-a-god-card-that-answers-a-rival-on-the-place-it-just-pressed) merged ([PR #2819](https://github.com/christianspliid-ui/threadbare/pull/2819)) and is live. [THR-2211 An ending the god had no part in waits on its badge](https://linear.app/threadbare/issue/THR-2211/an-ending-the-god-had-no-part-in-waits-on-its-badge-and-a-fated-step) is being built now. 1 more is ready now and 2 are held.
+**Healthy, waiting on veto windows.** Two more shipped this hour and are live: [THR-2211 An ending the god had no part in waits on its badge](https://linear.app/threadbare/issue/THR-2211/an-ending-the-god-had-no-part-in-waits-on-its-badge-and-a-fated-step) ([PR #2820](https://github.com/christianspliid-ui/threadbare/pull/2820)) and [THR-2212 A dealt hand reads how hard the step is](https://linear.app/threadbare/issue/THR-2212/a-dealt-hand-reads-how-hard-the-step-is-guard-cards-on-easy-steps-the) ([PR #2821](https://github.com/christianspliid-ui/threadbare/pull/2821)). Nothing is being built right now: the 2 ready tickets are both held for your veto, so the builder is idle by design until 06:20 UTC.
 
-- Ready now: [THR-2212 A dealt hand reads how hard the step is](https://linear.app/threadbare/issue/THR-2212/a-dealt-hand-reads-how-hard-the-step-is-guard-cards-on-easy-steps-the).
 - Ready, held for veto: [THR-2213 Ship the agency census](https://linear.app/threadbare/issue/THR-2213/ship-the-agency-census-a-hands-off-run-and-a-played-run-on-the-same) (until 06:20 UTC), [THR-2216 Tune the purse](https://linear.app/threadbare/issue/THR-2216/tune-the-purse-card-prices-3-pool-cap-35-base-and-seat-income-06) (until 12:17 UTC).
 - Not yet ready: [THR-2214 The path draws The First to its work](https://linear.app/threadbare/issue/THR-2214/the-path-draws-the-first-to-its-work-a-stronger-lean-a-road-to-the) (held until 08:55 UTC).
 
@@ -56,5 +55,4 @@ Items for agents, not you:
 
 ## Health
 
-- Linear read live this run. The live site serves the latest commit on main (3f7a04bf, THR-2209). Checks on main and the 3 scheduled background jobs pass, all 10 scheduled lanes are on time, and no PRs are waiting to merge.
-- **Engine speed, for the builder:** tick cost 214 ms/tick steady, 41% above the 7-day median (151, 56 rows since 1b958ba5); top phase agent_decision, 638 agents. Name the merges between 1b958ba5 and 3f7a04bf: git log --oneline --merges 1b958ba5..3f7a04bf. One caution: a build run (THR-2211) was working on this computer while it measured, and the hour before read 168 ms/tick, so the next measurement will show whether this is real.
+All green. Linear read live this run. The live site serves the latest commit on main (37954022, THR-2212). Checks on main and the 3 scheduled background jobs pass, no PRs are waiting to merge, and the worktree reaper ran at 05:40 local. Engine speed is back to normal: 129 ms/tick, 15% under the 7-day median, so last hour's high reading came from the build that was running alongside it.
