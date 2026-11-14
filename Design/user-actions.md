@@ -1,12 +1,8 @@
 # User Action Required
 
-**Last updated:** 2026-11-14 16:58 local (15:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-14 17:56 local (16:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
-
-### Should a run hold a second whole journey after the First's story ends? (new 14 Nov)
-
-Today, after the First's Return, the last stretch of the age has only the clocks and any other mortals you hold. The plan for [Put the god in the climax](https://linear.app/threadbare/issue/THR-2204/put-the-god-in-the-climax-the-journey-visions-read-from-the-scene-the) offers three options ([the plan's section](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-14-thr-2204-put-the-god-in-the-climax.md#reserved-for-christian--does-a-run-hold-a-second-full-journey)): **A. No** (the default if you say nothing), **B. a second First** with a journey shortened to the Doom that is left, or **C. an heir's coda** of one vision and one chapter. Answer "A", "B" or "C". Nothing being built waits on it. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-14b.md)*
 
 ### Sunday 8 – Thursday 12 Nov: was the computer off or the app closed, or was this a pause? (new 12 Nov)
 
@@ -54,6 +50,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-14: second whole journey after the First's story ends? You answered A, no** ([THR-2204](https://linear.app/threadbare/issue/THR-2204)). Your words: *"A.. one run should try to aim for telling the firsts entire heroes journey and timing that makes sense"*. The pacing note went to the design lane.
 - **2026-11-14: a ruler's Story tab now folds repeat chapters into one counted chip, and it is live** ([THR-2223](https://linear.app/threadbare/issue/THR-2223)). Merged via [#2833](https://github.com/christianspliid-ui/threadbare/pull/2833).
 - **2026-11-14: the screen keeps two promises it used to break, and it is live** ([THR-2222](https://linear.app/threadbare/issue/THR-2222)). Merged via [#2832](https://github.com/christianspliid-ui/threadbare/pull/2832).
 - **2026-11-14: the map no longer pans to Kael on its own, and it is live** ([THR-2221](https://linear.app/threadbare/issue/THR-2221)). Merged via [#2831](https://github.com/christianspliid-ui/threadbare/pull/2831).
@@ -63,7 +60,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-14: a won chapter now credits the cards you played, and each card in the hand says which step it plays into. It is live** ([THR-2218](https://linear.app/threadbare/issue/THR-2218)). Merged via [#2826](https://github.com/christianspliid-ui/threadbare/pull/2826).
 - **2026-11-14: the garbled dashes in the anomaly chapters and lab-report lines are fixed, and it is live** ([THR-2217](https://linear.app/threadbare/issue/THR-2217)). Merged via [#2825](https://github.com/christianspliid-ui/threadbare/pull/2825).
 - **2026-11-14: the chosen path now draws The First toward the work that fits it, and it is live** ([THR-2214](https://linear.app/threadbare/issue/THR-2214)). Merged via [#2824](https://github.com/christianspliid-ui/threadbare/pull/2824).
-- **2026-11-14: the agency census is in. One command now compares a world left alone with a world the god plays, on the same seeds, and it is live** ([THR-2213](https://linear.app/threadbare/issue/THR-2213)). Merged via [#2822](https://github.com/christianspliid-ui/threadbare/pull/2822).
 
 ---
 

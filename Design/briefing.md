@@ -1,18 +1,12 @@
 # Briefing
-**Generated:** 2026-11-14 16:58 local (15:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-14 17:56 local (16:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Should a run hold a second whole journey after the First's story ends?** Today, after the First's Return, the last stretch of the age has only the clocks and any other mortals you hold. The plan for [Put the god in the climax](https://linear.app/threadbare/issue/THR-2204/put-the-god-in-the-climax-the-journey-visions-read-from-the-scene-the) offers three options ([the plan's section](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-14-thr-2204-put-the-god-in-the-climax.md#reserved-for-christian--does-a-run-hold-a-second-full-journey)):
-- **A. No** (what happens if you say nothing): the last days belong to the clocks and the threads you hold.
-- **B. A second First:** the god raises a new First, whose journey runs shortened to the Doom that is left.
-- **C. An heir's coda:** the First's ending leaves an heir who gets one vision and one chapter before the age ends.
+**Sunday 8 to Thursday 12 Nov: was the computer off or the app closed, or was this a pause?** The silence check says: "The scheduled lanes went silent for 103.3h (2026-11-08T12:37:04.000Z → 2026-11-12T19:52:37.000Z) and have since resumed, with no pause marker covering that window. If that was a deliberate pause, nothing recorded it; if it was not, this is the outage no lane reported at the time." Every lane and the worktree reaper came back in the same minute, so it looks like the computer or app was off. **If so:** just say so. **If it wasn't:** say so, and it becomes a fault to chase. ([detail](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md))
 
-Answer "A", "B" or "C". Nothing being built waits on it. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-14b.md)*
+## Also waiting (9)
 
-## Also waiting (10)
-
-- **Sunday 8 to Thursday 12 Nov:** silent for about 103 hours, with no pause recorded. Every lane and the worktree reaper came back in the same minute, so it looks like the computer or app was off. Computer off, app closed, or a pause?
 - **Set the Claude app to open when Windows starts.** That would have closed most of these silent gaps without anyone noticing ([the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)).
 - **Your writing-checks conversation can start.** [The story-text audit](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-10-31-encounter-story-text-quality.md#the-writing-checks-against-these-examples-done-when-1b) is what [Writing evals — with Christian](https://linear.app/threadbare/issue/THR-2106) needs. *— from the design lane*
 - **Thursday 29 to Friday 30 Oct:** silent for 40 hours, with no pause recorded. Computer off, app closed, or a pause?
@@ -44,6 +38,12 @@ Say "veto <title>" to reverse any of these.
 
 [Contact sheet — this week next to last week](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/ux-review/2026-11-12/contact-sheet.jpg) — better: The First's name fits, the essence and Doom readouts speak in words, and returning to the mid-game now opens on a "While you were away" summary, but arrival toasts still pile up and his thread row cuts his story short.
 
+## From Christian
+
+- **15:55 UTC, on the second-journey question:** *"A.. one run should try to aim for telling the firsts entire heroes journey and timing that makes sense"*.
+  - **Recorded:** the answer is **A**. After the First's Return there is no second journey; the last days belong to the clocks and the threads you hold. The ask is closed ([Put the god in the climax](https://linear.app/threadbare/issue/THR-2204/put-the-god-in-the-climax-the-journey-visions-read-from-the-scene-the), [the plan's section](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-14-thr-2204-put-the-god-in-the-climax.md#reserved-for-christian--does-a-run-hold-a-second-full-journey)).
+  - **For the design lane (this lane does not build it):** one run should aim to tell the First's *whole* hero's journey, with its steps paced sensibly across the age. The design lane should check that the journey's timing fits a run's length, against [THR-2204](https://linear.app/threadbare/issue/THR-2204/put-the-god-in-the-climax-the-journey-visions-read-from-the-scene-the) and its builds ([THR-2226](https://linear.app/threadbare/issue/THR-2226), [THR-2227](https://linear.app/threadbare/issue/THR-2227)). Where Doom can cut the journey short, it should plan the fix. A receipt went back on Discord.
+
 ## Queue
 
 **Healthy: 4 tickets in Ready for Dev, all held for your veto.** Nothing new shipped this hour; the last build to go live was [a ruler's Story tab no longer repeats one chapter](https://linear.app/threadbare/issue/THR-2223) ([#2833](https://github.com/christianspliid-ui/threadbare/pull/2833)). The two climax builds ([THR-2226](https://linear.app/threadbare/issue/THR-2226), [THR-2227](https://linear.app/threadbare/issue/THR-2227)) open at 23:53 UTC; the two warm-playtest fixes ([THR-2230](https://linear.app/threadbare/issue/THR-2230), [THR-2231](https://linear.app/threadbare/issue/THR-2231)) at 02:40 UTC. The builder idles until then, by design.
@@ -53,4 +53,4 @@ Items for agents, not you:
 
 ## Health
 
-- All green. The live site serves the latest commit on main (3d128efd). Checks on main and the 3 scheduled background jobs pass; no PRs are waiting. All 10 enabled scheduled tasks are on schedule, and the worktree reaper ran at 16:48 local. The builder's last three runs stood down because every ready ticket is inside its veto window, which is correct. Engine speed: 163 ms/tick, +4% on the 7-day median (157). Linear read live this run.
+- All green. The live site serves the latest commit on main (3d128efd). Checks on main and the 3 scheduled background jobs pass; no PRs are waiting. All 10 enabled scheduled tasks are on schedule, and the worktree reaper ran at 17:40 local. The builder's last five runs stood down because every ready ticket is inside its veto window, which is correct. Engine speed: 157 ms/tick, -1% on the 7-day median (158). Linear read live this run.
