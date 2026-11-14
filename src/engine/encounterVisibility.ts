@@ -814,7 +814,11 @@ export function phaseEncounterVisibility(
       // committed hand, even an empty one) still stops: the player chose to be there.
       const untouched = UNTOUCHED_ENDING_BADGE_ENABLED
         && notification.autoResolveTick === null
-        && !godPresentForEncounter(action);
+        && !godPresentForEncounter(action)
+        // A reaction on offer is a decision only the Aftermath stage applies for
+        // the god's own mortals (the autonomous pass skips them), so an ending
+        // that offers one still stops (review gate round 2).
+        && (action.aftermathSummary.reactions?.length ?? 0) === 0;
       let waitWord: 'waits' | 'theirs_alone' | undefined;
       if (untouched) {
         try {

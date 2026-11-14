@@ -108,6 +108,20 @@ export function shouldAutoOpenEncounterNotification(
 }
 
 /**
+ * THR-2211 — a Fated fused step the player opened and then set down is an
+ * ordinary pause beat from then on: its fuse is disarmed (no deadline, so the
+ * expiry never retires it and the set-down writes the hold), and it badges as
+ * "waiting for you". Opening it was the player asking (plan § Notes for the
+ * executor). Returns the same object when there is no fuse.
+ */
+export function disarmFatedFuse<N extends Pick<EncounterNotification, 'autoResolveTick' | 'fatedFuse'>>(notif: N): N {
+  if (notif.fatedFuse !== true) return notif;
+  const next = { ...notif, autoResolveTick: null };
+  delete (next as { fatedFuse?: true }).fatedFuse;
+  return next;
+}
+
+/**
  * Has this step notification been superseded by its own encounter's aftermath?
  *
  * The blocker THR-1005 actually reports, and the one the auto-open scan alone

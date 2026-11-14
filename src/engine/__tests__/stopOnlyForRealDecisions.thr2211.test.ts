@@ -32,7 +32,7 @@ import {
 } from '../../data/ui-content';
 import { holdStepsForPostedBeats } from '../playerStepHold';
 import { advanceStep } from '../unifiedActionLifecycle';
-import { shouldAutoOpenEncounterNotification } from '../views/stage/encounterNotificationRuntime';
+import { disarmFatedFuse, shouldAutoOpenEncounterNotification } from '../views/stage/encounterNotificationRuntime';
 import { aloneLineFor } from '../views/stage/buildUnifiedEncounterStageModel';
 import {
   BADGE_FATED_FUSE_TOOLTIP_ID,
@@ -176,6 +176,20 @@ describe('THR-2211 — a Fated step with only dealt cards plays out on a fuse', 
     expect(holdStepsForPostedBeats(actions, [beat], state.graph, 10)).toBe(actions);
   });
 
+  it('an opened fused step that is set down becomes an ordinary held beat (fuse disarmed)', () => {
+    const state = stateWith([action(DEALT.id)]);
+    const [beat] = phaseEncounterVisibility(state).notifications;
+    const disarmed = disarmFatedFuse(beat);
+    expect(disarmed.fatedFuse).toBeUndefined();
+    expect(disarmed.autoResolveTick).toBeNull();
+    // With no deadline the post-time hold applies and the expiry never retires it.
+    const [held] = holdStepsForPostedBeats(state.unifiedActions ?? [], [disarmed], state.graph, 11);
+    expect(held.playerHold).toEqual({ stepIndex: 0, sinceTick: 11 });
+    // A notification with no fuse comes back unchanged.
+    const plain = { ...beat, fatedFuse: undefined, autoResolveTick: null };
+    expect(disarmFatedFuse(plain)).toBe(plain);
+  });
+
   it('does not fuse a step with one authored nudge — authored hands always stop', () => {
     const { notifications } = phaseEncounterVisibility(stateWith([action(AUTHORED.id)]));
     const [beat] = notifications;
@@ -258,6 +272,14 @@ describe('THR-2211 — an ending the god had no part in waits on its badge', () 
     expect(advanced.activeNudges).toBeUndefined();
     expect(advanced.emptyHandCommitted).toBe(true);
     const n = ending(DEALT.id, { emptyHandCommitted: true } as unknown as Partial<UnifiedAction>);
+    expect(n.badgeOnly).toBeUndefined();
+    expect(shouldAutoOpenEncounterNotification(n)).toBe(true);
+  });
+
+  it('an untouched ending that offers an aftermath reaction still stops (the pick is a decision)', () => {
+    const n = ending(DEALT.id, {
+      aftermathSummary: { ...ENDED, reactions: [{ id: 'r1', label: 'Forgive' }] },
+    } as unknown as Partial<UnifiedAction>);
     expect(n.badgeOnly).toBeUndefined();
     expect(shouldAutoOpenEncounterNotification(n)).toBe(true);
   });

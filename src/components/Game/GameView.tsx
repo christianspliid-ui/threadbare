@@ -155,6 +155,7 @@ import { describeFollow } from './FollowToggle';
 import {
   buildActiveEncounterDisplayFromLegacyProgress,
   buildActiveEncounterDisplayFromUnifiedAction,
+  disarmFatedFuse,
   isEncounterAutoOpenSuppressed,
   isStepNotificationSupersededByAftermath,
   resolveNotificationsOnAftermathAcknowledge,
@@ -2234,7 +2235,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         && !committedEncounterNotificationIds.current.has(minimisedId)
         && notification.sourceSystem === 'unified_action'
         && (notification.kind ?? 'encounter') === 'encounter'
-        && notification.autoResolveTick === null;
+        // THR-2211 — an opened Fated fused step holds like any pause beat: the
+        // set-down disarms its fuse below.
+        && (notification.autoResolveTick === null || notification.fatedFuse === true);
       const holdTarget = holdsStep
         ? (gameState.unifiedActions ?? []).find(action =>
             !action.resolved && matchesTieredEncounterAction(action, tieredEncounterState))
@@ -2250,9 +2253,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                 action.actionId === holdTarget.actionId ? setPlayerHold(action, prev.tick) : action),
             }
           : {}),
-        encounterNotifications: (prev.encounterNotifications ?? []).map(n =>
-          n.id === minimisedId && n.viewed ? { ...n, viewed: false } : n,
-        ),
+        encounterNotifications: (prev.encounterNotifications ?? []).map(n => {
+          if (n.id !== minimisedId) return n;
+          const disarmed = holdTarget ? disarmFatedFuse(n) : n;
+          return disarmed.viewed ? { ...disarmed, viewed: false } : disarmed;
+        }),
       }));
       if (holdTarget && !holdTarget.playerHold) {
         tracePlayerHoldSet(holdTarget, gameState.tick, tieredEncounterState.agentName);
