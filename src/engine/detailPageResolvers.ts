@@ -946,9 +946,9 @@ export const EVENT_SUMMARY_UNNAMED_ACTOR = 'Someone';
 
 /**
  * THR-2223 — "What happened" for an event with no stored summary. Never the event's own
- * title: a chapter's ending reads as the aftermath's sentence ("Kael won The Price on
- * Their Head, at a price."), one step reads by its band ("… and it went well."), and an
- * outcome-less event still names who took part.
+ * title: one encounter step reads by its band ("Kael took a step in The Price on Their
+ * Head, and it went well."), an ending with no step reads as the aftermath's sentence
+ * ("Kael won …, at a price."), and an outcome-less event still names who took part.
  */
 export function eventFallbackSummary(graph: WorldGraph, evt: GraphNode): string | null {
   const templateName = (evt.properties?.templateName as string | undefined) ?? evt.name;
@@ -957,11 +957,15 @@ export function eventFallbackSummary(graph: WorldGraph, evt: GraphNode): string 
     .find(e => e.properties?.role === 'primary') ?? graph.getIncomingEdges(evt.id, 'participated_in')[0];
   const actorName = (primary && graph.getNode(primary.source)?.name) || EVENT_SUMMARY_UNNAMED_ACTOR;
   const outcome = evt.properties?.outcome as string | undefined;
-  if (outcome && outcome in OUTCOME_SENTENCE_SHAPES) {
-    return outcomeSentence(actorName, templateName, outcome as UnifiedActionOutcome);
-  }
-  if (outcome && outcome in CAUSE_STEP_VERBS) {
+  // An encounter step's node (`createUnifiedActionEventNode` / `createEncounterEventNode`)
+  // stores that step's band, not the chapter's ending — so a step reads as a step, and
+  // "success" on step one never claims the whole chapter was won.
+  const isStep = typeof evt.properties?.stepIndex === 'number';
+  if (isStep && outcome && outcome in CAUSE_STEP_VERBS) {
     return `${actorName} took a step in ${templateName}, and it ${CAUSE_STEP_VERBS[outcome as StepOutcome]}.`;
+  }
+  if (!isStep && outcome && outcome in OUTCOME_SENTENCE_SHAPES) {
+    return outcomeSentence(actorName, templateName, outcome as UnifiedActionOutcome);
   }
   return `${actorName} took part in ${templateName}.`;
 }

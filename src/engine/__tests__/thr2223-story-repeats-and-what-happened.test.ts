@@ -87,14 +87,19 @@ describe('THR-2223 — 2: "What happened" never echoes the title', () => {
     const prose = happened?.kind === 'prose' ? happened.prose : '';
     expect(prose).not.toBe(TEMPLATE_NAME);
     expect(prose).not.toBe(page.displayName);
-    expect(prose).toBe(`Queen Ysolde won ${TEMPLATE_NAME}.`);
+    // A step's band is that step's, not the chapter's ending — never "won" on step one.
+    expect(prose).toBe(`Queen Ysolde took a step in ${TEMPLATE_NAME}, and it went well.`);
   });
 
   it('a step band reads as the step, and an outcome-less event still names who took part', () => {
     const graph = rulerGraph();
-    graph.addNode({ id: 'evt.step', type: 'event', name: 'x', properties: { templateName: TEMPLATE_NAME, outcome: 'near_miss' } });
+    graph.addNode({ id: 'evt.step', type: 'event', name: 'x', properties: { templateName: TEMPLATE_NAME, stepIndex: 1, outcome: 'near_miss' } });
     graph.addEdge({ id: 'e1', source: RULER, target: 'evt.step', type: 'participated_in', properties: { role: 'primary' } });
     expect(eventFallbackSummary(graph, graph.getNode('evt.step')!)).toBe(`Queen Ysolde took a step in ${TEMPLATE_NAME}, and it nearly broke.`);
+
+    graph.addNode({ id: 'evt.end', type: 'event', name: 'x', properties: { templateName: TEMPLATE_NAME, outcome: 'success_at_cost' } });
+    graph.addEdge({ id: 'e2', source: RULER, target: 'evt.end', type: 'participated_in', properties: { role: 'primary' } });
+    expect(eventFallbackSummary(graph, graph.getNode('evt.end')!)).toBe(`Queen Ysolde won ${TEMPLATE_NAME}, at a price.`);
 
     graph.addNode({ id: 'evt.bare', type: 'event', name: TEMPLATE_NAME, properties: {} });
     expect(eventFallbackSummary(graph, graph.getNode('evt.bare')!)).toBe(`Someone took part in ${TEMPLATE_NAME}.`);
