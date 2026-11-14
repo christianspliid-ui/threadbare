@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-14 13:58 local (12:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-14 14:58 local (13:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -43,12 +43,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 5 tickets in Ready for Dev.** Two more shipped since the last brief: [new Doom stages say what each card does](https://linear.app/threadbare/issue/THR-2219) ([#2828](https://github.com/christianspliid-ui/threadbare/pull/2828)) and [a dream that found no hold no longer says "held"](https://linear.app/threadbare/issue/THR-2220) ([#2829](https://github.com/christianspliid-ui/threadbare/pull/2829)). The purse veto window closed at 12:17 UTC, and the builder is now on [THR-2216 Tune the purse](https://linear.app/threadbare/issue/THR-2216/tune-the-purse-card-prices-3-pool-cap-35-base-and-seat-income-06) ([branch](https://github.com/christianspliid-ui/threadbare/tree/thr-2216-tune-the-purse)). Next up are three round-4 playtest bugs ([the map still pans to Kael](https://linear.app/threadbare/issue/THR-2221), [two promises the screen breaks](https://linear.app/threadbare/issue/THR-2222), [a ruler's Story tab repeats one chapter](https://linear.app/threadbare/issue/THR-2223)). The two climax builds ([THR-2226](https://linear.app/threadbare/issue/THR-2226), [THR-2227](https://linear.app/threadbare/issue/THR-2227)) wait for their veto window to close at 23:53 UTC.
+**Healthy: 5 tickets in Ready for Dev.** [THR-2216 Tune the purse](https://linear.app/threadbare/issue/THR-2216/tune-the-purse-card-prices-3-pool-cap-35-base-and-seat-income-06) is built, gated and reviewed, and [PR #2830](https://github.com/christianspliid-ui/threadbare/pull/2830) will merge once its checks pass. Next up are three round-4 playtest bugs ([the map still pans to Kael](https://linear.app/threadbare/issue/THR-2221), [two promises the screen breaks](https://linear.app/threadbare/issue/THR-2222), [a ruler's Story tab repeats one chapter](https://linear.app/threadbare/issue/THR-2223)). The two climax builds ([THR-2226](https://linear.app/threadbare/issue/THR-2226), [THR-2227](https://linear.app/threadbare/issue/THR-2227)) wait for their veto window to close at 23:53 UTC.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (25 days; In Dev since 15 Oct). No pushed branch or local worktree names it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- **Engine speed jumped:** tick cost 326 ms/tick steady, 110% above the 7-day median (155, 56 rows since ec90c06e); top phase agent_decision, 638 agents. Name the merges between ec90c06e and 5386f03b: git log --oneline --merges ec90c06e..5386f03b. The last brief measured 159 at 5fbfb9f9, and the builder was running a build on the same machine during this measurement, so next hour's row will show whether this is real or contention. Engine speed is the builder's job, not yours.
-- Otherwise all green. Linear read live this run. The live site serves the latest commit on main (5386f03b). Checks on main and the 3 scheduled background jobs pass; no PRs are waiting to merge. All 10 scheduled tasks are on time, and the worktree reaper ran at 13:40 local.
+- All green. Last hour's engine-speed jump was the builder sharing the machine: this hour measured 161 ms/tick at 5386f03b, +4% on the 7-day median (155). Linear read live this run. The live site serves the latest commit on main (5386f03b). Checks on main and the 3 scheduled background jobs pass; one PR ([#2830](https://github.com/christianspliid-ui/threadbare/pull/2830)) is waiting on checks and will merge on green. The builder ran on schedule (the task-heartbeat probe was not run this hour), and the worktree reaper ran at 14:40 local.
