@@ -163,14 +163,14 @@ export const SPHERE_DISCOUNT_MIN_COST = 1;
  * the scale multiplies zero. Tuned against the scarcity predicate P1–P4
  * (`npm run census:essence-scarcity`); range 1–4.
  *
- * **1 (today's prices) until the design lane re-decides.** The 2026-11-13 tuning
- * found no setting in the plan's ranges that met P1–P3 on seeds 42, 99 and 7
- * together (seed 42 needs income ≤ 0.5 for P1, seed 99 needs ≥ 0.7 for P2), so per
- * the plan's grey-zone rule the rule fixes ship alone and the lever waits here.
- * Every setting tried is on THR-2201.
+ * **3 (THR-2216, decided on THR-2215).** Paired with a 35 pool cap and 0.6 base
+ * and seat income (`influence-content.ts`). On the corrected census (sphere-less
+ * cards charged to the primary only), five seeds (42, 99, 7, 13, 2026) pass P1–P3:
+ * the full hand is affordable on 11–40% of attended steps, some card on 100%.
+ * The earlier 2026-11-13 settings that failed are on THR-2201.
  * Plan: Docs/plans/2026-11-13-thr-2201-make-the-purse-bite.md
  */
-export const NUDGE_ESSENCE_COST_SCALE = 1;
+export const NUDGE_ESSENCE_COST_SCALE = 3;
 
 // ─── The Repertoire (THR-887) ────────────────────────────────────────
 

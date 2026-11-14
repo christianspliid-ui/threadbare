@@ -89,7 +89,7 @@ const ESSENCE_SCARCITY_FULL_HAND_MAX_SHARE = 0.5;
 const ESSENCE_SCARCITY_ANY_CARD_MIN_SHARE = 0.9;
 /** P3 — with the god playing nothing, thread upkeep is paid in full on this share of ticks or more. */
 const ESSENCE_SCARCITY_UPKEEP_PAID_MIN_SHARE = 0.95;
-const DEFAULT_SEEDS = '42,99,7';
+const DEFAULT_SEEDS = '42,99,7,13,2026';
 
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
 const median = (xs: number[]) => { if (!xs.length) return NaN; const s = [...xs].sort((a, b) => a - b); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
