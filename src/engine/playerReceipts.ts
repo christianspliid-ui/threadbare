@@ -54,7 +54,6 @@ import { emitTrace } from './traceBuffer';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { ASCENDANT_POOL_BEAT_TEMPLATES } from '../data/ascendant-pool-beat-templates';
 import { enrichProse, gatherNarrativeContext } from './proseEnrichment';
-import { outcomeBandWord } from '../data/outcome-band-content';
 import {
   RECEIPT_MODAL_MIN_STEPS,
   RECEIPT_MODAL_RARITY_FLOOR,
@@ -65,6 +64,7 @@ import {
   RECEIPT_TOAST_USES_OVERVIEW,
   receiptToastSentence,
   selectReceiptFrameLine,
+  receiptBandWord,
   CAST_INFLUENCE_RECEIPT_LINES,
   CAST_INFLUENCE_CLEAN_BANDS,
   CAST_INFLUENCE_AT_COST_BANDS,
@@ -342,7 +342,7 @@ export function receiptToastReading(
     message: overviewSentence
       ?? (RECEIPT_TOAST_USES_OVERVIEW
         ? selectReceiptFrameLine(band, actionId)
-        : `Your ${templateWord} ${outcomeBandWord(band)}.`),
+        : `Your ${templateWord} ${receiptBandWord(band)}.`),
   };
 }
 
@@ -415,7 +415,7 @@ export function processPlayerReceipts(state: GameState, _ctx: PhaseContext): Pha
       influenceReading?.line ??
       targetLedOverview ??
       summary?.overview ??
-      `Your ${templateWord} ${outcomeBandWord(band)}.`;
+      `Your ${templateWord} ${receiptBandWord(band)}.`;
     // THR-1050 — the overview and every reaction label/intent share one context,
     // gathered at most once per receipt and only when some field actually carries a
     // placeholder (preserving the original overview-only fast path). Reactions used
