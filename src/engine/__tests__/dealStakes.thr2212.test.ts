@@ -52,9 +52,11 @@ function collectDealingSteps(): DealingStep[] {
   ].filter((t) => (seen.has(t.id) ? false : (seen.add(t.id), true)));
   const out: DealingStep[] = [];
   for (const t of templates) {
-    (t.steps ?? []).forEach((step, i) => {
+    (t.steps ?? []).forEach((raw, i) => {
+      // A step is either a plain step or a branch whose variants are steps.
+      const step = raw as ActionStep & { readonly variants?: Record<string, ActionStep> };
       if (step?.deal) out.push({ templateName: t.name, stepIndex: i, step });
-      const variants = (step as { variants?: Record<string, ActionStep> } | undefined)?.variants;
+      const variants = step?.variants;
       for (const v of Object.values(variants ?? {})) {
         if (v?.deal) out.push({ templateName: t.name, stepIndex: i, step: v });
       }
