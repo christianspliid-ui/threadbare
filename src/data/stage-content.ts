@@ -21,8 +21,8 @@
  * | STAGE_LAYOUT_SETTLE_FRAMES | 2 | animation frames the camera waits after the rails move |
  * | STAGE_MAP_HINT_MS | 2000 | how long the hold line shows after an input on the map |
  * | STAGE_LIT_HEX_MIN_HIT_PX | 24 | the lit-hex button's smallest hit area (Law 46) |
- * | STAGE_CLOSE_CENTRE_BAND_FRACTION | 1/3 | on close, the middle band of the visible map the place must sit in, or the camera re-centres it (THR-2056) |
- * | STAGE_CLOSE_PLAYER_MOVED_PX | 4 | on close, a camera moved more than this (screen px) since the Stage framed it was moved by the player: no re-centre (THR-2166) |
+ * | STAGE_CLOSE_CENTRE_BAND_FRACTION | 1/3 | debug read only since THR-2221: `__DEBUG.getStage().afterClose.inMiddleThird` (the close no longer re-centres) |
+ * | STAGE_CLOSE_PLAYER_MOVED_PX | 4 | on close, a camera moved more than this (screen px) since the Stage framed it is recorded as moved by the player (THR-2166; a record only since THR-2221) |
  * | STAGE_CLOSE_PLAYER_MOVED_ZOOM_RATIO | 0.01 | the same, for a zoom change (THR-2166) |
  * | STAGE_OPTION_RING_DASH | { dash: 0.18, gap: 0.12 } | a premonition option ring's dashes, as shares of an edge (S4) |
  * | STAGE_OPTION_RING_COLOR_VAR | whisper / compulsion text rgb | an option ring's colour, the premonition's dream tone (S4) |
@@ -68,12 +68,16 @@ export const STAGE_CAMERA_SETTLE_TIMEOUT_MS = 800;
 export const STAGE_LAYOUT_SETTLE_FRAMES = 2;
 export const STAGE_MAP_HINT_MS = 2000;
 export const STAGE_LIT_HEX_MIN_HIT_PX = 24;
-/** THR-2056 — the middle third: a place outside it after a chapter closes is re-centred, so the map never drifts to the edge. */
+/**
+ * THR-2056 — the middle third of the visible map. THR-2221 retired the close re-centre that
+ * used it (the camera never moves on close); only the debug bridge's `inMiddleThird` reads it.
+ */
 export const STAGE_CLOSE_CENTRE_BAND_FRACTION = 1 / 3;
 /**
  * THR-2166 — on close, a camera that moved more than this many screen px (or changed zoom
  * by more than `STAGE_CLOSE_PLAYER_MOVED_ZOOM_RATIO`) since the Stage framed the place was
- * moved by the player, and stays where the player put it: no re-centre.
+ * moved by the player. Since THR-2221 the close never moves the camera; this only sets
+ * `closeCamera.playerMoved`.
  */
 export const STAGE_CLOSE_PLAYER_MOVED_PX = 4;
 export const STAGE_CLOSE_PLAYER_MOVED_ZOOM_RATIO = 0.01;

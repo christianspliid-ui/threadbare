@@ -681,6 +681,11 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const [stageFocus, setStageFocusState] = useState<{ focus: StageMapFocus; fadeMs: number } | null>(null);
     // THR-1897 — the premonition option the player is hovering, re-applied when the layer rebuilds.
     const stageOptionHoverRef = useRef<string | null>(null);
+    // THR-2221 — the pointer over the canvas (canvas-local px), so a programmatic pan under a
+    // still pointer re-aims the hover; mouse moves alone never see the map slide under them.
+    const pointerRef = useRef<{ x: number; y: number } | null>(null);
+    const onHexHoverRef = useRef(onHexHover);
+    onHexHoverRef.current = onHexHover;
     const dominionDropLayerRef = useRef<DominionDropLayer | null>(null);
     // Bumped after every scene build so incremental layers re-attach to the new scene.
     const [sceneEpoch, setSceneEpoch] = useState(0);
@@ -1030,8 +1035,16 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         if (Math.abs(now.k - next.k) < 1e-6 && Math.abs(now.x - next.x) < 0.5 && Math.abs(now.y - next.y) < 0.5) {
           return Promise.resolve('stayed' as const);
         }
+        // THR-2221 — the map moved under a still pointer: re-aim the hover at what is under it now.
+        const reaimHover = () => {
+          const p = pointerRef.current;
+          const camera = cameraRef.current;
+          if (!p || !camera) return;
+          onHexHoverRef.current(screenToHex(p.x, p.y, camera, canvas) ?? null);
+        };
         if (options.instant) {
           d3.select(canvas).interrupt().call(zoom.transform, next);
+          reaimHover();
           return Promise.resolve('cut' as const);
         }
         return new Promise<'eased'>(resolve => {
@@ -1039,8 +1052,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             .transition()
             .duration(CAMERA_CONSTANTS.JUMP_TO_DURATION_MS)
             .call(zoom.transform, next)
-            .on('end', () => resolve('eased'))
-            .on('interrupt', () => resolve('eased'));
+            .on('end', () => { reaimHover(); resolve('eased'); })
+            .on('interrupt', () => { reaimHover(); resolve('eased'); });
         });
       },
       triggerAnomalyReveal(hexCol: number, hexRow: number, sphereColor: string): void {
@@ -2180,6 +2193,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       const camera = cameraRef.current;
       if (!canvas || !camera) return;
 
+      pointerRef.current = { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY };
       const hex = screenToHex(e.nativeEvent.offsetX, e.nativeEvent.offsetY, camera, canvas);
       onHexHover(hex ?? null);
     };
@@ -2233,6 +2247,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     };
 
     const handleMouseLeave = () => {
+      pointerRef.current = null;
       onHexHover(null);
     };
 
