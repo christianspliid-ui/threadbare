@@ -245,6 +245,15 @@ at all — a contract with a live producer and a consumer that silently drops it
 which is the exact shape this map exists to make visible. It is sound to re-derive because
 dealing is pure and zero-PRNG; that determinism is load-bearing, not a nicety.
 
+**+1 read (2026-11-14, THR-2212), 🟢 LIVE:** the dealer now reads the step's authored
+`difficulty` (Content → Encounters, same contract row, `ActionStep` already a write site).
+`stakesTermFor` leans the sphereless core cards by band — easy steps toward Buy The Floor and
+Spare The Worst, middle toward Draw On Character, hard toward Press The Odds and Draw On
+Character (`DEAL_STAKES_*` in `nudge-constants.ts`) — and the sphere-spread pass guarantees
+only the primary signature (`DEAL_SPREAD_PRIMARY_ONLY`). Both read sites still re-derive the
+same hand: the adapter and resolution pass the full step, so `difficulty` reaches both, and
+the term is pure. Reported as `stakesTerm` in `__DEBUG.getRepertoire().lastDeal`.
+
 **Nudge card dispatch** — 4 contracts, written 2026-07-30 (THR-885) and extended 2026-08-09
 (THR-886), audit-on-touch triggered by the card-system engine.
 `nudge-card-grants-dispatch-to-host-systems`, `nudge-card-cost-channels-detection-and-doom`,

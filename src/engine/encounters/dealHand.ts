@@ -57,6 +57,11 @@ import {
   DEAL_SPHERE_COVERAGE_MIN,
   DEAL_SPHERE_PRIMARY_WEIGHT,
   DEAL_SPHERE_SECONDARY_WEIGHT,
+  DEAL_SPREAD_PRIMARY_ONLY,
+  DEAL_STAKES_EASY_BELOW,
+  DEAL_STAKES_HARD_FROM,
+  DEAL_STAKES_TYPES,
+  DEAL_STAKES_WEIGHT,
   DEAL_TAG_MATCH_WEIGHT,
 } from '../../data/nudge-constants';
 
@@ -94,6 +99,8 @@ export interface DealCandidateReport {
   readonly score: number;
   readonly sphereTerm: number;
   readonly tagTerm: number;
+  /** The stakes lean — the step's difficulty favouring this core card (THR-2212). 0 when it does not. */
+  readonly stakesTerm: number;
   readonly provenanceTerm: number;
   /** Absent ⇒ dealt. Present ⇒ why it was not. */
   readonly eliminated?: DealEliminationReason;
@@ -245,6 +252,27 @@ function sphereTermFor(member: NudgeCardMember, context: DealContext): number {
   return 0;
 }
 
+/** Which difficulty band a step falls in, or undefined when it authored no numeric difficulty. */
+export function stakesBandFor(difficulty: unknown): 'easy' | 'middle' | 'hard' | undefined {
+  if (typeof difficulty !== 'number' || !Number.isFinite(difficulty)) return undefined;
+  if (difficulty < DEAL_STAKES_EASY_BELOW) return 'easy';
+  if (difficulty >= DEAL_STAKES_HARD_FROM) return 'hard';
+  return 'middle';
+}
+
+/**
+ * The stakes lean (THR-2212): a sphereless member whose type the step's
+ * difficulty band favours scores {@link DEAL_STAKES_WEIGHT}. Signature cards
+ * never get it — they already carry the sphere term, and the lean exists to let
+ * the step's stakes, not the god's identity, pick among the common cards.
+ */
+export function stakesTermFor(member: NudgeCardMember, difficulty: unknown): number {
+  if (member.sphere) return 0;
+  const band = stakesBandFor(difficulty);
+  if (!band) return 0;
+  return DEAL_STAKES_TYPES[band].includes(member.typeId) ? DEAL_STAKES_WEIGHT : 0;
+}
+
 function tagTermFor(profile: NudgeCardPlayProfile, context: DealContext): number {
   const declared = context.tags;
   if (!declared || declared.length === 0) return 0;
@@ -267,7 +295,8 @@ function tagTermFor(profile: NudgeCardPlayProfile, context: DealContext): number
  *    profile *and* band fragments, not repeat a type an authored special
  *    already covers (no two cards answering the same question), and not be
  *    excluded by the declaration.
- * 2. **Scoring.** Sphere identity + context-tag match + earned-provenance bonus,
+ * 2. **Scoring.** Sphere identity + context-tag match + stakes lean (the step's
+ *    difficulty band, THR-2212) + earned-provenance bonus,
  *    with a deterministic tie-break on member id.
  * 3. **Constrained fill.** Take in score order while the composed hand stays
  *    inside the hand ceiling and under the delta budget. Variety rules (sphere
@@ -277,7 +306,7 @@ function tagTermFor(profile: NudgeCardPlayProfile, context: DealContext): number
  *    plan's "deal what exists".
  */
 export function dealHand(
-  step: Pick<ActionStep, 'nudges' | 'deal'>,
+  step: Pick<ActionStep, 'nudges' | 'deal'> & { readonly difficulty?: number },
   repertoire: readonly RepertoireEntry[],
   context: DealContext,
 ): DealResult {
@@ -324,7 +353,7 @@ export function dealHand(
     const member = entry.member;
     const profile = PLAY_PROFILES[member.id];
     const title = cardDisplayTitle(member);
-    const base = { cardId: member.id, title, score: 0, sphereTerm: 0, tagTerm: 0, provenanceTerm: 0 };
+    const base = { cardId: member.id, title, score: 0, sphereTerm: 0, tagTerm: 0, stakesTerm: 0, provenanceTerm: 0 };
 
     if (!profile) {
       rejected.push({ ...base, eliminated: 'no_profile' });
@@ -345,13 +374,15 @@ export function dealHand(
 
     const sphereTerm = sphereTermFor(member, context);
     const tagTerm = tagTermFor(profile, context);
+    const stakesTerm = stakesTermFor(member, step.difficulty);
     const provenanceTerm = EARNED_SOURCES.has(entry.source) ? DEAL_PROVENANCE_BONUS : 0;
     scored.push({
       cardId: member.id,
       title,
-      score: sphereTerm + tagTerm + provenanceTerm,
+      score: sphereTerm + tagTerm + stakesTerm + provenanceTerm,
       sphereTerm,
       tagTerm,
+      stakesTerm,
       provenanceTerm,
       member,
       profile,
@@ -395,6 +426,10 @@ export function dealHand(
   for (const c of scored) {
     if (taken.length >= requested) break;
     if (spheresSoFar.size >= DEAL_SPHERE_COVERAGE_MIN) break;
+    // THR-2212: guarantee only the primary signature, so the rest of the hand
+    // follows score order (sphere + tags + stakes) instead of every signature
+    // card the god holds, whatever the step is about.
+    if (DEAL_SPREAD_PRIMARY_ONLY && c.member.sphere !== context.primarySphere) continue;
     if (takenIds.has(c.cardId)) continue;
     if (!c.member.sphere || spheresSoFar.has(c.member.sphere)) continue;
     if (!wouldFit(c)) continue;

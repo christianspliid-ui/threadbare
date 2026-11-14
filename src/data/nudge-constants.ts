@@ -583,6 +583,51 @@ export const DEAL_TAG_MATCH_WEIGHT = 2;
 export const DEAL_PROVENANCE_BONUS = 1;
 
 /**
+ * The stakes lean (THR-2212, plan `2026-11-13-thr-2203-stop-only-for-real-decisions.md`
+ * slice B): the dealt hand reads how hard the step is.
+ *
+ * Before this, sphere and tag terms alone decided the fill, so one hand was
+ * dealt on 67% of all dealing steps for a new god (census, 24 gods). The step's
+ * authored `difficulty` already says what kind of moment it is; the dealer now
+ * hears it. Applied only to **sphereless** members (the core cards and hunger
+ * uniques) whose type the band favours, and worth one tag match, so a step's
+ * own tags still outrank it on a tie.
+ *
+ * - easy (below {@link DEAL_STAKES_EASY_BELOW}): the protective riders, Buy The
+ *   Floor (insurance) and Spare The Worst (mercy) — the odds are already good,
+ *   so the question is what a bad roll costs;
+ * - middle: Draw On Character (trait_card);
+ * - hard (from {@link DEAL_STAKES_HARD_FROM}): the cards that move the odds,
+ *   Press The Odds (boost) and Draw On Character.
+ *
+ * Census arm D on `proto/thr-2203-deal-census`: modal hand share 0.67 → 0.27,
+ * mean distinct hands 8.1 → 25.1. Pinned by `dealCensus.thr2212.test.ts`.
+ * If boost vanishes from early play, lower the weight to 1 (below one tag match).
+ */
+export const DEAL_STAKES_WEIGHT = 2;
+/** Below this step difficulty the guard cards are favoured. */
+export const DEAL_STAKES_EASY_BELOW = 0.25;
+/** From this step difficulty the odds cards are favoured. */
+export const DEAL_STAKES_HARD_FROM = 0.5;
+/** Which core card types each difficulty band favours (exactly census arm D). */
+export const DEAL_STAKES_TYPES: Readonly<Record<'easy' | 'middle' | 'hard', readonly string[]>> = {
+  easy: ['insurance', 'mercy'],
+  middle: ['trait_card'],
+  hard: ['boost', 'trait_card'],
+};
+
+/**
+ * The sphere-spread pass guarantees only the **primary** signature (THR-2212).
+ *
+ * The spread pass fills until `DEAL_SPHERE_COVERAGE_MIN` spheres are present; a
+ * two-sphere god never reaches four, so with this off the pass took every
+ * signature card whatever the step was about and left one slot for context.
+ * On, it takes the primary sphere's best card and lets score order — sphere,
+ * tags, stakes — decide the rest.
+ */
+export const DEAL_SPREAD_PRIMARY_ONLY = true;
+
+/**
  * The hand bounds the **dealer** works to, mirrored from the authoring
  * guardrails in `content-eval/nudgeAuthoringConstants.ts`.
  *
