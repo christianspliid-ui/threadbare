@@ -24,6 +24,8 @@ import type { ActionStep, StepNudge, UnifiedAction, UnifiedActionTemplate } from
 import { SPHERE_NAMES } from '../../../../types/index';
 import { buildNudgePhaseModel } from '../adapters/buildNudgePhaseModel';
 import { NudgePhaseShell } from '../shells/NudgePhaseShell';
+import { NUDGE_ESSENCE_COST_SCALE } from '../../../../data/nudge-constants';
+import { MAX_COST_PIPS } from '../../../../data/nudge-card-display';
 
 const ORDER: StepNudge = { id: 'nothing_breaks', name: 'Nothing Breaks Tonight', sphere: 'order', essenceCost: 3, forecastDelta: 0.05, effectLine: 'The night holds.' };
 const MIND: StepNudge = { id: 'count_the_cost', name: 'Count What It Costs', sphere: 'mind', essenceCost: 3, forecastDelta: 0.05, effectLine: 'She reckons it.' };
@@ -60,10 +62,15 @@ const ACTION = {
   resolved: false, stepOutcomes: [],
 } as unknown as UnifiedAction;
 
+const S = NUDGE_ESSENCE_COST_SCALE;
+/** Half a point over the discounted Mind card (3·S − 1); with Spirit's 1, short of the common card (4·S). */
+const MIND_POOL = 3 * S - 0.5;
+
 function godState(g: WorldGraph): GameState {
   const pool: Record<string, number> = {};
   for (const s of SPHERE_NAMES) pool[s] = 30;
-  pool.mind = 2.5; // enough for the discounted Mind card (2), not for a 4-cost common card
+  // THR-2216: step cards cost their authored price times NUDGE_ESSENCE_COST_SCALE.
+  pool.mind = MIND_POOL; // enough for the discounted Mind card, not for the common card
   pool.spirit = 1;
   return {
     graph: g, ascendantId: 'asc', essencePool: pool, unlockedActionIds: [],
@@ -80,23 +87,29 @@ describe('THR-2201 · the hand prices only the god\'s own spheres', () => {
     const phase = buildNudgePhaseModel({ template: template(s), activeAction: ACTION, step: s, graph: g, gameState: godState(g) })!;
     const byId = new Map(phase.cards.map((c) => [c.id, c]));
 
-    expect(byId.get(ORDER.id)?.essenceCost).toBe(3);
+    expect(byId.get(ORDER.id)?.essenceCost).toBe(3 * S);
     expect(byId.get(ORDER.id)?.discounted).toBe(false);
-    expect(byId.get(MIND.id)?.essenceCost).toBe(2);
+    expect(byId.get(MIND.id)?.essenceCost).toBe(3 * S - 1);
     expect(byId.get(MIND.id)?.discounted).toBe(true);
     expect(byId.get(COMMON.id)?.state).toBe('dimmed');
     expect(byId.get(COMMON.id)?.blockedCode).toBe('essence_unavailable');
     expect(phase.payableSpheres).toEqual(['mind', 'spirit']);
     // The pooled total stays the hook's overall guard (review finding, round 1).
-    expect(phase.availableEssence).toBeCloseTo(2.5 + 1 + 30 * (SPHERE_NAMES.length - 2));
+    expect(phase.availableEssence).toBeCloseTo(MIND_POOL + 1 + 30 * (SPHERE_NAMES.length - 2));
 
     render(<NudgePhaseShell phase={phase} onCommit={() => {}} />);
     const order = screen.getByTestId(`nudge-card-${ORDER.id}`).textContent ?? '';
     const mind = screen.getByTestId(`nudge-card-${MIND.id}`).textContent ?? '';
     // The face prints the price as essence pips (✦), one per essence.
     const pips = (text: string) => (text.match(/^✦+/u)?.[0] ?? '').length;
-    expect(pips(order)).toBe(3); // full price — before THR-2201 the stray discount showed 2
-    expect(pips(mind)).toBe(2);
+    // The face caps at MAX_COST_PIPS pips (then an overflow mark); the exact price
+    // rides the price row's aria-label, "N essence".
+    expect(pips(order)).toBe(Math.min(3 * S, MAX_COST_PIPS));
+    expect(pips(mind)).toBe(Math.min(3 * S - 1, MAX_COST_PIPS));
+    const priceLabel = (id: string) =>
+      screen.getByTestId(`nudge-card-${id}`).querySelector('[aria-label$=" essence"]')?.getAttribute('aria-label');
+    expect(priceLabel(ORDER.id)).toBe(`${3 * S} essence`); // full price — before THR-2201 the stray discount showed one less
+    expect(priceLabel(MIND.id)).toBe(`${3 * S - 1} essence`);
   });
 
   it('selecting a home card leaves an unbought-sphere card its own pool can pay still playable', () => {

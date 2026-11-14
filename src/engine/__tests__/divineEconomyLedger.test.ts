@@ -7,8 +7,8 @@
  *
  *   A: one thread, no ground           → never unpaid, reaches tier 4 (+0.235 at Aspect)
  *   B: two threads + a consecrated source → nothing unpaid, pool > 0 every 120 ticks, both tier 4 (+0.12)
- *   C: B without the source             → THR-1748 restated (below): Model B thread yields pay their own
- *                                         upkeep on Foreign ground; Hostile ground halves what they bring
+ *   C: B without the source             → THR-2216 restated (below): two tier-4 threads outrun base and
+ *                                         seat income on Foreign ground; Hostile ground drains faster
  *   D: two threads capped at tier 3     → pool > 0 every 120 ticks, nothing unpaid (+0.07, the ticket's predicate)
  *
  * Arm C originally pinned "once both reach tier 4, one goes unpaid — ground is needed"
@@ -18,6 +18,11 @@
  * through the band: the arm pins that Hostile ground costs the god income against
  * Foreign ground, so a later retune that makes the band pointless still fails loudly.
  * (Recorded as a finding on THR-1748, § Decided 6.)
+ *
+ * THR-2216 (the purse tuning: base and seat income 1.0 → 0.6, cap 50 → 35) moved it
+ * back: two Enthralled threads cost 1.0 a tick from the primary, more than the primary
+ * receives with no ground and no source, so the arm now pins that one goes unpaid, and
+ * keeps the band guard by comparing what each arm holds across the run.
  */
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
@@ -186,15 +191,21 @@ describe('THR-1747 divine economy ledger (1,080 ticks, no casts)', () => {
     expect(r.finalTiers).toEqual([4, 4]);
   });
 
-  it('Arm C — Arm B without the source (THR-1748 Model B): tier-4 threads pay their own way on Foreign ground; Hostile ground costs income', () => {
+  it('Arm C — Arm B without the source (THR-2216 purse): two tier-4 threads outrun base and seat income on Foreign ground; Hostile ground drains faster', () => {
     const foreign = runArm({ threads: 2, source: false });
     expect(foreign.allTier4At).not.toBeNull();
-    expect(foreign.unpaidAfterAllTier4).toBe(false);
+    // THR-2216 cut base and seat income to 0.6 a tick each. Two Enthralled threads
+    // (1.0 upkeep from the primary) now outrun what a god with no ground and no
+    // source earns, so one goes unpaid after both reach tier 4: ground is needed
+    // again, as THR-1747 first pinned. Measured: the primary runs dry near tick 600.
+    expect(foreign.unpaidAfterAllTier4).toBe(true);
     const hostileState = buildState({ threads: 2, source: false, hostileMortals: true });
     expect(dominionOf(hostileState.graph, ASC, 'agent.0').band).toBe('hostile');
     const hostile = runArm({ threads: 2, source: false, hostileMortals: true });
-    expect(hostile.snapshots[hostile.snapshots.length - 1])
-      .toBeLessThan(foreign.snapshots[foreign.snapshots.length - 1]);
+    // The band still matters: over the run, Hostile threads leave the god holding
+    // less than Foreign ones (both pools reach the floor, so the end value cannot tell).
+    const held = (r: ArmResult) => r.snapshots.reduce((a, b) => a + b, 0);
+    expect(held(hostile)).toBeLessThan(held(foreign) * 0.75);
   });
 
   it('Arm D — two threads held at tier 3, no ground: pool above zero at every snapshot, nothing unpaid', () => {

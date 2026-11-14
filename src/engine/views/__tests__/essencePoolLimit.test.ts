@@ -38,12 +38,12 @@ describe('essenceFillPct — the bar ends at the cap', () => {
     expect(essenceFillPct(53, 55)).toBeCloseTo((53 / 55) * 100);
     expect(essenceFillPct(55, 55)).toBe(100);
   });
-  it('a pool over the starting 50 no longer draws a full bar once the cap is above it', () => {
-    expect(essenceFillPct(53)).toBe(100);
-    expect(essenceFillPct(53, BASE_MAX_ESSENCE + MAX_ESSENCE_PER_THREAD)).toBeLessThan(100);
+  it('a pool over the starting 35 no longer draws a full bar once the cap is above it', () => {
+    expect(essenceFillPct(38)).toBe(100);
+    expect(essenceFillPct(38, BASE_MAX_ESSENCE + MAX_ESSENCE_PER_THREAD)).toBeLessThan(100);
   });
   it('the fallback ceiling is unchanged', () => {
-    expect(ESSENCE_BAR_CEILING).toBe(50);
+    expect(ESSENCE_BAR_CEILING).toBe(35);
   });
 });
 
@@ -146,7 +146,7 @@ describe('upkeepPayers — the same walk the ledger charges', () => {
     expect(drawn).toBeCloseTo(TIER_MAINTENANCE[1] + TIER_MAINTENANCE[2] + payers.sources * SOURCE_CONTROL_SUSTAIN);
   });
 
-  it('the rows carry cap = 50 + 5 × threads and read it in the hover', () => {
+  it('the rows carry cap = 35 + 5 × threads and read it in the hover', () => {
     addThread(graph, 1, 1);
     const state = {
       graph, ascendantId: ASC, tick: 0,
@@ -157,7 +157,7 @@ describe('upkeepPayers — the same walk the ledger charges', () => {
     for (const row of rows) {
       expect(row.cap).toBe(BASE_MAX_ESSENCE + MAX_ESSENCE_PER_THREAD);
       expect(row.threads).toBe(1);
-      expect(row.hoverDesc).toMatch(/^Holds up to 55: 50, and 5 more for the mortal you have threaded\./);
+      expect(row.hoverDesc).toMatch(/^Holds up to 40: 35, and 5 more for the mortal you have threaded\./);
     }
     const life = rows.find((r) => r.sphere === 'life')!;
     expect(life.hoverDesc).toContain('Your thread draws its upkeep from this pool');

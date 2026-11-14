@@ -31,6 +31,7 @@ import { buildNudgePhaseModel } from '../adapters/buildNudgePhaseModel';
 import { NudgePhaseShell } from '../shells/NudgePhaseShell';
 import { spendNudgeEssence, type EssencePool } from '../nudgeCommit';
 import { budgetSphereRemaining } from '../useNudgeHand';
+import { NUDGE_ESSENCE_COST_SCALE } from '../../../../data/nudge-constants';
 
 const NUDGES: StepNudge[] = [
   // Sphere-less: a Gold-path card with no sphere of its own.
@@ -185,7 +186,7 @@ describe('THR-1706 (2) — the budget line is the paying sphere, not the grand t
 
   it('counts down only cards that bill that sphere', () => {
     const phase = buildPhase();
-    expect(budgetSphereRemaining(phase, ['count_the_coin'])).toEqual({ sphere: 'life', remaining: 48 });
+    expect(budgetSphereRemaining(phase, ['count_the_coin'])).toEqual({ sphere: 'life', remaining: 50 - 2 * NUDGE_ESSENCE_COST_SCALE });
     // A Force card pays from Force — the Life line does not move.
     expect(budgetSphereRemaining(phase, ['lend_force'])).toEqual({ sphere: 'life', remaining: 50 });
   });
@@ -193,7 +194,7 @@ describe('THR-1706 (2) — the budget line is the paying sphere, not the grand t
   it('moves as a Life-billed card is selected', () => {
     render(<NudgePhaseShell phase={buildPhase()} onCommit={() => {}} />);
     fireEvent.click(screen.getByTestId('nudge-card-count_the_coin'));
-    expect(screen.getByTestId('nudge-remaining-essence').textContent).toBe('48 Life · 50 Force essence left');
+    expect(screen.getByTestId('nudge-remaining-essence').textContent).toBe(`${50 - 2 * NUDGE_ESSENCE_COST_SCALE} Life · 50 Force essence left`);
   });
 
   it('falls back to the pooled total with no identity', () => {
