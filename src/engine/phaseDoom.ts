@@ -38,6 +38,20 @@ export function resetDoomCounter(): void {
   eventCounter = 0;
 }
 
+/**
+ * One stage card as the stage popup tells it (THR-2219): its title, what is happening
+ * (`description`), then what it does (`effectSummary`). Missing parts drop out — a card
+ * with only a description still reads as a sentence, never an empty line (fail-soft).
+ */
+export function doomStageCardLine(card: DoomEscalationEvent): string {
+  const head = card.title?.trim();
+  const sentences = [card.description, card.effectSummary]
+    .map((part) => part?.trim())
+    .filter((part): part is string => Boolean(part));
+  if (!head) return sentences.join(' ');
+  return sentences.length > 0 ? `${head}. ${sentences.join(' ')}` : head;
+}
+
 function nextEventId(tick: number): string {
   return `doom_evt_${tick}_${eventCounter++}`;
 }
@@ -409,8 +423,11 @@ export function phaseDoom(state: GameState): Partial<GameState> {
           channel: 'popup',
           popup: {
             title: stageName,
+            // THR-2219: the body used to carry only each card's title ("Barrier Thinning"),
+            // so the stage arrived as two words with no account of what it does. Each card
+            // now reads title, what is happening, then the plain "what it does" line.
             body: stageCards.length > 0
-              ? stageCards.map((card) => card.title ?? card.description).join(' • ')
+              ? stageCards.map(doomStageCardLine).join('\n\n')
               : `The ${doomName} intensifies — ${stageName}`,
           },
         },

@@ -295,8 +295,44 @@ export function countWord(n: number): string {
 export function durationLabel(ticks: number): string {
   const days = Math.max(1, Math.round(ticks / TICKS_PER_DAY));
   if (days <= 9) return `${countWord(days)} day${days === 1 ? '' : 's'}`;
-  const weeks = Math.max(1, Math.round(days / 7));
-  return `${countWord(weeks)} week${weeks === 1 ? '' : 's'}`;
+  const weeks = Math.max(1, Math.round(days / DAYS_PER_WEEK));
+  // THR-2219: past nine weeks `countWord` collapses to "many", so the Doom panel read
+  // "four weeks of many weeks". A term is a quantity, never "many": weeks are spelled out
+  // to the end of the two-word range, then the reading steps up to years.
+  if (weeks <= DURATION_MAX_SPELLED_WEEKS) return `${spelledCount(weeks)} week${weeks === 1 ? '' : 's'}`;
+  const years = Math.max(1, Math.round(weeks / WEEKS_PER_YEAR_READING));
+  return `${spelledCount(Math.min(years, 99))} year${years === 1 ? '' : 's'}`;
+}
+
+/** Seven days to the week — the conversion `durationLabel` has always used. */
+export const DAYS_PER_WEEK = 7;
+
+/** Weeks a term is read in before it steps up to years (THR-2219). */
+export const DURATION_MAX_SPELLED_WEEKS = 99;
+
+/** Weeks to the year for a long-term reading (THR-2219). */
+export const WEEKS_PER_YEAR_READING = 52;
+
+const SPELLED_TEENS: readonly string[] = [
+  'ten', 'eleven', 'twelve', 'thirteen', 'fourteen',
+  'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen',
+];
+const SPELLED_TENS: readonly string[] = [
+  '', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety',
+];
+
+/**
+ * A count from zero to ninety-nine in words (THR-2219). Wider than `countWord`, which is
+ * kept to nine on purpose for its overview-line callers; a duration needs the full range.
+ * Out-of-range input clamps (fail-soft) rather than throwing or printing a numeral.
+ */
+export function spelledCount(n: number): string {
+  const count = Number.isFinite(n) ? Math.min(99, Math.max(0, Math.floor(n))) : 0;
+  if (count <= 9) return COUNT_WORDS[count];
+  if (count < 20) return SPELLED_TEENS[count - 10];
+  const tens = SPELLED_TENS[Math.floor(count / 10)];
+  const ones = count % 10;
+  return ones === 0 ? tens : `${tens}-${COUNT_WORDS[ones]}`;
 }
 
 /**
