@@ -97,11 +97,28 @@ export function selectEncounterRuntimeForNotification(
 }
 
 export function shouldAutoOpenEncounterNotification(
-  notif: Pick<EncounterNotification, 'resolved' | 'autoResolveTick' | 'noPlayerMove'>,
+  notif: Pick<EncounterNotification, 'resolved' | 'autoResolveTick' | 'noPlayerMove' | 'badgeOnly'>,
 ): boolean {
   // THR-2140 — a step with no player move never opens (it is posted resolved too).
   if (notif.noPlayerMove) return false;
+  // THR-2211 — an ending the god took no part in waits on its badge. (A Fated
+  // fused step already fails the deadline test below.)
+  if (notif.badgeOnly) return false;
   return !notif.resolved && notif.autoResolveTick === null;
+}
+
+/**
+ * THR-2211 — a Fated fused step the player opened and then set down is an
+ * ordinary pause beat from then on: its fuse is disarmed (no deadline, so the
+ * expiry never retires it and the set-down writes the hold), and it badges as
+ * "waiting for you". Opening it was the player asking (plan § Notes for the
+ * executor). Returns the same object when there is no fuse.
+ */
+export function disarmFatedFuse<N extends Pick<EncounterNotification, 'autoResolveTick' | 'fatedFuse'>>(notif: N): N {
+  if (notif.fatedFuse !== true) return notif;
+  const next = { ...notif, autoResolveTick: null };
+  delete (next as { fatedFuse?: true }).fatedFuse;
+  return next;
 }
 
 /**

@@ -3377,6 +3377,13 @@ export interface UnifiedAction {
    * pre-nudge resolution path, byte for byte.
    */
   readonly activeNudges?: readonly string[];
+  /**
+   * THR-2211 — the god committed an empty hand on some step of this chapter that
+   * has since advanced. Set when the spent hand is cleared on step advance (an
+   * empty commit writes no `choiceHistory` entry, THR-1123), so "the player was
+   * there" survives to the ending. Absent on older records ⇒ unknown, read as not.
+   */
+  readonly emptyHandCommitted?: true;
   /** Rarity tier after Focus buff was applied at action creation (THR-416). Prefer this over template.rarityTier at read sites. */
   readonly effectiveRarityTier?: RarityTier;
   /** Reuse-first binding of encounter support cast/places resolved at action start. */

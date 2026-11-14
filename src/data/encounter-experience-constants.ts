@@ -73,6 +73,25 @@ export const FORECAST_TIER_FAVORABLE_MAX = 0.8;
  */
 export const FORECAST_NEAR_NEXT_TIER_MARGIN = 0.05;
 
+/**
+ * THR-2211 — a step on a pause thread that reads Fated before any card and whose
+ * whole hand is dealt (no authored nudges) plays out on a short fuse instead of
+ * stopping the world. Off ⇒ every step with a hand stops, as before.
+ */
+export const FATED_STEP_FUSE_ENABLED = true;
+/**
+ * THR-2211 — ticks a fused step waits on its badge before it plays out alone.
+ * 8 ticks = 16 in-world hours, so the badge's "within the day" is true; a fuse
+ * above 12 ticks needs `ui.badge.fated_fuse.tooltip` reworded with it.
+ */
+export const FATED_STEP_FUSE_TICKS = 8;
+/**
+ * THR-2211 — an ending the god took no part in (`godTouchedEncounter` false)
+ * waits on its badge and never stops the world. Off ⇒ every pause-thread ending
+ * auto-opens, as before.
+ */
+export const UNTOUCHED_ENDING_BADGE_ENABLED = true;
+
 // Maximum number of visible forecast factors with hover expansion.
 export const FORECAST_FACTORS_VISIBLE_HOVER_MAX = 4;
 

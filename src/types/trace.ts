@@ -516,6 +516,8 @@ export type TraceCategory =
   // Minimised-step hold (THR-1730)
   | 'encounter.player_hold_set'
   | 'encounter.player_hold_released'
+  // A beat that did not stop the world (THR-2211)
+  | 'encounter.stop_skipped'
   // Mortal economy — resource stock tiers (THR-615)
   | 'resource_stock_tier_change'
   // Mortal economy — trade cargo manifests (THR-616)
@@ -1248,6 +1250,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Minimised-step hold (THR-1730)
   'encounter.player_hold_set',
   'encounter.player_hold_released',
+  // A beat that did not stop the world (THR-2211)
+  'encounter.stop_skipped',
   // Player action progression — god-side capability growth (THR-613)
   'ascendant.progression.practice',
   'ascendant.progression.tier_up',
@@ -6038,6 +6042,7 @@ export type TraceEntry =
   | ChapterArchivedTrace
   | EncounterStakesLineTrace
   | PlayerHoldSetTrace
+  | EncounterStopSkippedTrace
   | PlayerHoldReleasedTrace
   // Mortal economy — resource stock tiers (THR-615)
   | ResourceStockTierChangeTrace
@@ -6628,6 +6633,23 @@ export interface PlayerHoldSetTrace extends TraceBase {
   actionId: string;
   templateId: string;
   stepIndex: number;
+}
+
+/**
+ * Trace: a pause-thread beat that did not stop the world (THR-2211) — a Fated
+ * step whose whole hand is dealt, posted on a fuse, or an ending the god took no
+ * part in, posted to its badge.
+ */
+export interface EncounterStopSkippedTrace extends TraceBase {
+  category: 'encounter.stop_skipped';
+  actionId: string;
+  actorId: string;
+  stepIndex: number;
+  reason: 'fated_fuse' | 'untouched_ending';
+  /** The step's forecast tier before any card (fused steps only). */
+  forecastTier?: string;
+  /** The tick the fuse runs out (fused steps only). */
+  fuseUntil?: number;
 }
 
 /** Why a minimised-step hold ended (THR-1730). */

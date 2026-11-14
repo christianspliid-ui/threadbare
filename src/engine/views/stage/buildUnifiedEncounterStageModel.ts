@@ -36,7 +36,12 @@ import { resolveFightStepInputs } from '../../fights/fightStepInputs';
 import { buildOpponentHeaderModel, fightStepLabel } from './buildOpponentHeaderModel';
 import { resolveStepDefinition } from '../../unifiedActionLifecycle';
 import { chapterWaitWord } from '../../playerStepHold';
-import { CHAPTER_ALONE_AFTERMATH_LINE } from '../../../data/ui-content';
+import {
+  CHAPTER_ALONE_AFTERMATH_LINE,
+  CHAPTER_UNPLAYED_AFTERMATH_LINE,
+  FATED_FUSE_FAILED_AFTERMATH_LINE,
+} from '../../../data/ui-content';
+import { godPresentForEncounter } from '../../unifiedActionResolution';
 import { BRANCH_DECISION_INTERVENTION_TYPE } from '../../encounters/branchDecision';
 import { firstPathFitFor, firstPathRecallFor } from '../../firstPath';
 import {
@@ -315,10 +320,52 @@ function waitWordFor(args: BuildUnifiedEncounterStageModelArgs): { waitWord?: 'w
  * `theirs_alone` word, i.e. no step offered a move, so a chapter where the player
  * let fate decide never claims the mortal met it alone (THR-2139).
  */
-function aloneLineFor(args: BuildUnifiedEncounterStageModelArgs): string | undefined {
-  if (waitWordFor(args).waitWord !== 'theirs_alone') return undefined;
-  const name = args.graph.getNode(args.activeAction.actorId)?.name ?? args.agentName;
-  return name ? CHAPTER_ALONE_AFTERMATH_LINE.replace(/{name}/g, name) : undefined;
+export function aloneLineFor(args: BuildUnifiedEncounterStageModelArgs): string | undefined {
+  const name = args.graph.getNode(args.activeAction.actorId)?.name || args.agentName;
+  if (!name) return undefined;
+  // THR-2211 — a step posted on the Fated fuse that played out alone and landed
+  // below success says why a Fated step can fail, and that the god was not there.
+  if (fusedStepFailedAlone(args)) return FATED_FUSE_FAILED_AFTERMATH_LINE.replace(/{name}/g, name);
+  const word = waitWordFor(args).waitWord;
+  if (word === 'theirs_alone') return CHAPTER_ALONE_AFTERMATH_LINE.replace(/{name}/g, name);
+  // THR-2211 — a chapter that offered a move and ended without the god's hand:
+  // the alone line would be false here (cards could have entered).
+  if (word === 'waits' && !touchedSafely(args)) return CHAPTER_UNPLAYED_AFTERMATH_LINE.replace(/{name}/g, name);
+  return undefined;
+}
+
+/** THR-2211 — `godPresentForEncounter`, fail-soft to "present" (no claim made). */
+function touchedSafely(args: BuildUnifiedEncounterStageModelArgs): boolean {
+  try {
+    return godPresentForEncounter(args.activeAction);
+  } catch {
+    return true;
+  }
+}
+
+/** Step bands below success: the near-miss and the two failures. */
+const BELOW_SUCCESS_STEP_OUTCOMES: ReadonlySet<string> = new Set(['near_miss', 'failure', 'critical_failure']);
+
+/**
+ * THR-2211 — did a step of this chapter go out on the Fated fuse, untouched,
+ * and land below success? Read off the step notifications the poster stamped
+ * `fatedFuse` (they outlive the step by the retention trim, so they are there
+ * when the ending is read). Fail-soft: false.
+ */
+function fusedStepFailedAlone(args: BuildUnifiedEncounterStageModelArgs): boolean {
+  try {
+    const action = args.activeAction;
+    if (touchedSafely(args)) return false;
+    const notifications = args.gameState?.encounterNotifications ?? [];
+    return notifications.some((n) =>
+      n.fatedFuse === true
+      && n.actionId === action.actionId
+      && n.stepIndex !== undefined
+      && BELOW_SUCCESS_STEP_OUTCOMES.has(action.stepOutcomes[n.stepIndex] ?? ''),
+    );
+  } catch {
+    return false;
+  }
 }
 
 function buildScene(
