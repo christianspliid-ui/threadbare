@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import type { MandateDefinition, MandateStage, MandateState } from '../../types/mandate';
+import type { MandateDeedRecord, MandateDefinition, MandateStage, MandateState } from '../../types/mandate';
+import { EntityLink } from '../shared/EntityLink';
 import { Modal } from '../shared/Modal';
 import { ProgressBar } from '../shared/ProgressBar';
 import { MANDATE_TYPE_COLORS, SENTIMENT_GREEN, SENTIMENT_NEGATIVE } from '../../data/uiColorPalette';
@@ -28,6 +29,22 @@ interface MandateDetailProps {
 }
 
 const STAGE_ORDER: MandateStage[] = ['setup', 'escalation', 'culmination'];
+
+/**
+ * THR-2208 — one "last deeds" line. The mortal's name links to their page through the
+ * ref router (Law 21); a nameless record reads the fallback line as plain text.
+ */
+function DeedLine({ deed }: { deed: MandateDeedRecord }) {
+  const line = mandateDeedLine(deed.actorName, sphereWord(deed.sphere), deed.points >= MANDATE_DEED_STRONG_POINTS);
+  const name = deed.actorName?.trim();
+  if (!name || !line.startsWith(name)) return <>{line}</>;
+  return (
+    <>
+      <EntityLink id={deed.actorId} name={name} entityRef={{ kind: 'agent', id: deed.actorId }} />
+      {line.slice(name.length)}
+    </>
+  );
+}
 
 const MANDATE_TYPE_LABELS: Record<string, string> = {
   graph_state: 'Graph-state',
@@ -392,7 +409,7 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
                 key={`${deed.tick}:${deed.actorId}`}
                 style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', lineHeight: 1.6 }}
               >
-                {mandateDeedLine(deed.actorName, sphereWord(deed.sphere), deed.points >= MANDATE_DEED_STRONG_POINTS)}
+                <DeedLine deed={deed} />
               </div>
             ))}
           </div>

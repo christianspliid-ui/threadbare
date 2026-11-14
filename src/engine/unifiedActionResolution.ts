@@ -3387,6 +3387,16 @@ function executeFightNoRollEnd(
 
   const aftermathChanges: EncounterAftermathChange[] = [];
   fireResolvedActionTriggers(state, action, template, outcome, tick, rng, runtime, aftermathChanges);
+  // THR-2208 review — a fight that ends before its roll still closes the chapter, so a
+  // threaded mortal's deed credits the Mandate here too (the rolled route does it in
+  // `executeStepResult`).
+  if (finalAction.resolved && !action.resolved) {
+    const deed = mandateDeedForChapter(state, finalAction, template, state.graph.getNode(action.actorId)?.name, tick);
+    if (deed) {
+      aftermathChanges.push(deed.change);
+      finalAction = { ...finalAction, mandateDeedCredits: deed.credits };
+    }
+  }
   finalAction = applyOutcomeEffectsTable(state, finalAction, template, tick, runtime, aftermathChanges);
   finalAction = appendAftermathChanges(finalAction, aftermathChanges, []);
 
