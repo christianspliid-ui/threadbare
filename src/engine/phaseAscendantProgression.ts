@@ -44,6 +44,7 @@ import type { ChronicleEntry } from '../types/narrative';
 import type { SphereName } from '../types/index';
 import { computeReachShare, computeTier } from './domainCapability';
 import { rankedAffinityReaches } from './reachPractice';
+import { rebukablePlaceIds } from './rivalRebuke';
 import { emitTrace } from './traceBuffer';
 import {
   DEEPENING_BEAT_MAX_PER_TICK,
@@ -551,7 +552,9 @@ export function phaseAscendantProgression(state: GameState): Partial<GameState> 
   if (canEnqueue && !pending && !firedMilestones.includes(MILESTONE_FIRST_REBUKE_BEAT_ID)) {
     const doom = state.doomClock;
     const landed = !!doom && resolveDoomWokeAtTick(doom) !== null
-      && (state.rivalStates ?? []).some(rs => !!rs?.lastPressed && !rs.lastPressed.absorbed);
+      // Only while some place is rebukable (window, active, unabsorbed, unanswered), so the
+      // gift's "go and rebuke it there" always has a place to go (review gate round 2).
+      && rebukablePlaceIds(state).size > 0;
     if (landed) {
       pending = {
         beatId: MILESTONE_FIRST_REBUKE_BEAT_ID,

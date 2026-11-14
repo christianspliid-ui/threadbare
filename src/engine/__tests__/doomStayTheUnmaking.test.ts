@@ -454,5 +454,13 @@ describe('THR-2209 — the first-rebuke milestone (slice 3, same fixture)', () =
     });
     expect(fired.ascendantBeats?.pending).toMatchObject({ beatId: MILESTONE_FIRST_REBUKE_BEAT_ID, kind: 'milestone' });
     expect(getMilestoneBeatById(MILESTONE_FIRST_REBUKE_BEAT_ID)?.grantsActionIds).toEqual(['loc.rebuke_rival']);
+
+    // A landing already past the rebuke window gives no gift: there is nowhere to rebuke.
+    const c = makeState();
+    const stale = phaseAscendantProgression({
+      ...c, tick: 12 * 10, ascendantBeats: beats, doomClock: { ...c.doomClock, wokeAtTick: 0, currentStage: 1 },
+      rivalStates: pressedBy(c, false),
+    });
+    expect(stale.ascendantBeats?.pending?.beatId).not.toBe(MILESTONE_FIRST_REBUKE_BEAT_ID);
   });
 });
