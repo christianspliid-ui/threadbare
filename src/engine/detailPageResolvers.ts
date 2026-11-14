@@ -53,7 +53,8 @@ import {
 } from '../data/detail-page-fallback-templates';
 import type { GameState } from '../types/gameState';
 import type { ContentRef } from '../types/contentRef';
-import { elapsedLabel, humanizeKeySegment } from './aftermathWords';
+import { CAUSE_STEP_VERBS, elapsedLabel, humanizeKeySegment, OUTCOME_SENTENCE_SHAPES, outcomeSentence } from './aftermathWords';
+import type { StepOutcome, UnifiedActionOutcome } from '../types/unifiedAction';
 import { getFactionDefinition } from '../data/faction-definition-lookup';
 import { computeRankFromReputation } from '../types/faction';
 import {
@@ -940,14 +941,44 @@ const placeMemoryResolver: SectionResolver = (ctx) => {
 
 // ─── Event resolvers ──────────────────────────────────────────────────────────
 
+/** THR-2223 — who an unsummarised event happened to, when no primary participant is named. */
+export const EVENT_SUMMARY_UNNAMED_ACTOR = 'Someone';
+
+/**
+ * THR-2223 — "What happened" for an event with no stored summary. Never the event's own
+ * title: one encounter step reads by its band ("Kael took a step in The Price on Their
+ * Head, and it went well."), an ending with no step reads as the aftermath's sentence
+ * ("Kael won …, at a price."), and an outcome-less event still names who took part.
+ */
+export function eventFallbackSummary(graph: WorldGraph, evt: GraphNode): string | null {
+  const templateName = (evt.properties?.templateName as string | undefined) ?? evt.name;
+  if (!templateName) return null;
+  const primary = graph.getIncomingEdges(evt.id, 'participated_in')
+    .find(e => e.properties?.role === 'primary') ?? graph.getIncomingEdges(evt.id, 'participated_in')[0];
+  const actorName = (primary && graph.getNode(primary.source)?.name) || EVENT_SUMMARY_UNNAMED_ACTOR;
+  const outcome = evt.properties?.outcome as string | undefined;
+  // An encounter step's node (`createUnifiedActionEventNode` / `createEncounterEventNode`)
+  // stores that step's band, not the chapter's ending — so a step reads as a step, and
+  // "success" on step one never claims the whole chapter was won.
+  const isStep = typeof evt.properties?.stepIndex === 'number';
+  if (isStep && outcome && outcome in CAUSE_STEP_VERBS) {
+    return `${actorName} took a step in ${templateName}, and it ${CAUSE_STEP_VERBS[outcome as StepOutcome]}.`;
+  }
+  if (!isStep && outcome && outcome in OUTCOME_SENTENCE_SHAPES) {
+    return outcomeSentence(actorName, templateName, outcome as UnifiedActionOutcome);
+  }
+  return `${actorName} took part in ${templateName}.`;
+}
+
 const whatHappenedResolver: SectionResolver = (ctx) => {
   const evt = ctx.graph.getNode(ctx.nodeId);
   if (!evt || evt.type !== 'event') return null;
 
   const stored = evt.properties?.proseTier as 'routine' | 'notable' | 'chronicle' | undefined;
-  // THR-1876: an encounter step's node is named "<template> (step N)" — a raw index (Law 14) —
-  // so with no summary the card names the template it stores, and only then the node.
-  const summary = (evt.properties?.summary as string | undefined) ?? (evt.properties?.templateName as string | undefined) ?? evt.name;
+  // THR-1876: an encounter step's node is named "<template> (step N)" — a raw index (Law 14).
+  // THR-2223: with no stored summary the card never echoes its own title — it says who
+  // did it and how it went, through the aftermath's one ending lexicon.
+  const summary = (evt.properties?.summary as string | undefined) ?? eventFallbackSummary(ctx.graph, evt);
   if (!summary) return null;
 
   const section: ProseSection = {

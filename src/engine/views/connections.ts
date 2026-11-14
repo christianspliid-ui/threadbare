@@ -33,6 +33,7 @@ import { CONNECTIONS_DOCKED_FOLD_AFTER } from './viewConstants';
 import { landNameFor, namedLocationOnHex } from './subjects/landName';
 import type { ConnectionsVM, LinkRowVM } from './subjects/subjectTypes';
 import { buildingFact } from '../settlementEconomy/describe';
+import { spelledCount } from '../aftermathWords';
 
 /** The subject classes Connections knows. Content cards and missing pages have none. */
 export type ConnectionSubjectClass = 'person' | 'location' | 'faction' | 'army' | 'artifact' | 'god' | 'land' | 'record';
@@ -245,7 +246,63 @@ function factFor(graph: WorldGraph, rule: FactRule | undefined, n: GraphNode, ed
   }
 }
 
-interface Collected { row: LinkRowVM; sortKey: [number, string]; tick: number }
+interface Collected {
+  row: LinkRowVM;
+  sortKey: [number, string];
+  tick: number;
+  /** THR-2223 — encounter-outcome rows only: the template the run belongs to. */
+  templateKey?: string;
+  /** THR-2223 — true when this row starts a run (an action instance, or a legacy step 0). */
+  startsRun?: boolean;
+}
+
+/** THR-2223 — the one event type whose rows fold by template: an encounter chapter's steps. */
+const STORY_FOLD_EVENT_TYPE = 'encounter_outcome';
+
+/** THR-2223 — past this many runs the repeat word stops counting exactly (`spelledCount` tops out here). */
+export const STORY_REPEAT_SPELLED_MAX = 99;
+
+/**
+ * THR-2223 — the Story's repeat word: "twice", "five times". A row stands for every run
+ * of one template, so a ruler who ran "The Price on Their Head" five times shows one chip
+ * that says so, not five identical chips. Spelled out (Laws 13/14): no numeral escapes.
+ */
+export function storyRepeatWord(runs: number): string {
+  if (runs <= 1) return '';
+  if (runs === 2) return INSPECTOR_WORDS.storyRepeat.twice;
+  if (runs > STORY_REPEAT_SPELLED_MAX) return INSPECTOR_WORDS.storyRepeat.moreThan.replace('{n}', spelledCount(STORY_REPEAT_SPELLED_MAX));
+  return INSPECTOR_WORDS.storyRepeat.many.replace('{n}', spelledCount(runs));
+}
+
+/**
+ * THR-2223 — one Story row per template. Items keep their order of arrival; the latest
+ * run's row stands (its link opens the newest chapter), carrying the repeat word as its
+ * fact. Items with no template key (non-encounter events) pass through untouched.
+ */
+function foldStoryRepeats(items: Collected[]): Collected[] {
+  const out: Collected[] = [];
+  const at = new Map<string, { index: number; runs: number }>();
+  for (const item of items) {
+    if (!item.templateKey) { out.push(item); continue; }
+    const run = item.startsRun ? 1 : 0;
+    const seen = at.get(item.templateKey);
+    if (!seen) {
+      at.set(item.templateKey, { index: out.length, runs: run });
+      out.push(item);
+      continue;
+    }
+    seen.runs += run;
+    if (item.tick >= out[seen.index].tick) out[seen.index] = item;
+  }
+  for (const { index, runs } of at.values()) {
+    // A legacy step node carries no action id, so a run is counted at its step 0; a
+    // chapter whose step 0 was never recorded still counts as one run.
+    if (runs < 2) continue;
+    const item = out[index];
+    out[index] = { ...item, row: { ...item.row, fact: storyRepeatWord(runs) } };
+  }
+  return out;
+}
 
 function rowOf(graph: WorldGraph, n: GraphNode, fact: string): LinkRowVM | null {
   const named = refFor(graph, n);
@@ -396,19 +453,19 @@ export function buildConnections(graph: WorldGraph, state: GameState | null, sub
     // THR-2139 — one Story row per action instance: a two-step chapter mints one event
     // node per step, so its steps share an `actionId`, and the latest step's row stands.
     const byInstance = new Map<string, number>();
-    const push = (row: LinkRowVM, sortKey: [number, string], tick: number, instanceKey?: string) => {
+    const push = (row: LinkRowVM, sortKey: [number, string], tick: number, instanceKey?: string, templateKey?: string, startsRun?: boolean) => {
       const key = `${row.ref.kind}:${row.ref.id}`;
       if (seen.has(key) || row.ref.id === subjectId) return;
       seen.add(key);
       if (instanceKey) {
         const at = byInstance.get(instanceKey);
         if (at !== undefined) {
-          if (tick >= items[at].tick) items[at] = { row, sortKey, tick };
+          if (tick >= items[at].tick) items[at] = { row, sortKey, tick, templateKey, startsRun: true };
           return;
         }
         byInstance.set(instanceKey, items.length);
       }
-      items.push({ row, sortKey, tick });
+      items.push({ row, sortKey, tick, templateKey, startsRun });
     };
     for (const step of steps) {
       if ('helper' in step) {
@@ -433,11 +490,20 @@ export function buildConnections(graph: WorldGraph, state: GameState | null, sub
         const instanceKey = n.type === 'event' && typeof n.properties.actionId === 'string'
           ? `action:${n.properties.actionId as string}`
           : undefined;
-        push(row, sortKey, typeof n.properties.tick === 'number' ? (n.properties.tick as number) : 0, instanceKey);
+        // THR-2223 — separate runs of one template fold into one row (`foldStoryRepeats`).
+        // Only encounter-chapter rows fold: a fight record or an undertaking outcome can carry
+        // the same `templateId` and must stay its own row.
+        const foldable = n.type === 'event' && n.properties.eventType === STORY_FOLD_EVENT_TYPE;
+        const templateKey = foldable
+          ? (typeof n.properties.templateId === 'string' ? `template:${n.properties.templateId as string}` : typeof n.properties.templateName === 'string' ? `name:${n.properties.templateName as string}` : undefined)
+          : undefined;
+        // A run starts at an action instance; a legacy step node (no `actionId`) starts one at step 0.
+        const startsRun = instanceKey !== undefined || typeof n.properties.stepIndex !== 'number' || n.properties.stepIndex === 0;
+        push(row, sortKey, typeof n.properties.tick === 'number' ? (n.properties.tick as number) : 0, instanceKey, templateKey, startsRun);
       }
     }
     if (items.length === 0) continue; // Law 25: no heading over nothing
-    const rows = sortRows(group, items);
+    const rows = sortRows(group, group === 'story' ? foldStoryRepeats(items) : items);
     groups.push({ id: group, label: CONNECTION_GROUP_LABELS[group], rows, total: rows.length, foldAfter: CONNECTIONS_DOCKED_FOLD_AFTER });
   }
   return { title: subject.cls === 'land' ? CONNECTIONS_BLOCK_TITLE.land : CONNECTIONS_BLOCK_TITLE.default, groups };
