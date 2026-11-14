@@ -95,11 +95,18 @@ describe('THR-1964 — the cause line, every band × god-touched / alone × one-
               expect(text).toBe(lead);
               continue;
             }
-            expect(text).toContain(`The work on Gold ${CAUSE_STEP_VERBS[band]}`);
-            // THR-2139 — in the many-step shape the other step carries the hand, so the
-            // untouched decider reads "elsewhere", never "alone".
-            if (!godTouched && shape === 'many-step') expect(text).toContain(`${CAUSE_GOD_ELSEWHERE}.`);
-            else if (!godTouched) expect(text).toContain('Kael faced it alone.');
+            // THR-2218 — on a won ending a band tie goes to the step the hand was
+            // on, so in the many-step shape the touched Iron step decides.
+            const won = !LOST.has(outcome);
+            const tieToHand = !godTouched && shape === 'many-step' && won;
+            const handOnDecider = godTouched || tieToHand;
+            expect(text).toContain(`The work on ${tieToHand ? 'Iron' : 'Gold'} ${CAUSE_STEP_VERBS[band]}`);
+            // THR-2218 — a won ending never says the cards were on another step.
+            if (won) expect(text).not.toContain(CAUSE_GOD_ELSEWHERE);
+            // THR-2139 — in the many-step shape the other step carries the hand, so an
+            // untouched decider of a lost ending reads "elsewhere", never "alone".
+            if (!handOnDecider && shape === 'many-step') expect(text).toContain(`${CAUSE_GOD_ELSEWHERE}.`);
+            else if (!handOnDecider) expect(text).toContain('Kael faced it alone.');
             // THR-2180 — both steps share the band here, so a failed decider is never the
             // only failed step and the "one step went wrong" scoping does not apply.
             else if (LOST.has(outcome) || band === 'failure' || band === 'critical_failure') {

@@ -15,6 +15,7 @@ import {
   buildAftermathCauseLine,
   CAUSE_ALONE,
   CAUSE_GOD_ELSEWHERE,
+  CAUSE_GOD_ON_STEP,
   PRICE_WORDS,
   priceRowFor,
   type CauseLineStep,
@@ -89,6 +90,20 @@ describe('THR-2139 — 4: no "alone" when the god played any step', () => {
       templateName: 'Trial',
       outcome: 'success_at_cost',
       steps: [step('success', true, 'gold'), step('near_miss', false)],
+    });
+    expect(line).not.toContain(CAUSE_ALONE('Baldur'));
+    // THR-2218 — a won chapter credits the step the cards were on instead of
+    // "your cards were on another step"; the lost case below keeps that clause.
+    expect(line).not.toContain(CAUSE_GOD_ELSEWHERE);
+    expect(line).toContain(CAUSE_GOD_ON_STEP('The work on Gold'));
+  });
+
+  it('a lost chapter decided by the untouched step still reads "elsewhere"', () => {
+    const line = buildAftermathCauseLine({
+      actorName: 'Baldur',
+      templateName: 'Trial',
+      outcome: 'failure',
+      steps: [step('success', true, 'gold'), step('failure', false)],
     });
     expect(line).not.toContain(CAUSE_ALONE('Baldur'));
     expect(line).toContain(CAUSE_GOD_ELSEWHERE);
