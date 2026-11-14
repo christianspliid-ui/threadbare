@@ -150,6 +150,12 @@ export interface ThreadEdgeProperties {
    * cache scan per four days, not one per decision. Absent = never checked.
    */
   restlessRoadCheckTick?: number;
+  /**
+   * THR-2214 — tick The First last set out on the path's road (toward a story that
+   * fits the path the god chose). Its checks share `restlessRoadCheckTick`.
+   * Absent = never.
+   */
+  lastFirstPathRoadTick?: number;
 
   // ── Journey state (Phase 2+, only for The First) ───────────
   /** Current Campbellian journey phase. */

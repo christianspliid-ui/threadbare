@@ -81,9 +81,12 @@ export const COMPULSION_MIN_STORY_OPTIONS = 2;
 /** THR-2068 — the chosen path's lean on The First's scenes whose main Reach is one of
  * the path's two Reaches (THR-2156: and whose motivations name one of the path's two
  * `themeAxes`): ×(1 + FIRST_PATH_PULL) on the live board and `finalScore`.
- * Below the trade's lean plus arrival commitment, far below a paid whisper.
- * @range 0.2–1.0 */
-export const FIRST_PATH_PULL = 0.5;
+ * THR-2214: 0.5 → 2.0 (×3), the ticket's ceiling, so the path clearly outranks the
+ * trade's ×1.4 role lean. Measured with 'npm run census:path' (seeds 42/7/13 × four paths,
+ * 400 ticks hands-off): fitting chapters pooled 56% at ×2.5, 62% at ×3 (target ≥ 60%).
+ * Never above 2.0: past ×3 the path stops being a lean and becomes all she does.
+ * @range 0.2–2.0 */
+export const FIRST_PATH_PULL = 2.0;
 
 /** THR-1781 — how long a paid Compulsion waits for the mortal's next real decision.
  * The mortal is often mid-chapter when the player pays (the popup shows
