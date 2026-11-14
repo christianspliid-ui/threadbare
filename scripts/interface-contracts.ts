@@ -1382,6 +1382,28 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/engine/phaseMandate.ts'],
   },
   {
+    id: 'threaded-chapter-credits-mandate',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: 'Mandate',
+    intent:
+      'A bound mortal\'s deeds fill the Mandate (THR-2208). When a mortal the god threads closes a chapter, `mandateDeedForChapter` (in `executeStepResult`, on the resolving step) credits each Mandate sphere `(chapter sphereAffinity is that sphere ? MANDATE_DEED_BASE_POINTS : 0) + essence paid in it on the chapter\'s cards × MANDATE_DEED_POINTS_PER_ESSENCE`, times the band\'s `MANDATE_DEED_BAND_FACTOR`, stores it on the action as `mandateDeedCredits` with one aftermath row, and `phaseUnifiedActionProgress` queues it on `pendingMandateCredits` (`source: \'deed\'`). `phaseMandate` folds it the same tick, rolls the one-day `recentLedgerMoves` window the trend word reads, and lists the deed in `recentDeeds`. Spend in any other sphere credits nothing.',
+    ulTerms: ['Victory Mandate', 'Sphere', 'Thread'],
+    mechanism: { kind: 'function', symbols: ['mandateDeedForChapter', 'mandateDeedCredit', 'rollLedgerWindow'], module: 'src/engine/mandateLedger.ts' },
+    writeSites: ['src/engine/unifiedActionResolution.ts'],
+    readSites: ['src/engine/phaseMandate.ts', 'src/engine/views/subjects/godSheet.ts'],
+  },
+  {
+    id: 'nudge-commit-records-mandate-sphere-spend',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: 'Mandate',
+    intent:
+      'The nudge commit records what each sphere paid (THR-2208). `spendNudgeEssence` returns the per-sphere split (`bySphere`); the commit in `GameView.handleCommitNudges` sums it onto the chapter\'s `mandateSphereSpend` through `addMandateSphereSpend`. Read once, by `mandateDeedForChapter`, when the chapter closes.',
+    ulTerms: ['Victory Mandate', 'Sphere', 'Essence'],
+    mechanism: { kind: 'state-field', symbols: ['mandateSphereSpend'] },
+    writeSites: ['src/components/Game/GameView.tsx'],
+    readSites: ['src/engine/unifiedActionResolution.ts'],
+  },
+  {
     id: 'god-card-push-lands-in-town-place',
     producerSystem: QUINTESSENCE,
     consumerSystem: 'Mandate',

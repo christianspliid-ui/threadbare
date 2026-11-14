@@ -145,6 +145,40 @@ export const MANDATE_MILESTONE_EVENT_SIGNIFICANCE = 0.85;
 /** Significance of the tick event a mandate failure emits (THR-1197). */
 export const MANDATE_FAILURE_EVENT_SIGNIFICANCE = 0.95;
 
+// ─── Mandate deeds (THR-2208, plan 2026-11-13-thr-2202 slice 1) ──────────────
+// A threaded mortal's chapter, once it closes, credits the Mandate directly: a base when
+// the chapter's sphere is a Mandate sphere, plus the essence the god paid in the
+// Mandate's spheres on that chapter's cards, both scaled by how the chapter ended.
+
+/** Credit for a threaded chapter whose sphere is a Mandate sphere, before spend. */
+export const MANDATE_DEED_BASE_POINTS = 1.5;
+
+/** Credit per essence the god paid in a Mandate sphere on that chapter's cards. */
+export const MANDATE_DEED_POINTS_PER_ESSENCE = 1.0;
+
+/**
+ * How the chapter ended scales its credit (Law 23: the hand shows at every band). Every
+ * band credits something, so the card-face hint "Counts toward your Mandate." is never
+ * a promise the world breaks (Law 56).
+ */
+export const MANDATE_DEED_BAND_FACTOR = {
+  critical_success: 1.5,
+  success: 1.0,
+  success_at_cost: 0.75,
+  near_miss: 0.5,
+  failure: 0.25,
+  critical_failure: 0.1,
+} as const;
+
+/** One day of ledger change decides the Mandate's trend word (12 = `TICKS_PER_DAY`). */
+export const MANDATE_TREND_WINDOW_TICKS = 12;
+
+/** A deed crediting at least this many points reads "raised … far". */
+export const MANDATE_DEED_STRONG_POINTS = 4;
+
+/** How many deed lines the Mandate block keeps for its "last deeds" list. */
+export const MANDATE_RECENT_DEEDS_KEPT = 3;
+
 /** Default secondary-objective targets by court shape. */
 export const MANDATE_WEB_SECONDARY_TARGET = 8;
 export const MANDATE_CIRCLE_SECONDARY_TARGET = 3;

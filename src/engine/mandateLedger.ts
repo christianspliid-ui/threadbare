@@ -20,6 +20,12 @@ import type { MandateCredit, PressureSource, SpherePressureEvent } from '../type
 import { DOOM_STAGE_PUSH_SOURCE_PREFIX } from '../types/sphereAffinity';
 import type { SpherePressureTrace } from './phaseSpherePressure';
 import { SPHERE_OPPOSITES } from './cosmology';
+import {
+  MANDATE_DEED_BAND_FACTOR,
+  MANDATE_DEED_BASE_POINTS,
+  MANDATE_DEED_POINTS_PER_ESSENCE,
+  MANDATE_TREND_WINDOW_TICKS,
+} from '../data/game-config';
 
 /** Writers that only ever push for the god (Dominion tending, attunement, THR-1935 prayer). */
 export const GOD_ONLY_SOURCES: ReadonlySet<PressureSource> = new Set<PressureSource>([
@@ -178,4 +184,126 @@ export function applyMandateCredits(
     applied.push({ ...c, applied: moved, ledgerAfter: nextLedger[slot] });
   }
   return { ledger: nextLedger, held: nextHeld, applied };
+}
+
+// ─── THR-2208 — a bound mortal's deeds fill the Mandate ──────────────────────────
+
+/** The band a whole chapter ended on, read as a step band for the deed factor. */
+export function deedBandOf(outcome: string | undefined): DeedBand {
+  switch (outcome) {
+    case 'critical_success': return 'critical_success';
+    case 'success':
+    case 'contested_won': return 'success';
+    case 'success_at_cost': return 'success_at_cost';
+    case 'near_miss': return 'near_miss';
+    case 'critical_failure': return 'critical_failure';
+    default: return 'failure';
+  }
+}
+
+export type DeedBand = keyof typeof MANDATE_DEED_BAND_FACTOR;
+
+export interface MandateDeedCreditInput {
+  actorId: string;
+  /** The chapter template's `sphereAffinity`. Absent ⇒ the base part is 0. */
+  chapterSphere?: SphereName;
+  band: DeedBand;
+  /** Essence the god paid, per sphere, on this chapter's cards. Absent (old save) ⇒ `{}`. */
+  mandateSphereSpend?: Partial<Record<SphereName, number>>;
+  primary: SphereName;
+  secondary: SphereName;
+}
+
+/**
+ * The Mandate credit a threaded mortal's closed chapter earns (plan Decision 1). One
+ * credit per Mandate sphere that earns anything: `(chapterSphere === s ? base : 0) +
+ * spend[s] × perEssence`, times the band's factor. Spend in any other sphere (a Doom
+ * card, say) earns nothing — that is the Law 30 choice. Pure, no PRNG.
+ */
+export function mandateDeedCredit(input: MandateDeedCreditInput): MandateCredit[] {
+  const factor = MANDATE_DEED_BAND_FACTOR[input.band] ?? 0;
+  if (!(factor > 0)) return [];
+  const spheres = input.primary === input.secondary ? [input.primary] : [input.primary, input.secondary];
+  const credits: MandateCredit[] = [];
+  for (const s of spheres) {
+    const base = input.chapterSphere === s ? MANDATE_DEED_BASE_POINTS : 0;
+    const spent = Math.max(0, input.mandateSphereSpend?.[s] ?? 0);
+    const points = (base + (Number.isFinite(spent) ? spent : 0) * MANDATE_DEED_POINTS_PER_ESSENCE) * factor;
+    if (points > 0) {
+      credits.push({ entityId: input.actorId, sphere: s, points, cause: 'god', sources: ['encounter'], source: 'deed' });
+    }
+  }
+  return credits;
+}
+
+/**
+ * Add one commit's per-sphere charge to a chapter's running total (summed across
+ * commits). Zero and non-finite entries are dropped; returns the input when nothing
+ * was paid, so an empty hand writes nothing.
+ */
+export function addMandateSphereSpend(
+  prior: Partial<Record<SphereName, number>> | undefined,
+  charged: Partial<Record<SphereName, number>>,
+): Partial<Record<SphereName, number>> | undefined {
+  let next: Partial<Record<SphereName, number>> | undefined = prior;
+  for (const [sphere, amount] of Object.entries(charged) as [SphereName, number | undefined][]) {
+    if (!amount || !Number.isFinite(amount) || amount <= 0) continue;
+    next = { ...(next ?? {}), [sphere]: (next?.[sphere] ?? 0) + amount };
+  }
+  return next;
+}
+
+/** One move of the ledger inside the trend window. */
+export interface LedgerMove { tick: number; points: number }
+
+/**
+ * Keep the ledger's moves inside the last `window` ticks and add this tick's net
+ * (plan Decision 2). Returns the kept moves and their sum — the trend reads the sum:
+ * above 0 Rising, below 0 Slipping, else Holding.
+ */
+export function rollLedgerWindow(
+  prior: readonly LedgerMove[] | undefined,
+  tick: number,
+  net: number,
+  window: number = MANDATE_TREND_WINDOW_TICKS,
+): { moves: LedgerMove[]; delta: number } {
+  const moves = (prior ?? []).filter(m => tick - m.tick < window);
+  if (Number.isFinite(net) && net !== 0) moves.push({ tick, points: net });
+  const delta = moves.reduce((sum, m) => sum + m.points, 0);
+  return { moves, delta };
+}
+
+/** Floating-point slack for the trend: a window that nets to dust reads Holding. */
+export const MANDATE_TREND_EPSILON = 1e-6;
+
+/** The trend the god rail and the inspector read from the window's net (THR-2208). */
+export function mandateTrendOf(recentLedgerDelta: number | undefined): 'rising' | 'steady' | 'ebbing' {
+  const d = recentLedgerDelta ?? 0;
+  if (d > MANDATE_TREND_EPSILON) return 'rising';
+  if (d < -MANDATE_TREND_EPSILON) return 'ebbing';
+  return 'steady';
+}
+
+const NO_SPHERES: ReadonlySet<SphereName> = new Set<SphereName>();
+
+/**
+ * THR-2208 — the spheres whose spend on this mortal's chapter will credit the Mandate:
+ * the Mandate's two when the run has a sphere-growth Mandate and the mortal is bound to
+ * the god by a thread; empty otherwise. Fail-soft: a graph read that throws ⇒ empty.
+ */
+export function mandateDeedSpheres(
+  state: Pick<GameState, 'mandateDefinition' | 'ascendantId'> | null | undefined,
+  graph: Graph,
+  actorId: string,
+): ReadonlySet<SphereName> {
+  const def = state?.mandateDefinition;
+  const ascendantId = state?.ascendantId;
+  if (!def || def.runtimeKind !== 'sphere_growth' || !def.primarySphere || !def.secondarySphere) return NO_SPHERES;
+  if (!ascendantId || actorId === ascendantId) return NO_SPHERES;
+  try {
+    const threaded = graph.getIncomingEdges(actorId, 'thread').some(e => e.source === ascendantId);
+    return threaded ? new Set<SphereName>([def.primarySphere, def.secondarySphere]) : NO_SPHERES;
+  } catch {
+    return NO_SPHERES;
+  }
 }

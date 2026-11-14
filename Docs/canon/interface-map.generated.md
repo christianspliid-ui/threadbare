@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 118 |
-| **Total** | **357** |
+| 🔵 UNVERIFIED-OK | 120 |
+| **Total** | **359** |
 
 ## Contracts by producing subsystem
 
@@ -255,6 +255,7 @@ remediation ticket or the build fails.
 | `missed-appointment-breaks-agreement` | A missed appointment breaks the promise it was made of (THR-1479). The planter writes an `owes_favor` edge carrying `properties.appointment` — a favour of a particular shape, a member of the world-object Agreement kind's `favor` class, no new type. When the window closes without the mortal on the place's hex, `evaluateEncounterSeeds` rewrites the seed into its missed branch, marks the edge `broken` (and `brokenTick`), writes an `appointment_missed` Event node with the reason (`absent`, `unreachable`, `chose_to_miss`, `place_lost`), and the missed sequel fires wherever the mortal stands. The sheet's Bonds row reads the broken favour ("They owe … a meeting at … — broken") until the reckoning's aftermath retires it; the favour expiry sweep skips appointment favours because their lifecycle is the seed's. Kept, the edge is removed — redeemed. Registered LEAKED-with-ticket at filing for the same reason as its sibling: the seeded-run census (slice 2, THR-1518) is what proves a miss happens in a real world. | function: `breakAppointmentFavour`, `redeemAppointmentFavour`, `isAppointmentFavour`, `writeAppointmentEvent`, `plantAppointmentPromise` | Secrets & Favors | 🟢 LIVE | — |
 | `nudge-card-cost-channels-detection-and-doom` | A card can be cheap in essence and expensive somewhere else — visibility to rivals, or the doom clock — so the price of divine help is not always the same currency. | function: `collectNudgeCostChannels`, `applyRawDetectionDelta`, `accelerateDoomClock` | Spheres & Quintessence | 🔴 LEAKED | THR-883 |
 | `nudge-card-grants-dispatch-to-host-systems` | A card that says it changed the world actually changes it, through the system that owns that change — so the fiction the player is shown and the state the world holds cannot disagree. | function: `dispatchNudgeCommitments`, `collectNudgeGrants`, `assignAmbitionToActor` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | THR-883 |
+| `nudge-commit-records-mandate-sphere-spend` | The nudge commit records what each sphere paid (THR-2208). `spendNudgeEssence` returns the per-sphere split (`bySphere`); the commit in `GameView.handleCommitNudges` sums it onto the chapter's `mandateSphereSpend` through `addMandateSphereSpend`. Read once, by `mandateDeedForChapter`, when the chapter closes. | state-field: `mandateSphereSpend` | Mandate | 🔵 UNVERIFIED-OK | — |
 | `nudge-writes-reach-aftermath` | A card the god played and paid for answers in the ending (THR-2147, plan THR-2146 E3). `dispatchNudgeCommitments` applies each committed card's grants as its own reaction, probes the mortal before and after, and returns one `NudgeWriteRecord` per grant that changed something (a condition ended, an item left, an ambition woken, an urge or omen planted, a favour owed, a spell taught). `autonomous_aftermath` stores them on `UnifiedAction.nudgeWrites`; `buildNudgeWriteChanges` turns each into an ordinary Aftermath chip, merged beside the fight's and the cast's (the `stepCasts.writes` precedent). A removal that found nothing records nothing (Law 56), and `hidden_mark` never records — the Long Game is hidden by design. | node-prop: `nudgeWrites`, `buildNudgeWriteChanges` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `pending-rite-opens-surface` | Every mortal the god threads with the Agent Thread card gets a rite on screen with their real face, shaped by how many the god has threaded, and it waits until nothing else is open. | function: `drainThreadingRites`, `closeThreadingRite`, `planThreadingRite` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `planner-forecast-equals-roll` | A mortal chooses what to attempt by forecasting its odds, and the forecast is the number the dice use. The planner (`estimateStepProbability`, `forecastStepProbabilities`) forecasts every cache-entry step through `forecastActionAtScale` / `scaledStepProbability` at the template's `scale` — the same scale offset, difficulty cap and post-roll floor `resolveStepCore` applies — and the cache stores authored difficulty, since the roll never applies the late-game or danger multipliers (`PLANNER_DIFFICULTY_MULTIPLIERS_ENABLED = false`). Only what a mortal cannot foresee (a god's nudges, a company assist, push/resist) sits outside it. Standing modifiers (items, conditions, the effect family, terrain, place conditions, sphere alignment) sit on both sides since THR-1535: the roll adds `computeStandingModifierTotal`, and the planner adds the same per-reach total through a `createStandingModifierReader` built once per decision pass. | function: `forecastActionAtScale`, `scaledStepProbability`, `applyScaleDifficultyAdjust` | Encounters & Dilemmas | 🟢 LIVE | — |
@@ -280,6 +281,7 @@ remediation ticket or the build fails.
 | `step-card-lines-reach-the-reader` | Your cards say how they landed (THR-2187). When a step resolves, `executeStepResult` freezes `StepProseRecord.cardLines`: each committed card's `bandProse` line for the band, or the nearest band on its side (`CARD_BAND_FALLBACK`), at most `MAX_CARD_LINES_PER_STEP` in commit order, enriched with the step context and the seeded rng, as "<card name> — <line>" (`cardBandLines` in `encounters/nudges.ts`). The Stage step model and the chapter archive copy the frozen strings, never re-enrich; the Stage step replay and the Ledger step render them under the afterimage. Kill switch `CARD_LINES_ENABLED`. | state-field: `cardLines` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `story-start-anchor-and-tellings-cap-pace-paused-mortals` | A followed mortal rarely tells the same story twice. Agent decision stamps the tick a paused mortal starts a story chapter on her thread; her story drought counts from it. Her attempt counts (familiarityRecord) cap each story at PAUSED_STORY_MAX_TELLINGS while she is not in a drought of STORY_DROUGHT_RELAX_TICKS, and the five-day repeat floor covers every paused mortal, not only The First. No count cap anywhere (Law 29). | edge-prop: `lastStoryChapterStartTick`, `applyStoryTellingsCap`, `isPausedThreadActor` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `thread-write-resolves-first` | Whoever the god threads first becomes The First: when the god holds no First, the Agent Thread card writes its thread at `the_first` with the journey fields the meeting writes, so every First perk — shaping attention, the journey, the doom wake, the gold thread — follows with no per-perk change. | function: `resolveThreadWrite` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
+| `threaded-chapter-credits-mandate` | A bound mortal's deeds fill the Mandate (THR-2208). When a mortal the god threads closes a chapter, `mandateDeedForChapter` (in `executeStepResult`, on the resolving step) credits each Mandate sphere `(chapter sphereAffinity is that sphere ? MANDATE_DEED_BASE_POINTS : 0) + essence paid in it on the chapter's cards × MANDATE_DEED_POINTS_PER_ESSENCE`, times the band's `MANDATE_DEED_BAND_FACTOR`, stores it on the action as `mandateDeedCredits` with one aftermath row, and `phaseUnifiedActionProgress` queues it on `pendingMandateCredits` (`source: 'deed'`). `phaseMandate` folds it the same tick, rolls the one-day `recentLedgerMoves` window the trend word reads, and lists the deed in `recentDeeds`. Spend in any other sphere credits nothing. | function: `mandateDeedForChapter`, `mandateDeedCredit`, `rollLedgerWindow` | Mandate | 🔵 UNVERIFIED-OK | — |
 | `threaded-growth-reaches-chronicle` | The Chronicle tells growth only about mortals the god follows, in words (THR-1986, plan THR-1980 E4). Each tier-up (encounter and unified-action resolution), rarity graduation and critical success declares `chronicleGate: "threaded_only"` and a `playerProse` line with no tier number and no Q; `phaseNarrative` admits it only when `isThreadedByPlayer` holds for its actor, and reads `playerProse ?? message`. Each rarity block asks the same gate before its own direct Chronicle push. A skip is traced as `chronicle.intake.skipped`; `CHRONICLE_THREADED_GROWTH_ONLY` turns the gate off. `message` is unchanged for traces and logs. | property: `chronicleGate`, `playerProse` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `tier-cross-reaches-the-info-card` | When a step crosses a Reach tier, the aftermath says so; the mortal's info card must then list that domain too, even when it is not among their top three. Both growth sites write `lastTierCross = { domain, tick }` on the agent; `getAgentInfoCard` appends that domain, marked "new tier", while it is within `RECENT_TIER_CROSS_WINDOW_TICKS` (48). | node-prop: `lastTierCross`, `recordTierCross`, `readRecentTierCross` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `undertow-card-drifts-mortal-values` | The card that says it changes who the mortal is actually changes it, on the same axis their own choices move — so a god who keeps reaching for the ugly method is visibly making someone, not renting a bonus. | function: `dispatchNudgeCommitments`, `collectNudgeValueDrifts`, `driftTowardPole` | Personality & Emergent Traits | 🔴 LEAKED | THR-1130 |
@@ -1437,10 +1439,10 @@ exit
 - **Intent:** Losing a fight reads differently from merely failing — a contested loss says so in the chronicle and the receipt.
 - **Producer → Consumer:** Companies & Group Travel → Encounters & Dilemmas
 - **UL terms:** *Company*
-- **Production hits:** 16 total — 2 write, 2 read, 12 unclassified
+- **Production hits:** 17 total — 2 write, 2 read, 13 unclassified
 - **Write sites:** `src/engine/groups/bandOpposition.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/components/Game/ChapterView.tsx`, `src/engine/playerReceipts.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/content-eval/encounterPackage.ts`, `src/data/economy-shift-constants.ts`, `src/data/encounters/apotheosis-ascension.ts` +7 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/content-eval/encounterPackage.ts`, `src/data/economy-shift-constants.ts`, `src/data/encounters/apotheosis-ascension.ts` +8 more
 - **Verdict:** Verified 2026-07-25: contested_won/contested_lost shipped with TB-044 and had display strings in ChapterView, a playerReceipts severity mapping, and an isActionSuccess branch — with ZERO producers until this PR (grep at implementation time: the only non-declaration hits were the consumer-side switch arms). phaseUnifiedActionProgress now stamps the band on both sides of a resolved group contest, so the vocabulary the UI was already built to speak finally gets spoken. Locked by bandOpposition.test.ts § "gives the contested outcome band its first production producer".
 
 ### `control-effects-tend-god-turf` — 🔵 UNVERIFIED-OK
@@ -2971,10 +2973,10 @@ exit
 - **Intent:** Finishing the Mandate ends the age in triumph, at once, instead of play running on until doom ends it anyway.
 - **Producer → Consumer:** Ascendant Beats & Progression → Doom Clock & Journey
 - **UL terms:** *Mandate*, *Doom Clock*, *Run*
-- **Production hits:** 16 total — 1 write, 1 read, 14 unclassified
+- **Production hits:** 17 total — 1 write, 1 read, 15 unclassified
 - **Write sites:** `src/engine/phaseMandate.ts`
 - **Read sites:** `src/engine/orchestrator.ts`
-- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/hosts/DialogHost.tsx`, `src/data/ia-manifest.ts`, `src/engine/cycleEnd.ts`, `src/engine/gameInit.ts` +9 more
+- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/hosts/DialogHost.tsx`, `src/data/ia-manifest.ts`, `src/debug-bridge.ts`, `src/engine/cycleEnd.ts` +10 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mandate-milestone-prose-narrates-transitions` — 🟢 LIVE
@@ -3198,6 +3200,17 @@ exit
 - **Other hits:** `src/data/encounters/comet-disputation.ts`, `src/data/encounters/the-broken-seal.ts`, `src/engine/agentLifecycle.ts`, `src/engine/ambitionTick.ts`, `src/engine/binding/mintInhabitant.ts` +13 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
+### `nudge-commit-records-mandate-sphere-spend` — 🔵 UNVERIFIED-OK
+
+- **Intent:** The nudge commit records what each sphere paid (THR-2208). `spendNudgeEssence` returns the per-sphere split (`bySphere`); the commit in `GameView.handleCommitNudges` sums it onto the chapter's `mandateSphereSpend` through `addMandateSphereSpend`. Read once, by `mandateDeedForChapter`, when the chapter closes.
+- **Producer → Consumer:** Encounters & Dilemmas → Mandate
+- **UL terms:** *Victory Mandate*, *Sphere*, *Essence*
+- **Production hits:** 5 total — 1 write, 1 read, 3 unclassified
+- **Write sites:** `src/components/Game/GameView.tsx`
+- **Read sites:** `src/engine/unifiedActionResolution.ts`
+- **Other hits:** `src/debug-bridge.ts`, `src/engine/mandateLedger.ts`, `src/types/unifiedAction.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `nudge-hand-runtime-filters-and-sphere-discount` — 🔵 UNVERIFIED-OK
 
 - **Intent:** The hand the player is dealt reflects the world as it actually is — group cards only in groups, favor calls only when a favor is owed — and a sphere the god is aligned to makes its own work cheaper.
@@ -3411,10 +3424,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 482 total — 1 write, 1 read, 480 unclassified
+- **Production hits:** 484 total — 1 write, 1 read, 482 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +475 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +477 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `recovered-town-keeps-faith` — 🟢 LIVE
@@ -4214,6 +4227,18 @@ exit
 - **Read sites:** `src/engine/graphOpExecutor.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
+### `threaded-chapter-credits-mandate` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A bound mortal's deeds fill the Mandate (THR-2208). When a mortal the god threads closes a chapter, `mandateDeedForChapter` (in `executeStepResult`, on the resolving step) credits each Mandate sphere `(chapter sphereAffinity is that sphere ? MANDATE_DEED_BASE_POINTS : 0) + essence paid in it on the chapter's cards × MANDATE_DEED_POINTS_PER_ESSENCE`, times the band's `MANDATE_DEED_BAND_FACTOR`, stores it on the action as `mandateDeedCredits` with one aftermath row, and `phaseUnifiedActionProgress` queues it on `pendingMandateCredits` (`source: 'deed'`). `phaseMandate` folds it the same tick, rolls the one-day `recentLedgerMoves` window the trend word reads, and lists the deed in `recentDeeds`. Spend in any other sphere credits nothing.
+- **Producer → Consumer:** Encounters & Dilemmas → Mandate
+- **UL terms:** *Victory Mandate*, *Sphere*, *Thread*
+- **Module:** `src/engine/mandateLedger.ts`
+- **Production hits:** 5 total — 1 write, 1 read, 3 unclassified
+- **Write sites:** `src/engine/unifiedActionResolution.ts`
+- **Read sites:** `src/engine/phaseMandate.ts`
+- **Other hits:** `src/engine/mandateLedger.ts`, `src/types/trace.ts`, `src/types/unifiedAction.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `threaded-growth-reaches-chronicle` — 🔵 UNVERIFIED-OK
 
 - **Intent:** The Chronicle tells growth only about mortals the god follows, in words (THR-1986, plan THR-1980 E4). Each tier-up (encounter and unified-action resolution), rarity graduation and critical success declares `chronicleGate: "threaded_only"` and a `playerProse` line with no tier number and no Q; `phaseNarrative` admits it only when `isThreadedByPlayer` holds for its actor, and reads `playerProse ?? message`. Each rarity block asks the same gate before its own direct Chronicle push. A skip is traced as `chronicle.intake.skipped`; `CHRONICLE_THREADED_GROWTH_ONLY` turns the gate off. `message` is unchanged for traces and logs.
@@ -4424,10 +4449,10 @@ exit
 - **Intent:** What the player sees of a mortal’s work, on three surfaces that never list capability on a person: the Undertakings codex page (one card per live cell, generated from the registry and the grid’s dispositions — who tends to do it derived under the division rule), the roster’s doing-line (what each mortal is in the middle of, in words), and the ledger that names each finished deed by verb and object with the object linked.
 - **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
 - **Module:** `src/engine/undertakingDeed.ts`
-- **Production hits:** 45 total — 5 write, 4 read, 36 unclassified
+- **Production hits:** 55 total — 5 write, 5 read, 45 unclassified
 - **Write sites:** `src/data/division-rule-tables.ts`, `src/data/undertaking-verb-prose.ts`, `src/engine/strategicActionLifecycle.ts`, `src/engine/strategicPresentation.ts`, `src/engine/undertakingDeed.ts`
-- **Read sites:** `src/components/Codex/codexRegistry.ts`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/ThreadsPanel.tsx`, `src/engine/agentArc.ts`
-- **Other hits:** `src/components/Game/inspector/lab/stressFixture.ts`, `src/components/Game/inspector/SubjectHeader.tsx`, `src/data/builders-fellowship-encounter-content.ts`, `src/data/encounters/debt-arbitration.ts`, `src/data/encounters/inheritance-wake.ts` +31 more
+- **Read sites:** `src/components/Codex/codexRegistry.ts`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/ThreadsPanel.tsx`, `src/debug-bridge.ts`, `src/engine/agentArc.ts`
+- **Other hits:** `src/components/Game/inspector/lab/stressFixture.ts`, `src/components/Game/inspector/SubjectHeader.tsx`, `src/components/Game/MandateDetail.tsx`, `src/data/ascendant-bar-content.ts`, `src/data/builders-fellowship-encounter-content.ts` +40 more
 - **Verdict:** Verified 2026-09-07: THR-1434. The codex builds one card per live cell from `UNDERTAKING_CELL_TEMPLATES` and `LIVE_CELL_NOTES` (49 = 49 on the shipped grid, `validateUndertakingCodex` fails by name on a cell without a phrase, glyph, lexicon line or note); the roster reads `activeProject.doingLine` composed in `getAgentStrategicSummary`; the lifecycle names the deed once (`describeDeed`) on the history entry and the completion event’s `refs`, and the arc strip renders it with the object linked. Non-vacuous by `codexUndertakings.test.ts` (count equals live cells, game words only, derivation reversible, the guard falsified on an injected template), `ThreadsPanelDoingLine.test.tsx` (phrase + progress word, trouble word, "and more", nothing when idle), `JourneyTabDeed.test.tsx` (verb tooltip, linked object, plain object with no page) and `undertakingDeed.test.ts` (the namer’s branches and the real pipeline: an instant cell through the review lever writes its deed). Browser proof on the closing PR: the codex section open on a card, a roster with three mortals mid-work, Ashara’s ledger with two linked deeds.
 
 ### `undertow-card-drifts-mortal-values` — 🔴 LEAKED

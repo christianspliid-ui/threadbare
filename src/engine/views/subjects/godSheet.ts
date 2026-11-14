@@ -54,7 +54,9 @@ import { PLACE_ICON } from '../../../data/icons/conceptIcons';
 import type { IconName } from '../../../data/icons/iconRegistry';
 import { landNameFor } from './landName';
 import type { SignaturePathState } from '../../../data/ascendant-bar-content';
-import { mandateFillLine } from '../../../data/ascendant-bar-content';
+import { mandateDeedLine, mandateFillLine } from '../../../data/ascendant-bar-content';
+import { MANDATE_DEED_STRONG_POINTS } from '../../../data/game-config';
+import { mandateTrendOf } from '../../mandateLedger';
 import { sphereWord } from '../../../data/essence-format';
 import { godsPeopleIds } from '../knowledge';
 import { REACH_SIGNATURE_CONTENT_TEMPLATES } from '../../../data/reach-signature-content';
@@ -423,6 +425,12 @@ export interface MandateRowView {
   progress: number;           // 0–1
   stage: string;
   trend: 'rising' | 'steady' | 'ebbing';
+  /**
+   * THR-2208 — the last deeds of bound mortals that raised the Mandate, newest first,
+   * as the lines the player reads ("Kael's deed raised your Mandate in Mind."). Empty
+   * until a deed credits. Never a number.
+   */
+  recentDeedLines: string[];
 }
 
 /**
@@ -478,10 +486,11 @@ export function selectMandateRow(gameState: GameState): MandateRowView | null {
   const currentStageIdx = ['setup', 'escalation', 'culmination'].indexOf(state.currentStage);
   const progress = state.progress ?? 0;
 
-  const trend: 'rising' | 'steady' | 'ebbing' =
-    (state.primaryDelta ?? 0) > 0.02 ? 'rising'
-    : (state.primaryDelta ?? 0) < -0.02 ? 'ebbing'
-    : 'steady';
+  // THR-2208 — the word reads the ledger's last day (`recentLedgerDelta`), not the
+  // cumulative 2%-of-the-world gate it used to, which read "Holding" for most of a run.
+  const trend = mandateTrendOf(state.recentLedgerDelta);
+  const recentDeedLines = (state.recentDeeds ?? []).map(d =>
+    mandateDeedLine(d.actorName, sphereWord(d.sphere), d.points >= MANDATE_DEED_STRONG_POINTS));
 
   const STAGE_LABELS = ['I', 'II', 'III'] as const;
 
@@ -500,6 +509,7 @@ export function selectMandateRow(gameState: GameState): MandateRowView | null {
     progress,
     stage: STAGE_LABELS[currentStageIdx] ?? 'I',
     trend,
+    recentDeedLines,
   };
 }
 

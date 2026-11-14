@@ -99,6 +99,11 @@ import { revealBestSecret } from './secretsFavorsConsequences';
 import { SCHISM_PENDING_DURATION_TICKS } from '../data/game-config';
 import { GATE_DUTY_NUDGE_IDS } from '../data/civic-guard-encounter-content';
 import { emitTrace } from './traceBuffer';
+import { deedBandOf, mandateDeedCredit, mandateDeedSpheres } from './mandateLedger';
+import { MANDATE_DEED_STRONG_POINTS } from '../data/game-config';
+import { MANDATE_DEED_TITLE, mandateDeedLine } from '../data/ascendant-bar-content';
+import { sphereWord } from '../data/essence-format';
+import type { MandateCredit } from '../types/sphereAffinity';
 import { progressActionsWithPlayerHolds } from './playerStepHold';
 import { enrichProse, gatherNarrativeContext, resolveEncounterTitle } from './proseEnrichment';
 import { stepOutcomeToOutcomeBand } from '../data/outcome-band-content';
@@ -3179,6 +3184,16 @@ export function executeStepResult(
     }
   }
 
+  // THR-2208 — a bound mortal's closed chapter credits the Mandate, and says so in its
+  // aftermath (one row). Once per chapter: only on the step that resolves it.
+  if (finalAction.resolved && !action.resolved) {
+    const deed = mandateDeedForChapter(state, finalAction, template, currentActorName, tick);
+    if (deed) {
+      aftermathChanges.push(deed.change);
+      finalAction = { ...finalAction, mandateDeedCredits: deed.credits };
+    }
+  }
+
   // THR-1936 — the outcome table, once per resolved action, before the summary.
   finalAction = applyOutcomeEffectsTable(state, finalAction, template, tick, runtime, aftermathChanges);
   finalAction = appendAftermathChanges(
@@ -3253,6 +3268,68 @@ export function executeStepResult(
 }
 
 /**
+ * THR-2208 (plan 2026-11-13-thr-2202 slice 1, Decision 1) — the Mandate credit a
+ * threaded mortal's closed chapter earns, and the aftermath row that tells the player.
+ *
+ * `undefined` when the actor is not bound to the god by a thread, when the run has no
+ * sphere-growth Mandate, or when the chapter earns nothing (not in a Mandate sphere and
+ * nothing paid in one). Fail-soft: any graph read that throws credits nothing.
+ */
+export function mandateDeedForChapter(
+  state: GameState,
+  action: UnifiedAction,
+  template: Pick<UnifiedActionTemplate, 'sphereAffinity'>,
+  actorName: string | undefined,
+  tick: number,
+): { credits: MandateCredit[]; change: EncounterAftermathChange } | undefined {
+  const def = state.mandateDefinition;
+  if (!def || def.runtimeKind !== 'sphere_growth' || !def.primarySphere || !def.secondarySphere) return undefined;
+  if (mandateDeedSpheres(state, state.graph, action.actorId).size === 0) return undefined;
+  const band = deedBandOf(action.outcome);
+  const spend = action.mandateSphereSpend ?? {};
+  const credits = mandateDeedCredit({
+    actorId: action.actorId,
+    chapterSphere: template.sphereAffinity,
+    band,
+    mandateSphereSpend: spend,
+    primary: def.primarySphere,
+    secondary: def.secondarySphere,
+  });
+  if (credits.length === 0) return undefined;
+  const top = credits.reduce((best, c) => (c.points > best.points ? c : best), credits[0]);
+  const total = credits.reduce((sum, c) => sum + c.points, 0);
+  const detail = mandateDeedLine(actorName, sphereWord(top.sphere), total >= MANDATE_DEED_STRONG_POINTS);
+  const change: EncounterAftermathChange = {
+    id: `${action.actionId}:mandate_deed`,
+    kind: 'shell_state',
+    title: MANDATE_DEED_TITLE,
+    detail,
+    polarity: 'gain',
+    category: 'boon',
+    direction: 'gain',
+    stateNoun: { text: 'Mandate', tooltipId: 'ui.mandate_tracker' },
+    storyWeight: 'beat',
+    actorId: action.actorId,
+    ...(actorName ? { actorName } : {}),
+  };
+  emitTrace({
+    category: 'mandate.deed_credit',
+    tick,
+    agentId: action.actorId,
+    summary: `mandate.deed_credit: ${action.templateId} (${band}) credits ${credits
+      .map(c => `${c.sphere} +${c.points.toFixed(2)}`).join(', ')}`,
+    actorId: action.actorId,
+    encounterId: action.templateId,
+    actionId: action.actionId,
+    band,
+    ...(template.sphereAffinity ? { chapterSphere: template.sphereAffinity } : {}),
+    spend,
+    credits: credits.map(c => ({ sphere: c.sphere, points: c.points })),
+  });
+  return { credits, change };
+}
+
+/**
  * THR-1538 (plan doc §1) — the fight's **no-roll end**: a route through the
  * resolution tail, not around it. Taken when `resolveUncontestedStep` found the
  * fight's opponent unbound, dead, or gone from the fighter's hex before the roll.
@@ -3310,6 +3387,16 @@ function executeFightNoRollEnd(
 
   const aftermathChanges: EncounterAftermathChange[] = [];
   fireResolvedActionTriggers(state, action, template, outcome, tick, rng, runtime, aftermathChanges);
+  // THR-2208 review — a fight that ends before its roll still closes the chapter, so a
+  // threaded mortal's deed credits the Mandate here too (the rolled route does it in
+  // `executeStepResult`).
+  if (finalAction.resolved && !action.resolved) {
+    const deed = mandateDeedForChapter(state, finalAction, template, state.graph.getNode(action.actorId)?.name, tick);
+    if (deed) {
+      aftermathChanges.push(deed.change);
+      finalAction = { ...finalAction, mandateDeedCredits: deed.credits };
+    }
+  }
   finalAction = applyOutcomeEffectsTable(state, finalAction, template, tick, runtime, aftermathChanges);
   finalAction = appendAftermathChanges(finalAction, aftermathChanges, []);
 
@@ -4610,9 +4697,13 @@ export function phaseUnifiedActionProgress(
   // after both the contested and the uncontested loops, so a chapter that
   // ended in a contest (contested_won / contested_lost) is settled too.
   const completingIds = new Set(completing.map((a) => a.actionId));
+  // THR-2208 — a bound mortal's chapter that closed this tick queues its Mandate
+  // credit; the mandate phase (post-narrative) folds it the same tick.
+  const mandateDeedCredits: MandateCredit[] = [];
   for (const a of actions) {
     if (completingIds.has(a.actionId) && a.resolved && a.outcome) {
       settleDigestOutcome(digestBuffer, a.actionId, a.outcome);
+      if (a.mandateDeedCredits?.length) mandateDeedCredits.push(...a.mandateDeedCredits);
     }
   }
 
@@ -4636,5 +4727,8 @@ export function phaseUnifiedActionProgress(
       ? { pendingSpherePressures: [...(state.pendingSpherePressures ?? []), ...spherePressures] }
       : {}),
     ...(foundationSpheresFound !== foundationSpheresFoundBefore ? { foundationSpheresFound } : {}),
+    ...(mandateDeedCredits.length > 0
+      ? { pendingMandateCredits: [...(state.pendingMandateCredits ?? []), ...mandateDeedCredits] }
+      : {}),
   };
 }

@@ -123,6 +123,8 @@ import {
 import { ESSENCE_REFILL_WORDS, type EssenceRefillBand } from '../../../data/essence-refill-content';
 import { sphereWord } from '../../../data/essence-format';
 import { readEssenceRefill } from '../essenceRefill';
+import { mandateDeedSpheres } from '../../mandateLedger';
+import { MANDATE_CARD_HINT } from '../../../data/ascendant-bar-content';
 import { SPHERE_NAMES } from '../../../types/index';
 import { getSpherePoints, rankSpherePoints } from '../../spherePoints';
 import { NUDGE_ESSENCE_COST_SCALE } from '../../../data/nudge-constants';
@@ -1083,9 +1085,14 @@ export function buildNudgePhaseModel(
   const refill = budgetSphere && gameState?.ascendantId
     ? readEssenceRefill(graph, gameState.ascendantId, gameState.controlEffects)
     : undefined;
+  // THR-2208 — a card paid in a Mandate sphere, for a mortal bound to the god, counts
+  // toward the Mandate when the chapter closes. Every band credits something, so the
+  // hint never promises what the close will not do (Law 56).
+  const mandateSpheres = mandateDeedSpheres(gameState, graph, actorId);
   const pricedCards = cards.map((card) => {
     const payingSphere = card.sphere ?? budgetSphere;
     if (!payingSphere) return card;
+    const mandateHint = card.essenceCost > 0 && mandateSpheres.has(payingSphere) ? MANDATE_CARD_HINT : undefined;
     const costNote = nudgeCostNote(card, budgetSphere);
     // Identity runs only (`budgetSphere` set): a legacy run keeps the generic reason.
     const shortSphere = budgetSphere ? nudgeShortSphere(card, budgetSphere) : undefined;
@@ -1097,6 +1104,7 @@ export function buildNudgePhaseModel(
       ...card,
       payingSphere,
       ...(costNote ? { costNote } : {}),
+      ...(mandateHint ? { mandateHint } : {}),
       ...(shortReason ? { essenceShortReason: shortReason } : {}),
       ...(short ? { blockedReason: shortReason, shortSphere } : {}),
     };

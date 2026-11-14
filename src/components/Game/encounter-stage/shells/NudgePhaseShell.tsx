@@ -368,6 +368,8 @@ export function NudgeCard({
         costEmphasised: dimmed && card.blockedCode === 'essence_unavailable',
         // THR-2206 — the price hover says where the price is drawn from.
         ...(card.costNote ? { costNote: card.costNote } : {}),
+        // THR-2208 — the spend counts toward the Mandate (only when it will).
+        ...(card.mandateHint ? { costHint: card.mandateHint } : {}),
         ...(card.costChannels ? { costChannels: card.costChannels } : {}),
         ...(card.provenance ? { provenance: card.provenance } : {}),
         name: card.name,

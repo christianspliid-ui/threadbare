@@ -90,6 +90,11 @@ export interface MandateCredit {
   cause: 'god' | 'opposition';
   /** The writers netted into the trace this credit came from. */
   sources: PressureSource[];
+  /**
+   * THR-2208 — where the credit came from. Absent = `pressure` (a score the god's push
+   * raised, `phaseSpherePressure`); `deed` = a threaded mortal's chapter closing.
+   */
+  source?: 'pressure' | 'deed';
 }
 
 // ─── Scale Constants (NFP #1: Tunability) ────────────────────────

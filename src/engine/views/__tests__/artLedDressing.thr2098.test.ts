@@ -65,7 +65,8 @@ function world(opts: { tiles?: boolean } = {}): GameState {
       description: 'Hold the land.',
       stages: [{ description: 'Seize control of 2 settlements.' }, { description: 'b' }, { description: 'c' }],
     },
-    mandateState: { currentStage: 'setup', progress: 0.3, primaryDelta: 0.05 },
+    // THR-2208 — the trend reads the ledger's last day, so Rising is a recent gain.
+    mandateState: { currentStage: 'setup', progress: 0.3, primaryDelta: 0.05, recentLedgerDelta: 1 },
   } as unknown as GameState;
 }
 
