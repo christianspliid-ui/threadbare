@@ -149,7 +149,7 @@ describe('where the path road goes', () => {
     const kept = fittingEntries(PATH, [
       entry(FIT, 'loc_far', fitScene),
       entry(UNFIT, 'loc_far', unfitScene),
-      entry('encounter.heart_but_off_theme', 'loc_far', { reachPrimary: 'heart', motivations: ['order_freedom'] }),
+      entry('encounter.heart_but_off_theme', 'loc_far', { reachPrimary: 'heart', motivations: ['honesty_cunning'] }),
       entry(CHORE, 'loc_far', fitScene),
     ]);
     expect(kept.map(e => e.templateId)).toEqual([FIT]);
