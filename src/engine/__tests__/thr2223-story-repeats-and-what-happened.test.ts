@@ -68,7 +68,36 @@ describe('THR-2223 — 1: three runs of one template are one Story chip with a c
     ]);
   });
 
+  it('a fight record sharing the template id stays its own row (review round 2)', () => {
+    const graph = rulerGraph();
+    addRun(graph, 'act.1', 40);
+    graph.addNode({ id: 'fight.act.1', type: 'event', name: 'Fight at Ashford', properties: { eventType: 'fight_fought', tick: 40, templateId: TEMPLATE_ID, summary: 'A fight.' } });
+    graph.addEdge({ id: 'pf', source: RULER, target: 'fight.act.1', type: 'participated_in', properties: { role: 'primary' } });
+
+    const story = buildConnections(graph, null, { cls: 'person', id: RULER }).groups.find(g => g.id === 'story');
+    expect(story?.rows).toHaveLength(2);
+    expect(story?.rows.every(r => r.fact === '')).toBe(true);
+  });
+
+  it('legacy step nodes (no action id) count one run per step 0 (review round 2)', () => {
+    const graph = rulerGraph();
+    const legacyStep = (tick: number, stepIndex: number) => {
+      const id = `evt_${RULER}_${tick}_${stepIndex}`;
+      graph.addNode({ id, type: 'event', name: `${TEMPLATE_NAME} (Step ${stepIndex + 1})`, properties: { eventType: 'encounter_outcome', templateId: TEMPLATE_ID, templateName: TEMPLATE_NAME, stepIndex, outcome: 'success', tick } });
+      graph.addEdge({ id: `p_${id}`, source: RULER, target: id, type: 'participated_in', properties: { role: 'primary' } });
+    };
+    legacyStep(10, 0);
+    legacyStep(15, 1);
+    let story = buildConnections(graph, null, { cls: 'person', id: RULER }).groups.find(g => g.id === 'story');
+    expect(story?.rows.map(r => r.fact)).toEqual(['']); // one two-step chapter is one run
+    legacyStep(30, 0);
+    legacyStep(35, 1);
+    story = buildConnections(graph, null, { cls: 'person', id: RULER }).groups.find(g => g.id === 'story');
+    expect(story?.rows.map(r => r.fact)).toEqual(['twice']);
+  });
+
   it('the repeat word is spelled out, never a numeral', () => {
+    expect(storyRepeatWord(140)).toBe('more than ninety-nine times');
     expect(storyRepeatWord(1)).toBe('');
     expect(storyRepeatWord(2)).toBe('twice');
     expect(storyRepeatWord(5)).toBe('five times');

@@ -123,7 +123,7 @@ export const INSPECTOR_WORDS = {
   /** THR-2182 — the count chip's visible noun after its number: "4 cards". */
   rowCardsNoun: { one: 'card', many: 'cards' },
   /** THR-2223 — a Story row that stands for several runs of one chapter: "twice", "five times". */
-  storyRepeat: { twice: 'twice', many: '{n} times' },
+  storyRepeat: { twice: 'twice', many: '{n} times', moreThan: 'more than {n} times' },
   /** THR-1913 — the row tray's name: "Your cards for Temple Quarter". */
   rowTray: 'Your cards for {name}',
   /** The armed card, said to a screen reader. */

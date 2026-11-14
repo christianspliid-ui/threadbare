@@ -246,7 +246,21 @@ function factFor(graph: WorldGraph, rule: FactRule | undefined, n: GraphNode, ed
   }
 }
 
-interface Collected { row: LinkRowVM; sortKey: [number, string]; tick: number; templateKey?: string }
+interface Collected {
+  row: LinkRowVM;
+  sortKey: [number, string];
+  tick: number;
+  /** THR-2223 — encounter-outcome rows only: the template the run belongs to. */
+  templateKey?: string;
+  /** THR-2223 — true when this row starts a run (an action instance, or a legacy step 0). */
+  startsRun?: boolean;
+}
+
+/** THR-2223 — the one event type whose rows fold by template: an encounter chapter's steps. */
+const STORY_FOLD_EVENT_TYPE = 'encounter_outcome';
+
+/** THR-2223 — past this many runs the repeat word stops counting exactly (`spelledCount` tops out here). */
+export const STORY_REPEAT_SPELLED_MAX = 99;
 
 /**
  * THR-2223 — the Story's repeat word: "twice", "five times". A row stands for every run
@@ -256,6 +270,7 @@ interface Collected { row: LinkRowVM; sortKey: [number, string]; tick: number; t
 export function storyRepeatWord(runs: number): string {
   if (runs <= 1) return '';
   if (runs === 2) return INSPECTOR_WORDS.storyRepeat.twice;
+  if (runs > STORY_REPEAT_SPELLED_MAX) return INSPECTOR_WORDS.storyRepeat.moreThan.replace('{n}', spelledCount(STORY_REPEAT_SPELLED_MAX));
   return INSPECTOR_WORDS.storyRepeat.many.replace('{n}', spelledCount(runs));
 }
 
@@ -269,16 +284,19 @@ function foldStoryRepeats(items: Collected[]): Collected[] {
   const at = new Map<string, { index: number; runs: number }>();
   for (const item of items) {
     if (!item.templateKey) { out.push(item); continue; }
+    const run = item.startsRun ? 1 : 0;
     const seen = at.get(item.templateKey);
     if (!seen) {
-      at.set(item.templateKey, { index: out.length, runs: 1 });
+      at.set(item.templateKey, { index: out.length, runs: run });
       out.push(item);
       continue;
     }
-    seen.runs += 1;
+    seen.runs += run;
     if (item.tick >= out[seen.index].tick) out[seen.index] = item;
   }
   for (const { index, runs } of at.values()) {
+    // A legacy step node carries no action id, so a run is counted at its step 0; a
+    // chapter whose step 0 was never recorded still counts as one run.
     if (runs < 2) continue;
     const item = out[index];
     out[index] = { ...item, row: { ...item.row, fact: storyRepeatWord(runs) } };
@@ -435,19 +453,19 @@ export function buildConnections(graph: WorldGraph, state: GameState | null, sub
     // THR-2139 — one Story row per action instance: a two-step chapter mints one event
     // node per step, so its steps share an `actionId`, and the latest step's row stands.
     const byInstance = new Map<string, number>();
-    const push = (row: LinkRowVM, sortKey: [number, string], tick: number, instanceKey?: string, templateKey?: string) => {
+    const push = (row: LinkRowVM, sortKey: [number, string], tick: number, instanceKey?: string, templateKey?: string, startsRun?: boolean) => {
       const key = `${row.ref.kind}:${row.ref.id}`;
       if (seen.has(key) || row.ref.id === subjectId) return;
       seen.add(key);
       if (instanceKey) {
         const at = byInstance.get(instanceKey);
         if (at !== undefined) {
-          if (tick >= items[at].tick) items[at] = { row, sortKey, tick, templateKey };
+          if (tick >= items[at].tick) items[at] = { row, sortKey, tick, templateKey, startsRun: true };
           return;
         }
         byInstance.set(instanceKey, items.length);
       }
-      items.push({ row, sortKey, tick, templateKey });
+      items.push({ row, sortKey, tick, templateKey, startsRun });
     };
     for (const step of steps) {
       if ('helper' in step) {
@@ -473,10 +491,15 @@ export function buildConnections(graph: WorldGraph, state: GameState | null, sub
           ? `action:${n.properties.actionId as string}`
           : undefined;
         // THR-2223 — separate runs of one template fold into one row (`foldStoryRepeats`).
-        const templateKey = n.type === 'event'
+        // Only encounter-chapter rows fold: a fight record or an undertaking outcome can carry
+        // the same `templateId` and must stay its own row.
+        const foldable = n.type === 'event' && n.properties.eventType === STORY_FOLD_EVENT_TYPE;
+        const templateKey = foldable
           ? (typeof n.properties.templateId === 'string' ? `template:${n.properties.templateId as string}` : typeof n.properties.templateName === 'string' ? `name:${n.properties.templateName as string}` : undefined)
           : undefined;
-        push(row, sortKey, typeof n.properties.tick === 'number' ? (n.properties.tick as number) : 0, instanceKey, templateKey);
+        // A run starts at an action instance; a legacy step node (no `actionId`) starts one at step 0.
+        const startsRun = instanceKey !== undefined || typeof n.properties.stepIndex !== 'number' || n.properties.stepIndex === 0;
+        push(row, sortKey, typeof n.properties.tick === 'number' ? (n.properties.tick as number) : 0, instanceKey, templateKey, startsRun);
       }
     }
     if (items.length === 0) continue; // Law 25: no heading over nothing
