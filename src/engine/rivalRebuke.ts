@@ -31,7 +31,7 @@ import {
   RIVAL_REBUKE_TEMPER_RISE,
   RIVAL_REBUKE_WINDOW_DAYS,
 } from '../data/rival-scheme-config';
-import { RIVAL_REBUKE_RECEIPT_TITLE, rivalRebukeReply } from '../data/rival-rebuke-content';
+import { RIVAL_REBUKE_RECEIPT_TITLE, RIVAL_REBUKE_TEMPLATE_ID, rivalRebukeReply } from '../data/rival-rebuke-content';
 import { emitTrace } from './traceBuffer';
 import { placeOf } from './dominion';
 import { getSpherePoints, rankSpherePoints } from './spherePoints';
@@ -85,11 +85,12 @@ export interface RebukeTarget {
   readonly pressedAt: number;
 }
 
-type RebukeReadState = Pick<GameState, 'rivalStates' | 'tick'>;
+type RebukeReadState = Pick<GameState, 'rivalStates' | 'tick'> & Partial<Pick<GameState, 'unifiedActions'>>;
 
 /**
  * The rival a Rebuke on `placeId` answers: the most recent active rival whose last
- * landing was there, unabsorbed, within `RIVAL_REBUKE_WINDOW_DAYS`. Null otherwise.
+ * landing was there, unabsorbed and not yet rebuked, within `RIVAL_REBUKE_WINDOW_DAYS`.
+ * Null otherwise.
  */
 export function rebukeTargetFor(state: RebukeReadState, placeId: string | undefined): RebukeTarget | null {
   if (!placeId) return null;
@@ -97,7 +98,7 @@ export function rebukeTargetFor(state: RebukeReadState, placeId: string | undefi
   let best: RebukeTarget | null = null;
   for (const rs of state.rivalStates ?? []) {
     const last = rs?.lastPressed;
-    if (!rs?.active || !last || last.placeId !== placeId || last.absorbed) continue;
+    if (!rs?.active || !last || last.placeId !== placeId || last.absorbed || last.rebuked) continue;
     const age = state.tick - last.tick;
     if (age < 0 || age > windowTicks) continue;
     if (!best || last.tick > best.pressedAt) best = { rivalId: rs.rivalId, pressedAt: last.tick };
@@ -105,12 +106,19 @@ export function rebukeTargetFor(state: RebukeReadState, placeId: string | undefi
   return best;
 }
 
-/** Every place a Rebuke can be played on right now (the card's target filter). */
+/**
+ * Every place a Rebuke can be played on right now (the card's target filter). A place
+ * with a Rebuke cast still in flight is left out: that cast already answers it.
+ */
 export function rebukablePlaceIds(state: RebukeReadState): Set<string> {
+  const inFlight = new Set<string>();
+  for (const a of state.unifiedActions ?? []) {
+    if (a && !a.resolved && a.templateId === RIVAL_REBUKE_TEMPLATE_ID && a.targetId) inFlight.add(a.targetId);
+  }
   const out = new Set<string>();
   for (const rs of state.rivalStates ?? []) {
     const placeId = rs?.lastPressed?.placeId;
-    if (placeId && rebukeTargetFor(state, placeId)) out.add(placeId);
+    if (placeId && !inFlight.has(placeId) && rebukeTargetFor(state, placeId)) out.add(placeId);
   }
   return out;
 }
@@ -179,7 +187,9 @@ export function resolveRebuke(
       const raised = raiseRivalHostility(rival, rs, RIVAL_REBUKE_TEMPER_RISE,
         { kind: 'rebuked', placeId: place.id, tick }, placeName);
       temperAfter = raised.hostilityToPlayer;
-      return raised;
+      // One landing, one answer: the landing is marked rebuked, so the place leaves
+      // the rebuke set and a second cast cannot push or anger twice for one blow.
+      return raised.lastPressed ? { ...raised, lastPressed: { ...raised.lastPressed, rebuked: true } } : raised;
     });
   }
 

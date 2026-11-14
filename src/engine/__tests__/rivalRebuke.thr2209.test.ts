@@ -190,6 +190,27 @@ describe('a rebuke holds the place: the next landing there is absorbed (Done-whe
     expect(rebukablePlaceIds(makeState(g, DAY * 6, { rivalStates: [again] })).size).toBe(0);
   });
 
+  it('one landing, one answer: a rebuked landing leaves the set, and an in-flight cast blocks a second (review gate)', () => {
+    const g = makeWorld(3);
+    const now = DAY * 4;
+    const res = resolveRebuke(makeState(g, now, { rivalStates: [pressed('t0', now - 1)] }),
+      { actorId: GOD, targetId: 't0', outcome: 'success', actionId: 'a7' })!;
+    const after = res.rivalStates![0];
+    expect(after.lastPressed).toMatchObject({ placeId: 't0', rebuked: true });
+    expect(rebukablePlaceIds(makeState(g, now + 1, { rivalStates: [after] })).size).toBe(0);
+    // A second cast on the same place now tends only: no push, no second temper rise.
+    const again = resolveRebuke(makeState(g, now + 1, { rivalStates: [after], rebukedPlaces: res.rebukedPlaces }),
+      { actorId: GOD, targetId: 't0', outcome: 'success', actionId: 'a8' })!;
+    expect(again.pressure).toBeUndefined();
+    expect(again.rivalStates).toBeUndefined();
+    // A cast still in flight on t0 keeps t0 out of the set.
+    const inFlight = makeState(g, now, {
+      rivalStates: [pressed('t0', now - 1)],
+      unifiedActions: [{ templateId: RIVAL_REBUKE_TEMPLATE_ID, targetId: 't0', resolved: false }] as never,
+    });
+    expect(rebukablePlaceIds(inFlight).size).toBe(0);
+  });
+
   it('the rebuke lapses after its hold, and lapsed entries are pruned on the next write', () => {
     const g = makeWorld(3);
     const until = DAY * 4;

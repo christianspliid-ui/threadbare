@@ -91,9 +91,10 @@ export interface RivalState {
   /**
    * The last place this rival's probe landed on, and when. Undefined until one lands.
    * `absorbed` (THR-2209) is true when the god's tending held the blow; absent or false
-   * means the place was untended and lost ground, so it can be rebuked.
+   * means the place was untended and lost ground, so it can be rebuked. `rebuked`
+   * (THR-2209) is set when the god's Rebuke answered this landing: one landing, one answer.
    */
-  lastPressed?: { placeId: string; tick: number; absorbed?: boolean };
+  lastPressed?: { placeId: string; tick: number; absorbed?: boolean; rebuked?: boolean };
 }
 
 /**
