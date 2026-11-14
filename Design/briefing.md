@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-14 09:56 local (08:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-14 10:58 local (09:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -35,11 +35,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Thin, by design.** One ticket is in Ready for Dev, held for your veto: [THR-2216 Tune the purse](https://linear.app/threadbare/issue/THR-2216/tune-the-purse-card-prices-3-pool-cap-35-base-and-seat-income-06) (until 12:17 UTC). The veto window on [THR-2214 The path draws The First to its work](https://linear.app/threadbare/issue/THR-2214/the-path-draws-the-first-to-its-work-a-stronger-lean-a-road-to-the) closed at 08:55 UTC with no veto; it is still in Todo, and the orchestrator's next run (about 09:28 UTC) should move it to Ready for Dev. The builder's last five runs stood down only because of these veto windows.
+**Thin, by design.** One ticket is in Ready for Dev, held for your veto: [THR-2216 Tune the purse](https://linear.app/threadbare/issue/THR-2216/tune-the-purse-card-prices-3-pool-cap-35-base-and-seat-income-06) (until 12:17 UTC). The builder is working now: it picked up [THR-2214 The path draws The First to its work](https://linear.app/threadbare/issue/THR-2214/the-path-draws-the-first-to-its-work-a-stronger-lean-a-road-to-the) at 09:29 UTC, after its veto window closed with no veto.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (25 days; In Dev since 15 Oct), and nothing has touched it since 8 Nov. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-All green. Linear read live this run. The live site serves the latest commit on main (1416a3b6). Checks on main and the 3 scheduled background jobs pass, no PRs are waiting to merge, all 10 scheduled tasks are on time, and the worktree reaper ran at 09:51 local. Engine speed is normal: 131 ms/tick, 14% under the 7-day median.
+- **Engine speed (for the builder):** tick cost 241 ms/tick steady, 60% above the 7-day median (151, 56 rows since f7f080dd); top phase agent_decision, 638 agents. Name the merges between f7f080dd and 1416a3b6: git log --oneline --merges f7f080dd..1416a3b6. The same commit measured 131 ms/tick an hour ago, and a build and a playtest were running on this machine during this measurement, so this reading is likely machine load; a second high reading next hour would make it real.
+- Otherwise all green. Linear read live this run. The live site serves the latest commit on main (1416a3b6). Checks on main and the 3 scheduled background jobs pass, no PRs are waiting to merge, all 10 scheduled tasks are on time, and the worktree reaper ran at 10:55 local. A short overnight gap (Thursday 23:04 to Friday 07:49 UTC) is normal quiet and needs nothing.
