@@ -2119,6 +2119,8 @@ export interface DebugBridge {
             score: number;
             sphereTerm: number;
             tagTerm: number;
+            /** THR-2212 — the stakes lean: the step's difficulty band favouring this core card. 0 when it does not. */
+            stakesTerm: number;
             provenanceTerm: number;
             /** Absent ⇒ this one was dealt. Present ⇒ why it was not. */
             eliminated?:
