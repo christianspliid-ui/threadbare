@@ -178,7 +178,7 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             id: 'ts_tend_shrine_tally',
             label: 'The shrine work is filed and the orbit is logged.',
             intent:
-              'The Temple\'s weight record accumulates. Each tended shrine is a data point ' +
+              'The Temple\'s weight record grows. Each tended shrine is one more mark ' +
               'in the great turning.',
             effects: [
               { kind: 'reputation_tally', key: 'heart.positive', delta: 1 },
@@ -286,8 +286,8 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             kind: 'reputation_tally',
             title: 'Healing Work',
             detail:
-              'The Temple tracks sphere-alignment healings. Each recorded passage adds ' +
-              'to the weight map of known misalignment patterns.',
+              'The Temple keeps a record of every sphere healing. Each passage written down ' +
+              'tells the priests more about how the spheres fall out of true.',
             polarity: 'gain',
           },
         ],
@@ -312,10 +312,10 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           },
           {
             id: 'ts_heal_tally',
-            label: 'The passage is logged and the pattern is filed in the Temple weight record.',
+            label: 'The passage is written into the Temple\'s record.',
             intent:
               'Every recorded healing teaches the Temple something about the sphere argument ' +
-              'patterns of this region. The data accumulates.',
+              'patterns of this region. The record grows a page longer.',
             effects: [
               { kind: 'reputation_tally', key: 'heart.positive', delta: 2 },
               { kind: 'reputation_tally', key: 'star.positive', delta: 1 },
@@ -922,7 +922,7 @@ export const TEMPLE_OF_SPHERES_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
           {
             id: 'ts_communion_tally',
             label:
-              'The observation is filed. Seven spheres held is a data point worth keeping.',
+              'The observation is written down. Seven spheres held is worth remembering.',
             intent:
               'The Temple weight record reflects this communion as contribution. ' +
               'The pattern of what {name} can hold is now better mapped.',
@@ -1398,7 +1398,7 @@ export const TEMPLE_OF_SPHERES_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
               {
                 kind: 'intelligence',
                 category: 'cultural_knowledge',
-                label: 'Sphere convergence at {location} revealed regional orbit data',
+                label: 'Sphere convergence at {location} showed how the spheres turn in this region',
                 detail:
                   'The convergence revealed the regional sphere-weight with unusual ' +
                   'clarity — the dominant sphere, which passages are more open than ' +
