@@ -228,6 +228,7 @@ import type { ClearanceGateRuntimeState, ClearanceGateState } from '../types/con
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { appendDigestEntry, digestAgentName, settleDigestOutcome } from './digestBuffer';
 import { snapshotCastTarget, snapshotTargetChanges, targetSideChanges, castDigestEntry } from './castTargetChanges';
+import { castStepFoundNoHold } from './castInfluenceDrift';
 import { realmBorderMap } from './realmBorderMap';
 import { resolvePrayerCast } from './prayers';
 import { holdingBlessingReceipt } from './godsStake';
@@ -2492,7 +2493,15 @@ export function executeStepResult(
   let growthDomain: string | undefined;
   let growthTierFrom: number | undefined;
   let growthTierTo: number | undefined;
-  if (step) {
+  // THR-2220 — a landed dream that found nothing to take hold of grows nothing:
+  // its receipt says the cast found no hold, and a "Heart grew" chip beside that
+  // line read as the screen contradicting itself. Withholding the growth (rather
+  // than hiding its chip) keeps the sheet and the receipt telling one story. The
+  // cause is already on the trail: the executor emitted `influence.no_lean` for
+  // this cast when its `apply_influence` op wrote nothing.
+  const castFoundNoHold =
+    !!step && isStepSuccess(outcome) && castStepFoundNoHold(state.graph, action.actorId, action.targetId, step);
+  if (step && !castFoundNoHold) {
     // Unified action difficulty is 0-1; scale to 0-100 for growth computation
     const difficultyScaled = (resolutionStats?.difficulty ?? step.difficulty) * 100;
     const isSuccess = isStepSuccess(outcome);

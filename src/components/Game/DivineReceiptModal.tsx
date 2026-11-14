@@ -13,8 +13,7 @@ import { Button } from '../shared/Button';
 import { Tooltip } from '../shared/Tooltip';
 import { getActionArt } from './actionArt';
 import { bandAccentColor } from './outcomeBandAccent';
-import { outcomeBandWord } from '../../data/outcome-band-content';
-import { selectReceiptFrameLine } from '../../data/receipt-content';
+import { receiptBandWord, selectReceiptFrameLine } from '../../data/receipt-content';
 import type { PlayerActionReceipt } from '../../engine/playerReceipts';
 import type { EncounterAftermathChangePolarity } from '../../types/unifiedAction';
 import { formatEssence } from '../shared/formatEssence';
@@ -85,7 +84,9 @@ export function DivineReceiptModal({ open, receipt, onAcknowledge, onReaction, t
   const accent = bandAccentColor(receipt.outcomeBand, 'var(--accent-gold)');
   const art = getActionArt(receipt.templateId);
   const framing = selectReceiptFrameLine(receipt.outcomeBand, receipt.actionId, receipt.tookNoHold);
-  const word = outcomeBandWord(receipt.outcomeBand);
+  // THR-2220 — the receipt's own verdict word: never "held" (a Dominion tier), and
+  // "found no hold" on a cast whose frame line says it found nothing.
+  const word = receiptBandWord(receipt.outcomeBand, receipt.tookNoHold);
   const reactions = receipt.reactions ?? [];
 
   return (

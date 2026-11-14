@@ -104,6 +104,32 @@ export function findValueDriftInfluence(
 }
 
 /**
+ * THR-2220 — whether a landed value-drifting cast step found nothing to take
+ * hold of: its own `apply_influence` drift rule resolves to anything but a drift
+ * (`no_lean` / `no_reach`), so the cast writes no influence.
+ *
+ * The same resolver the executor and the receipt use, so the resolution can
+ * withhold the caster's growth on exactly the casts whose receipt says "found
+ * nothing" — a dream that moved no one teaches the god nothing, and the receipt
+ * never pairs "found nothing to take hold of" with "Heart grew".
+ *
+ * Steps whose success ops carry no drift rule read `false` (every ordinary cast
+ * and encounter step). Pure; fail-soft on a missing target id.
+ */
+export function castStepFoundNoHold(
+  graph: WorldGraph,
+  actorId: string,
+  targetId: string | undefined,
+  step: { readonly onSuccess?: readonly { op: string; influence?: InfluencePayload }[] } | undefined,
+): boolean {
+  if (!step || !targetId) return false;
+  const rule = (step.onSuccess ?? []).find((o) => o.op === 'apply_influence' && o.influence?.valueDriftRule)
+    ?.influence?.valueDriftRule;
+  if (!rule) return false;
+  return resolveCastValueDrift(graph, actorId, targetId, rule).outcome !== 'drift';
+}
+
+/**
  * The word for the pole a signed drift on `pair` pushes toward — the pair id's
  * own halves (`mercy_ruthlessness` → `mercy` / `ruthlessness`), positive first,
  * matching `ARCHETYPE_NAMES` ordering. Every `ValuePair` is two single words.
