@@ -128,7 +128,7 @@ import { appendEvent } from './encounterTimeline';
 import type { HexMutation } from '../types/hexMutation';
 import type { RevelationMutation } from './revelationResolver';
 import { applyRevelationMutations } from './revelationResolver';
-import { applyEncounterGrowth, recordTierCross } from './capabilityGrowth';
+import { applyEncounterGrowth, recordTierCross, type GrowthResult } from './capabilityGrowth';
 import { recordArtifactEncounterPresence } from './artifactTraits';
 import { applyChainStageCompletion } from './encounterChains';
 import { handleTierPromotion } from './tierPromotion';
@@ -2501,12 +2501,23 @@ export function executeStepResult(
   // this cast when its `apply_influence` op wrote nothing.
   const castFoundNoHold =
     !!step && isStepSuccess(outcome) && castStepFoundNoHold(state.graph, action.actorId, action.targetId, step);
-  if (step && !castFoundNoHold) {
+  if (step) {
     // Unified action difficulty is 0-1; scale to 0-100 for growth computation
     const difficultyScaled = (resolutionStats?.difficulty ?? step.difficulty) * 100;
     const isSuccess = isStepSuccess(outcome);
     const tierPromotionEligible = Boolean(isSuccess && stepMetadata?.tierPromotionEligible);
-    const growthResult = applyEncounterGrowth(
+    // Only the growth is withheld on a no-hold cast; artifact presence below still records.
+    const growthResult: GrowthResult = castFoundNoHold
+      ? {
+          domain: (resolutionStats?.reach ?? step.reach),
+          growthApplied: 0,
+          previousCapability: 0,
+          newCapability: 0,
+          previousTier: 1,
+          newTier: 1,
+          tierCrossed: false,
+        }
+      : applyEncounterGrowth(
       state.graph,
       action.actorId,
       (resolutionStats?.reach ?? step.reach),
