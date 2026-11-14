@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-14 06:57 local (05:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-14 07:58 local (06:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -31,11 +31,6 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
   - **What changes:** the path's lean goes from ×1.5 to ×2.5, so it clearly beats her trade's ×1.4. If no fitting story is near her, she takes the road to the nearest place that has one, and the Chronicle says so: "Seren takes the road to Harrowmere, where the uniter of the clans has work."
   - **What does not change:** nothing is filtered or damped. She still weighs every road, and forks stay hers.
   - **Veto:** say "veto path road" to keep the path as a lean only. The build is held until 08:55 UTC today: [The path draws The First to its work](https://linear.app/threadbare/issue/THR-2214/the-path-draws-the-first-to-its-work-a-stronger-lean-a-road-to-the). *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-13e.md)*
-- [Measure whether the player matters](https://linear.app/threadbare/issue/THR-2205) ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-13-thr-2205-measure-whether-the-player-matters.md)). **Today, playing every card changes nothing about how the age ends.**
-  - **What was tested:** the same world run twice on each of three seeds, once with no cards played and once with every affordable card played (117, 178 and 139 cards). On all three, both runs ended by Doom within 15 days of each other, with the same fate for The First, the Apotheosis by day 400, and the Mandate never past 13%.
-  - **Underneath, play does move things:** The First's chapters differ by 14–35% between the runs. None of it reaches the ending. That is the gap the other "make the middle a game" tickets have to close, and this number will show when one does.
-  - **Where it lives:** an on-demand command the builders run when a sibling ticket lands. The pipeline freeze bans new standing lane steps, so the weekly-review part is held. Say "lift the freeze for the agency number" to have the weekly review run it.
-  - The build is held for your veto until 06:20 UTC today: [Ship the agency census](https://linear.app/threadbare/issue/THR-2213). Say "veto agency measure" to stop it. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-13d.md)*
 
 Say "veto <title>" to reverse any of these.
 
@@ -45,14 +40,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy, waiting on veto windows.** Nothing new shipped or started this hour. The 2 ready tickets are both held for your veto, so the builder is idle by design until 06:20 UTC, when the first one opens.
-
-- Ready, held for veto: [THR-2213 Ship the agency census](https://linear.app/threadbare/issue/THR-2213/ship-the-agency-census-a-hands-off-run-and-a-played-run-on-the-same) (until 06:20 UTC), [THR-2216 Tune the purse](https://linear.app/threadbare/issue/THR-2216/tune-the-purse-card-prices-3-pool-cap-35-base-and-seat-income-06) (until 12:17 UTC).
-- Not yet ready: [THR-2214 The path draws The First to its work](https://linear.app/threadbare/issue/THR-2214/the-path-draws-the-first-to-its-work-a-stronger-lean-a-road-to-the) (held until 08:55 UTC).
+**Thin, by design.** The agency census veto window closed at 06:20 UTC and the builder picked it up at 06:32: [THR-2213 Ship the agency census](https://linear.app/threadbare/issue/THR-2213/ship-the-agency-census-a-hands-off-run-and-a-played-run-on-the-same) is now being built. One ticket is left in Ready for Dev, held for your veto: [THR-2216 Tune the purse](https://linear.app/threadbare/issue/THR-2216/tune-the-purse-card-prices-3-pool-cap-35-base-and-seat-income-06) (until 12:17 UTC). [THR-2214 The path draws The First to its work](https://linear.app/threadbare/issue/THR-2214/the-path-draws-the-first-to-its-work-a-stronger-lean-a-road-to-the) joins it after 08:55 UTC.
 
 Items for agents, not you:
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (25 days; In Dev since 15 Oct), and nothing has touched it since 8 Nov. No pushed branch or local worktree carries work for it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (25 days; In Dev since 15 Oct), and nothing has touched it since 8 Nov. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-All green. Linear read live this run. The live site serves the latest commit on main (37954022, THR-2212). Checks on main and the 3 scheduled background jobs pass, no PRs are waiting to merge, all 10 scheduled tasks are on time, and the worktree reaper ran at 06:40 local. Engine speed is normal: 125 ms/tick, 18% under the 7-day median.
+All green. Linear read live this run. The live site serves the latest commit on main (37954022). Checks on main and the 3 scheduled background jobs pass, no PRs are waiting to merge, all 10 scheduled tasks are on time, and the worktree reaper ran at 07:54 local. Engine speed is normal: 145 ms/tick, 5% under the 7-day median.
