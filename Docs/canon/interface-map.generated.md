@@ -1185,10 +1185,10 @@ exit
 - **Intent:** While you were away (THR-2184). On a `?warm=<ticks>` arrival the warm-up card becomes a recap: `buildWarmRecap` (`engine/views/warmRecap.ts`) reads The First's non-routine `chapterArchive` records resolved inside the warm window and names the newest two in the Aftermath's own `outcomeSentence`, folding the rest into a count line, plus the live chapter The First is in the middle of. The newest one's `actionId` is where "Read it in the Ledger" opens. Read only; nothing is written.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Encounter*, *The First*
-- **Production hits:** 25 total — 1 write, 1 read, 23 unclassified
+- **Production hits:** 26 total — 1 write, 1 read, 24 unclassified
 - **Write sites:** `src/engine/chapterArchive.ts`
 - **Read sites:** `src/engine/views/warmRecap.ts`
-- **Other hits:** `src/components/Game/ChapterLedger.tsx`, `src/components/Game/encounterStakesRows.ts`, `src/components/Game/frame/LedgerRail.tsx`, `src/components/Game/GameView/openingReveal.ts`, `src/components/Game/GameView.tsx` +18 more
+- **Other hits:** `src/components/Game/ChapterLedger.tsx`, `src/components/Game/encounterStakesRows.ts`, `src/components/Game/frame/LedgerRail.tsx`, `src/components/Game/GameView/openingReveal.ts`, `src/components/Game/GameView.tsx` +19 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `chapter-growth-marks-reach-tile` — 🔵 UNVERIFIED-OK
@@ -2999,10 +2999,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *The First*
 - **Module:** `src/engine/meetingEncounter.ts`
-- **Production hits:** 49 total — 2 write, 1 read, 46 unclassified
+- **Production hits:** 50 total — 2 write, 1 read, 47 unclassified
 - **Write sites:** `src/engine/meetingEncounter.ts`, `src/engine/threadingRite.ts`
 - **Read sites:** `src/engine/attentionTier.ts`
-- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/encounterBadgeModel.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts` +41 more
+- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/encounterBadgeModel.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts` +42 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `meeting-leans-on-nature` — 🔵 UNVERIFIED-OK
@@ -3553,10 +3553,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Chapter*, *Chronicle*
 - **Module:** `src/engine/restlessRoad.ts`
-- **Production hits:** 48 total — 2 write, 3 read, 43 unclassified
-- **Write sites:** `src/engine/phaseAgentDecision.ts`, `src/engine/restlessRoad.ts`
+- **Production hits:** 50 total — 3 write, 3 read, 44 unclassified
+- **Write sites:** `src/engine/firstPathRoad.ts`, `src/engine/phaseAgentDecision.ts`, `src/engine/restlessRoad.ts`
 - **Read sites:** `src/components/Game/ChronicleEntryCard.tsx`, `src/debug-bridge.ts`, `src/engine/orchestrator.ts`
-- **Other hits:** `src/components/Codex/codexConcepts.ts`, `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/encounter-stage/OpponentHeader.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/PastLineText.tsx` +38 more
+- **Other hits:** `src/components/Codex/codexConcepts.ts`, `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/encounter-stage/OpponentHeader.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/PastLineText.tsx` +39 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `reunion-reads-the-edges-not-the-roster` — 🟢 LIVE
@@ -3697,10 +3697,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Daily life*, *Chapter Ledger*
 - **Module:** `src/engine/attentionCadence.ts`
-- **Production hits:** 16 total — 1 write, 5 read, 10 unclassified
+- **Production hits:** 17 total — 1 write, 5 read, 11 unclassified
 - **Write sites:** `src/engine/chapterArchive.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/encounterFilterPipeline.ts`, `src/engine/encounterVisibility.ts`, `src/engine/openingReveal.ts`, `src/engine/threadedChapters.ts`
-- **Other hits:** `src/engine/attentionCadence.ts`, `src/engine/firstPath.ts`, `src/engine/phaseAgentDecision.ts`, `src/engine/phaseAttention.ts`, `src/engine/premonitionCompulsion.ts` +5 more
+- **Other hits:** `src/engine/attentionCadence.ts`, `src/engine/firstPath.ts`, `src/engine/firstPathRoad.ts`, `src/engine/phaseAgentDecision.ts`, `src/engine/phaseAttention.ts` +6 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `ruined-settlement-joins-delve-layer` — 🟢 LIVE
@@ -4214,10 +4214,10 @@ exit
 - **Intent:** The player sees where each of their people is going (THR-1878 Lenses I, plan D4). `phaseMovement` writes `movementState.destinationId` on a moving mortal; the Threads lens (`views/lenses/threadsLens.ts`, read through `hexLensViewSelector`) lights each threaded mortal at court the_first / retinue / watched, resolves the destination to its place-tier Location (`resolveToParentLocation`) and draws a dashed arrow to that hex in the court colour, with a hover line naming the place. Nothing is drawn on an unexplored hex (the seen floor hex rule, `views/knowledge.ts`). The Dominion hover line gains its pressure clause on the same pass (`dominion-band-projected-to-hex-map`, extended).
 - **Producer → Consumer:** Movement & Colocation → Intelligence, Knowledge & Familiarity
 - **UL terms:** *The First*
-- **Production hits:** 19 total — 1 write, 1 read, 17 unclassified
+- **Production hits:** 20 total — 1 write, 1 read, 18 unclassified
 - **Write sites:** `src/engine/phaseMovement.ts`
 - **Read sites:** `src/engine/views/lenses/threadsLens.ts`
-- **Other hits:** `src/data/action-technical-effects.ts`, `src/debug-bridge.ts`, `src/engine/agentActivity.ts`, `src/engine/agentValidation.ts`, `src/engine/appointments.ts` +12 more
+- **Other hits:** `src/data/action-technical-effects.ts`, `src/debug-bridge.ts`, `src/engine/agentActivity.ts`, `src/engine/agentValidation.ts`, `src/engine/appointments.ts` +13 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `thread-luck-protection` — 🟢 LIVE
@@ -4270,10 +4270,10 @@ exit
 - **Intent:** The Chronicle tells growth only about mortals the god follows, in words (THR-1986, plan THR-1980 E4). Each tier-up (encounter and unified-action resolution), rarity graduation and critical success declares `chronicleGate: "threaded_only"` and a `playerProse` line with no tier number and no Q; `phaseNarrative` admits it only when `isThreadedByPlayer` holds for its actor, and reads `playerProse ?? message`. Each rarity block asks the same gate before its own direct Chronicle push. A skip is traced as `chronicle.intake.skipped`; `CHRONICLE_THREADED_GROWTH_ONLY` turns the gate off. `message` is unchanged for traces and logs.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Chronicle*, *Thread*
-- **Production hits:** 6 total — 2 write, 1 read, 3 unclassified
+- **Production hits:** 7 total — 2 write, 1 read, 4 unclassified
 - **Write sites:** `src/engine/orchestrator.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/engine/chronicleGrowth.ts`
-- **Other hits:** `src/engine/alertChronicle.ts`, `src/engine/restlessRoad.ts`, `src/types/gameState.ts`
+- **Other hits:** `src/engine/alertChronicle.ts`, `src/engine/firstPathRoad.ts`, `src/engine/restlessRoad.ts`, `src/types/gameState.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `tick-health-to-incident-bundle` — 🟢 LIVE
