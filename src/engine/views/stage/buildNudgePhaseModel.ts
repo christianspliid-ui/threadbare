@@ -38,7 +38,6 @@ import {
   echoCardsFromDefinitions,
 } from '../../nudgeCardRepertoire';
 import type { RepertoireEntry } from '../../nudgeCardRepertoire';
-import type { ResolutionInput } from '../../../types/resolution';
 import type { ForecastTier } from '../../../types/traces/encounter-traces';
 import type {
   ActionStep,
@@ -47,7 +46,6 @@ import type {
   UnifiedActionTemplate,
 } from '../../../types/unifiedAction';
 import { isActionStepBranch } from '../../../types/unifiedAction';
-import { computeCapability } from '../../domainCapability';
 import { getCapabilityTier } from '../../../data/domain-words';
 import { DEFAULT_FORECAST_FACTORS } from '../../../data/encounter-contract-builder';
 import {
@@ -55,29 +53,18 @@ import {
   isDealtNudgeId,
   recordDealReport,
 } from '../../encounters/dealHand';
-import { computeResolutionModifiers } from '../../resolutionModifiers';
-import { forecastAction } from '../../resolutionService';
-import { forecastActionAtScale } from '../../scaledForecast';
-import { resolveFightStepInputs } from '../../fights/fightStepInputs';
-import { stepCastFor } from '../../unifiedActionResolution';
-import type { StepCastRecord } from '../../../types/unifiedAction';
+import { computeBaseStepForecast, fightInputsForForecast } from './baseStepForecast';
 import type { FightStepInputs } from '../../../types/fight';
 import {
-  FIGHT_ENCOUNTER_TYPE,
   FIGHT_NAMED_TERM_LINES,
   FIGHT_STANDING_MODIFIER_NAME,
 } from '../../../data/fight-constants';
 import {
   buildNudgeHand,
   collectHeldTraitIds,
-  collectNudgeModifiers,
   difficultyWord,
   effectiveNudgeCost,
-  priorStepOutcome,
-  resolveCarryoverLine,
   resolveTraitVariants,
-  sumModifiers,
-  sumVariantDifficultyDelta,
   totalNudgeCost,
   type NudgeBlockedCode,
 } from '../../encounters/nudges';
@@ -587,27 +574,6 @@ function readNextStepDemand(
 }
 
 /**
- * THR-1543 — a fight step's inputs for the forecast, derived by the same pure
- * function the roll uses (fight block §3b). Undefined for an ordinary step, or
- * when the builder has no game state to read the opponent from (fail-soft: the
- * step then forecasts as an ordinary one, exactly as before FB7).
- */
-function fightInputsForForecast(
-  gameState: GameState | undefined,
-  activeAction: UnifiedAction,
-  step: ActionStep,
-  template: UnifiedActionTemplate,
-  stepCast?: StepCastRecord,
-): FightStepInputs | undefined {
-  if (!step.fightRole || !gameState) return undefined;
-  try {
-    return resolveFightStepInputs(gameState, activeAction, step, template, stepCast);
-  } catch {
-    return undefined;
-  }
-}
-
-/**
  * THR-1670 — the link on a step cast's factor line: the spell's name, pointing at
  * its shared definition node. Empty when the contribution cannot be found.
  */
@@ -792,86 +758,20 @@ export function buildNudgePhaseModel(
   // THR-1670 — the step cast: the record the roll wrote, or the same pure decision
   // it will make (the decision reads no card, so toggling cards never changes it).
   // One `spell` line rides the standing read below, for the forecast and the roll.
-  let stepCast: StepCastRecord | undefined;
-  try {
-    stepCast = gameState ? stepCastFor(activeAction, template, gameState, step) : undefined;
-  } catch {
-    stepCast = undefined;
-  }
-  const fightInputs = fightInputsForForecast(gameState, activeAction, step, template, stepCast);
-  const stepReach = fightInputs?.reach ?? step.reach;
-  const capability = computeCapability(graph, actorId, stepReach);
-  const locEdges = graph.getOutgoingEdges(actorId, 'located_at');
-  const locationId = locEdges.length > 0 ? locEdges[0].target : '';
-  const standing = fightInputs
-    ? computeResolutionModifiers(
-      graph,
-      actorId,
-      locationId,
-      stepReach,
-      template.sphereAffinity,
-      gameState?.effectStates,
-      undefined,
-      FIGHT_ENCOUNTER_TYPE,
-      stepCast,
-    )
-    : computeResolutionModifiers(
-      graph,
-      actorId,
-      locationId,
-      step.reach,
-      template.sphereAffinity,
-      // THR-1535 — the live effect states, as the roll reads them, so a timed
-      // effect moves the shown odds exactly as it moves the dice.
-      gameState?.effectStates,
-      undefined,
-      undefined,
-      stepCast,
-    );
-  // THR-892 — the carryover line the prior step's band earned, if the author wrote
-  // one. It contributes to the floor exactly as a trait variant does, so the hand
-  // adds its selected deltas on top of a forecast that already carries it.
-  const carryover = resolveCarryoverLine(step, priorStepOutcome(activeAction));
-  const traitModifierTotal = sumModifiers(
-    collectNudgeModifiers(step, undefined, variants, priorStepOutcome(activeAction)),
-  );
-  const variantDifficultyDelta = sumVariantDifficultyDelta(variants);
-  const effectiveDifficulty = Math.max(
-    0, Math.min(1, (fightInputs?.difficulty ?? step.difficulty) + variantDifficultyDelta),
-  );
-
-  const forecastInput: ResolutionInput = {
-    actorId,
-    domain: stepReach,
+  // THR-2211 — lifted into `baseStepForecast.ts` so the step poster's Fated fuse
+  // reads this exact call (Law 18).
+  const {
+    fightInputs,
+    stepReach,
     capability,
-    difficulty: effectiveDifficulty,
-    sphereFactor: 0,
-    // A fight step's standing modifiers already ride inside its named terms.
-    actionModifiers: (fightInputs ? fightInputs.modifierTotal : standing.totalModifier) + traitModifierTotal,
-    // `collectTestShapers` returns `ResolvedTestShaper` (attachment-centric
-    // field names) while `ResolutionInput` wants `ResolutionTestShaper`. The
-    // two carry the same information under different names, so the mapping is
-    // explicit rather than cast — a rename on either side should break here
-    // loudly instead of silently dropping the shapers from the forecast.
-    testShapers: (standing.testShapers ?? []).map((shaper) => ({
-      sourceAttachmentId: shaper.attachmentId,
-      sourceAttachmentName: shaper.attachmentName,
-      trigger: shaper.trigger,
-      steps: shaper.steps,
-      maxMargin: shaper.maxMargin,
-    })),
-  };
-
-  // THR-1543 — a fight step resolves at `FIGHT_STEP_SCALE`, so its forecast takes
-  // the core's scale step and post-roll floor (`forecastActionAtScale`).
-  //
-  // THR-1535 (addendum) — an ordinary step does too. The roll has always applied
-  // its template's scale offset and floor (a `local` step never rolls below 0.65);
-  // the plain `forecastAction` ignored both, so the shown odds sat under the rolled
-  // ones on every floored step. `undefined` resolves as `'regional'` in the core,
-  // so it is spelled out here and the phase always carries the scale it rolls at.
-  const forecastScale = fightInputs?.scale ?? template.scale ?? 'regional';
-  const baseSummary = forecastScale ? forecastActionAtScale(forecastInput, forecastScale) : forecastAction(forecastInput);
+    standing,
+    carryover,
+    traitModifierTotal,
+    effectiveDifficulty,
+    forecastScale,
+    forecastInput,
+    baseSummary,
+  } = computeBaseStepForecast(graph, gameState, activeAction, template, step, variants);
   const baseForecast = forecastModelFrom(
     baseSummary.forecastTier,
     baseSummary.successProbability,

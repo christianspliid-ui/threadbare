@@ -17,6 +17,11 @@ import { outcomeBandWord } from '../../data/outcome-band-content';
 import type { IconName } from '../../data/icons/iconRegistry';
 import { ICON_FOR_THREAD_ROW_MARK } from '../../data/icons/conceptIcons';
 import { bandAccentColor } from './outcomeBandAccent';
+import {
+  BADGE_CHAPTER_FALLBACK,
+  BADGE_FATED_FUSE_META,
+  BADGE_UNTOUCHED_ENDING_META,
+} from '../../data/ui-content';
 
 // ─── Constants ─────────────────────────────────────────────────────
 
@@ -34,6 +39,15 @@ export const BADGE_ICON_AFTERMATH: IconName = ICON_FOR_THREAD_ROW_MARK['badge-af
 
 /** THR-1730 — registry tooltip a held (minimised, waiting) step's badge carries. */
 export const BADGE_WAITING_TOOLTIP_ID = 'ui.encounter_waiting';
+
+/** THR-2211 — registry tooltip a Fated fused step's badge carries. */
+export const BADGE_FATED_FUSE_TOOLTIP_ID = 'ui.badge.fated_fuse';
+
+/**
+ * THR-2211 — outcome bands an untouched ending reads "went badly" on: the
+ * near-miss band (`fortunate`, "wavered") and worse.
+ */
+const BAD_ENDING_BANDS: ReadonlySet<string> = new Set(['fortunate', 'setback', 'catastrophe']);
 
 // ─── Model ─────────────────────────────────────────────────────────
 
@@ -68,7 +82,12 @@ export interface EncounterBadgeModel {
    * pause-tier attention): it waits rather than playing out. Tooltip registry id
    * for that state; absent otherwise.
    */
-  tooltipId?: typeof BADGE_WAITING_TOOLTIP_ID;
+  tooltipId?: typeof BADGE_WAITING_TOOLTIP_ID | typeof BADGE_FATED_FUSE_TOOLTIP_ID;
+  /**
+   * THR-2211 — the primary is a Fated step on its fuse (plays out alone unless
+   * opened), or an ending the god took no part in. Absent otherwise.
+   */
+  stopSkipped?: 'fated_fuse' | 'untouched_ending';
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────
@@ -81,12 +100,29 @@ export interface EncounterBadgeModel {
  */
 export function buildEncounterNotificationMeta(notif: EncounterNotification): string {
   const bandWord = notif.outcomeBand ? outcomeBandWord(notif.outcomeBand) : undefined;
+  // THR-2211 — an ending the god took no part in says so, in the Ledger's word.
+  if (notif.kind === 'aftermath' && notif.badgeOnly === 'untouched_ending') {
+    return untouchedEndingMeta(notif);
+  }
+  // THR-2211 — a fused step says it is acting without them, and how to stop it.
+  if (notif.kind !== 'aftermath' && notif.fatedFuse) return BADGE_FATED_FUSE_META;
   if (notif.kind === 'aftermath') {
     return bandWord ? `concluded · ${bandWord}` : 'concluded';
   }
   const stepNum = (notif.stepIndex ?? 0) + 1;
   const stepPart = notif.totalSteps ? `step ${stepNum} of ${notif.totalSteps}` : `step ${stepNum}`;
   return bandWord ? `${stepPart} · ${bandWord}` : stepPart;
+}
+
+/**
+ * THR-2211 — the meta of an ending the god took no part in. "Went badly" wins on
+ * a near-miss or worse whatever the word; otherwise the chapter's own wait word
+ * (THR-2178) picks "theirs alone" or "played out without your hand". An old
+ * record with no word reads "played out without your hand" — true either way.
+ */
+export function untouchedEndingMeta(notif: Pick<EncounterNotification, 'outcomeBand' | 'waitWord'>): string {
+  if (notif.outcomeBand && BAD_ENDING_BANDS.has(notif.outcomeBand)) return BADGE_UNTOUCHED_ENDING_META.bad;
+  return notif.waitWord === 'theirs_alone' ? BADGE_UNTOUCHED_ENDING_META.alone : BADGE_UNTOUCHED_ENDING_META.unplayed;
 }
 
 /**
@@ -182,6 +218,9 @@ export function selectEncounterBadges(
     const waiting = kind === 'encounter'
       && primary.actionId !== undefined
       && (heldActionIds?.has(primary.actionId) ?? false);
+    const fused = kind === 'encounter' && primary.fatedFuse === true && !waiting;
+    const untouched = kind === 'aftermath' && primary.badgeOnly === 'untouched_ending';
+    const chapter = primary.encounterName?.trim() || BADGE_CHAPTER_FALLBACK;
 
     badges.set(agentId, {
       agentId,
@@ -191,13 +230,19 @@ export function selectEncounterBadges(
       accentColor: bandAccentColor(primary.outcomeBand, BADGE_DEFAULT_ACCENT),
       icon: kind === 'aftermath' ? BADGE_ICON_AFTERMATH : BADGE_ICON_ACTIVE,
       countLabel,
-      label: primary.encounterName,
+      label: chapter,
       meta,
       ...(stakesLine ? { stakesLine } : {}),
-      ariaLabel: kind === 'aftermath'
-        ? `${primary.encounterName} concluded${others} — open aftermath`
-        : `${primary.encounterName}, ${meta}${others} — ${waiting ? 'waiting for you' : 'open encounter'}`,
+      ariaLabel: untouched
+        ? `${chapter}, ${meta}${others}`
+        : kind === 'aftermath'
+          ? `${chapter} concluded${others} — open aftermath`
+          : fused
+            ? `${chapter}, ${meta}${others}`
+            : `${chapter}, ${meta}${others} — ${waiting ? 'waiting for you' : 'open encounter'}`,
       ...(waiting ? { tooltipId: BADGE_WAITING_TOOLTIP_ID } : {}),
+      ...(fused ? { tooltipId: BADGE_FATED_FUSE_TOOLTIP_ID, stopSkipped: 'fated_fuse' as const } : {}),
+      ...(untouched ? { stopSkipped: 'untouched_ending' as const } : {}),
     });
   }
 

@@ -82,6 +82,8 @@ export function JourneyDebugContent({
               <div style={{ opacity: 0.5, fontSize: 'var(--text-xs)', marginTop: '2px' }}>
                 Created tick {n.createdTick}
                 {n.autoResolveTick != null && ` | Auto-resolve tick ${n.autoResolveTick}`}
+                {n.fatedFuse && ' | Fated fuse'}
+                {n.badgeOnly && ` | Badge only (${n.badgeOnly})`}
                 {n.viewed && ' | Viewed'}
                 {n.resolved && ' | Resolved'}
                 {` | ${n.choices.length} choices`}

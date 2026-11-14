@@ -273,6 +273,11 @@ export function advanceStep(
   // the hand: the aftermath dispatch reads it off the step it was played on.
   const withoutSpentHand: { -readonly [K in keyof UnifiedAction]?: UnifiedAction[K] } = { ...action };
   delete withoutSpentHand.activeNudges;
+  // THR-2211 — an empty commit leaves no choiceHistory entry; keep the fact that
+  // the god was there, so the chapter's ending still stops for them.
+  if (action.activeNudges !== undefined && action.activeNudges.length === 0) {
+    withoutSpentHand.emptyHandCommitted = true;
+  }
 
   return {
     ...(withoutSpentHand as UnifiedAction),
