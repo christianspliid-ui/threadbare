@@ -41,7 +41,7 @@ import {
   CHAPTER_UNPLAYED_AFTERMATH_LINE,
   FATED_FUSE_FAILED_AFTERMATH_LINE,
 } from '../../../data/ui-content';
-import { godTouchedEncounter } from '../../unifiedActionResolution';
+import { godPresentForEncounter } from '../../unifiedActionResolution';
 import { BRANCH_DECISION_INTERVENTION_TYPE } from '../../encounters/branchDecision';
 import { firstPathFitFor, firstPathRecallFor } from '../../firstPath';
 import {
@@ -334,10 +334,10 @@ export function aloneLineFor(args: BuildUnifiedEncounterStageModelArgs): string 
   return undefined;
 }
 
-/** THR-2211 — `godTouchedEncounter`, fail-soft to "touched" (no claim made). */
+/** THR-2211 — `godPresentForEncounter`, fail-soft to "present" (no claim made). */
 function touchedSafely(args: BuildUnifiedEncounterStageModelArgs): boolean {
   try {
-    return godTouchedEncounter(args.activeAction);
+    return godPresentForEncounter(args.activeAction);
   } catch {
     return true;
   }

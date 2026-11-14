@@ -31,6 +31,7 @@ import {
   getUITooltip,
 } from '../../data/ui-content';
 import { holdStepsForPostedBeats } from '../playerStepHold';
+import { advanceStep } from '../unifiedActionLifecycle';
 import { shouldAutoOpenEncounterNotification } from '../views/stage/encounterNotificationRuntime';
 import { aloneLineFor } from '../views/stage/buildUnifiedEncounterStageModel';
 import {
@@ -242,12 +243,35 @@ describe('THR-2211 — an ending the god had no part in waits on its badge', () 
     expect(shouldAutoOpenEncounterNotification(n)).toBe(true);
   });
 
-  it('a touched ending still auto-opens: an empty committed hand', () => {
-    const n = ending(DEALT.id, {
-      choiceHistory: [{ stepIndex: 0, stepId: 's0', choiceId: 'hand', choiceText: '', tick: 4, essenceSpent: 0, handCommitted: true }],
-    } as unknown as Partial<UnifiedAction>);
+  // The production shapes of an empty commit: GameView writes `activeNudges: []`
+  // and no choiceHistory entry (recordUnifiedActionNudgeMemory skips zero cards).
+  it('an ending the god was present for still auto-opens: an empty hand on the final step', () => {
+    const n = ending(DEALT.id, { activeNudges: [] } as unknown as Partial<UnifiedAction>);
     expect(n.badgeOnly).toBeUndefined();
     expect(shouldAutoOpenEncounterNotification(n)).toBe(true);
+  });
+
+  it('an ending the god was present for still auto-opens: an empty hand on an earlier step', () => {
+    // Commit an empty hand on step 0, then advance through the real lifecycle.
+    const committed = action(DEALT.id, { activeNudges: [] } as unknown as Partial<UnifiedAction>);
+    const advanced = advanceStep(committed, 'success', DEALT, () => 0.5);
+    expect(advanced.activeNudges).toBeUndefined();
+    expect(advanced.emptyHandCommitted).toBe(true);
+    const n = ending(DEALT.id, { emptyHandCommitted: true } as unknown as Partial<UnifiedAction>);
+    expect(n.badgeOnly).toBeUndefined();
+    expect(shouldAutoOpenEncounterNotification(n)).toBe(true);
+  });
+
+  it('an advance with no commit sets no presence flag', () => {
+    const advanced = advanceStep(action(DEALT.id), 'success', DEALT, () => 0.5);
+    expect(advanced.emptyHandCommitted).toBeUndefined();
+  });
+
+  it('a "let fate decide" (disregard) is not presence: the ending waits on its badge', () => {
+    const n = ending(DEALT.id, {
+      choiceHistory: [{ stepIndex: 0, stepId: 's0', choiceId: 'disregard_s0', choiceText: 'Disregard', interventionType: 'withdrawn', essenceSpent: 0, probabilityBoost: 0, tick: 4 }],
+    } as unknown as Partial<UnifiedAction>);
+    expect(n.badgeOnly).toBe('untouched_ending');
   });
 });
 
@@ -328,6 +352,10 @@ describe('THR-2211 — the ending line', () => {
 
   it('a touched waits chapter has no line', () => {
     expect(lineFor(DEALT.id, { stepOutcomes: ['success', 'success'], activeNudges: ['n1'] } as unknown as Partial<UnifiedAction>)).toBeUndefined();
+  });
+
+  it('a waits chapter with an empty committed hand has no "without your hand" line', () => {
+    expect(lineFor(DEALT.id, { stepOutcomes: ['success', 'success'], emptyHandCommitted: true } as unknown as Partial<UnifiedAction>)).toBeUndefined();
   });
 
   it('a fused step that landed below success shows the failed-fuse line', () => {

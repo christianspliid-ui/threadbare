@@ -1188,6 +1188,23 @@ export function godTouchedEncounter(action: Pick<UnifiedAction, 'choiceHistory' 
 }
 
 /**
+ * THR-2211 — was the god present for this chapter: a hand on it
+ * ({@link godTouchedEncounter}), or any hand committed at all, even an empty
+ * one (on the final step it is still `activeNudges: []`; on an earlier step
+ * `emptyHandCommitted`). An ending the god was present for stops the world;
+ * one it was not waits on its badge. Distinct from `godTouchedEncounter`,
+ * which the cause line and aftermath words read as "the god's hand moved
+ * something" — an empty hand moves nothing.
+ */
+export function godPresentForEncounter(
+  action: Pick<UnifiedAction, 'choiceHistory' | 'activeNudges'> & Partial<Pick<UnifiedAction, 'emptyHandCommitted'>>,
+): boolean {
+  if (godTouchedEncounter(action)) return true;
+  if (action.activeNudges !== undefined) return true;
+  return action.emptyHandCommitted === true;
+}
+
+/**
  * THR-1964 — the resolved steps as the cause line reads them: each step's band,
  * its Reach (branch-aware), its own title where it has one (a fight step's
  * "First exchange"), and whether the god's hand was on it — the per-step half of

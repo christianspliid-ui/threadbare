@@ -7355,11 +7355,11 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: ENCOUNTERS,
     consumerSystem: NARRATIVE,
     intent:
-      'A pause-thread beat stops the world only when it offers the god a move or reports the god\x27s own hand. The step poster gives a step whose whole hand is dealt (no authored nudges) and whose forecast before any card reads Fated a fuse: fatedFuse, and autoResolveTick = tick + FATED_STEP_FUSE_TICKS, so it badges, is never held and never auto-opens, and plays out alone unless opened. The tier comes from baseStepForecastTier, the same call the Stage makes (Law 18). The aftermath poster marks an ending the god took no part in (godTouchedEncounter false) badgeOnly with its chapter waitWord; the auto-open gate declines it, the badge model reads it as "theirs alone" / "played out without your hand" / "went badly without your hand", and the ending line says the same.',
+      'A pause-thread beat stops the world only when it offers the god a move or reports the god\x27s own hand. The step poster gives a step whose whole hand is dealt (no authored nudges) and whose forecast before any card reads Fated a fuse: fatedFuse, and autoResolveTick = tick + FATED_STEP_FUSE_TICKS, so it badges, is never held and never auto-opens, and plays out alone unless opened. The tier comes from baseStepForecastTier, the same call the Stage makes (Law 18). The aftermath poster marks an ending the god took no part in (godPresentForEncounter false: no hand on it and no hand committed, not even an empty one) badgeOnly with its chapter waitWord; the auto-open gate declines it, the badge model reads it as "theirs alone" / "played out without your hand" / "went badly without your hand", and the ending line says the same.',
     ulTerms: ['Encounter'],
     mechanism: {
       kind: 'state-field',
-      symbols: ['fatedFuse', 'badgeOnly', 'baseStepForecastTier', 'godTouchedEncounter'],
+      symbols: ['fatedFuse', 'badgeOnly', 'baseStepForecastTier', 'godPresentForEncounter'],
       module: 'src/engine/encounterVisibility.ts',
     },
     writeSites: ['src/engine/encounterVisibility.ts'],

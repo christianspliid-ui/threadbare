@@ -41,7 +41,7 @@ import {
   FATED_STEP_FUSE_TICKS,
   UNTOUCHED_ENDING_BADGE_ENABLED,
 } from '../data/encounter-experience-constants';
-import { godTouchedEncounter } from './unifiedActionResolution';
+import { godPresentForEncounter } from './unifiedActionResolution';
 import { baseStepForecastTier } from './views/stage/baseStepForecast';
 
 // ─── Notification Generation ───────────────────────────────────────
@@ -810,11 +810,11 @@ export function phaseEncounterVisibility(
     if (notification) {
       // THR-2211 — an ending the god took no part in waits on its badge. A pause
       // thread's ending otherwise has no deadline and auto-opens; this one never
-      // does, and never stops the world. An ending the god touched (any committed
-      // hand, even an empty one) still stops: the player chose to be there.
+      // does, and never stops the world. An ending the god was present for (any
+      // committed hand, even an empty one) still stops: the player chose to be there.
       const untouched = UNTOUCHED_ENDING_BADGE_ENABLED
         && notification.autoResolveTick === null
-        && !godTouchedEncounter(action);
+        && !godPresentForEncounter(action);
       let waitWord: 'waits' | 'theirs_alone' | undefined;
       if (untouched) {
         try {
