@@ -260,7 +260,9 @@ export function useNudgeHand(
         // words the engine precomputed for it; no payer ⇒ the generic reason.
         blockedReason: card.blockedReason
           ?? (affordable ? undefined : (card.essenceShortReason ?? NUDGE_BLOCKED_REASONS.essence_unavailable)),
+        // Only a card greyed for want of essence names a short pool (review gate r1).
         ...(card.shortSphere || affordable || !card.essenceShortReason || !card.payingSphere
+          || (card.blockedCode !== undefined && card.blockedCode !== 'essence_unavailable')
           ? {}
           : { shortSphere: card.payingSphere }),
       };
