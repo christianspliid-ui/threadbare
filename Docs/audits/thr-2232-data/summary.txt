@@ -1,0 +1,36 @@
+
+## seed 42 greedy — totalTicks 1080 → end t863 doom 1 (phase=twilight), fate undefined, mandate 0.158, 869s
+  visions(8): call@t93(0.1) · road_of_trials@t186(0.2) · road_of_trials@t312(0.341) · road_of_trials@t377(0.411) · road_of_trials@t427(0.481) · crisis@t477(0.551) · ordeal!@t586(0.7) · return@t663(0.801)
+  apotheosis: apoOffered@t361(0.392) · apoStarted@t361(0.392) · apoChapterDone:success@t367(0.399)
+  doom stages: S1@t1 S2@t186 S3@t369 S4@t514 S5@t663
+  other: doomExpired@t863(1)
+
+## seed 42 none — totalTicks 1080 → end t851 doom 1 (phase=twilight), fate undefined, mandate 0.153, 877s
+  visions(8): call@t93(0.1) · road_of_trials@t186(0.2) · road_of_trials@t309(0.34) · road_of_trials@t372(0.411) · road_of_trials@t424(0.481) · crisis@t474(0.552) · ordeal!@t580(0.701) · return@t653(0.8)
+  apotheosis: apoOffered@t361(0.396) · apoStarted@t361(0.396) · apoChapterDone:success@t366(0.401) · apoOffered@t451(0.522) · apoStarted@t451(0.522) · apoOffered@t541(0.644) · apoStarted@t541(0.644) · apoOffered@t631(0.77) · apoStarted@t631(0.77) · apoStarted@t721(0.87)
+  doom stages: S1@t1 S2@t186 S3@t366 S4@t510 S5@t653
+  other: doomExpired@t851(1)
+
+## seed 7 greedy — totalTicks 1080 → end t819 doom 1 (phase=twilight), fate undefined, mandate 0.044, 1229s
+  visions(7): call@t93(0.1) · road_of_trials@t189(0.201) · road_of_trials@t370(0.411) · road_of_trials@t418(0.481) · crisis@t463(0.552) · ordeal!@t563(0.7) · return@t631(0.801)
+  apotheosis: apoOffered@t361(0.397) · apoStarted@t361(0.397) · apoChapterDone:success@t367(0.406)
+  doom stages: S1@t1 S2@t189 S3@t364 S4@t497 S5@t631
+  other: doomExpired@t819(1)
+
+## seed 7 none — totalTicks 1080 → end t799 doom 1 (phase=twilight), fate undefined, mandate 0.073, 1219s
+  visions(7): call@t93(0.1) · road_of_trials@t187(0.201) · road_of_trials@t307(0.341) · road_of_trials@t363(0.41) · crisis@t454(0.552) · ordeal!@t547(0.702) · return@t608(0.802)
+  apotheosis: apoOffered@t361(0.407) · apoStarted@t365(0.413) · apoChapterDone:success@t370(0.422) · apoOffered@t451(0.546) · apoStarted@t451(0.546)
+  doom stages: S1@t1 S2@t187 S3@t357 S4@t486 S5@t608
+  other: doomExpired@t799(1)
+
+## seed 99 greedy — totalTicks 1080 → end t830 doom 1 (phase=twilight), fate undefined, mandate 0.123, 1106s
+  visions(8): call@t98(0.101) · road_of_trials@t192(0.201) · road_of_trials@t311(0.341) · road_of_trials@t368(0.41) · road_of_trials@t416(0.481) · crisis@t464(0.55) · ordeal!@t569(0.7) · return@t644(0.801)
+  apotheosis: apoOffered@t361(0.399) · apoStarted@t361(0.399) · apoChapterDone:critical_success@t366(0.407) · apoOffered@t451(0.531) · apoStarted@t451(0.531) · apoOffered@t541(0.662) · apoStarted@t541(0.662) · apoOffered@t631(0.785) · apoStarted@t631(0.785)
+  doom stages: S1@t1 S2@t192 S3@t362 S4@t499 S5@t644
+  other: doomExpired@t830(1)
+
+## seed 99 none — totalTicks 1080 → end t829 doom 1 (phase=twilight), fate undefined, mandate 0.123, 1085s
+  visions(7): call@t98(0.101) · road_of_trials@t189(0.2) · road_of_trials@t307(0.341) · road_of_trials@t415(0.481) · crisis@t463(0.55) · ordeal!@t565(0.7) · return@t639(0.801)
+  apotheosis: apoOffered@t361(0.407) · apoStarted@t361(0.407) · apoChapterDone:critical_success@t366(0.413) · apoOffered@t451(0.532) · apoStarted@t451(0.532) · apoOffered@t541(0.666) · apoStarted@t541(0.666) · apoOffered@t631(0.79) · apoStarted@t631(0.79) · apoStarted@t721(0.885) · apoStarted@t811(0.981)
+  doom stages: S1@t1 S2@t189 S3@t356 S4@t499 S5@t639
+  other: doomExpired@t829(1)
