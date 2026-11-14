@@ -19,21 +19,29 @@
  * THR-2166 — but a camera the player moved after the Stage framed the place stays where the
  * player put it: re-centring it then reads as the map cutting away under their hand (warm
  * playtest round 3). The camera is snapshotted when the frame settles and compared on close.
+ *
+ * THR-2221 supersedes both close rules above, and narrows the open: on a running clock the
+ * bonded mortal's chapters open every few seconds, and a camera that framed each one and
+ * re-centred on each close read as a camera that follows him (warm playtest round 4). Now:
+ * - **Open.** The camera moves only when a framed place is not already inside the Stage's
+ *   window (`frameAlreadyInWindow`). A place the player can already see stays where it is.
+ * - **Close.** The camera never moves. It stays where the player had it, or where the Stage
+ *   put it. A frame only happens for a place outside the window, and the frame puts it
+ *   inside, so the next chapter at the same place stays: the map cannot drift (THR-2056).
+ * `closeCamera` still records the place and whether the player moved the camera.
  */
 import { useEffect, useRef, type Dispatch, type RefObject, type SetStateAction } from 'react';
 import type { HexMapV2Handle } from '../../HexMapV2/HexMapV2';
-import { chooseStageFrame, chooseStageZoom, hexScreenWidth, recentreOnClose } from '../../HexMapV2/camera/stageCamera';
+import { chooseStageFrame, chooseStageZoom, hexScreenWidth } from '../../HexMapV2/camera/stageCamera';
 import { hexToWorld } from '../../../lib/worldPosition';
 import { HEX_CONSTANTS } from '../../HexMapV2/scene/HexFillMesh';
 import {
-  STAGE_CLOSE_CENTRE_BAND_FRACTION,
   STAGE_CLOSE_PLAYER_MOVED_PX,
   STAGE_CLOSE_PLAYER_MOVED_ZOOM_RATIO,
   STAGE_DIM_FADE_MS,
-  STAGE_LAYOUT_SETTLE_FRAMES,
 } from '../../../data/stage-content';
 import type { MapCameraState } from '../../HexMapV2/camera/mapCamera';
-import { isStageOpen, type StageCameraMode, type StageScreenState } from './stageState';
+import { isStageOpen, type StageCameraMode, type StageRect, type StageScreenState } from './stageState';
 
 /** The camera's view at a moment: centre (world units) and zoom. Null when not attached. */
 type CameraView = { x: number; y: number; k: number } | null;
@@ -54,6 +62,24 @@ function parseKey(key: string | undefined): { col: number; row: number } | null 
   if (!key) return null;
   const [col, row] = key.split(',').map(Number);
   return Number.isFinite(col) && Number.isFinite(row) ? { col, row } : null;
+}
+
+/**
+ * THR-2221 — is every framed place already inside the Stage's window? A place counts as
+ * inside when its whole hex is: its centre sits at least half a hex width (at zoom `k`)
+ * inside every edge. A place that cannot be projected counts as outside. An empty frame
+ * is not "inside" (the caller handles that as its own case).
+ */
+export function frameAlreadyInWindow(
+  points: ReadonlyArray<{ x: number; y: number } | null>,
+  window: StageRect,
+  k: number,
+): boolean {
+  if (points.length === 0) return false;
+  const inset = hexScreenWidth(k) / 2;
+  return points.every(p => p !== null
+    && p.x >= window.x + inset && p.x <= window.x + window.w - inset
+    && p.y >= window.y + inset && p.y <= window.y + window.h - inset);
 }
 
 export function useStageCamera(
@@ -99,6 +125,15 @@ export function useStageCamera(
       return () => { cancelled = true; };
     }
     const { k, minK, maxK } = map.getCameraState();
+    // THR-2221 — the player can already see every framed place: the camera stays.
+    const projected = focus.frame.map(key => {
+      const at = parseKey(key);
+      return at ? map.projectHex(at.col, at.row) : null;
+    });
+    if (frameAlreadyInWindow(projected, w, k)) {
+      settle('stayed');
+      return () => { cancelled = true; };
+    }
     // THR-1897 — a premonition frames its options too, when they all fit at k ≥ 5.
     const points = focus.frame.map(parseKey).filter((h): h is { col: number; row: number } => h !== null)
       .map(h => hexToWorld(h, HEX_CONSTANTS.HEX_SIZE));
@@ -116,7 +151,7 @@ export function useStageCamera(
     hexMapRef.current?.setStageOptionHover(hoveredOption);
   }, [focus, hoveredOption, hexMapRef]);
 
-  // ── Close: the dim goes; a place outside the middle third is re-centred (THR-2056). ──
+  // ── Close: the dim goes; the camera never moves (THR-2221). ──
   const open = isStageOpen(stage);
   useEffect(() => {
     if (open) return;
@@ -128,31 +163,12 @@ export function useStageCamera(
     lastLit.current = null;
     const framed = framedView.current;
     framedView.current = null;
-    const at = parseKey(last?.key);
-    if (!at || !last) return;
-    let frames = STAGE_LAYOUT_SETTLE_FRAMES;
-    let id = 0;
-    const step = () => {
-      if (--frames > 0) {
-        id = requestAnimationFrame(step);
-        return;
-      }
-      // THR-2166 — the player moved the map after the Stage framed it: leave it there.
-      if (cameraMovedSince(framed, viewOf(map.getCameraState()))) {
-        setStage(prev => (isStageOpen(prev) ? prev : { ...prev, closeCamera: { hex: last.key, recentred: false, playerMoved: true } }));
-        return;
-      }
-      const rect = map.getCanvasRect();
-      if (!rect) return;
-      // Projected whether or not it is on the canvas: the returning rail may have covered it.
-      const vp = map.projectHex(at.col, at.row);
-      if (!vp) return;
-      const target = recentreOnClose(vp, rect, STAGE_CLOSE_CENTRE_BAND_FRACTION);
-      setStage(prev => (isStageOpen(prev) ? prev : { ...prev, closeCamera: { hex: last.key, recentred: target !== null } }));
-      if (!target) return;
-      void map.centerHexesAt([last.key], target, { zoom: map.getCameraState().k, instant: last.instant });
-    };
-    id = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(id);
+    if (!last) return;
+    // THR-2166 — kept as a record only: did the player move the map after the Stage framed it?
+    const playerMoved = cameraMovedSince(framed, viewOf(map.getCameraState()));
+    setStage(prev => (isStageOpen(prev) ? prev : {
+      ...prev,
+      closeCamera: playerMoved ? { hex: last.key, recentred: false, playerMoved: true } : { hex: last.key, recentred: false },
+    }));
   }, [open, hexMapRef, setStage]);
 }
