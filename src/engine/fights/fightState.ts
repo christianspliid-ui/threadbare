@@ -334,7 +334,7 @@ export interface FightStepResultOptions {
  * The fallback coin when no rng is passed (a direct call with no step stream).
  * The neutral band then reads the positive pole — the fighter stands, a bargain
  * is taken — so a caller that never supplied a coin is not handed a yield.
- * Deterministic, never `Math.random` (NFP #3).
+ * Deterministic (NFP #3).
  */
 function standFirmCoin(): number {
   return 0;

@@ -5,7 +5,7 @@ description: >
   tracing, PRNG usage, or any code that lives in src/engine/. Triggers on "engine",
   "tick loop", "sigmoid", "resolution", "trace", "PRNG", "Maslow", "action pipeline",
   "graph op", "fail-soft", or when implementing systems described in Obsidian vault notes.
-last_validated_against: 2026-10-14
+last_validated_against: 2026-11-14
 validated_doctrine: architecture@1
 ---
 
@@ -36,7 +36,7 @@ The **debug panel** (backtick key in-game) is the primary inspectability tool. I
 
 ## Determinism: Seeded PRNG
 
-Every random decision uses the seeded PRNG. Never use `Math.random()`.
+Every random decision uses the seeded PRNG (lint-enforced: `npm run lint:laws`).
 
 - Same seed + same inputs = same outputs
 - Essential for debugging: "broke on seed 42 tick 300"

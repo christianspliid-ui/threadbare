@@ -7,7 +7,7 @@
  * dissolution reason and the cohesion the company held when it ended; the exact
  * line is a seeded pick from the matching pool.
  *
- * No graph access, no `Math.random()` — takes a seeded `rng` so a replay of the
+ * No graph access — takes a seeded `rng` so a replay of the
  * same state tells the same parting (NFP #3).
  */
 

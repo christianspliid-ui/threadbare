@@ -76,7 +76,7 @@ export type EffectEventSite =
 export interface RaiseEffectEventOptions {
   /** Production site tag, recorded on the `effect.event_raised` trace. */
   site: EffectEventSite;
-  /** Seeded RNG from the calling phase (NFP #3) — never `Math.random`. */
+  /** Seeded RNG from the calling phase (NFP #3). */
   rng: () => number;
   /**
    * The other agent in the event, when one exists. A one-shot

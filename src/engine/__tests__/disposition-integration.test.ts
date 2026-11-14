@@ -143,7 +143,7 @@ describe('disposition integration — Phase A', () => {
     // 4. Run selection pipeline — should apply disposition modifier
     const result = runSelectionPipeline(graph, agentA, candidates, {
       topN: 3,
-    });
+    }, 0, 0.5);
 
     expect(result.selected).toBeDefined();
     expect(result.candidates.length).toBeGreaterThan(0);

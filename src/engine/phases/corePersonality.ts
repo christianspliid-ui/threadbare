@@ -29,7 +29,7 @@
  *     slice; the foundation provides the mechanic + inspectable trace.)
  *
  * ─── Determinism (NFP #3) ───────────────────────────────────────
- * Seeding uses a per-agent `mulberry32(hash(seed, id))`. No `Math.random`.
+ * Seeding uses a per-agent `mulberry32(hash(seed, id))`.
  *
  * ─── Tracing (NFP #2) ───────────────────────────────────────────
  * All events emit the single `core_personality` category, discriminated by

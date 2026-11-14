@@ -5373,7 +5373,7 @@ export function applyEncounterAftermathReaction(
         if (!relocNode || relocNode.type !== 'actor') { failRelocation('non_agent_target'); break; }
 
         // Seeded per (world seed, tick, effect site) — the `away` pick must be
-        // reproducible from the same seed and never touch Math.random (NFP #3).
+        // reproducible from the same seed (NFP #3).
         const relocSalt = `${encounterId}_${reaction.id}_${i}_${resolvedId}`;
         let relocSeed = state.seed;
         for (let c = 0; c < relocSalt.length; c++) relocSeed = (relocSeed ^ relocSalt.charCodeAt(c)) >>> 0;

@@ -22,7 +22,7 @@
 //   a grudge; there is no scheduler and no cap doing that work.
 //
 // NFP #3: every decision here is deterministic — magnitude comparisons and a
-// node-id-sorted tie-break. No dice, no `Math.random()`.
+// node-id-sorted tie-break. No dice.
 
 import type { WorldGraph } from '../graph';
 import type { GraphEdge } from '../../types/graph';

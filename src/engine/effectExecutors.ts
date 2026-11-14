@@ -74,8 +74,8 @@ export interface ExecutionContext {
   /**
    * THR-1571 — the seeded stream a draw inside an executor uses (a `random` teleport
    * destination). The caller seeds it per site (`hashSeed('teleport:' + seed + …)`);
-   * absent, the executor falls back to a stream on (caster, tick), never
-   * `Math.random` (NFP #3).
+   * absent, the executor falls back to a stream on (caster, tick)
+   * (NFP #3).
    */
   rng?: () => number;
 }

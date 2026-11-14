@@ -23,7 +23,7 @@
  * ─── Determinism (NFP #3) ────────────────────────────────────────
  * Seeding uses a per-agent `mulberry32(hash(worldSeed, agentId))` so the same world
  * seed reproduces the same baseline regardless of *when* the agent is first seen
- * (worldgen agents at tick 1, born-later agents at their first tick). No `Math.random`.
+ * (worldgen agents at tick 1, born-later agents at their first tick).
  *
  * ─── Tracing (NFP #2) ────────────────────────────────────────────
  * ONE aggregate `personality_origin_seeded` trace per tick carrying the count — never

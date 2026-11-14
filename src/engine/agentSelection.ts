@@ -99,18 +99,16 @@ function assignProbabilities(candidates: ActionCandidate[]): ActionCandidate[] {
 /**
  * Probabilistic selection from candidates with assigned probabilities.
  * Uses cumulative distribution — roll a random number and walk through.
- * @param deterministicRoll - Optional fixed roll [0, 1) for testing
+ * @param deterministicRoll - Seeded roll [0, 1) from the calling phase
  */
 export function probabilisticSelect(
   candidates: ActionCandidate[],
-  deterministicRoll?: number,
+  deterministicRoll: number,
 ): ActionCandidate {
   if (candidates.length === 0) throw new Error('No candidates to select from');
   if (candidates.length === 1) return candidates[0];
 
-  // @deprecated fallback — all production callers must pass deterministicRoll (seeded via RNG).
-  // Math.random() here is a safety net only; it breaks determinism (NFP #3).
-  const roll = deterministicRoll ?? Math.random();
+  const roll = deterministicRoll;
   let cumulative = 0;
 
   for (const candidate of candidates) {
@@ -164,7 +162,7 @@ export function runSelectionPipeline(
   candidates: ActionCandidate[],
   config: SelectionConfig,
   tick: number = 0,
-  deterministicRoll?: number,
+  deterministicRoll: number,
   effectStates?: ReadonlyMap<string, EffectRuntimeState>,
 ): SelectionResult {
   const actorNode = graph.getNode(actorId);
@@ -299,9 +297,7 @@ export function runSelectionPipeline(
   });
 
   // Step 6: Probabilistic select
-  // @deprecated fallback — all production callers must pass deterministicRoll (seeded via RNG).
-  // Math.random() here is a safety net only; it breaks determinism (NFP #3).
-  const roll = deterministicRoll ?? Math.random();
+  const roll = deterministicRoll;
   const selected = probabilisticSelect(withProbabilities, roll);
 
   // Get actor and target names for human-readable summary

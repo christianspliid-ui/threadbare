@@ -8,8 +8,7 @@
  * that produced "trouble in Weave a Political Alliance" and "They believes".
  *
  * Determinism: variant selection is seeded on (agentId, encounterId) so the same
- * decision always yields the same prose; different decisions vary (NFP #3). No
- * `Math.random()`.
+ * decision always yields the same prose; different decisions vary (NFP #3).
  */
 
 import { mulberry32 } from '../../lib/prng';

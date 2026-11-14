@@ -14,7 +14,7 @@
  * to emit emergence traces.
  *
  * Determinism (NFP #3): `seedCoreProfile` takes a seeded PRNG; everything else
- * is a pure function of its inputs. No `Math.random`.
+ * is a pure function of its inputs.
  *
  * Core ≠ reach ≠ capability: this module reads/produces only `CoreProfile`
  * values and reach *directions*; it never reads or writes capability, and never

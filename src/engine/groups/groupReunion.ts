@@ -6,7 +6,7 @@
  * and `groupSeeking.ts` (a beginning): this one narrates a *return*, or the failure
  * of one.
  *
- * No graph access, no `Math.random()` — takes a seeded `rng` so a replay of the same
+ * No graph access — takes a seeded `rng` so a replay of the same
  * state tells the same reunion (NFP #3).
  */
 

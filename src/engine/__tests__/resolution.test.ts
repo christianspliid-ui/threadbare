@@ -66,7 +66,7 @@ describe('Resolution System', () => {
     });
 
     it('uses random roll when none provided', () => {
-      const result = resolveAction(0.50);
+      const result = resolveAction(0.50, undefined, () => 0.5);
       expect(result.roll).toBeGreaterThanOrEqual(1);
       expect(result.roll).toBeLessThanOrEqual(100);
     });

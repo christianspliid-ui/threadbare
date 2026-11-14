@@ -126,7 +126,7 @@ export function classifyBiome(
 
   // High mountains and extremes: > ELEV.HIGHLAND
   if (temperature < TEMP.FROZEN) return 'glacier';
-  // Rare volcanic peaks: deterministic hash of inputs replaces Math.random()
+  // Rare volcanic peaks: deterministic hash of inputs
   if (temperature > TEMP.SCORCHING) {
     const hash = ((elevation * 7919 + temperature * 6529 + moisture * 4217) % 1);
     if (hash < VOLCANO_CHANCE) return 'volcano';

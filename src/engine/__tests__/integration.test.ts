@@ -97,7 +97,7 @@ describe('Integration: Headless Simulation Loop', () => {
 
     const selectionResult = runSelectionPipeline(
       graph, 'actor.thorin', nextCandidates,
-      { topN: 3, survivalThreshold: 0.8 },
+      { topN: 3, survivalThreshold: 0.8 }, 0, 0.5,
     );
     expect(selectionResult.selected).toBeDefined();
     expect(selectionResult.candidates.length).toBeGreaterThan(0);

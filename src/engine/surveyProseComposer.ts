@@ -7,7 +7,7 @@
  * NFP compliance:
  *   #1 Tunability: all magic numbers are named constants from survey-prose-tables.ts
  *   #2 Inspectability: emits SurveyProseComposedTrace per call
- *   #3 Determinism: pure over graph snapshot + seeded rng; no Math.random
+ *   #3 Determinism: pure over graph snapshot + seeded rng
  *   #4 Fail-soft: missing data → graceful omission, never throws at call site
  */
 

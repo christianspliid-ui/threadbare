@@ -17,7 +17,7 @@
  * for the two new channels), which is what the sheet's provenance line and the cast
  * resolver's divine echo read.
  *
- * No `Math.random()`: the pools are sorted, and each pick is one hash keyed on stable
+ * The pools are sorted, and each pick is one hash keyed on stable
  * identities (the reader's name, never a counter id — the THR-1572 same-seed lesson).
  * Every entry point is fail-soft (NFP #4).
  */

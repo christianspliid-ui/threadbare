@@ -2679,7 +2679,7 @@ export function executeStepResult(
   // step so the encounter step-navigator can replay it exactly. Placeholders
   // ({ally}, {artifact}) resolve against live world state, so re-rendering later
   // could show a *different* past — capture-at-resolution is the design. The
-  // seeded resolution `rng` is threaded into enrichProse (NEVER Math.random) so
+  // seeded resolution `rng` is threaded into enrichProse so
   // the same seed + same tick stores the same record (NFP #3). Fail-soft: any
   // throw stores the raw template prose and never crashes the tick loop.
   if (step) {
@@ -3671,8 +3671,8 @@ function fireResolvedActionTriggers(
     const attachedEffects = collectAttachmentEffects(state.graph, action.actorId, effectStates);
 
     // THR-719: on-use item behavior rides this path. Narrative substitution needs
-    // the actor's name, and probability guards need the seeded resolution stream —
-    // never Math.random (NFP #3).
+    // the actor's name, and probability guards need the seeded resolution stream
+    // (NFP #3).
     triggerCtx.nextRoll = rng;
     triggerCtx.actorName = triggerActorNode.name;
 

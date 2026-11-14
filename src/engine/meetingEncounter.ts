@@ -99,7 +99,7 @@ import { pickCulturalName, pickGenderedName } from '../data/culture-name-pools';
 /**
  * Per-tick sequence counter for meeting agent IDs.
  * Reset once per tick by orchestrator via resetMeetingCounter().
- * NFP #3: Determinism — tick+counter replaces Math.random() for IDs.
+ * NFP #3: Determinism — IDs come from tick+counter.
  */
 let meetingCounter = 0;
 export function resetMeetingCounter(): void {
@@ -986,7 +986,7 @@ export function createAgentFromMeeting(
   ascendantId: string,
   tick: number,
 ): string {
-  // NFP #3: Determinism — use tick+sequence counter instead of Math.random() for agent IDs.
+  // NFP #3: Determinism — agent IDs come from a tick+sequence counter.
   const agentId = `ind_meeting_${tick}_${meetingCounter++}`;
 
   const descriptors = normalizeNarrativeDescriptors(result.traitSeeds ?? []);

@@ -28,6 +28,7 @@
  *   {?no_X}...{/no_X}   → inverse conditional block
  */
 
+import { mulberry32, hashString } from '../lib/prng';
 import { substituteFactionName } from './factionNameSubstitution';
 import { displayTradeWord } from './firstTrade';
 import { TRADE_TOKEN_FALLBACK_WORD } from '../data/npc-role-words';
@@ -726,7 +727,7 @@ function resolveBandPhrase(
 
   const phraseTable = placeholder === '{outcome_phrase}' ? 'outcome_phrase' : 'q_flavor';
   const runtime = opts?.runtime;
-  const rng = opts?.rng ?? Math.random;
+  const rng = opts?.rng ?? mulberry32(hashString(`${ctx.agentId}:${ctx.tick ?? 0}:${placeholder}`));
 
   let picked: import('../engine/proseSelection').PhraseEntry;
 
@@ -826,7 +827,8 @@ export function resolveEncounterTitle(
  * opts.runtime — SimulationRuntime holding the per-actor phrase dedup history.
  *   Required for {outcome_phrase} / {q_flavor} repetition guarding; without it,
  *   the first pool entry is used deterministically (fail-soft, never throws).
- * opts.rng — Seeded PRNG for phrase selection. Falls back to Math.random when absent.
+ * opts.rng — Seeded PRNG for phrase selection. When absent, a stream seeded from
+ *   agent, tick and placeholder is used, so the pick stays deterministic.
  */
 export function enrichProse(
   template: string,

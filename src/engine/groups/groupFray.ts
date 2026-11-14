@@ -8,7 +8,7 @@
  * composer; an untethered company's fray stays the silent systemic line (see
  * `phaseGroups`).
  *
- * No graph access, no `Math.random()` — takes a seeded `rng` so a replay of the
+ * No graph access — takes a seeded `rng` so a replay of the
  * same state tells the same fraying (NFP #3).
  */
 

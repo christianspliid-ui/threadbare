@@ -13,7 +13,6 @@
  *
  * ─── Determinism ──────────────────────────────────────────────────
  * Seeded per (worldSeed, tick, actionId) — same seed + same inputs → same secrets.
- * No Math.random.
  *
  * ─── Fail-soft ────────────────────────────────────────────────────
  * Every path is wrapped by the caller and returns silently on missing nodes; a

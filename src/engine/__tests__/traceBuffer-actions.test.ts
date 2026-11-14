@@ -88,7 +88,7 @@ describe('action_selection trace', () => {
     const result = runSelectionPipeline(graph, 'actor.thorin', mockCandidates, {
       topN: 3,
       survivalThreshold: 0.8,
-    });
+    }, 0, 0.5);
 
     const traces = getTraces().filter(
       (t) => t.category === 'action_selection'
@@ -111,7 +111,7 @@ describe('action_selection trace', () => {
     runSelectionPipeline(graph, 'actor.thorin', mockCandidates, {
       topN: 3,
       survivalThreshold: 0.8,
-    });
+    }, 0, 0.5);
 
     const traces = getTraces().filter(
       (t) => t.category === 'action_selection'
@@ -135,7 +135,7 @@ describe('action_selection trace', () => {
     runSelectionPipeline(graph, 'actor.thorin', mockCandidates, {
       topN: 3,
       survivalThreshold: 0.8,
-    });
+    }, 0, 0.5);
 
     const traces = getTraces().filter(
       (t) => t.category === 'action_selection'
@@ -162,7 +162,7 @@ describe('action_selection trace', () => {
     runSelectionPipeline(graph, 'actor.thorin', mockCandidates, {
       topN: 3,
       survivalThreshold: 0.8,
-    });
+    }, 0, 0.5);
 
     const traces = getTraces().filter(
       (t) => t.category === 'action_selection'
@@ -181,7 +181,7 @@ describe('action_selection trace', () => {
     runSelectionPipeline(graph, 'actor.thorin', mockCandidates, {
       topN: 3,
       survivalThreshold: 0.8,
-    });
+    }, 0, 0.5);
     enableTracing();
 
     const traces = getTraces().filter(
@@ -194,11 +194,11 @@ describe('action_selection trace', () => {
     runSelectionPipeline(graph, 'actor.thorin', mockCandidates, {
       topN: 3,
       survivalThreshold: 0.8,
-    });
+    }, 0, 0.5);
     runSelectionPipeline(graph, 'actor.thorin', mockCandidates, {
       topN: 3,
       survivalThreshold: 0.8,
-    });
+    }, 0, 0.5);
 
     const traces = getTraces().filter(
       (t) => t.category === 'action_selection'

@@ -18,7 +18,7 @@ status: live
 - **Hexes are not graph nodes.** Hexes live in `GameState.tiles[]`; hex actions produce `HexMutation[]` applied in `phaseHexState`. Terrain and hex adjacency are read from tiles/coordinates, never from graph edges.
 - **Per-session runtime:** [`src/engine/simulationRuntime.ts`](../../src/engine/simulationRuntime.ts) `SimulationRuntime` — owns encounter cache, distance matrix, `worldVersion`, `structuralCacheVersion`. Module-level cache singletons are rejected (see Rejected approaches).
 - **Resolution service:** [`src/engine/resolutionService.ts`](../../src/engine/resolutionService.ts) — sigmoid-derived capability × normalized difficulty (`0..1`) → threshold ∈ `[0.05, 0.95]` (`PROBABILITY_FLOOR` / `PROBABILITY_CEILING`) → d100 with doubles-based crit. `forecastAction` and `resolveAction` share one threshold. The five-band outcome ladder (`critical_success | success | success_at_cost | failure | critical_failure`) is fully live; success-at-cost is the *dominant expected texture*, not an expansion slot (THR-571).
-- **Seeded PRNG:** every random decision uses the seeded RNG. `Math.random()` is forbidden. Same seed + same tick = same output.
+- **Seeded PRNG:** every random decision uses the seeded RNG (`npm run lint:laws` enforces it in `src/engine`). Same seed + same tick = same output.
 - **Tracing:** [`src/engine/traceBuffer.ts`](../../src/engine/traceBuffer.ts) `emitTrace()`. New phases emit ≥1 trace; fallbacks emit traces. The Debug Panel (backtick in-game; `F1` jumps to CLI) is the primary inspectability surface.
 - **Three-tier position model:** hex → location → sublocation, joined by exactly one `located_at` edge to the most-specific node. **The sublocation tier is one node shape** — `type: 'location'` carrying `parentLocationId` (THR-1183). Ask through [`src/engine/sublocationShape.ts`](../../src/engine/sublocationShape.ts) (`isPlaceNode` / `getLocationNodes` / `resolveToParentLocation`); a bare `getNodesByType('location')` returns *both* tiers. See [Three-tier Position Model in UL/Graph](../ubiquitous-language/Graph.md).
 - **Distance matrix:** indexes the **place tier only** (THR-1346, via `getLocationNodes`), caps at `MAX_DISTANCE_MATRIX_SIZE` (1200), and is live on the per-tick path — `socialEncounterGeneration.findVisibleAgents` and `idleBehavior.deriveAmbitionTarget` walk whole rows. Encounter *awareness* never uses it: awareness is hex-coordinate distance (`encounterAwareness.ts`).
@@ -103,7 +103,6 @@ Detailed order in [`Docs/ai-index/tick-phases.md`](../ai-index/tick-phases.md); 
 - ❌ Module-scope cache singletons — caches live on `SimulationRuntime`.
 - ❌ Location-hop awareness via the location-graph distance matrix — replaced by hex-distance awareness (geometric, predictable, sublocation-agnostic).
 - ❌ V1 SVG hex map (`HexMap.tsx`, `HexTile.tsx`, `AgentDots.tsx`, `MovementTrails.tsx`) — replaced by HexMapV2 (Three.js InstancedMesh).
-- ❌ `Math.random()` anywhere in the engine — seeded PRNG only.
 - ❌ A second skill tree (`.agents/skills/`) — deleted 2026-07-21 with the Cowork lane (THR-654); `.claude/skills/` is the only tree.
 
 ## Engine-specific NFP audit table (for new engine work)

@@ -215,7 +215,7 @@ export function processEffectEvent(
   event: EffectEvent,
   effectStates: ReadonlyMap<string, EffectRuntimeState>,
   tick: number,
-  rng: () => number = Math.random,
+  rng: () => number,
   counterpartId?: string,
 ): EffectEventResult {
   // Fail-soft: agent must exist
