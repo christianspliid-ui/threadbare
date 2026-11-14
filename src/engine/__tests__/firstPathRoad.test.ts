@@ -78,9 +78,12 @@ describe('when the path road is due', () => {
   });
 
   it('waits while a scene on her shortlist carries the path pull', () => {
-    expect(firstPathRoadDue(makeGraph(), ASC, AGENT, BOND + 1, [{ firstPathPull: 3 }], noHistory, sceneOf)).toBeNull();
+    const c = (templateId: string, firstPathPull?: number) => ({ entry: { templateId }, ...(firstPathPull ? { firstPathPull } : {}) });
+    expect(firstPathRoadDue(makeGraph(), ASC, AGENT, BOND + 1, [c(FIT, 3)], noHistory, sceneOf)).toBeNull();
     // A shortlist without the pull does not hold the road back.
-    expect(firstPathRoadDue(makeGraph(), ASC, AGENT, BOND + 1, [{}, { firstPathPull: 1 }], noHistory, sceneOf)).not.toBeNull();
+    expect(firstPathRoadDue(makeGraph(), ASC, AGENT, BOND + 1, [c(UNFIT), c(FIT, 1)], noHistory, sceneOf)).not.toBeNull();
+    // Nor does a pulled chore: the path's work is a story.
+    expect(firstPathRoadDue(makeGraph(), ASC, AGENT, BOND + 1, [c(CHORE, 3)], noHistory, sceneOf)).not.toBeNull();
   });
 
   it('counts the drought from her latest path-fitting chapter, not from an unfitting one', () => {
@@ -131,6 +134,19 @@ describe('her chapters since the bond', () => {
     const { chapters, resolvedSinceBond } = firstPathChapters(makeGraph(), ASC, AGENT, archive, open);
     expect(chapters.map(c => c.templateId)).toEqual([FIT, UNFIT]);
     expect(resolvedSinceBond).toBe(true);
+  });
+
+  it('counts a chapter that resolved this tick before the archive has it', () => {
+    const live = [{ actionId: 'a1', actorId: AGENT, templateId: UNFIT, startTick: 30, resolved: true }];
+    const { chapters, resolvedSinceBond } = firstPathChapters(makeGraph(), ASC, AGENT, [], live);
+    expect(chapters.map(c => c.templateId)).toEqual([UNFIT]);
+    expect(resolvedSinceBond).toBe(true);
+  });
+
+  it('does not count an archived chapter twice when its live action is still listed', () => {
+    const archive = [{ actionId: 'a1', actorId: AGENT, templateId: UNFIT, startTick: 30, resolvedTick: 40, resolved: true }] as unknown as ChapterRecord[];
+    const live = [{ actionId: 'a1', actorId: AGENT, templateId: UNFIT, startTick: 30, resolved: true }];
+    expect(firstPathChapters(makeGraph(), ASC, AGENT, archive, live).chapters).toHaveLength(1);
   });
 });
 

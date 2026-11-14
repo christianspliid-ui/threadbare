@@ -112,7 +112,7 @@ export function firstPathRoadDue(
   ascendantId: string | undefined,
   agentId: string,
   tick: number,
-  topCandidates: readonly { readonly firstPathPull?: number }[],
+  topCandidates: readonly { readonly firstPathPull?: number; readonly entry: { readonly templateId: string } }[],
   history: () => { chapters: readonly PathChapter[]; resolvedSinceBond: boolean },
   sceneOf: (templateId: string) => PathScene | null | undefined,
 ): FirstPathRoadDue | null {
@@ -125,7 +125,9 @@ export function firstPathRoadDue(
     if (typeof last === 'number' && last <= tick && tick - last < RESTLESS_ROAD_COOLDOWN_TICKS) return null;
     // During her story breath every story is held back on purpose; wait it out (as the restless road).
     if (storyBreathRemaining(graph, agentId, tick) > 0) return null;
-    if (topCandidates.some(c => (c.firstPathPull ?? 1) > 1)) return null;
+    // A pulled chore does not count: the path's work is a story, and the lean also
+    // touches routine scenes (review-gate round 1).
+    if (topCandidates.some(c => (c.firstPathPull ?? 1) > 1 && !isRoutineTemplate(c.entry.templateId))) return null;
     const { chapters, resolvedSinceBond } = history();
     const bondTick = typeof thread.properties.establishedTick === 'number' ? thread.properties.establishedTick : 0;
     let anchor = bondTick;
@@ -150,7 +152,7 @@ export function firstPathChapters(
   ascendantId: string | undefined,
   agentId: string,
   archive: readonly ChapterRecord[] | undefined,
-  openActions: readonly { actorId: string; templateId: string; startTick: number; resolved?: boolean }[] | undefined,
+  actions: readonly { actionId?: string; actorId: string; templateId: string; startTick: number; resolved?: boolean }[] | undefined,
 ): { chapters: PathChapter[]; resolvedSinceBond: boolean } {
   const chapters: PathChapter[] = [];
   let resolvedSinceBond = false;
@@ -158,15 +160,22 @@ export function firstPathChapters(
     const thread = firstThreadTo(graph, ascendantId, agentId);
     if (!thread) return { chapters, resolvedSinceBond };
     const bondTick = typeof thread.properties.establishedTick === 'number' ? thread.properties.establishedTick : 0;
+    const archived = new Set<string>();
     for (const rec of archive ?? []) {
       if (rec.actorId !== agentId || isRoutineChapter(rec)) continue;
+      archived.add(rec.actionId);
       if (rec.startTick >= bondTick) chapters.push({ templateId: rec.templateId, startTick: rec.startTick });
       if (rec.resolved && rec.resolvedTick >= bondTick) resolvedSinceBond = true;
     }
-    for (const a of openActions ?? []) {
-      if (a.resolved || a.actorId !== agentId) continue;
+    // Live actions, open or resolved: a chapter that resolved this tick is archived only
+    // at the end of the tick, after agent decision (review-gate round 1).
+    for (const a of actions ?? []) {
+      if (a.actorId !== agentId || (a.actionId && archived.has(a.actionId))) continue;
       if (!isEncounterAction(a.templateId) || isRoutineTemplate(a.templateId)) continue;
-      if (a.startTick >= bondTick) chapters.push({ templateId: a.templateId, startTick: a.startTick });
+      if (a.startTick >= bondTick) {
+        chapters.push({ templateId: a.templateId, startTick: a.startTick });
+        if (a.resolved) resolvedSinceBond = true;
+      }
     }
   } catch {
     // fail-soft: what was gathered stands
