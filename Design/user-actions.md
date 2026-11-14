@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-14 14:58 local (13:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-14 15:58 local (14:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
 
@@ -54,16 +54,16 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-14: a ruler's Story tab now folds repeat chapters into one counted chip, and it is live** ([THR-2223](https://linear.app/threadbare/issue/THR-2223)). Merged via [#2833](https://github.com/christianspliid-ui/threadbare/pull/2833).
+- **2026-11-14: the screen keeps two promises it used to break, and it is live** ([THR-2222](https://linear.app/threadbare/issue/THR-2222)). Merged via [#2832](https://github.com/christianspliid-ui/threadbare/pull/2832).
+- **2026-11-14: the map no longer pans to Kael on its own, and it is live** ([THR-2221](https://linear.app/threadbare/issue/THR-2221)). Merged via [#2831](https://github.com/christianspliid-ui/threadbare/pull/2831).
+- **2026-11-14: the purse is tuned (cards cost three times as much, pools hold 35, income 0.6), and it is live** ([THR-2216](https://linear.app/threadbare/issue/THR-2216)). Merged via [#2830](https://github.com/christianspliid-ui/threadbare/pull/2830).
 - **2026-11-14: a dream that found no hold no longer says "held" or "Heart grew", and it is live** ([THR-2220](https://linear.app/threadbare/issue/THR-2220)). Merged via [#2829](https://github.com/christianspliid-ui/threadbare/pull/2829).
 - **2026-11-14: new Doom stages now say what each card does, with no more "many weeks", and it is live** ([THR-2219](https://linear.app/threadbare/issue/THR-2219)). Merged via [#2828](https://github.com/christianspliid-ui/threadbare/pull/2828).
 - **2026-11-14: a won chapter now credits the cards you played, and each card in the hand says which step it plays into. It is live** ([THR-2218](https://linear.app/threadbare/issue/THR-2218)). Merged via [#2826](https://github.com/christianspliid-ui/threadbare/pull/2826).
 - **2026-11-14: the garbled dashes in the anomaly chapters and lab-report lines are fixed, and it is live** ([THR-2217](https://linear.app/threadbare/issue/THR-2217)). Merged via [#2825](https://github.com/christianspliid-ui/threadbare/pull/2825).
 - **2026-11-14: the chosen path now draws The First toward the work that fits it, and it is live** ([THR-2214](https://linear.app/threadbare/issue/THR-2214)). Merged via [#2824](https://github.com/christianspliid-ui/threadbare/pull/2824).
 - **2026-11-14: the agency census is in. One command now compares a world left alone with a world the god plays, on the same seeds, and it is live** ([THR-2213](https://linear.app/threadbare/issue/THR-2213)). Merged via [#2822](https://github.com/christianspliid-ui/threadbare/pull/2822).
-- **2026-11-14: a dealt hand now reads how hard the step is, and it is live** ([THR-2212](https://linear.app/threadbare/issue/THR-2212)). Merged via [#2821](https://github.com/christianspliid-ui/threadbare/pull/2821).
-- **2026-11-14: an ending the god had no part in now waits on its badge, and it is live** ([THR-2211](https://linear.app/threadbare/issue/THR-2211)). Merged via [#2820](https://github.com/christianspliid-ui/threadbare/pull/2820).
-- **2026-11-14: Rebuke is in. A god card now answers a rival on the place it just struck, and it is live** ([THR-2209](https://linear.app/threadbare/issue/THR-2209)). Merged via [#2819](https://github.com/christianspliid-ui/threadbare/pull/2819).
-- **2026-11-14: a bound mortal's deeds now fill the Mandate, and it is live** ([THR-2208](https://linear.app/threadbare/issue/THR-2208)). Merged via [#2818](https://github.com/christianspliid-ui/threadbare/pull/2818).
 
 ---
 
