@@ -1339,10 +1339,13 @@ export function phaseAgentDecision(
       // because `firstPathPull` lives on the scored shortlist (the census on THR-2200:
       // the lean only fails when no fitting scene is on it). The restless road was
       // checked first and shares the cooldown: one road per decision. The player's own
-      // steer outranks it: an arriving journey, a held whisper or a held Crossroads lean
-      // keeps her here.
+      // steer outranks it: an arriving journey, a held whisper, a held paid Compulsion or a
+      // held Crossroads lean keeps her here.
       const playerSteers = !!journeyGoalId
         || actor.properties?.crossroadsLean !== undefined
+        // A held paid Compulsion (target or compelled journey) resolves below; the road must not spend it.
+        || actor.properties?.compulsionTargetTemplateId !== undefined
+        || actor.properties?.compelledJourneyTemplateId !== undefined
         || decision.rankedCandidates.some(c => (c.whisperPull ?? 1) > 1);
       const pathRoad = appointmentCtx || roadChecked || playerSteers ? null : (() => {
         let sceneIndex: Map<string, EncounterCacheEntry> | null = null;
