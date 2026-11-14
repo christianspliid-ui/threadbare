@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-14 17:56 local (16:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-14 18:58 local (17:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -21,6 +21,12 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
+- [Check that the First's whole journey fits one run](https://linear.app/threadbare/issue/THR-2232/check-that-the-firsts-whole-journey-fits-one-run-measure-when-each) (your ask from this afternoon): **a run already tells the First's whole journey, and Doom never cuts it short. The Apotheosis was in the wrong place, so it moves.**
+  - **The journey runs on Doom's own clock.** Call at 10% of the age, the trials from 20% to 48%, the Crisis at 55%, the Ordeal at 70%, the Return at 80%. If Doom speeds up or is stayed, the whole story stretches or squeezes with it. On all six test runs the Return came the moment Doom's last stage began. The last fifth of the age then belongs to the clocks, as you chose with "A".
+  - **The Apotheosis came far too early.** The moment the First becomes your Aspect arrived at about 40% of the age on every run, in the middle of the trials and before the Crisis and the Ordeal. In hands-off runs it then came back every few days, sometimes even after the Return. Now it comes once, after the Ordeal and before the Return. The story reads Call, trials, Crisis, Ordeal, Apotheosis, Return. Built in [The First's Apotheosis comes after the Ordeal](https://linear.app/threadbare/issue/THR-2234/the-firsts-apotheosis-comes-after-the-ordeal-once-between-the-ordeal).
+  - **One trial vision sometimes went missing** (on half the runs). It now arrives late instead of never: [No journey vision is lost](https://linear.app/threadbare/issue/THR-2233/no-journey-vision-is-lost-a-road-of-trials-beat-whose-moment-passed).
+  - **What it costs:** being your Aspect earns you a little essence. That income now starts later in the run, so the build re-checks that the purse still works.
+  - **Veto:** say "the Apotheosis is a mid-run power spike" to keep it where it is today. Both builds are held for your veto until 05:45 UTC tomorrow. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-14d.md)*
 - [The mid-game words still mean nothing (seventh recurrence)](https://linear.app/threadbare/issue/THR-2224/recurs-after-fix-seven-times-the-mid-game-words-still-mean-nothing): **half of this complaint came from the test, not the game.**
   - **Warm testers have been playing a showcase world.** The warm-playtest link loads a developer test kit: 11 made-up "Hooks" and a little essence in every pool. That is the "Hooks · 11 unfinished" all three testers quoted. From now on the warm start skips that kit: [Warm playtests arrive in a real world](https://linear.app/threadbare/issue/THR-2230/warm-playtests-arrive-in-a-real-world-the-warm-start-stops-loading-the).
   - **On a chapter screen, dots mean only the odds.** The mortal's skill keeps its word ("Revered") and drops its five dots. **The Elder powers row shows up the first time a card's price names an elder pool.** **Card-tag hovers get checked on cards you can't afford.** Built in [One mark, one meaning on the Stage](https://linear.app/threadbare/issue/THR-2231/one-mark-one-meaning-on-the-stage-the-steps-standing-reads-as-a-word).
@@ -38,19 +44,13 @@ Say "veto <title>" to reverse any of these.
 
 [Contact sheet — this week next to last week](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/ux-review/2026-11-12/contact-sheet.jpg) — better: The First's name fits, the essence and Doom readouts speak in words, and returning to the mid-game now opens on a "While you were away" summary, but arrival toasts still pile up and his thread row cuts his story short.
 
-## From Christian
-
-- **15:55 UTC, on the second-journey question:** *"A.. one run should try to aim for telling the firsts entire heroes journey and timing that makes sense"*.
-  - **Recorded:** the answer is **A**. After the First's Return there is no second journey; the last days belong to the clocks and the threads you hold. The ask is closed ([Put the god in the climax](https://linear.app/threadbare/issue/THR-2204/put-the-god-in-the-climax-the-journey-visions-read-from-the-scene-the), [the plan's section](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-14-thr-2204-put-the-god-in-the-climax.md#reserved-for-christian--does-a-run-hold-a-second-full-journey)).
-  - **For the design lane (this lane does not build it):** one run should aim to tell the First's *whole* hero's journey, with its steps paced sensibly across the age. The design lane should check that the journey's timing fits a run's length, against [THR-2204](https://linear.app/threadbare/issue/THR-2204/put-the-god-in-the-climax-the-journey-visions-read-from-the-scene-the) and its builds ([THR-2226](https://linear.app/threadbare/issue/THR-2226), [THR-2227](https://linear.app/threadbare/issue/THR-2227)). Where Doom can cut the journey short, it should plan the fix. A receipt went back on Discord.
-
 ## Queue
 
-**Healthy: 4 tickets in Ready for Dev, all held for your veto.** Nothing new shipped this hour; the last build to go live was [a ruler's Story tab no longer repeats one chapter](https://linear.app/threadbare/issue/THR-2223) ([#2833](https://github.com/christianspliid-ui/threadbare/pull/2833)). The two climax builds ([THR-2226](https://linear.app/threadbare/issue/THR-2226), [THR-2227](https://linear.app/threadbare/issue/THR-2227)) open at 23:53 UTC; the two warm-playtest fixes ([THR-2230](https://linear.app/threadbare/issue/THR-2230), [THR-2231](https://linear.app/threadbare/issue/THR-2231)) at 02:40 UTC. The builder idles until then, by design.
+**Healthy: 6 tickets in Ready for Dev, all held for your veto.** The design lane acted on your pacing note within the hour: it measured six whole runs and filed two new builds ([THR-2233](https://linear.app/threadbare/issue/THR-2233), [THR-2234](https://linear.app/threadbare/issue/THR-2234)), held until 05:45 UTC tomorrow (see *Decided for you*). The two climax builds ([THR-2226](https://linear.app/threadbare/issue/THR-2226), [THR-2227](https://linear.app/threadbare/issue/THR-2227)) open at 23:53 UTC; the two warm-playtest fixes ([THR-2230](https://linear.app/threadbare/issue/THR-2230), [THR-2231](https://linear.app/threadbare/issue/THR-2231)) at 02:40 UTC. The builder idles until then, by design. Nothing new shipped this hour.
 
 Items for agents, not you:
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (25 days; In Dev since 15 Oct). No pushed branch or local worktree names it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (25 days; In Dev since 15 Oct). No pushed branch names it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- All green. The live site serves the latest commit on main (3d128efd). Checks on main and the 3 scheduled background jobs pass; no PRs are waiting. All 10 enabled scheduled tasks are on schedule, and the worktree reaper ran at 17:40 local. The builder's last five runs stood down because every ready ticket is inside its veto window, which is correct. Engine speed: 157 ms/tick, -1% on the 7-day median (158). Linear read live this run.
+- All green. The live site serves the latest commit on main (3d128efd). Checks on main and the 3 scheduled background jobs pass; no PRs are waiting. All 10 enabled scheduled tasks are on schedule, and the worktree reaper ran at 18:40 local. The builder's last five runs stood down because every ready ticket is inside its veto window, which is correct. Engine speed: 169 ms/tick, +7% on the 7-day median (158), inside the normal range. Linear read live this run.
