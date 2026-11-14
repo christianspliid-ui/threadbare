@@ -27,8 +27,45 @@ import {
   MANDATE_SECONDARY_TARGET_POINTS,
   MANDATE_PRIMARY_TARGET_DELTA,
   MANDATE_SECONDARY_TARGET_DELTA,
+  MANDATE_RECENT_DEEDS_KEPT,
 } from '../data/game-config';
-import { applyMandateCredits } from './mandateLedger';
+import { applyMandateCredits, rollLedgerWindow, type AppliedMandateCredit } from './mandateLedger';
+import type { MandateDeedRecord } from '../types/mandate';
+import type { SphereName } from '../types/index';
+
+/**
+ * THR-2208 — one record per mortal whose chapter credited the Mandate this tick: the
+ * sphere it raised most (the primary on a tie) and the total it added. The name is read
+ * now, so the line keeps it if the mortal later dies or is renamed. Fail-soft: a
+ * missing node keeps the record nameless (the line then reads "A mortal bound to you").
+ */
+function deedRecordsFrom(
+  applied: readonly AppliedMandateCredit[],
+  state: GameState,
+  primary: SphereName,
+): MandateDeedRecord[] {
+  const byActor = new Map<string, Map<SphereName, number>>();
+  for (const c of applied) {
+    if (c.source !== 'deed' || !(c.applied > 0)) continue;
+    const spheres = byActor.get(c.entityId) ?? new Map<SphereName, number>();
+    spheres.set(c.sphere, (spheres.get(c.sphere) ?? 0) + c.applied);
+    byActor.set(c.entityId, spheres);
+  }
+  const records: MandateDeedRecord[] = [];
+  for (const [actorId, spheres] of byActor) {
+    let sphere: SphereName = primary;
+    let best = -Infinity;
+    let total = 0;
+    for (const [s, pts] of spheres) {
+      total += pts;
+      if (pts > best || (pts === best && s === primary)) { best = pts; sphere = s; }
+    }
+    let actorName: string | undefined;
+    try { actorName = state.graph.getNode(actorId)?.name; } catch { actorName = undefined; }
+    records.push({ tick: state.tick, actorId, ...(actorName ? { actorName } : {}), sphere, points: total });
+  }
+  return records;
+}
 import {
   resolveMilestoneProse,
   transitionForStageChange,
@@ -304,7 +341,21 @@ function evaluateSphereGrowthMandate(state: GameState): Partial<GameState> {
         ledgerAfter: credit.ledgerAfter,
       });
     }
-    mandateState = { ...mandateState, godLedger: folded.ledger, godHeld: folded.held };
+    // THR-2208 — the trend reads the ledger's last day, and a bound mortal's deeds
+    // join the Mandate block's "last deeds" list (one record per mortal per tick).
+    const net = folded.applied.reduce((sum, c) => sum + c.applied, 0);
+    const window = rollLedgerWindow(mandateState.recentLedgerMoves, state.tick, net);
+    const deeds = deedRecordsFrom(folded.applied, state, definition.primarySphere!);
+    mandateState = {
+      ...mandateState,
+      godLedger: folded.ledger,
+      godHeld: folded.held,
+      recentLedgerMoves: window.moves,
+      recentLedgerDelta: window.delta,
+      ...(deeds.length > 0
+        ? { recentDeeds: [...deeds, ...(mandateState.recentDeeds ?? [])].slice(0, MANDATE_RECENT_DEEDS_KEPT) }
+        : {}),
+    };
     primaryDelta = folded.ledger.primary / Math.max(1, definition.primaryBaseline ?? 0);
     secondaryDelta = folded.ledger.secondary / Math.max(1, definition.secondaryBaseline ?? 0);
   } else {

@@ -147,4 +147,25 @@ export interface MandateState {
   godLedger?: { primary: number; secondary: number };
   /** Points the god holds per `entityId|sphere` — the most opposition wear can take back there. */
   godHeld?: Record<string, number>;
+  /**
+   * THR-2208 — the ledger's net moves (both spheres) inside the last
+   * `MANDATE_TREND_WINDOW_TICKS`, and their sum. The trend word reads the sum: above 0
+   * Rising, below 0 Slipping, else Holding (`mandateTrendOf`).
+   */
+  recentLedgerMoves?: Array<{ tick: number; points: number }>;
+  recentLedgerDelta?: number;
+  /** THR-2208 — the last few deeds of bound mortals that raised the Mandate, newest first. */
+  recentDeeds?: MandateDeedRecord[];
+}
+
+/** THR-2208 — one bound mortal's chapter that credited the Mandate. */
+export interface MandateDeedRecord {
+  tick: number;
+  actorId: string;
+  /** Captured at the credit, so a later rename or death never rewrites the line. */
+  actorName?: string;
+  /** The Mandate sphere the deed raised most. */
+  sphere: SphereName;
+  /** Total points the deed added across both spheres. Designer data — never rendered. */
+  points: number;
 }

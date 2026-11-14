@@ -158,6 +158,7 @@ export type TraceCategory =
   | 'doom_card' | 'mandate_checkpoint' | 'mandate_milestone_prose'
   | 'mandate_baseline_settled' // THR-2080
   | 'mandate_ledger_credit' // THR-2081
+  | 'mandate.deed_credit' // THR-2208
   | 'revelation' | 'tick_health' | 'tick_crash'
   | 'agent_revelation' | 'interaction_depth'
   | 'faction_ambition'
@@ -829,6 +830,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'doom_card', 'mandate_checkpoint', 'mandate_milestone_prose',
   'mandate_baseline_settled',
   'mandate_ledger_credit',
+  'mandate.deed_credit',
   'revelation', 'tick_health', 'tick_crash',
   'agent_revelation', 'interaction_depth',
   'faction_ambition',
@@ -3196,6 +3198,20 @@ export interface MandateLedgerCreditTrace extends TraceBase {
   /** The writers netted into the sphere-pressure trace this credit came from. */
   sources: string[];
   ledgerAfter: number;
+}
+
+/** Trace: a bound mortal's closed chapter credited the Mandate (THR-2208, `mandateDeedForChapter`). */
+export interface MandateDeedCreditTrace extends TraceBase {
+  category: 'mandate.deed_credit';
+  actorId: string;
+  /** The chapter's template id. */
+  encounterId: string;
+  actionId: string;
+  band: string;
+  chapterSphere?: SphereName;
+  /** Essence the god paid per sphere on the chapter's cards. */
+  spend: Partial<Record<SphereName, number>>;
+  credits: { sphere: SphereName; points: number }[];
 }
 
 /** Trace: control effect ticked (per-tick drain, income, threshold check) */
@@ -5672,6 +5688,7 @@ export type TraceEntry =
   | MandateMilestoneProseTrace
   | MandateBaselineSettledTrace
   | MandateLedgerCreditTrace
+  | MandateDeedCreditTrace
   | ControlEffectTickTrace
   | ControlEffectLapseTrace
   | ControlEffectEstablishedTrace

@@ -10,7 +10,8 @@ import { Icon } from '../shared/Icon';
 import { sphereWord } from '../shared/formatEssence';
 import type { SphereName } from '../../types';
 import { sphereHasAscendantCard } from '../../engine/views/subjects/godSheet';
-import { MANDATE_RAISED_BY_LINE } from '../../data/ascendant-bar-content';
+import { MANDATE_RAISED_BY_LINE, MANDATE_RECENT_DEEDS_HEADING, mandateDeedLine } from '../../data/ascendant-bar-content';
+import { MANDATE_DEED_STRONG_POINTS, MANDATE_RECENT_DEEDS_KEPT } from '../../data/game-config';
 
 interface MandateDetailProps {
   open: boolean;
@@ -371,6 +372,29 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
               value={`${state.doomSeverityPenalties ?? 0}`}
               color={(state.doomSeverityPenalties ?? 0) > 0 ? SENTIMENT_NEGATIVE : undefined}
             />
+          </div>
+        )}
+
+        {/* THR-2208 — what filled it, in words: the last deeds of mortals bound to you. */}
+        {isSphereGrowth && (state.recentDeeds?.length ?? 0) > 0 && (
+          <div data-testid="mandate-recent-deeds" style={{ marginBottom: '18px' }}>
+            <div style={{
+              fontFamily: 'var(--font-body)',
+              fontWeight: 700,
+              fontSize: 'var(--text-xs)',
+              color: 'var(--text-tertiary)',
+              marginBottom: '8px',
+            }}>
+              {MANDATE_RECENT_DEEDS_HEADING}
+            </div>
+            {(state.recentDeeds ?? []).slice(0, MANDATE_RECENT_DEEDS_KEPT).map((deed) => (
+              <div
+                key={`${deed.tick}:${deed.actorId}`}
+                style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', lineHeight: 1.6 }}
+              >
+                {mandateDeedLine(deed.actorName, sphereWord(deed.sphere), deed.points >= MANDATE_DEED_STRONG_POINTS)}
+              </div>
+            ))}
           </div>
         )}
 

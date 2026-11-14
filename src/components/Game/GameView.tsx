@@ -142,6 +142,7 @@ import { applyWhisperChoice, applyCompulsionChoice, dismissPremonition, spendPre
 import { buildGateDutyEncounterStageModel } from './encounter-stage/adapters/buildGateDutyEncounterStageModel';
 import { buildUnifiedEncounterStageModel } from './encounter-stage/adapters/buildUnifiedEncounterStageModel';
 import { spendAuthoredChoiceEssence, spendNudgeEssence, type NudgeSpendRequest } from './encounter-stage/nudgeCommit';
+import { addMandateSphereSpend } from '../../engine/mandateLedger';
 import { resolveInterveneChoice } from './encounter-stage/resolveInterveneChoice';
 import { claimAuthoredChoiceCommit } from './encounter-stage/authoredChoiceCommitGuard';
 import { forecastWithNudges } from './encounter-stage/useNudgeHand';
@@ -2824,7 +2825,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         unifiedActions: (prev.unifiedActions ?? []).map(action => {
           if (action.actionId !== phase.actionId) return action;
           // THR-1730 (U2) — a commit (cards or an empty hand) ends the set-down.
-          const withHand = { ...releasePlayerHold(action), activeNudges: [...nudgeIds] };
+          // THR-2208 — the engine sums what each sphere paid on this chapter, so its
+          // close can credit the Mandate for spend in the Mandate's spheres.
+          const mandateSphereSpend = addMandateSphereSpend(action.mandateSphereSpend, spend.bySphere);
+          const withHand = {
+            ...releasePlayerHold(action),
+            activeNudges: [...nudgeIds],
+            ...(mandateSphereSpend ? { mandateSphereSpend } : {}),
+          };
           // THR-1123 — also remember the hand per step. `activeNudges` is
           // replaced when the next step commits, so it cannot answer "what was
           // played on step 0" afterwards; retrospective surfaces (gate duty's

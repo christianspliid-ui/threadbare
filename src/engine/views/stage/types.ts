@@ -752,6 +752,12 @@ export interface EncounterStageNudgeCardModel {
    */
   costNote?: string;
   /**
+   * THR-2208 — "Counts toward your Mandate.", set only when the card is paid in one of
+   * the Mandate's spheres and the chapter's mortal is bound to the god by a thread, so
+   * the close will credit it (Law 56). Absent otherwise.
+   */
+  mandateHint?: string;
+  /**
    * THR-1247 — where this card came from, when it came from the god rather than
    * the scene.
    *

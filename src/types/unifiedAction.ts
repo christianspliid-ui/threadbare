@@ -3393,6 +3393,18 @@ export interface UnifiedAction {
   readonly aftermathChanges?: readonly EncounterAftermathChange[];
   /** THR-1936 — the outcome table was applied; it never runs twice for one action. */
   readonly outcomeEffectsApplied?: boolean;
+  /**
+   * THR-2208 — essence the god paid, per sphere, on this chapter's cards, summed across
+   * every committed hand (`addMandateSphereSpend`). Read once when the chapter closes,
+   * to credit the Mandate. Absent (no card paid, or an old save) ⇒ `{}`.
+   */
+  readonly mandateSphereSpend?: Partial<Record<SphereName, number>>;
+  /**
+   * THR-2208 — the Mandate credits this chapter's close earned (`mandateDeedCredit`),
+   * set once on the resolving step. `phaseUnifiedActionProgress` queues them on
+   * `pendingMandateCredits`. Absent on any chapter that credited nothing.
+   */
+  readonly mandateDeedCredits?: readonly import('./sphereAffinity').MandateCredit[];
   /** World-facing summary of what changed because this encounter resolved. */
   readonly aftermathSummary?: EncounterAftermathSummary;
   /**

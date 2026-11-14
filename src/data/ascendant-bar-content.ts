@@ -118,12 +118,40 @@ export function quintessenceLine(sphere: SphereName, band: QuintessenceBand): st
 
 // ─── Mandate trend vocabulary ─────────────────────────────────────────────────
 
+/**
+ * THR-2208: the same words the inspector page uses (`INSPECTOR_WORDS.mandateTrend`),
+ * read off the ledger's last day, not the run's cumulative gain.
+ */
 export const MANDATE_TREND_WORD: Record<string, string> = {
-  rising:  'Kindling',
+  rising:  'Rising',
   steady:  'Holding',
-  ebbing:  'Cooling',
+  ebbing:  'Slipping',
   failing: 'Drifting',
 };
+
+// ─── Mandate deeds — a bound mortal's chapter raised it (THR-2208) ────────────
+
+/** The aftermath row and the Mandate block's "last deeds" line. No number reaches the player. */
+export const MANDATE_DEED_LINE = "{mortal}'s deed raised your Mandate in {Sphere}.";
+/** The same, for a deed at or above `MANDATE_DEED_STRONG_POINTS`. */
+export const MANDATE_DEED_LINE_STRONG = "{mortal}'s deed raised your Mandate far in {Sphere}.";
+/** An empty `{mortal}` slot reads this (PC-3). */
+export const MANDATE_DEED_MORTAL_FALLBACK = 'A mortal bound to you';
+/** The aftermath row's title. */
+export const MANDATE_DEED_TITLE = 'Your Mandate rose';
+/** The opened Mandate block's heading over the last deeds. */
+export const MANDATE_RECENT_DEEDS_HEADING = 'Last deeds';
+
+/** One small line on a nudge card's face, shown only when the card's spend will credit the Mandate. */
+export const MANDATE_CARD_HINT = 'Counts toward your Mandate.';
+
+/** Render a deed line. `sphereWord` is the display word ("Mind"); `strong` picks the "far" line. */
+export function mandateDeedLine(mortalName: string | undefined, sphereWord: string, strong: boolean): string {
+  const mortal = mortalName && mortalName.trim() ? mortalName.trim() : MANDATE_DEED_MORTAL_FALLBACK;
+  return (strong ? MANDATE_DEED_LINE_STRONG : MANDATE_DEED_LINE)
+    .replace('{mortal}', () => mortal)
+    .replace('{Sphere}', () => sphereWord);
+}
 
 export const MANDATE_TREND_COLOR: Record<string, string> = {
   rising:  'var(--positive)',

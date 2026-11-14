@@ -30,6 +30,11 @@ export interface NudgeSpendResult {
   readonly spent: number;
   /** Set on rejection — which sphere came up short, or `undefined` for the common pool. */
   readonly shortfallSphere?: SphereName;
+  /**
+   * THR-2208 — what each sphere paid. Empty on rejection. The commit hands it to the
+   * engine (`addMandateSphereSpend`), which credits the Mandate when the chapter closes.
+   */
+  readonly bySphere: Partial<Record<SphereName, number>>;
 }
 
 /** Floating-point slack, matching `buildNudgeHand`'s affordability check. */
@@ -62,6 +67,7 @@ export function spendNudgeEssence(
     ? [primarySphere, ...payableSpheres.filter((s) => s !== primarySphere)]
     : [primarySphere, ...(Object.keys(next) as SphereName[]).filter((s) => s !== primarySphere)];
   let spent = 0;
+  const bySphere: Partial<Record<SphereName, number>> = {};
 
   // Sphere-gated first: they have exactly one funding source, so letting the
   // common cards spill through their sphere first could strand them.
@@ -72,10 +78,11 @@ export function spendNudgeEssence(
     const sphere = request.sphere as SphereName;
     const cost = Math.max(0, request.cost);
     if ((next[sphere] ?? 0) + EPSILON < cost) {
-      return { ok: false, pool, spent: 0, shortfallSphere: sphere };
+      return { ok: false, pool, spent: 0, shortfallSphere: sphere, bySphere: {} };
     }
     next[sphere] = (next[sphere] ?? 0) - cost;
     spent += cost;
+    if (cost > 0) bySphere[sphere] = (bySphere[sphere] ?? 0) + cost;
   }
 
   for (const request of common) {
@@ -89,14 +96,15 @@ export function spendNudgeEssence(
       next[sphere] = (next[sphere] ?? 0) - take;
       remaining -= take;
       spent += take;
+      bySphere[sphere] = (bySphere[sphere] ?? 0) + take;
     }
 
     if (remaining > EPSILON) {
-      return { ok: false, pool, spent: 0, shortfallSphere: undefined };
+      return { ok: false, pool, spent: 0, shortfallSphere: undefined, bySphere: {} };
     }
   }
 
-  return { ok: true, pool: next, spent };
+  return { ok: true, pool: next, spent, bySphere };
 }
 
 /**

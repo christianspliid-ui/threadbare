@@ -284,6 +284,11 @@ export interface CardFaceModel {
    */
   readonly costNote?: string;
   /**
+   * THR-2208 — one small line under the price, read before the spend (Law 17): "Counts
+   * toward your Mandate." Set only when the spend will credit it (Law 56). Absent ⇒ no line.
+   */
+  readonly costHint?: string;
+  /**
    * THR-1750 — the target's Dominion band against par. Set only when the band
    * changes the price (never on Foreign ground, never on a free card — Law 56):
    * a chip after the pips, ghost pips when cheaper, red pips when dearer. The
@@ -630,6 +635,23 @@ export function CardFace({
             )}
           </span>
         </div>
+
+        {/* THR-2208 — under the price, where the eye already is (Law 1). */}
+        {model.costHint && (
+          <div
+            data-testid={`${p}-cost-hint-${id}`}
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: 'var(--text-xs)',
+              fontStyle: 'italic',
+              color: 'var(--text-secondary)',
+              textAlign: 'right',
+              lineHeight: 1.3,
+            }}
+          >
+            {model.costHint}
+          </div>
+        )}
 
         {/* ── Title ───────────────────────────────────────────── */}
         {/* THR-1711 (2): the name is part of the card, so clicking it selects the
