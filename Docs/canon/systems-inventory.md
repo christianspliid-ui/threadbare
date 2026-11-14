@@ -422,7 +422,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `return` (1) | `returnEngine.ts` | `Phase 3`, `TB-035` |
 | `revelation` (3) | `revelationEmitter.ts`, `revelationHooks.ts`, `revelationResolver.ts` | `TB-043`, `THR-398` |
 | `reward` (2) | `rewardHistory.ts`, `rewardPool.ts` | `THR-1096`, `THR-1241`, `THR-1997` |
-| `rival` (3) | `rival.ts`, `rivalInfluenceMarkers.ts`, `rivalSourceContestation.ts` | `THR-611`, `THR-621`, `THR-66`, `THR-829` |
+| `rival` (4) | `rival.ts`, `rivalInfluenceMarkers.ts`, `rivalRebuke.ts`, `rivalSourceContestation.ts` | `THR-2209`, `THR-611`, `THR-621`, `THR-66`, `THR-829` |
 | `river` (1) | `riverGeneration.ts` | — |
 | `road` (1) | `roadNetwork.ts` | `THR-1394` |
 | `ruins` (13) | `ruins/clueLifecycle.ts`, `ruins/clueRumors.ts`, `ruins/constants.ts`, `ruins/delveRoad.ts`, `ruins/delveTypes.ts`, `ruins/delveVariant.ts`, `ruins/elderRuinSeeding.ts`, `ruins/guildPostings.ts`, `ruins/leadVisit.ts`, `ruins/perceiveRelay.ts`, `ruins/placeOfPowerStreams.ts`, `ruins/questHooks.ts`, `ruins/ruinTransformation.ts` | `THR-1026`, `THR-149`, `THR-150`, `THR-1506`, `THR-151`, `THR-152`, `THR-153`, `THR-156`, `THR-1560`, `THR-1664`, `THR-1696`, `THR-1702`, `THR-1910`, `THR-818` |
@@ -487,4 +487,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 115 tick phases · 240 engine domains · 814 modules._
+_Counts: 28 registered subsystems (2 dormant) · 115 tick phases · 240 engine domains · 815 modules._

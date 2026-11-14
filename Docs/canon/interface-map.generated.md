@@ -3427,10 +3427,10 @@ exit
 - **Producer → Consumer:** Essence & Divine Economy → Rival Gods & Schemes
 - **UL terms:** *Dominion*, *Opposing Dominion*
 - **Module:** `src/engine/rivalRebuke.ts`
-- **Production hits:** 12 total — 2 write, 4 read, 6 unclassified
+- **Production hits:** 13 total — 2 write, 4 read, 7 unclassified
 - **Write sites:** `src/engine/rivalRebuke.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/engine/dominion.ts`, `src/engine/orchestrator.ts`, `src/engine/phaseSpherePressure.ts`, `src/engine/views/subjects/actOn.ts`
-- **Other hits:** `src/data/action-technical-effects.ts`, `src/debug-bridge.ts`, `src/engine/phaseDominion.ts`, `src/engine/targetActions.ts`, `src/engine/views/subjects/pageResolvers.ts` +1 more
+- **Other hits:** `src/data/action-technical-effects.ts`, `src/debug-bridge.ts`, `src/engine/phaseAscendantProgression.ts`, `src/engine/phaseDominion.ts`, `src/engine/targetActions.ts` +2 more
 - **Verdict:** Verified 2026-11-14: THR-2209. rivalRebuke.thr2209.test.ts: a probe lands on untended t0 (lastPressed, not absorbed) → rebukablePlaceIds = {t0}; resolveRebuke on a clean landing writes rebukedPlaces.t0 = tick + 4 days, pushes 4 mind at t0 causedBy the god, raises the rival 0.30 → 0.38 with cause rebuked (panel: "You rebuked it at Town 0."), traces rival.rebuked; the next probe that draws t0 reads tendedBy [rebuke], is absorbed (dominion.raid absorbed: true), toasts "…but your rebuke held it.", and records lastPressed absorbed, so t0 is no longer rebukable. getTargetActionSlots offers the card only on a place in the rebuke set.
 
 ### `receipt-event-band-toast` — 🔵 UNVERIFIED-OK
@@ -3662,10 +3662,10 @@ exit
 - **Intent:** A rival's temper says why (THR-2185). `phaseRivalActions` writes `RivalState.hostilityCause` on each rise (a scheme beat, or the god breaking a scheme, with the target place) and `lastPressed` when a probe lands (`landRivalProbe` now returns the landing; `rivalProbeMove` raises its toast only then, keeping the old flavour draw so the seeded stream is unchanged), and cools temper once a quiet day to `RIVAL_HOSTILITY_START`. The Rival gods panel reads both through `engine/views/rivalEntry.ts`: the cause sentence after the temper word, the last place pressed as a link, and the answer line. Every change emits `rival.hostility_changed`.
 - **Producer → Consumer:** Rival Gods & Schemes → Attention, Chronicle & Narrative
 - **UL terms:** *Dominion*
-- **Production hits:** 8 total — 1 write, 1 read, 6 unclassified
+- **Production hits:** 7 total — 1 write, 1 read, 5 unclassified
 - **Write sites:** `src/engine/orchestrator.ts`
 - **Read sites:** `src/engine/views/rivalEntry.ts`
-- **Other hits:** `src/data/player-progression.ts`, `src/debug-bridge.ts`, `src/engine/phaseAscendantProgression.ts`, `src/engine/rival.ts`, `src/engine/rivalRebuke.ts` +1 more
+- **Other hits:** `src/data/player-progression.ts`, `src/debug-bridge.ts`, `src/engine/rival.ts`, `src/engine/rivalRebuke.ts`, `src/types/rival.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `rival-toast-location-ref-opens-place` — 🔵 UNVERIFIED-OK
