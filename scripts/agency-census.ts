@@ -20,12 +20,12 @@
 //   npm run census:agency -- --compare none.json greedy.json [none.json greedy.json …]   (pairs, in order)
 //        reprints the verdict from written files; a missing file or an arm stopped on --budget-s
 //        is "not measured".
-//   npm run census:agency -- --seed 42 --arm greedy [--warm 300] [--ticks 600] [--budget-s 540] [--out f.json]
+//   npm run census:agency -- --seed 42 --arm greedy [--warm 300] [--ticks 800] [--budget-s 540] [--out f.json]
 //        one arm; --budget-s is for hand-run single arms only.
 import * as fs from 'fs';
 import * as path from 'path';
 import { spawn } from 'child_process';
-import { agencyReport, type AgencyArmResult } from './agency-verdict';
+import { agencyReport, AGENCY_COMPARE_TICK, type AgencyArmResult } from './agency-verdict';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -33,7 +33,7 @@ const AGENCY_SEEDS = [42, 99, 7];
 const AGENCY_ARMS = ['none', 'greedy'] as const;
 const AGENCY_MAX_PARALLEL = 4;
 const AGENCY_DEFAULT_WARM = 300;
-const AGENCY_DEFAULT_TICKS = 600;
+const AGENCY_DEFAULT_TICKS = AGENCY_COMPARE_TICK; // run to the tick the headline is read at
 const AGENCY_SNAP_EVERY = 100;
 const AGENCY_PROGRESS_EVERY = 25;
 const WARM_SETTLED_BEATS = ['beat.spine.the_seat', 'beat.spine.thing_left_behind', 'beat.spine.the_first_word'];
