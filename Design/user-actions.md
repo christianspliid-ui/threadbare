@@ -1,8 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-11-14 12:58 local (11:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-14 13:58 local (12:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
+
+### Should a run hold a second whole journey after the First's story ends? (new 14 Nov)
+
+Today, after the First's Return, the last stretch of the age has only the clocks and any other mortals you hold. The plan for [Put the god in the climax](https://linear.app/threadbare/issue/THR-2204/put-the-god-in-the-climax-the-journey-visions-read-from-the-scene-the) offers three options ([the plan's section](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-14-thr-2204-put-the-god-in-the-climax.md#reserved-for-christian--does-a-run-hold-a-second-full-journey)): **A. No** (the default if you say nothing), **B. a second First** with a journey shortened to the Doom that is left, or **C. an heir's coda** of one vision and one chapter. Answer "A", "B" or "C". Nothing being built waits on it. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-14b.md)*
 
 ### Sunday 8 – Thursday 12 Nov: was the computer off or the app closed, or was this a pause? (new 12 Nov)
 
@@ -50,6 +54,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-14: a dream that found no hold no longer says "held" or "Heart grew", and it is live** ([THR-2220](https://linear.app/threadbare/issue/THR-2220)). Merged via [#2829](https://github.com/christianspliid-ui/threadbare/pull/2829).
+- **2026-11-14: new Doom stages now say what each card does, with no more "many weeks", and it is live** ([THR-2219](https://linear.app/threadbare/issue/THR-2219)). Merged via [#2828](https://github.com/christianspliid-ui/threadbare/pull/2828).
 - **2026-11-14: a won chapter now credits the cards you played, and each card in the hand says which step it plays into. It is live** ([THR-2218](https://linear.app/threadbare/issue/THR-2218)). Merged via [#2826](https://github.com/christianspliid-ui/threadbare/pull/2826).
 - **2026-11-14: the garbled dashes in the anomaly chapters and lab-report lines are fixed, and it is live** ([THR-2217](https://linear.app/threadbare/issue/THR-2217)). Merged via [#2825](https://github.com/christianspliid-ui/threadbare/pull/2825).
 - **2026-11-14: the chosen path now draws The First toward the work that fits it, and it is live** ([THR-2214](https://linear.app/threadbare/issue/THR-2214)). Merged via [#2824](https://github.com/christianspliid-ui/threadbare/pull/2824).
@@ -58,8 +64,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-14: an ending the god had no part in now waits on its badge, and it is live** ([THR-2211](https://linear.app/threadbare/issue/THR-2211)). Merged via [#2820](https://github.com/christianspliid-ui/threadbare/pull/2820).
 - **2026-11-14: Rebuke is in. A god card now answers a rival on the place it just struck, and it is live** ([THR-2209](https://linear.app/threadbare/issue/THR-2209)). Merged via [#2819](https://github.com/christianspliid-ui/threadbare/pull/2819).
 - **2026-11-14: a bound mortal's deeds now fill the Mandate, and it is live** ([THR-2208](https://linear.app/threadbare/issue/THR-2208)). Merged via [#2818](https://github.com/christianspliid-ui/threadbare/pull/2818).
-- **2026-11-14: a card you can't afford now says which pool is short and how fast it refills, and it is live** ([THR-2206](https://linear.app/threadbare/issue/THR-2206)). Merged via [#2817](https://github.com/christianspliid-ui/threadbare/pull/2817).
-- **2026-11-14: Stay the Unmaking is in. A god card now slows Doom while you hold it, and Doom's speed no longer snowballs. It is live** ([THR-2207](https://linear.app/threadbare/issue/THR-2207)). Merged via [#2816](https://github.com/christianspliid-ui/threadbare/pull/2816).
 
 ---
 
