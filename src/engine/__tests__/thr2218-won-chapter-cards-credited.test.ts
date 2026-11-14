@@ -74,6 +74,13 @@ describe('THR-2218 — an untouched step that decided a won chapter', () => {
     expect(text).not.toContain(CAUSE_GOD_ELSEWHERE);
   });
 
+  it('two steps on one Reach: the touched one is named by position, not the same noun twice', () => {
+    expect(line('success', [
+      { band: 'success_at_cost', reach: 'iron', godTouched: true },
+      { band: 'success', reach: 'iron', godTouched: false },
+    ])).toBe(`Kael won Flawed Steel. The work on Iron went well. ${CAUSE_GOD_ON_STEP('An earlier step')}`);
+  });
+
   it('a touched step with no noun leaves the god unnamed rather than invent one', () => {
     const text = line('success', [
       { band: 'near_miss', godTouched: true },

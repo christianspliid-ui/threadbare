@@ -1082,6 +1082,9 @@ export const CAUSE_GOD_ELSEWHERE = 'your cards were on another step, not this on
  * never says it. `{noun}` is the touched step's noun ("The work on Iron").
  */
 export const CAUSE_GOD_ON_STEP = (stepNoun: string): string => `${stepNoun} had your cards behind it.`;
+/** THR-2218 — the touched step's noun when it would repeat the deciding step's. */
+export const CAUSE_EARLIER_STEP = 'An earlier step';
+export const CAUSE_LATER_STEP = 'A later step';
 /** The step's noun when it has no title of its own. `{reach}` is the Reach's player name. */
 export const CAUSE_UNTITLED_STEP = (reachName: string): string => `The work on ${reachName}`;
 
@@ -1217,9 +1220,16 @@ export function buildAftermathCauseLine(args: {
   // the cards were on in its own sentence. Never "on another step, not this
   // one" — on a win that read as "your cards did nothing".
   if (!lost && !step.godTouched) {
-    const touched = [...args.steps].reverse().find(s => s.godTouched);
-    if (touched) {
-      const touchedNoun = causeStepNoun(touched);
+    let touchedIndex = -1;
+    args.steps.forEach((s, i) => { if (s.godTouched) touchedIndex = i; });
+    if (touchedIndex >= 0) {
+      const ownNoun = causeStepNoun(args.steps[touchedIndex]);
+      // Two untitled steps on one Reach share a noun; name the touched one by
+      // position so the line does not read as one step that both had and
+      // lacked the cards.
+      const touchedNoun = ownNoun === noun
+        ? (touchedIndex < index ? CAUSE_EARLIER_STEP : CAUSE_LATER_STEP)
+        : ownNoun;
       const credit = touchedNoun ? ` ${CAUSE_GOD_ON_STEP(touchedNoun)}` : '';
       return `${lead}${scope} ${noun} ${CAUSE_STEP_VERBS[step.band]}.${credit}${finalOdds(true)}`;
     }
