@@ -56,8 +56,9 @@ import {
 import { ambitionPronounsFor, resolveAmbitionPronouns } from './ambitionProse';
 import { computeCapability } from './domainCapability';
 import { fitDifficultyToForecast, scaledStepProbability } from './scaledForecast';
-import { classifyForecast } from './resolutionService';
-import { resolveStepCore } from './stepResolutionCore';
+// The core's re-export of the forecast classifier: this module reaches the dice only
+// through `stepResolutionCore` (the importer pin in stepResolutionCore.contract.test.ts).
+import { classifyStepForecastTier as classifyForecast, resolveStepCore } from './stepResolutionCore';
 import { drawLuckRoll, readLuckState } from './luck';
 import { rollTableUnit } from '../lib/drawTable';
 import { outcomePinFor } from './debugOutcomePin';

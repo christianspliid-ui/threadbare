@@ -7085,6 +7085,55 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/phaseDoom.ts'],
     readSites: ['src/engine/journeyEngine.ts'],
   },
+  // THR-2226 (plan 2026-11-14-thr-2204-put-the-god-in-the-climax, slice 1): the Ordeal
+  // is rolled. The choice is a lean on the roll, never a result (Law 10).
+  {
+    id: 'ordeal-roll-writes-thread-outcome',
+    producerSystem: DOOM,
+    consumerSystem: DOOM,
+    intent:
+      'The First\x27s Ordeal is decided by a roll on the First\x27s marble bag at a difficulty fitted to "Uncertain", which the god\x27s choice only leans on; the band the roll lands is written to the thread edge as the Ordeal outcome the Return reads, never the outcome a choice names.',
+    ulTerms: ['The First'],
+    // `recordJourneyChoice` → `rollOrdeal` (resolveStepCore on the stored fitted
+    // difficulty, d100 from `drawLuckRoll`, the core's own draw from the keyed
+    // `journey.ordeal` stream) → `applyBeatChoice` writes `ordealOutcome`,
+    // `ordealBand`, `ordealGodPaid` on the thread edge. `executeReturn` reads
+    // `ordealOutcome`; the vision's result line reads it back via `readOrdealResult`.
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['ordealOutcome', 'ordealBand', 'ordealGodPaid', 'rollOrdeal'],
+      module: 'src/engine/journeyEngine.ts',
+    },
+    writeSites: ['src/engine/journeyEngine.ts'],
+    readSites: ['src/engine/returnEngine.ts', 'src/components/Game/GameView.tsx'],
+    verifiedLive: {
+      date: '2026-11-15',
+      evidence: 'THR-2226. ordealRollAndVisionScene.thr2226.test.ts: recordJourneyChoice on an Ordeal vision deals one draw from the First\x27s bag (bagDraws 0 → 1), writes ordealBand and the outcome ORDEAL_BAND_TO_OUTCOME maps it to, ignores a legacy choice\x27s ordealOutcome, and traces journey.ordeal_roll with the stepped-back chance within 0.01 of CLIMAX_BARE_FORECAST; over 200 seeds the full lean wins more Ordeals than stepping back and still loses some.',
+    },
+  },
+  {
+    id: 'vision-reads-first-scene',
+    producerSystem: WORLDGEN,
+    consumerSystem: DOOM,
+    intent:
+      'A journey vision reads where the First is and what they are doing before it picks its moment: a moment that fits the scene wins, one tagged for another scene is never drawn while a fitting one exists, and the setup opens on the place and the activity.',
+    ulTerms: ['The First'],
+    // `readVisionScene` reads the First\x27s `located_at` target (resolved to its
+    // Location for the name and subtype) and an active undertaking\x27s verb from
+    // `strategicState.projects`; `selectTemplate` scores and filters by `scenes`;
+    // `openWithScene` writes the opener into the setup.
+    mechanism: {
+      kind: 'function',
+      symbols: ['readVisionScene', 'sceneFit', 'openWithScene'],
+      module: 'src/engine/journeyEngine.ts',
+    },
+    writeSites: ['src/engine/journeyEngine.ts', 'src/data/vision-scene-content.ts'],
+    readSites: ['src/engine/journeyEngine.ts', 'src/components/Game/stage/useStageDebugBridge.ts'],
+    verifiedLive: {
+      date: '2026-11-15',
+      evidence: 'THR-2226. ordealRollAndVisionScene.thr2226.test.ts: every LOCATION_SUBTYPES entry and every undertaking verb maps to an activity; a shrine reads worship and a battleground conflict; over 200 seeds a worship scene picks the worship-tagged variant over a conflict-only one scored higher, and with no fitting variant the tagged one still plays.',
+    },
+  },
   // THR-1647 (plan 2026-09-27-thr-1605-the-opening S4): the opening's spine gifts
   // 1–4 wait for the player — one act (cast, avatar move, Follow) between gifts,
   // or an idle fallback — instead of arriving back to back on a turn timer.
