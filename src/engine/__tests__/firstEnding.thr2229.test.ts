@@ -145,6 +145,22 @@ describe('THR-2229 — Twilight beat 2 says what the god did', () => {
     expect(firstFate(state)?.id).toBe(id);
   });
 
+  it('a First who dies keeps the threshold and Ordeal lines (the death note carries them)', () => {
+    const state = newWorld();
+    const { id } = firstEdge(state);
+    setEdge(state, {
+      apotheosisBand: 'failure', apotheosisGodPaid: true,
+      ordealOutcome: 'broken', ordealBand: 'failure', ordealGodPaid: false, ordealLean: 0,
+    });
+    markMortalDead(state.graph, id, 20, { cause: 'lifecycle', mode: 'remove' });
+    expect(state.graph.getNode(id)).toBeUndefined();
+    const first = firstFate(state)!;
+    expect(first.fate).toBe('died');
+    expect(first.lines).toHaveLength(2);
+    expect(first.lines![0]).toMatch(/^At the threshold you spent on \w+, and \w+ fell back\.$/);
+    expect(first.lines![1]).toMatch(/^At the Ordeal you stepped back, and .+ broke\.$/);
+  });
+
   it('a later First who died wins over an earlier returned First', () => {
     const state = newWorld();
     const { id: a, edge } = firstEdge(state);

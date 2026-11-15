@@ -36,6 +36,12 @@ import { BORN_LATER_PREFER_CONTENT_LOCATIONS, BORN_LATER_MIN_TEMPLATES } from '.
 import { LAST_DEATH_TICK_PROPERTY } from '../data/death-site-unrest-constants';
 import { resolveToParentLocation } from './sublocationShape';
 
+/** THR-2229 — the thread facts the god's note on its First keeps past a death. */
+const FIRST_ENDING_THREAD_FACTS = [
+  'apotheosisBand', 'apotheosisGodPaid', 'ordealOutcome', 'ordealBand', 'ordealGodPaid', 'ordealLean',
+  'returnEnding', 'returnEndingTick',
+] as const;
+
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
 function mulberry32(seed: number): () => number {
@@ -278,7 +284,14 @@ export function markMortalDead(
     const returnTick = typeof tp.returnEndingTick === 'number' ? tp.returnEndingTick : -Infinity;
     if (tp.courtPosition !== 'the_first' && prior && prior.id !== mortalId
       && typeof prior.diedTick === 'number' && prior.diedTick > returnTick) continue;
-    god.properties.firstRemembered = { id: mortalId, name: node.name, diedTick: tick, ...(returned ? { returnEnding: tp.returnEnding } : {}) };
+    // THR-2229 — the death sweeps the thread, so the note also keeps what the end of the
+    // age tells about the god and its First (the threshold, the Ordeal, the Return).
+    const facts: Record<string, unknown> = {};
+    for (const k of FIRST_ENDING_THREAD_FACTS) {
+      const v = (e.properties as Record<string, unknown>)[k];
+      if (v !== undefined && v !== null) facts[k] = v;
+    }
+    god.properties.firstRemembered = { id: mortalId, name: node.name, diedTick: tick, ...facts };
   }
 
   // (2) The Aspect echo. The conduit closes, the bond endures; the node is retained

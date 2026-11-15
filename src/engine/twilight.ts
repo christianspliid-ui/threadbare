@@ -217,7 +217,8 @@ export function firstFate(state: GameState): TwilightFirst | undefined {
       fate,
       line: fate === 'aspect' ? TWILIGHT_WORDS.firstAspect(remembered.name) : TWILIGHT_WORDS.firstDied(remembered.name),
       present: !!graph.getNode(remembered.id),
-      lines: [],
+      // THR-2229 — the death note keeps the climax facts, so the lines survive it.
+      ...(story && story.id === remembered.id ? firstEndingLines({ ...story, name: remembered.name }) : { lines: [] }),
     };
   }
   const node = graph.getNode(id)!;

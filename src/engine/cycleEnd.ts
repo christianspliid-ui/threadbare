@@ -132,15 +132,19 @@ export function readFirstStory(state: GameState): FirstStory | null {
     let id: string | undefined = edge?.target;
     let name: string | undefined;
     let rememberedEnding: ReturnOutcome | undefined;
+    let rememberedFacts: ThreadEdgeProperties | undefined;
     if (!id) {
       if (!remembered) return null;
       id = remembered.id as string;
       name = typeof remembered.name === 'string' && remembered.name.trim() ? remembered.name : undefined;
       if (typeof remembered.returnEnding === 'string') rememberedEnding = remembered.returnEnding as ReturnOutcome;
+      // THR-2229 — the climax facts the death note kept from the swept thread.
+      const r = remembered as Record<string, unknown>;
+      if (r.apotheosisBand !== undefined || r.ordealOutcome !== undefined) rememberedFacts = r as unknown as ThreadEdgeProperties;
       edge = undefined;
     }
     const node = graph.getNode(id);
-    const props = edge ? (edge.properties as unknown as ThreadEdgeProperties) : undefined;
+    const props = edge ? (edge.properties as unknown as ThreadEdgeProperties) : rememberedFacts;
     const pronouns = ambitionPronounsFor(node?.properties?.gender);
     const returnEnding = props?.returnEnding ?? rememberedEnding;
     return {
