@@ -2549,7 +2549,30 @@ export interface ApotheosisHandBuiltTrace extends TraceBase {
 export interface ApotheosisPremonitionTrace extends TraceBase {
   category: 'apotheosis.premonition';
   mortalId: string;
-  ticksUntilOffer: number;
+  /** Ticks until the hold-and-cooldown offer; null for the First's journey (THR-2234). */
+  ticksUntilOffer: number | null;
+  /** THR-2234 — what brought the offer into view (absent on pre-THR-2234 traces). */
+  trigger?: 'offer_in_view' | 'crisis_answered' | 'ordeal_answered';
+}
+
+/** Trace: the First was offered the Apotheosis after the Ordeal (THR-2234) — once per journey. */
+export interface ApotheosisFirstOfferTrace extends TraceBase {
+  category: 'apotheosis.first_offer';
+  mortalId: string;
+}
+
+/** Trace: the First met the Ordeal below tier 4, so this journey has no Apotheosis (THR-2234). */
+export interface ApotheosisFirstPassedTrace extends TraceBase {
+  category: 'apotheosis.first_passed';
+  mortalId: string;
+  tier: number;
+}
+
+/** Trace: the First's Return held this tick, waiting for the Apotheosis (THR-2234). */
+export interface JourneyReturnWaitsTrace extends TraceBase {
+  category: 'journey.return_waits';
+  actorId: string;
+  doomProgress: number;
 }
 
 /** Trace: settlement changes tier (hamlet↔town↔city) via sustained prosperity */
@@ -5754,6 +5777,9 @@ export type TraceEntry =
   | JourneyOrdealRollTrace
   | ApotheosisHandBuiltTrace
   | ApotheosisPremonitionTrace
+  | ApotheosisFirstOfferTrace
+  | ApotheosisFirstPassedTrace
+  | JourneyReturnWaitsTrace
   | LocationTraitTrace
   | BattleRecordedTrace
   | FightRecordedTrace

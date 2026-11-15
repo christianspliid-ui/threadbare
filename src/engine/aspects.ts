@@ -30,6 +30,15 @@ import {
 import { APOTHEOSIS_PREMONITION_LEAD_TICKS } from '../data/nudge-constants';
 import { fillApotheosisLine } from './apotheosisLines';
 
+/**
+ * THR-2234 — a thread edge's properties, typed. The graph stores properties as a
+ * plain record; the thread edge's shape is `ThreadEdgeProperties`, and the Apotheosis
+ * stamps below are written in place on it.
+ */
+function threadOf(edge: GraphEdge): ThreadEdgeProperties {
+  return edge.properties as unknown as ThreadEdgeProperties;
+}
+
 // ─── Selectors ───────────────────────────────────────────────────────
 
 /** All `aspect_of` edges held by an ascendant (living Aspects + mythic echoes). */
@@ -247,7 +256,7 @@ export function firstApotheosisStep(props: ThreadEdgeProperties): FirstApotheosi
  * The caller lets the Return through anyway at `FIRST_RETURN_APOTHEOSIS_WAIT_DOOM_CAP`.
  */
 export function isFirstApotheosisPending(state: GameState, threadEdge: GraphEdge): boolean {
-  const props = threadEdge.properties as ThreadEdgeProperties;
+  const props = threadOf(threadEdge);
   if (!isJourneyThread(props)) return false;
   const mortalId = threadEdge.target;
   if (isAspect(state.graph, mortalId)) return false;
@@ -272,8 +281,7 @@ function firePremonition(
   tick: number,
   trigger: 'offer_in_view' | 'crisis_answered' | 'ordeal_answered',
 ): TickEvent {
-  const props = edge.properties as unknown as ApotheosisThreadProps;
-  props.apotheosisPremonitionTick = tick;
+  threadOf(edge).apotheosisPremonitionTick = tick;
   const message = fillApotheosisLine(APOTHEOSIS_PREMONITION_LINE, name, gender);
   emitTrace({
     tick,
@@ -361,7 +369,7 @@ export function seedApotheosisEncounters(
     if (mortalNode.properties.deceased === true) continue;
 
     // THR-2234 — the First's journey owns its Apotheosis: once, after the Ordeal.
-    const threadProps = edge.properties as ThreadEdgeProperties;
+    const threadProps = threadOf(edge);
     if (isJourneyThread(threadProps)) {
       const step = firstApotheosisStep(threadProps);
       if (step === 'premonition') {
@@ -369,9 +377,8 @@ export function seedApotheosisEncounters(
         premonitionEvents.push(firePremonition(edge, mortalId, mortalNode.name, mortalNode.properties.gender, tick, trigger));
       } else if (step === 'offer') {
         newSeeds.push(apotheosisSeed(mortalId, tick));
-        const props = edge.properties as unknown as ApotheosisThreadProps;
-        props.apotheosisOfferedTick = tick;
-        props.apotheosisOfferedForJourney = true;
+        threadProps.apotheosisOfferedTick = tick;
+        threadProps.apotheosisOfferedForJourney = true;
         emitTrace({
           tick,
           category: 'apotheosis.first_offer',
@@ -380,7 +387,7 @@ export function seedApotheosisEncounters(
           summary: `apotheosis.first_offer: ${mortalNode.name} stands at the threshold after the Ordeal (once per journey)`,
         });
       } else if (step === 'pass') {
-        (edge.properties as unknown as ApotheosisThreadProps).apotheosisPassedForJourney = true;
+        threadProps.apotheosisPassedForJourney = true;
         emitTrace({
           tick,
           category: 'apotheosis.first_passed',

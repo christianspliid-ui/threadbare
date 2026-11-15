@@ -190,6 +190,10 @@ export interface ThreadEdgeProperties {
   apotheosisGodPaid?: boolean;
   /** THR-2227 — the action the two fields above were written from (write-once per action). */
   apotheosisResultActionId?: string;
+  /** The tick the Apotheosis was last offered (stamped by `seedApotheosisEncounters`). */
+  apotheosisOfferedTick?: number;
+  /** THR-2227 — the tick the premonition for the coming offer fired. */
+  apotheosisPremonitionTick?: number;
   /**
    * THR-2234 — the First was offered the Apotheosis on this journey (after the Ordeal).
    * Once set, the First is never offered it again, whatever the ending. Absent = not yet.

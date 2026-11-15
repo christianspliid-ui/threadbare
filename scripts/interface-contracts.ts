@@ -7185,6 +7185,31 @@ export const CONTRACTS: readonly Contract[] = [
       evidence: 'THR-2229. firstEnding.thr2229.test.ts: an apotheosisBand / apotheosisGodPaid on the First\x27s thread renders beat 2\x27s threshold line ("you spent on him" / "stood alone", "became your Aspect" / "turned away" / "fell back") and traces twilight.first_lines; AgeTwilightScreen.thr2229.test.tsx renders it after the fate line.',
     },
   },
+  // THR-2234: the First's Apotheosis follows the Ordeal, once; the Return waits for it.
+  {
+    id: 'first-apotheosis-follows-ordeal',
+    producerSystem: DOOM,
+    consumerSystem: DOOM,
+    intent:
+      'The First is offered the Apotheosis once, after the Ordeal vision is answered and before the Return, which waits while the offer is due, seeded or being played (until the Doom reaches 95%); other threaded mortals keep the tier-4 hold and the re-offer cooldown.',
+    ulTerms: ['The First'],
+    // `seedApotheosisEncounters` reads the journey thread\x27s `beatHistory` through
+    // `firstApotheosisStep` and stamps `apotheosisOfferedForJourney` /
+    // `apotheosisPassedForJourney`; `phaseJourneyBeat` reads `isFirstApotheosisPending`
+    // (the stamps, `pendingEncounterSeeds` and the unresolved Apotheosis action) before
+    // the Return, traced `journey.return_waits`.
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['apotheosisOfferedForJourney', 'apotheosisPassedForJourney', 'firstApotheosisStep', 'isFirstApotheosisPending'],
+      module: 'src/engine/aspects.ts',
+    },
+    writeSites: ['src/engine/aspects.ts'],
+    readSites: ['src/engine/aspects.ts', 'src/engine/journeyEngine.ts'],
+    verifiedLive: {
+      date: '2026-11-15',
+      evidence: 'THR-2234. apotheosisAfterOrdeal.thr2234.test.ts: 500 ticks at tier 4 before the Ordeal offer nothing; the premonition fires on the Crisis answer and the one offer on the Ordeal answer; a second threaded mortal is offered at 60 and re-offered every 90; a First at tier 3 is passed and the Return fires; the Return holds while the Apotheosis is seeded or active and fires at the 0.95 cap. Journey probe on seeds 42 / 99 / 7, both arms: see the THR-2234 status file.',
+    },
+  },
   // THR-2229 (plan 2026-11-14-thr-2204-put-the-god-in-the-climax slice 4): the end of
   // the age tells this run's First from the thread edge — the Ordeal's band, whether the
   // god paid and how hard it leaned (written with the roll), and the Return's ending.
