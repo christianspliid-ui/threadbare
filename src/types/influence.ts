@@ -165,8 +165,6 @@ export interface ThreadEdgeProperties {
   ordealOutcome?: OrdealOutcome;
   /** THR-2226 — the band the Ordeal's roll landed (`ORDEAL_BAND_TO_OUTCOME` maps it to `ordealOutcome`). */
   ordealBand?: StepOutcome;
-  /** THR-2226 — true when the god leaned on the Ordeal (any choice but stepping back). */
-  ordealGodPaid?: boolean;
   /** Record of choices made during the meeting encounter (Phase 1+). */
   meetingChoiceRecord?: MeetingChoiceRecord;
   /**

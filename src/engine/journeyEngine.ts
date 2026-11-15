@@ -734,7 +734,8 @@ export function applyBeatChoice(
   if (vignetteData.isOrdeal && ordealResult) {
     updatedProps.ordealOutcome = ordealResult.outcome;
     updatedProps.ordealBand = ordealResult.band;
-    updatedProps.ordealGodPaid = ordealResult.godPaid;
+    // Whether the god leaned rides on the `journey.ordeal_roll` trace (`godPaid`),
+    // not the edge: nothing reads it here until a reader exists.
   }
 
   // Update intervention tracking

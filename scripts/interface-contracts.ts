@@ -7097,11 +7097,12 @@ export const CONTRACTS: readonly Contract[] = [
     // `recordJourneyChoice` → `rollOrdeal` (resolveStepCore on the stored fitted
     // difficulty, d100 from `drawLuckRoll`, the core's own draw from the keyed
     // `journey.ordeal` stream) → `applyBeatChoice` writes `ordealOutcome`,
-    // `ordealBand`, `ordealGodPaid` on the thread edge. `executeReturn` reads
+    // `ordealBand` on the thread edge (whether the god leaned rides only on the
+    // `journey.ordeal_roll` trace, as `godPaid`). `executeReturn` reads
     // `ordealOutcome`; the vision's result line reads it back via `readOrdealResult`.
     mechanism: {
       kind: 'edge-prop',
-      symbols: ['ordealOutcome', 'ordealBand', 'ordealGodPaid', 'rollOrdeal'],
+      symbols: ['ordealOutcome', 'ordealBand', 'rollOrdeal'],
       module: 'src/engine/journeyEngine.ts',
     },
     writeSites: ['src/engine/journeyEngine.ts'],

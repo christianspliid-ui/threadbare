@@ -167,7 +167,7 @@ describe('rolling the Ordeal', () => {
     expect(result.band).toBeDefined();
     expect(result.outcome).toBe(ORDEAL_BAND_TO_OUTCOME[result.band as StepOutcome]);
     const edge = graph.getOutgoingEdges(ASC, 'thread')[0];
-    expect(edge.properties.ordealGodPaid).toBe(false);
+    expect(edge.properties).not.toHaveProperty('ordealGodPaid');
 
     const traces = getTraces().filter(t => t.category === 'journey.ordeal_roll') as unknown as Array<Record<string, unknown>>;
     expect(traces).toHaveLength(1);

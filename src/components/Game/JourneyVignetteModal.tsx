@@ -25,7 +25,7 @@ import type { JourneyVignetteData, BeatChoice, OrdealOutcome } from '../../types
 import type { ForecastTier } from '../../types/traces/encounter-traces';
 import { formatPhaseName, ordealConsequence } from '../../engine/journeyEngine';
 import { formatEssence } from '../shared/formatEssence';
-import { JOURNEY_STAGE_LABELS, JOURNEY_CONTINUE_LABEL, JOURNEY_CHOICE_UNAFFORDABLE } from '../../data/ui-content';
+import { JOURNEY_STAGE_LABELS, JOURNEY_CONTINUE_LABEL, JOURNEY_CHOICE_UNAFFORDABLE, ORDEAL_COMMIT_LABEL, ORDEAL_PICK_PROMPT } from '../../data/ui-content';
 import { VISION_PRICE_LINE } from '../../data/vision-scene-content';
 import { FORECAST_TIER_WORDS } from '../../data/nudge-stage-content';
 import { sphereWord } from '../../data/essence-format';
@@ -104,6 +104,7 @@ function ChoiceButton({
   unaffordable,
   payingSphere,
   forecast,
+  armed,
 }: {
   choice: BeatChoice;
   onSelect: (id: string) => void;
@@ -112,6 +113,8 @@ function ChoiceButton({
   payingSphere?: string;
   /** THR-2226 — on an Ordeal, the forecast this choice leaves (shown before the spend). */
   forecast?: ForecastTier;
+  /** THR-2226 — on an Ordeal, this lean is picked and waits for the commit (Law 48). */
+  armed?: boolean;
 }) {
   const [hovered, setHovered] = useState(false);
 
@@ -126,13 +129,15 @@ function ChoiceButton({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       disabled={disabled}
+      aria-pressed={armed === undefined ? undefined : armed}
+      data-armed={armed ? '' : undefined}
       style={{
         display: 'block',
         width: '100%',
         padding: 'var(--space-3)',
         marginBottom: 'var(--space-2)',
-        background: hovered ? 'rgb(var(--veil-gold-rgb) / 0.08)' : 'var(--dlg-inset, var(--bg-surface))',
-        border: `1px solid ${hovered ? borderColor : 'rgb(var(--veil-gold-rgb) / 0.2)'}`,
+        background: hovered || armed ? 'rgb(var(--veil-gold-rgb) / 0.08)' : 'var(--dlg-inset, var(--bg-surface))',
+        border: `${armed ? 2 : 1}px solid ${hovered || armed ? borderColor : 'rgb(var(--veil-gold-rgb) / 0.2)'}`,
         borderRadius: '6px',
         cursor: disabled ? 'not-allowed' : 'pointer',
         textAlign: 'left',
@@ -203,17 +208,18 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
   const [answered, setAnswered] = useState<BeatChoice | null>(null);
   // THR-2226 — the Ordeal's rolled outcome, once the click has committed it.
   const [rolledOutcome, setRolledOutcome] = useState<OrdealOutcome | null>(null);
+  // THR-2226 — the Ordeal's picked lean, armed and waiting for the commit (Law 48).
+  const [armedId, setArmedId] = useState<string | null>(null);
+  const ordealCommits = vignette.isOrdeal && onOrdealCommit !== undefined;
 
   const handleChoice = useCallback((choiceId: string) => {
     if (answered) return; // Prevent double-click
     const choice = vignette.choices.find(c => c.id === choiceId);
     if (!choice) return;
-    // THR-2226 — the Ordeal commits at the click: there is no result until the roll.
-    if (vignette.isOrdeal && onOrdealCommit) {
-      const outcome = onOrdealCommit(choiceId);
-      if (outcome === null) return; // nothing committed (the pool could not pay)
-      setRolledOutcome(outcome);
-      setAnswered(choice);
+    // THR-2226 — on the Ordeal a click only picks the lean (Law 48: armed, then fired).
+    // The commit button pays and rolls; there is no result until the roll.
+    if (ordealCommits) {
+      setArmedId(choiceId);
       return;
     }
     // Fail-soft: a choice with no reply line commits at once, as before.
@@ -222,7 +228,18 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
       return;
     }
     setAnswered(choice);
-  }, [answered, onChoice, onOrdealCommit, vignette.choices, vignette.isOrdeal]);
+  }, [answered, onChoice, ordealCommits, vignette.choices]);
+
+  // THR-2226 — the second beat: pay the armed lean's price and roll the Ordeal.
+  const handleOrdealFire = useCallback(() => {
+    if (answered || !armedId || !onOrdealCommit) return;
+    const choice = vignette.choices.find(c => c.id === armedId);
+    if (!choice) return;
+    const outcome = onOrdealCommit(armedId);
+    if (outcome === null) return; // nothing committed (the pool could not pay)
+    setRolledOutcome(outcome);
+    setAnswered(choice);
+  }, [answered, armedId, onOrdealCommit, vignette.choices]);
   const answeredLine = answered
     ? (vignette.isOrdeal ? ordealConsequence(answered, rolledOutcome ?? undefined) : answered.effects.consequenceProse)
     : null;
@@ -355,9 +372,22 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
                   unaffordable={unaffordable}
                   payingSphere={payingSphere}
                   forecast={vignette.isOrdeal ? vignette.forecastByChoice?.[choice.id] : undefined}
+                  armed={ordealCommits ? armedId === choice.id : undefined}
                 />
               );
             })}
+            {ordealCommits && (
+              <Button
+                variant="primary"
+                size="md"
+                fullWidth
+                data-testid="ordeal-commit"
+                disabled={armedId === null}
+                onClick={handleOrdealFire}
+              >
+                {armedId === null ? ORDEAL_PICK_PROMPT : ORDEAL_COMMIT_LABEL}
+              </Button>
+            )}
           </div>
         )}
       </div>

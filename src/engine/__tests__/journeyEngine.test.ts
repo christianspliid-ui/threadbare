@@ -530,7 +530,7 @@ describe('applyBeatChoice', () => {
     const { updatedProps } = applyBeatChoice(threadProps, vignette, 'break', { band: 'success', outcome: 'triumph', godPaid: false });
     expect(updatedProps.ordealOutcome).toBe('triumph');
     expect(updatedProps.ordealBand).toBe('success');
-    expect(updatedProps.ordealGodPaid).toBe(false);
+    expect(updatedProps).not.toHaveProperty('ordealGodPaid');
 
     const { updatedProps: unrolled } = applyBeatChoice(threadProps, vignette, 'triumph');
     expect(unrolled.ordealOutcome).toBeUndefined();
