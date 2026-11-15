@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-15 21:48 local (20:48 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-15 21:58 local (20:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -37,7 +37,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 4 tickets in Ready for Dev, all now out of their veto windows, and the builder is working.** A pickup run started at 20:43 UTC. [A longer look back is always more, not less](https://linear.app/threadbare/issue/THR-2235/a-longer-look-back-is-always-more-not-less-read-the-threads-fades-each) is half built: its work is saved on [its branch](https://github.com/christianspliid-ui/threadbare/tree/thr-2235-read-threads-fade-by-age) as a checkpoint from 08:56 UTC, with no pull request yet; nothing is sitting unsaved. Ready next: [The Mandate says what moves it](https://linear.app/threadbare/issue/THR-2236/the-mandate-says-what-moves-it-the-fill-line-names-the-spend-rising), [The answer to a rival is where the threat is](https://linear.app/threadbare/issue/THR-2237/the-answer-to-a-rival-is-where-the-threat-is-the-rival-panel-says), [The answer to Doom is where Doom is](https://linear.app/threadbare/issue/THR-2240/the-answer-to-doom-is-where-doom-is-the-doom-panel-and-the-doom-bars), [Play promises only what it keeps](https://linear.app/threadbare/issue/THR-2238/play-promises-only-what-it-keeps-the-first-run-play-tooltip-says-the).
+**Healthy: 4 tickets in Ready for Dev, all now out of their veto windows, and the builder is working.** A pickup run started at 20:43 UTC and is still working. [A longer look back is always more, not less](https://linear.app/threadbare/issue/THR-2235/a-longer-look-back-is-always-more-not-less-read-the-threads-fades-each) is half built: its work is saved on [its branch](https://github.com/christianspliid-ui/threadbare/tree/thr-2235-read-threads-fade-by-age) as a checkpoint from 08:56 UTC, with no pull request yet; its local copy has no unsaved edits. Ready next: [The Mandate says what moves it](https://linear.app/threadbare/issue/THR-2236/the-mandate-says-what-moves-it-the-fill-line-names-the-spend-rising), [The answer to a rival is where the threat is](https://linear.app/threadbare/issue/THR-2237/the-answer-to-a-rival-is-where-the-threat-is-the-rival-panel-says), [The answer to Doom is where Doom is](https://linear.app/threadbare/issue/THR-2240/the-answer-to-doom-is-where-doom-is-the-doom-panel-and-the-doom-bars), [Play promises only what it keeps](https://linear.app/threadbare/issue/THR-2238/play-promises-only-what-it-keeps-the-first-run-play-tooltip-says-the).
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (26 days; In Dev since 15 Oct). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
@@ -45,6 +45,5 @@ Items for agents, not you:
 ## Health
 
 - **Every lane was silent today from about 09:57 to 21:42 local (11.8 hours).** All lanes came back in the same minute, so the computer or app was off. It is a Sunday, so per your weekend ruling this is not an ask; it is one more case for the "open at login" setting above.
-- **The orchestrator has not run since 09:29 local.** The heartbeat check reads that as stalled, but the app lists it as waiting for a free slot while the lanes catch up after the gap. Expected to clear on its own; next hour checks again. Agent-side, not yours.
-- **Engine speed reads slow:** tick cost 318 ms/tick steady, 97% above the 7-day median (162, 54 rows since 0a999d5b); top phase agent_decision, 638 agents. Name the merges between 0a999d5b and 71d6586d: `git log --oneline --merges 0a999d5b..71d6586d`. This reading was taken while the pickup run and other lanes were starting up after the gap, so machine load may explain it; the executor confirms on the next quiet reading.
+- **Engine speed is back to normal:** tick cost 166 ms/tick steady, +2% vs the 7-day median (162). Last hour's 318 ms reading came from machine load while the lanes restarted. The orchestrator ran again at 20:44 UTC; all 10 scheduled tasks are on schedule.
 - The live site serves the latest commit on main (71d6586d). Checks on main and the 3 scheduled background jobs pass; no PRs are waiting. The worktree reaper ran at 21:40 local. Linear read live this run. No Discord messages from you since the last brief. The home copy of the repo is current with main.
