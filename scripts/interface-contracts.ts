@@ -7204,7 +7204,9 @@ export const CONTRACTS: readonly Contract[] = [
       symbols: ['ordealBand', 'ordealGodPaid', 'ordealLean', 'returnEnding'],
       module: 'src/engine/journeyEngine.ts',
     },
-    writeSites: ['src/engine/journeyEngine.ts', 'src/engine/returnEngine.ts'],
+    // A death sweeps the thread: `markMortalDead` copies these facts into the god's
+    // `firstRemembered` note, which `readFirstStory` reads back.
+    writeSites: ['src/engine/journeyEngine.ts', 'src/engine/returnEngine.ts', 'src/engine/agentLifecycle.ts'],
     readSites: ['src/engine/twilight.ts', 'src/engine/cycleEnd.ts', 'src/engine/retinue.ts'],
     verifiedLive: {
       date: '2026-11-15',

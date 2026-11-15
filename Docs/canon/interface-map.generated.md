@@ -714,10 +714,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Encounters & Dilemmas → Doom Clock & Journey
 - **UL terms:** *The First*
 - **Module:** `src/engine/climaxFit.ts`
-- **Production hits:** 4 total — 1 write, 1 read, 2 unclassified
+- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
 - **Write sites:** `src/engine/climaxFit.ts`
 - **Read sites:** `src/engine/twilight.ts`
-- **Other hits:** `src/engine/orchestrator.ts`, `src/types/influence.ts`
+- **Other hits:** `src/engine/agentLifecycle.ts`, `src/engine/cycleEnd.ts`, `src/engine/orchestrator.ts`, `src/types/influence.ts`
 - **Verdict:** Verified 2026-11-15: THR-2229. firstEnding.thr2229.test.ts: an apotheosisBand / apotheosisGodPaid on the First's thread renders beat 2's threshold line ("you spent on him" / "stood alone", "became your Aspect" / "turned away" / "fell back") and traces twilight.first_lines; AgeTwilightScreen.thr2229.test.tsx renders it after the fate line.
 
 ### `appointment-discount-reaches-board` — 🟢 LIVE
@@ -2446,8 +2446,8 @@ exit
 - **Producer → Consumer:** Doom Clock & Journey → Doom Clock & Journey
 - **UL terms:** *The First*
 - **Module:** `src/engine/journeyEngine.ts`
-- **Production hits:** 8 total — 2 write, 3 read, 3 unclassified
-- **Write sites:** `src/engine/journeyEngine.ts`, `src/engine/returnEngine.ts`
+- **Production hits:** 9 total — 3 write, 3 read, 3 unclassified
+- **Write sites:** `src/engine/agentLifecycle.ts`, `src/engine/journeyEngine.ts`, `src/engine/returnEngine.ts`
 - **Read sites:** `src/engine/cycleEnd.ts`, `src/engine/retinue.ts`, `src/engine/twilight.ts`
 - **Other hits:** `src/data/journey-content.ts`, `src/types/influence.ts`, `src/types/journeyEngine.ts`
 - **Verdict:** Verified 2026-11-15: THR-2229. firstEnding.thr2229.test.ts: applyBeatChoice writes the Ordeal band, godPaid and lean; applyReturnOutcome writes returnEnding for all six endings; a returned First is still found by the Twilight; the Ordeal line reads pour / steady / stepped back and "still … broke"; the harvest summary leads with the First and drops the second clause when it is the First; a vanished First reads "Gone" in Threads and a transcended one "Transcended".
@@ -3330,10 +3330,10 @@ exit
 - **Producer → Consumer:** Doom Clock & Journey → Doom Clock & Journey
 - **UL terms:** *The First*
 - **Module:** `src/engine/journeyEngine.ts`
-- **Production hits:** 8 total — 1 write, 2 read, 5 unclassified
+- **Production hits:** 10 total — 1 write, 2 read, 7 unclassified
 - **Write sites:** `src/engine/journeyEngine.ts`
 - **Read sites:** `src/components/Game/GameView.tsx`, `src/engine/returnEngine.ts`
-- **Other hits:** `src/engine/twilight.ts`, `src/types/influence.ts`, `src/types/journeyEngine.ts`, `src/types/returnEngine.ts`, `src/types/trace.ts`
+- **Other hits:** `src/engine/agentLifecycle.ts`, `src/engine/cycleEnd.ts`, `src/engine/twilight.ts`, `src/types/influence.ts`, `src/types/journeyEngine.ts` +2 more
 - **Verdict:** Verified 2026-11-15: THR-2226. ordealRollAndVisionScene.thr2226.test.ts: recordJourneyChoice on an Ordeal vision deals one draw from the First's bag (bagDraws 0 → 1), writes the outcome ORDEAL_BAND_TO_OUTCOME maps the traced band to, ignores a legacy choice's ordealOutcome, and traces journey.ordeal_roll with the stepped-back chance within 0.01 of CLIMAX_BARE_FORECAST; over 200 seeds the full lean wins more Ordeals than stepping back and still loses some.
 
 ### `pending-rite-opens-surface` — 🔵 UNVERIFIED-OK
