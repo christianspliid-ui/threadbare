@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 232 |
+| 🟢 LIVE | 234 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 121 |
-| **Total** | **361** |
+| **Total** | **363** |
 
 ## Contracts by producing subsystem
 
@@ -174,6 +174,7 @@ remediation ticket or the build fails.
 |---|---|---|---|---|---|
 | `doom-floor-holds-unmaking` | No world ends before its First has had a life: however fast the clock is pushed, the Unmaking cannot begin until a floor of ticks has passed since the doom woke at the bond. | state-field: `wokeAtTick`, `doomFloorMetAtTick`, `DOOM_MIN_RUN_TICKS_AFTER_BOND` | Doom Clock & Journey | 🔵 UNVERIFIED-OK | — |
 | `doom-progress-paces-first-journey` | The First's hero's journey moves with the doom clock: its phases are fractions of doom progress, so a longer clock that starts at the bond stretches the whole call-to-return arc inside every run. | state-field: `doomClock` | Doom Clock & Journey | 🔵 UNVERIFIED-OK | — |
+| `ordeal-roll-writes-thread-outcome` | The First's Ordeal is decided by a roll on the First's marble bag at a difficulty fitted to "Uncertain", which the god's choice only leans on; the band the roll lands is written to the thread edge as the Ordeal outcome the Return reads, never the outcome a choice names. | edge-prop: `ordealOutcome`, `rollOrdeal` | Doom Clock & Journey | 🟢 LIVE | — |
 
 ### Effects & Conditions
 
@@ -510,6 +511,7 @@ remediation ticket or the build fails.
 | `sphere-points-read-by-dominion` | The god's bought spheres decide what its ground is (THR-1748, THR-1749's "future" row). The Dominion read takes the bought vector through `getSpherePoints` and the power baseline `dominionPowerBaseline` recorded at world init, so power reads 1.0 at start for every buy. | node-prop: `dominionPowerBaseline` | Spheres & Quintessence | 🔵 UNVERIFIED-OK | — |
 | `sphere-points-split-essence-income` | The god is what it poured itself into (THR-1749). Remembrance writes the bought sphere vector onto the ascendant node as `spherePoints` (`createAscendant`, with `sphereAlignment` re-derived as the two largest buys); the essence ledger and the essence bar read it through `getSpherePoints` and split income with the one shared `distributeBySpherePoints` (every sphere keeps `UNBOUGHT_SPHERE_INCOME_SHARE`, the rest follows the points), so ledger and readout cannot disagree. | node-prop: `spherePoints`, `distributeBySpherePoints` | Essence & Divine Economy | 🔵 UNVERIFIED-OK | — |
 | `unborne-artifact-lies-at-its-place` | An artifact no one carries still lies somewhere: the earlier god's relic waits at its site, its page names that place, the place's page lists it, and Dominion's place reader finds it there. | edge: `lies_at`, `placeOf` | Attachments, Items & Possessions | 🔵 UNVERIFIED-OK | — |
+| `vision-reads-first-scene` | A journey vision reads where the First is and what they are doing before it picks its moment: a moment that fits the scene wins, one tagged for another scene is never drawn while a fitting one exists, and the setup opens on the place and the activity. | function: `readVisionScene`, `sceneFit`, `openWithScene` | Doom Clock & Journey | 🟢 LIVE | — |
 | `world-past-descent-feeds-clue-scoring` | About a quarter of the mortals living on a dead empire's old land descend from it (`backstoryStrata` + `originCultureId`), and a ruin's clue prefers a descendant of the people who built it. | node-prop: `backstoryStrata`, `WorldPastDescentStratum` | Ruins, Clues & Delves | 🟢 LIVE | — |
 | `world-past-mints-ambitions` | The past gives the living reasons (THR-1657, S3): a fallen commander's kin — the losing Realm's highest-standing protagonist with a free slot, tied `kin` both ways — inherits a `seek_revenge` grievance against the winning Realm's current leader through `resolveGrievanceDisposition`'s succession, and the protagonist nearest a wonder with a finder comes to chase it. Deciders only, no spotlight pull, so the t0 decider headcount is unchanged; every source that mints nothing is named with its reason in `world_past_seeded.ambitions`. | function: `mintPastAmbitions`, `assignAmbitionToActor`, `resolveGrievanceDisposition` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `world-past-reaches-the-chronicle` | The past worldgen derives from what it placed — an elder war, founding ages, wars in living memory, the dead — is readable back through one pure selector, `readWorldPast` (fog-gated for the player as `readWorldPastForPlayer`), which the "Before you woke" chronicle section, the place line on a settlement or ruin page and the line on the sheet of someone long dead read through `worldPastWords` (THR-1656), and never through `chronicleEntries`, which cycle end empties. | function: `seedWorldPast`, `readWorldPast`, `readWorldPastForPlayer`, `getPlacePast` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
@@ -967,10 +969,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Domain Capability*, *UnifiedActionTemplate*
 - **Module:** `src/engine/unifiedActionResolution.ts`
-- **Production hits:** 258 total — 1 write, 3 read, 254 unclassified
+- **Production hits:** 260 total — 1 write, 3 read, 256 unclassified
 - **Write sites:** `src/data/unified-action-templates.ts`
 - **Read sites:** `src/engine/playerCastReadout.ts`, `src/engine/targetActions.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts` +249 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts` +251 more
 - **Verdict:** Verified 2026-09-10: THR-728: `unified-action-templates.ts` authors `steps[].difficulty`; `resolveUncontestedStep` reads it for `source === 'player'` (the auto-success early-return is now gated behind `PLAYER_CAST_VARIANCE_ENABLED`), and `targetActions.ts` reads the same field via `maxStepDifficulty` to render the focused card's risk line. Measured over 400 seeds: the outcome set for a positive-difficulty cast is >1 band. THR-1073 rerouted both read sites through `tierScaledDifficulty`: a step declaring `difficultyContext: 'target_tier_scaled'` treats its authored `difficulty` as a tier-1 baseline and resolves the real value from the target's tier. Both sites resolve through the same helper, so the card's risk line cannot drift from the roll; a step without the marker is returned unchanged. THR-1002 moved the card's read from a risk *sentence* to a forecast tier *word*: `castForecastProbability` (`playerCastReadout.ts`) is now the third read site, and the word is `classifyForecastTier` of the probability the roll uses. Re-verified 2026-09-10 by pinning it against `resolveUncontestedStep` driven for real rather than against `computeResolutionThreshold` — which found two live divergences the threshold-only pin had been green over: the below-floor lift is to the *scale* floor (a fresh god's local cast read `perilous` at 0.354 where the roll gives 0.65 → `favorable`), and a difficulty-0 step short-circuits to `probability: 1` above every scale adjustment, so it is `fated` at every scale.
 
 ### `authored-tier-ramp-target-scaled-price` — 🟢 LIVE
@@ -3283,6 +3285,18 @@ exit
 - **Other hits:** `src/data/action-technical-effects.ts`, `src/data/prayer-constants.ts`, `src/types/graphOp.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-10-24: THR-1969. godsStake.test.ts: the card stamps the tick; the offer opens at the delay and closes after the offer days or below prosperity 75; a Shadow-led resident's create × faction entry carries thievesGuildOffer 1.5 and temperamentWeight × 1.5, a Gold-led one none.
 
+### `ordeal-roll-writes-thread-outcome` — 🟢 LIVE
+
+- **Intent:** The First's Ordeal is decided by a roll on the First's marble bag at a difficulty fitted to "Uncertain", which the god's choice only leans on; the band the roll lands is written to the thread edge as the Ordeal outcome the Return reads, never the outcome a choice names.
+- **Producer → Consumer:** Doom Clock & Journey → Doom Clock & Journey
+- **UL terms:** *The First*
+- **Module:** `src/engine/journeyEngine.ts`
+- **Production hits:** 7 total — 1 write, 2 read, 4 unclassified
+- **Write sites:** `src/engine/journeyEngine.ts`
+- **Read sites:** `src/components/Game/GameView.tsx`, `src/engine/returnEngine.ts`
+- **Other hits:** `src/types/influence.ts`, `src/types/journeyEngine.ts`, `src/types/returnEngine.ts`, `src/types/trace.ts`
+- **Verdict:** Verified 2026-11-15: THR-2226. ordealRollAndVisionScene.thr2226.test.ts: recordJourneyChoice on an Ordeal vision deals one draw from the First's bag (bagDraws 0 → 1), writes the outcome ORDEAL_BAND_TO_OUTCOME maps the traced band to, ignores a legacy choice's ordealOutcome, and traces journey.ordeal_roll with the stepped-back chance within 0.01 of CLIMAX_BARE_FORECAST; over 200 seeds the full lean wins more Ordeals than stepping back and still loses some.
+
 ### `pending-rite-opens-surface` — 🔵 UNVERIFIED-OK
 
 - **Intent:** Every mortal the god threads with the Agent Thread card gets a rite on screen with their real face, shaped by how many the god has threaded, and it waits until nothing else is open.
@@ -3325,10 +3339,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Domain Capability*, *UnifiedActionTemplate*, *Encounter*
 - **Module:** `src/engine/scaledForecast.ts`
-- **Production hits:** 11 total — 3 write, 2 read, 6 unclassified
+- **Production hits:** 12 total — 3 write, 2 read, 7 unclassified
 - **Write sites:** `src/engine/encounterCache.ts`, `src/engine/resolutionScaleAdjust.ts`, `src/engine/stepResolutionCore.ts`
 - **Read sites:** `src/engine/encounterScoring.ts`, `src/engine/plannerForecast.ts`
-- **Other hits:** `src/components/Game/encounter-stage/useNudgeHand.ts`, `src/engine/decisionBoard.ts`, `src/engine/playerCastReadout.ts`, `src/engine/scaledForecast.ts`, `src/engine/views/stage/baseStepForecast.ts` +1 more
+- **Other hits:** `src/components/Game/encounter-stage/useNudgeHand.ts`, `src/engine/decisionBoard.ts`, `src/engine/journeyEngine.ts`, `src/engine/playerCastReadout.ts`, `src/engine/scaledForecast.ts` +2 more
 - **Verdict:** Verified 2026-09-24: THR-1579: `plannerForecastParity.test.ts` builds real cache entries (`EncounterCacheManager.buildFullCache` over ten location kinds) and, for a novice, a journeyman and a specialist, compares the planner's step probability against `previewStepProbability` — the roll's own derivation run dry — on 1,470 steps across local, regional and cosmic scale: equal to 9 decimal places on every step (the plan's KPI is mean ≤ `KPI_FORECAST_PARITY_MAX` 0.02), and the expected-utility path within one d100 point. Before the fix the plan's named case (capability 0.55, local, d 0.45) forecast 0.10 and rolled 0.65. The same file pins the engagement forecast `F` as the exact product of per-step survival (critical failure always ends; plain failure only on `fail_action`), carried on `ScoredCandidate` and the `encounter_scoring` trace. THR-1535 (2026-09-25): the same file re-runs all 1,470 steps with the mortal carrying a passive +0.05 charm on three reaches and standing on a mountain — the gear and ground move 149 of them, and planner equals resolver to 9 decimals on every one.
 
 ### `player-action-aftermath-read` — 🔵 UNVERIFIED-OK
@@ -3438,10 +3452,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 485 total — 1 write, 1 read, 483 unclassified
+- **Production hits:** 487 total — 1 write, 1 read, 485 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +478 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +480 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `recovered-town-keeps-faith` — 🟢 LIVE
@@ -3709,10 +3723,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Ruins, Clues & Delves
 - **UL terms:** *Undertaking*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 141 total — 1 write, 1 read, 139 unclassified
+- **Production hits:** 142 total — 1 write, 1 read, 140 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/ruins/delveVariant.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAvatarData.ts` +134 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAvatarData.ts` +135 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R2. The `destroy × Location` semantic stamps `ruinMagnitude` from `RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE`; `phaseDelveAdmission` widens its filter from `locationType === 'elder_ruin'` to also admit a `ruins`-subtype Location once `ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick`, with the located-clue requirement unchanged. Non-vacuous by four tests in `src/engine/ruins/__tests__/delveVariant.test.ts` that assert the admit arm, the still-fresh refuse arm, the worldgen-ruin refuse arm (no `ruinedTick`) and the narrowed-clue refuse arm — a scan that admitted every `ruins` location passes the first alone, one that admitted none passes the second alone. **`sphereAlignment` is deliberately not written:** the plan named a new `ruinSphereAlignment`, but `delveVariant` reads `sphereAlignment`, so the new name would have been another write nobody reads; the existing property is carried through untouched and a settlement without one takes the vault archetype.
 
 ### `rule-overrides-reach-owning-sites` — 🟢 LIVE
@@ -3903,10 +3917,10 @@ exit
 - **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 436 total — 1 write, 1 read, 434 unclassified
+- **Production hits:** 437 total — 1 write, 1 read, 435 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +429 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +430 more
 - **Verdict:** Verified 2026-09-10: THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.
 
 ### `settlement-economy-drives-tier` — 🟢 LIVE
@@ -3948,10 +3962,10 @@ exit
 - **Producer → Consumer:** Strategic Projects & Control → Encounters & Dilemmas
 - **UL terms:** *Outcome Band*
 - **Module:** `src/engine/stepResolutionCore.ts`
-- **Production hits:** 14 total — 1 write, 2 read, 11 unclassified
+- **Production hits:** 15 total — 1 write, 2 read, 12 unclassified
 - **Write sites:** `src/engine/stepResolutionCore.ts`
 - **Read sites:** `src/engine/undertakingCheckpoints.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/data/nudge-stage-content.ts`, `src/engine/decisionBoard.ts`, `src/engine/encounter.ts`, `src/engine/encounterScoring.ts`, `src/engine/fights/fightState.ts` +6 more
+- **Other hits:** `src/data/nudge-stage-content.ts`, `src/engine/decisionBoard.ts`, `src/engine/encounter.ts`, `src/engine/encounterScoring.ts`, `src/engine/fights/fightState.ts` +7 more
 - **Verdict:** Verified 2026-08-27: stepResolutionCore.contract.test.ts pins the permitted direct-caller set and asserts the encounter entry point and a direct core call agree on band/roll/probability; the second caller is exercised in the live simulation by undertakingCheckpointLiveness.test.ts (630 rolled checkpoints across all six bands on a 150-tick seed-42 run).
 
 ### `shortlist-reaches-every-template` — 🟢 LIVE
@@ -4225,9 +4239,10 @@ exit
 - **Intent:** A thread from the player's god marks a mortal as the player's own, and the player's own mortals get fair luck: their d100 comes from a marble bag and a hidden deadline ends any Legendary drought (Game Design Laws § I).
 - **Producer → Consumer:** Ascendant Beats & Progression → Encounters & Dilemmas
 - **Module:** `src/engine/luck.ts`
-- **Production hits:** 5 total — 1 write, 4 read, 0 unclassified
+- **Production hits:** 6 total — 1 write, 4 read, 1 unclassified
 - **Write sites:** `src/engine/luck.ts`
 - **Read sites:** `src/engine/fights/opposedRoll.ts`, `src/engine/rewardPool.ts`, `src/engine/undertakingCheckpoints.ts`, `src/engine/unifiedActionResolution.ts`
+- **Other hits:** `src/engine/journeyEngine.ts`
 - **Verdict:** Verified 2026-10-14: Seeds 42 and 7 (medium, the First bonded by devSeedTheFirst), 300 ticks: the First's d100 was dealt from its bag 71 and 113 times (`luck.bag_roll` traces; `properties.luck.bagDraws` agrees), and on seed 7 a Legendary cycle closed naturally after 12 wins against a deadline of 45 (`luck.legendary_cycle`, tick 188). Every traced bag roll belonged to the First, the one threaded mortal.
 
 ### `thread-tug-spend-single-writer` — 🟢 LIVE
@@ -4513,6 +4528,17 @@ exit
 - **Read sites:** `src/engine/unrestPressure/describe.ts`
 - **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/data/larder-seed-config.ts`, `src/engine/larderSeeds.ts`, `src/engine/phases/settlementEconomy.ts`, `src/engine/prayers.ts` +5 more
 - **Verdict:** Verified 2026-10-17: THR-1934. src/engine/__tests__/unrestPressure.test.ts (17): each term's rule and cap; one scarce staple reaches Restless within 10 days and falls below it within 10 once adequate; the leaver takes up Flee when hunger drives the town; the Fortunes sentences. npm run measure:unrest (600 ticks, medium): 99 / 96 / 43 leaves on seeds 42 / 99 / 7, Flee minted 21 / 22 / 4.
+
+### `vision-reads-first-scene` — 🟢 LIVE
+
+- **Intent:** A journey vision reads where the First is and what they are doing before it picks its moment: a moment that fits the scene wins, one tagged for another scene is never drawn while a fitting one exists, and the setup opens on the place and the activity.
+- **Producer → Consumer:** World Generation, Terrain & Places → Doom Clock & Journey
+- **UL terms:** *The First*
+- **Module:** `src/engine/journeyEngine.ts`
+- **Production hits:** 3 total — 2 write, 1 read, 0 unclassified
+- **Write sites:** `src/data/vision-scene-content.ts`, `src/engine/journeyEngine.ts`
+- **Read sites:** `src/components/Game/stage/useStageDebugBridge.ts`
+- **Verdict:** Verified 2026-11-15: THR-2226. ordealRollAndVisionScene.thr2226.test.ts: every LOCATION_SUBTYPES entry and every undertaking verb maps to an activity; a shrine reads worship and a battleground conflict; over 200 seeds a worship scene picks the worship-tagged variant over a conflict-only one scored higher, and with no fitting variant the tagged one still plays.
 
 ### `war-aim-targets-faction-ambitions` — 🟢 LIVE
 
