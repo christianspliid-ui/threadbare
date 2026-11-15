@@ -547,10 +547,22 @@ export function NudgePhaseShell({
             in a row here moved into the hand bar below, beside the commit
             where the price is paid; the row's height went to the hand. */}
 
-        {hand.cards.length === 0 ? (
-          <p style={{ fontFamily: FONT_PROSE, fontStyle: 'italic', color: TEXT_WHISPER, margin: 0 }}>
-            {NUDGE_EMPTY_HAND_LINE}
+        {/* THR-2227 — the Apotheosis's line above its hand: why the hand is the
+            run's largest (earned cards), or that the purse cannot pay for any of it. */}
+        {phase.climaxLine && (
+          <p
+            data-testid={`nudge-climax-line-${phase.climaxLine.kind}`}
+            style={{ fontFamily: FONT_PROSE, fontStyle: 'italic', color: TEXT_WHISPER, margin: '0 0 10px' }}
+          >
+            {phase.climaxLine.text}
           </p>
+        )}
+        {hand.cards.length === 0 ? (
+          phase.climaxLine?.kind === 'empty_purse' ? null : (
+            <p style={{ fontFamily: FONT_PROSE, fontStyle: 'italic', color: TEXT_WHISPER, margin: 0 }}>
+              {NUDGE_EMPTY_HAND_LINE}
+            </p>
+          )
         ) : (
           <div
             ref={rowRef}

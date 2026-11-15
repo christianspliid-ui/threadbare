@@ -254,6 +254,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `allegiance` (1) | `allegiance.ts` | `THR-1429`, `THR-1683` |
 | `ambition` (7) | `ambitionAssignment.ts`, `ambitionBoost.ts`, `ambitionLifecycle.ts`, `ambitionProse.ts`, `ambitionSelection.ts`, `ambitionShape.ts`, `ambitionTick.ts` | `THR-1277`, `THR-1285`, `THR-1779`, `THR-885` |
 | `anoint` (1) | `anointSuccessor.ts` | `THR-432`, `THR-74` |
+| `apotheosis` (1) | `apotheosisLines.ts` | `THR-2227` |
 | `appointments` (1) | `appointments.ts` | `THR-1479` |
 | `area` (1) | `areaProjection.ts` | `THR-1155` |
 | `army` (5) | `armyAttrition.ts`, `armyMovement.ts`, `armyNotifications.ts`, `armySpawning.ts`, `armySupply.ts` | `Phase 1`, `Phase 2`, `TB-073`, `THR-1564`, `THR-1580`, `THR-626` |
@@ -278,6 +279,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `chosen` (1) | `chosenFactionPowers.ts` | `THR-509`, `THR-513` |
 | `chronicle` (2) | `chronicle.ts`, `chronicleGrowth.ts` | `THR-1986`, `THR-21` |
 | `clearance` (1) | `clearanceGate.ts` | — |
+| `climax` (1) | `climaxFit.ts` | `THR-2204`, `THR-2227` |
 | `coastline` (1) | `coastline.ts` | — |
 | `companions` (1) | `companions.ts` | `THR-1096` |
 | `complication` (2) | `complicationEffects.ts`, `complicationSelection.ts` | `THR-20` |
@@ -487,4 +489,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 115 tick phases · 240 engine domains · 817 modules._
+_Counts: 28 registered subsystems (2 dormant) · 115 tick phases · 242 engine domains · 819 modules._

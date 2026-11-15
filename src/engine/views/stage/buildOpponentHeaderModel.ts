@@ -225,7 +225,7 @@ export function buildOpponentHeaderModel(
 ): OpponentHeaderModel | null {
   let step: ActionStep;
   try {
-    step = resolveStepDefinition(template, action.currentStep, action.choiceHistory);
+    step = resolveStepDefinition(template, action.currentStep, action.choiceHistory, action.climaxFit);
   } catch {
     return null;
   }

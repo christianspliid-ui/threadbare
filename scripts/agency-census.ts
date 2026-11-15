@@ -169,6 +169,7 @@ if (WARM > 0) {
 const firstId: string | null = getFirstId(state.graph, state.ascendantId);
 
 let heldSteps = 0; let heldWithCards = 0; let cardsPlayed = 0; let essenceSpent = 0;
+const apotheosisSteps: any[] = [];
 function handleHeldSteps(): void {
   for (const a0 of [...(state.unifiedActions ?? [])]) {
     const live = (state.unifiedActions ?? []).find((x: any) => x.actionId === a0.actionId);
@@ -178,11 +179,21 @@ function handleHeldSteps(): void {
     let pool = state.essencePool;
     const template: any = getUnifiedTemplateById(live.templateId) ?? getAnyEncounterById(live.templateId);
     if (template) {
-      const step = resolveStepDefinition(template, live.currentStep, live.choiceHistory);
+      const step = resolveStepDefinition(template, live.currentStep, live.choiceHistory, live.climaxFit);
       let phase: any;
       try { phase = buildNudgePhaseModel({ template, activeAction: live, step, graph: state.graph, gameState: state, allowEmptyHand: true } as any); } catch { phase = undefined; }
       const cards: any[] = phase?.cards ?? [];
       if (cards.length) heldWithCards++;
+      // THR-2227 — each held Apotheosis step: its hand size and the bare chance it opens on.
+      if (/apotheosis/.test(String(live.templateId))) {
+        apotheosisSteps.push({
+          tick: state.tick, step: live.currentStep, cards: cards.length,
+          playable: cards.filter((c: any) => c.state === "playable").length,
+          bareChance: Number((phase?.baseForecast?.successProbability ?? phase?.baseForecast?.probability ?? NaN)),
+          bareTier: phase?.baseForecast?.tier ?? null, climaxLine: phase?.climaxLine?.kind ?? null,
+          earnedSlots: live.climaxFit?.earnedSlots ?? 0,
+        });
+      }
       if (ARM === 'greedy') {
         const budget = phase?.budgetSphere ?? primary;
         for (const c of cards) {
@@ -248,7 +259,7 @@ for (let i = 0; i < TICKS; i++) {
 }
 const end = snapshot();
 const ms = Date.now() - t0;
-const result = { seed: SEED, arm: ARM, warm: WARM, ranTo: state.tick, seconds: Math.round(ms / 1000), stopReason, heldSteps, heldWithCards, cardsPlayed, essenceSpent: Math.round(essenceSpent), end, snaps };
+const result = { seed: SEED, arm: ARM, warm: WARM, ranTo: state.tick, seconds: Math.round(ms / 1000), stopReason, heldSteps, heldWithCards, cardsPlayed, essenceSpent: Math.round(essenceSpent), apotheosisSteps, end, snaps };
 const { firstChapterIds, ...endShort } = end;
 console.log(JSON.stringify({ ...result, end: endShort, snaps: undefined }));
 console.log(`  first chapters: ${firstChapterIds.join(' · ')}`);

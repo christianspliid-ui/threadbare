@@ -132,7 +132,7 @@ function maybeComputeEncounterForecast(
     return;
   }
 
-  const resolvedStep = resolveStepDefinition(action, notification.stepIndex, actionState.choiceHistory);
+  const resolvedStep = resolveStepDefinition(action, notification.stepIndex, actionState.choiceHistory, actionState.climaxFit);
   const capability = computeCapability(state.graph, actionState.actorId, resolvedStep.reach);
   const locationId = resolveLocationId(state.graph, actionState.actorId);
   const modifierBreakdown = computeResolutionModifiers(

@@ -250,6 +250,25 @@ export const CLIMAX_BARE_FORECAST = 0.45;
 /** Bisection steps `fitDifficultyToForecast` takes over difficulty in [0, 1]. */
 export const FIT_ITERATIONS = 12;
 
+// ─── The Apotheosis hand (THR-2227, plan THR-2204 slice 2) ───────────
+
+/** Repertoire cards dealt on top of the authored seven on the deciding step (7 + 1 = `NUDGE_HAND_MAX`). */
+export const APOTHEOSIS_DEAL_COUNT = 1;
+/** The First's paid chapters per earned card on the deciding step. @range 1–6 */
+export const APOTHEOSIS_PAID_CHAPTERS_PER_SLOT = 3;
+/** Cap on earned cards. With the deal, the hand tops out at 7 + 1 + 2 = 10. */
+export const APOTHEOSIS_EARNED_SLOTS_MAX = 2;
+/** The deciding step's exception to `DEAL_HAND_MAX` (8): the only hand that can exceed it. */
+export const APOTHEOSIS_HAND_MAX = 10;
+/** The deciding step's exception to `DEAL_HAND_MAX_TOTAL_DELTA` (0.70). */
+export const APOTHEOSIS_HAND_MAX_TOTAL_DELTA = 0.9;
+/**
+ * The premonition's lead: it fires once the Apotheosis offer is this many ticks
+ * away or closer (the eligibility hold, `ASPECT_ELIGIBILITY_TICKS`, is 60), so a
+ * god sees it when the hold starts and can save essence. @range 1–120
+ */
+export const APOTHEOSIS_PREMONITION_LEAD_TICKS = 60;
+
 // ─── Rekindle the Thread ─────────────────────────────────────────────
 
 /** Essence price of `divine.rekindle_thread` — expensive by design. */

@@ -4260,7 +4260,7 @@ if (import.meta.env.DEV) {
       ]);
       const template = getUnifiedTemplateById(action.templateId) ?? getAnyEncounterById(action.templateId);
       if (!template) return { error: `no template ${action.templateId}` };
-      const step = resolveStepDefinition(template, action.currentStep, action.choiceHistory);
+      const step = resolveStepDefinition(template, action.currentStep, action.choiceHistory, action.climaxFit);
       const phase = buildNudgePhaseModel({
         template, activeAction: action, step, graph: state.graph, gameState: state, allowEmptyHand: true,
       });

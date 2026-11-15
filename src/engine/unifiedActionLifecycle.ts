@@ -16,6 +16,7 @@ import type {
   ActionStep,
   StepOutcome,
   ActionScale,
+  ClimaxStepFit,
 } from '../types/unifiedAction';
 import type { EncounterSupportBinding, EncounterChoiceMemory } from '../types/encounter';
 import { SCALE_PRIORITY, isStepSuccess, isStepFailure, isActionStepBranch } from '../types/unifiedAction';
@@ -44,15 +45,51 @@ export function resolveStepDefinition(
   template: UnifiedActionTemplate,
   stepIndex: number,
   choiceHistory?: readonly EncounterChoiceMemory[],
+  climaxFit?: ClimaxStepFit,
 ): ActionStep {
   const step = template.steps[stepIndex];
-  if (!isActionStepBranch(step)) return step;
+  if (!isActionStepBranch(step)) return applyClimaxFit(step, stepIndex, climaxFit);
 
   // Find the choice at the branch point step
   const branchChoice = choiceHistory?.find(c => c.stepIndex === step.branchOnStep);
-  if (!branchChoice) return step.fallback;
+  if (!branchChoice) return applyClimaxFit(step.fallback, stepIndex, climaxFit);
 
-  return step.variants[branchChoice.choiceId] ?? step.fallback;
+  return applyClimaxFit(step.variants[branchChoice.choiceId] ?? step.fallback, stepIndex, climaxFit);
+}
+
+/**
+ * THR-2227 — did the god commit at least one card anywhere in this chapter? A card
+ * on an earlier step (`cardsCommitted`, set as the spent hand is cleared), a card on
+ * the current or final step (`activeNudges`), or a remembered nudge commit.
+ */
+export function actionGodPaid(
+  action: Pick<UnifiedAction, 'activeNudges' | 'choiceHistory'> & Partial<Pick<UnifiedAction, 'cardsCommitted'>>,
+): boolean {
+  if (action.cardsCommitted === true) return true;
+  if ((action.activeNudges?.length ?? 0) > 0) return true;
+  return (action.choiceHistory ?? []).some((c) => c.interventionType === 'nudge_committed');
+}
+
+/**
+ * THR-2227 — hand back the step with its stored climax fit applied: the fitted
+ * difficulty on a `fitBareForecast` step, the earned slots on a `dealEarned` step's
+ * deal count. A fit for another step, or a step that asks for neither, comes back
+ * **by reference**, so every other step is byte-identical (NFP #6).
+ */
+export function applyClimaxFit(
+  step: ActionStep,
+  stepIndex: number,
+  climaxFit: ClimaxStepFit | undefined,
+): ActionStep {
+  if (!step || !climaxFit || climaxFit.stepIndex !== stepIndex) return step;
+  const fitDifficulty = step.fitBareForecast !== undefined && Number.isFinite(climaxFit.fittedDifficulty);
+  const addEarned = step.dealEarned !== undefined && step.deal !== undefined && climaxFit.earnedSlots > 0;
+  if (!fitDifficulty && !addEarned) return step;
+  return {
+    ...step,
+    ...(fitDifficulty ? { difficulty: climaxFit.fittedDifficulty } : {}),
+    ...(addEarned && step.deal ? { deal: { ...step.deal, count: step.deal.count + climaxFit.earnedSlots } } : {}),
+  };
 }
 
 // ─── Creation ───────────────────────────────────────────────────
@@ -188,7 +225,7 @@ export function terminalActionOutcome(
   outcome: StepOutcome,
   template: UnifiedActionTemplate,
 ): UnifiedActionOutcome | undefined {
-  const currentStepDef = resolveStepDefinition(template, action.currentStep, action.choiceHistory);
+  const currentStepDef = resolveStepDefinition(template, action.currentStep, action.choiceHistory, action.climaxFit);
   if (isStepFailure(outcome) && (
     currentStepDef.failBehavior === 'fail_action' || outcome === 'critical_failure'
   )) {
@@ -211,7 +248,7 @@ export function advanceStep(
 ): UnifiedAction {
   // THR-1730 (E4): every branch below spreads `action`; the step is over, so its hold is too.
   action = withoutPlayerHold(action);
-  const currentStepDef = resolveStepDefinition(template, action.currentStep, action.choiceHistory);
+  const currentStepDef = resolveStepDefinition(template, action.currentStep, action.choiceHistory, action.climaxFit);
   const newStepOutcomes = [...action.stepOutcomes, outcome];
 
   // Hard failure with fail_action → entire action fails
@@ -277,6 +314,12 @@ export function advanceStep(
   // the god was there, so the chapter's ending still stops for them.
   if (action.activeNudges !== undefined && action.activeNudges.length === 0) {
     withoutSpentHand.emptyHandCommitted = true;
+  }
+  // THR-2227 — a hand with cards in it was paid for; keep that fact too. The
+  // choice-history entry cannot carry it on a pole or branch step (the decided
+  // pole replaces it at the same step index).
+  if ((action.activeNudges?.length ?? 0) > 0) {
+    withoutSpentHand.cardsCommitted = true;
   }
 
   return {

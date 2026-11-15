@@ -77,7 +77,7 @@ function templateStep(action: UnifiedAction, state: GameState): Pick<ActionStep,
   // variant the choice history picked, plus the dealt fill (`composeDealtStepFromState`,
   // pure and zero-PRNG). Reading the raw template step dropped every dealt card —
   // a played Balm, Cache or Kindled Ambition charged essence and never dispatched.
-  const step = resolveStepDefinition(template, action.currentStep, action.choiceHistory) as ActionStep | undefined;
+  const step = resolveStepDefinition(template, action.currentStep, action.choiceHistory, action.climaxFit) as ActionStep | undefined;
   if (!step || isActionStepBranch(step)) return undefined;
   return composeDealtStepFromState(step, state).step;
 }
