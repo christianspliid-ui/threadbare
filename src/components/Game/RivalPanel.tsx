@@ -55,6 +55,9 @@ interface RivalPanelProps {
 }
 
 const NO_PLACE_NAME: PlaceNameLookup = () => undefined;
+
+/** THR-2237 (Law 33): the panel scrolls inside the dropdown past this height, as Notables does. */
+const RIVAL_PANEL_MAX_HEIGHT = '70vh';
 const NO_ANSWER = { holdsRebuke: false, rebukable: new Set<string>() } as const;
 
 /** A line's runs: words as text, a place as a link through the one router (Laws 1, 21). */
@@ -85,13 +88,16 @@ export const RivalPanel = React.memo(function RivalPanel({ definitions, states, 
   }
 
   return (
-    <div className="space-y-2" data-testid="rival-panel">
-      <div>
+    // THR-2237 (Law 33): the dropdown has no scroll of its own, so an opened rival with a
+    // few schemes ran its answer line past the fold. The rows scroll inside this cap, as the
+    // Notables panel's do (THR-1655).
+    <div className="flex flex-col gap-2" data-testid="rival-panel" style={{ maxHeight: RIVAL_PANEL_MAX_HEIGHT }}>
+      <div className="shrink-0">
         <Tooltip id="ui.rival_panel">
           <SectionHeading as="h2" count={definitions.length} icon={listHeadingIcon('rivalGods')}>Rival gods</SectionHeading>
         </Tooltip>
       </div>
-      <div role="list" aria-label="Rival gods">
+      <div role="list" aria-label="Rival gods" className="overflow-y-auto overflow-x-hidden pr-1 min-h-0 flex-1" data-testid="rival-list">
         {definitions.map((def) => {
           const rivalState = states.find(s => s.rivalId === def.id);
           const hostility = rivalState?.hostilityToPlayer ?? 0;

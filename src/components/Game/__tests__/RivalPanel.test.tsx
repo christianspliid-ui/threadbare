@@ -213,6 +213,31 @@ describe('RivalPanel', () => {
     expect(screen.getByTestId('rival-detail').textContent).not.toMatch(/loc-|actor_rival_|\d/);
   });
 
+  it('THR-2237: holding Rebuke with the landing answerable, the answer line names the place as a link', () => {
+    const states: RivalState[] = mockStates.map((s, i) => (i === 0 ? { ...s, lastPressed: { placeId: 'loc-iron', tick: 96 } } : s));
+    const placeName = (id: string) => (id === 'loc-iron' ? 'Iron Glade' : undefined);
+    render(
+      <RivalPanel
+        definitions={mockDefinitions}
+        states={states}
+        tick={120}
+        placeName={placeName}
+        answer={{ holdsRebuke: true, rebukable: new Set(['loc-iron']) }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'The Iron Tyrant' }));
+    const answer = screen.getByTestId('rival-answer');
+    expect(answer.textContent).toBe('Rebuke it at Iron Glade, or tend your places.');
+    // The place is its own element (the EntityLink), not loose text.
+    expect([...answer.querySelectorAll('*')].some(el => el.textContent === 'Iron Glade')).toBe(true);
+  });
+
+  it('THR-2237 (Law 33): the rows scroll inside a capped panel, so an opened entry never leaves the viewport', () => {
+    render(<RivalPanel definitions={mockDefinitions} states={mockStates} />);
+    expect(screen.getByTestId('rival-panel').style.maxHeight).toBe('70vh');
+    expect(screen.getByTestId('rival-list').className).toMatch(/overflow-y-auto/);
+  });
+
   it('THR-2185: with no cause and no landing, the temper reads "as rival gods are" and no last-pressed line', () => {
     render(<RivalPanel definitions={mockDefinitions} states={mockStates.map(s => ({ ...s, hostilityToPlayer: 0.3 }))} />);
     fireEvent.click(screen.getByRole('button', { name: 'The Iron Tyrant' }));
