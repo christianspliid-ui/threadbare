@@ -785,7 +785,7 @@ describe('phaseJourneyBeat — the Return names the last days (THR-2228)', () =>
       properties: makeThreadProps({
         storyPhase: 'ordeal',
         beatHistory: [{ phase: 'ordeal', tick: 1, templateId: 't', variantKey: 'v', playerChoiceId: 'c', stateSnapshot: makeSnapshot() }],
-      }),
+      }) as unknown as Record<string, unknown>,
     });
     return {
       graph,
