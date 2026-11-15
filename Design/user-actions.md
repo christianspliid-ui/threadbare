@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-15 09:58 local (08:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-15 21:48 local (20:48 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
 
@@ -20,7 +20,7 @@ The silence check says: "The scheduled lanes went silent for 103.3h (2026-11-08T
 
 [The workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md) read the computer's power log. Every time the computer started or woke recently, the lanes came back hours later. That points to the Claude app not reopening by itself. **Turning on "open at login" for the Claude app** closes these gaps without anyone noticing them. Only you can change that setting. Say "done" and the next silence check will confirm it.
 
-Recent gaps: 16–17 Oct, 18–19 Oct (25 jobs ready), **21–23 Oct (48 hours)**, **29–30 Oct (40 hours)**, and **8–12 Nov (103 hours)**.
+Recent gaps: 16–17 Oct, 18–19 Oct (25 jobs ready), **21–23 Oct (48 hours)**, **29–30 Oct (40 hours)**, **8–12 Nov (103 hours)**, and Sunday 15 Nov 09:57–21:42 (12 hours, a weekend gap, so not its own ask).
 
 ### Your writing-checks conversation can start (new 31 Oct)
 
