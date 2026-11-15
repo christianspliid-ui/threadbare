@@ -1049,7 +1049,9 @@ export function buildNudgePhaseModel(
   // fits its bare forecast) carries one; every other step's model is unchanged.
   const climaxLine = apotheosisClimaxLine(
     step,
-    composedStep.nudges?.length ?? 0,
+    // The tray the player sees (playable + dimmed), not the composed hand: a card the
+    // Stage withholds (sphere_locked, trait-hidden) is not in the hand on screen (Law 56).
+    cards.length,
     hand.playable.length,
     graph.getNode(actorId)?.name,
     graph.getNode(actorId)?.properties?.gender,

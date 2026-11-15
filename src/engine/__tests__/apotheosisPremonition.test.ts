@@ -88,6 +88,25 @@ describe('Apotheosis premonition (THR-2227)', () => {
     expect(traces).toHaveLength(1);
   });
 
+  it('warns again when the thread fell below tier 4 and climbed back before the offer', () => {
+    const graph = makeGraph();
+    const edge = graph.getOutgoingEdges(ASC, 'thread')[0];
+    const props = edge.properties as { tier: number; ticksAtCurrentTier: number };
+    const warnedAt: number[] = [];
+    let offered = -1;
+    for (let tick = 0; tick < 200 && offered < 0; tick++) {
+      // Tier 4 from 0, a drop to tier 3 at 30, back to tier 4 at 100.
+      if (tick < 30) { props.tier = 4; props.ticksAtCurrentTier = tick; }
+      else if (tick < 100) { props.tier = 3; props.ticksAtCurrentTier = tick - 30; }
+      else { props.tier = 4; props.ticksAtCurrentTier = tick - 100; }
+      const patch = seedApotheosisEncounters(stateAt(graph, tick), tick);
+      if ((patch.tickEvents ?? []).length > 0) warnedAt.push(tick);
+      if ((patch.pendingEncounterSeeds ?? []).length > 0) offered = tick;
+    }
+    expect(warnedAt).toEqual([0, 100]);
+    expect(offered).toBeGreaterThan(100);
+  });
+
   it('ticksUntilApotheosisOffer is infinite below tier 4', () => {
     const graph = makeGraph();
     const edge = graph.getOutgoingEdges(ASC, 'thread')[0];
