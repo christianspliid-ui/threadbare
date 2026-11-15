@@ -5,7 +5,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { JourneyVignetteModal } from '../JourneyVignetteModal';
-import { JOURNEY_CONTINUE_LABEL, ORDEAL_COMMIT_LABEL, ORDEAL_PICK_PROMPT } from '../../../data/ui-content';
+import { JOURNEY_CONTINUE_LABEL, ORDEAL_COMMIT_LABEL, ORDEAL_PICK_PROMPT, ordealSetAsideLine } from '../../../data/ui-content';
 import type { CommittedOrdeal, JourneyVignetteData, OrdealOutcome } from '../../../types/journeyEngine';
 
 const vignette: JourneyVignetteData = {
@@ -124,6 +124,11 @@ describe('the Ordeal is armed, then fired (THR-2226, Law 48)', () => {
     expect(onOrdealCommit).not.toHaveBeenCalled();
     expect(onChoice).not.toHaveBeenCalled();
     expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('the set-aside toast names the wait, and the last one says it will not wait again', () => {
+    expect(ordealSetAsideLine('Mira', 3)).toBe("Mira's Ordeal waits. It returns in 3 days.");
+    expect(ordealSetAsideLine('Mira', 1, true)).toBe("Mira's Ordeal waits. It returns in 1 day. It will not wait again.");
   });
 
   it('a host with no set-aside: Escape with nothing armed rolls the step-back and shows its result; the next Escape closes', () => {

@@ -141,9 +141,13 @@ export const ORDEAL_COMMIT_LABEL = 'Let the Ordeal answer';
 /** THR-2226 — shown in place of the commit button until a lean is picked. */
 export const ORDEAL_PICK_PROMPT = 'Choose how you lean on the trial.';
 
-/** THR-2226 — the toast when Escape sets an unrolled Ordeal aside; it returns in `days` days. */
-export function ordealSetAsideLine(agentName: string, days: number): string {
-  return `${agentName}'s Ordeal waits. It returns in ${days} ${days === 1 ? 'day' : 'days'}.`;
+/**
+ * THR-2226 — the toast when Escape sets an unrolled Ordeal aside; it returns in `days`
+ * days. On the last set-aside allowed, the line says it will not wait again.
+ */
+export function ordealSetAsideLine(agentName: string, days: number, last = false): string {
+  const base = `${agentName}'s Ordeal waits. It returns in ${days} ${days === 1 ? 'day' : 'days'}.`;
+  return last ? `${base} It will not wait again.` : base;
 }
 
 /** THR-1854 — beside a journey choice's cost when the paying pool cannot cover it. */
