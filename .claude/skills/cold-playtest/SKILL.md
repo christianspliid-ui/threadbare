@@ -1,7 +1,7 @@
 ---
 name: cold-playtest
 description: Run one cold playtest round of Threadbearer — three no-knowledge testers (fresh `claude -p` processes outside the repo, browser tools only) play the deployed build from its real front door — or, in `--warm` mode, arrive a few seasons into a world with The First already bonded, to reach the mid-game (factions, undertakings, ambitions). Then verify every finding against source, file the verified ones into a round milestone, track earlier rounds' findings as fixed-confirmed / not-exercised / recurred, and publish the round report and scorecard to `ops`. Run by the daily `tb-cold-playtest` lane (gated) or by hand. Triggers on "cold playtest", "/cold-playtest", "run a playtest round", "cold tester", "new-player playtest", "warm playtest", "/cold-playtest --warm", "mid-game playtest".
-last_validated_against: 2026-11-04
+last_validated_against: 2026-11-15
 invocation: /cold-playtest [--warm] [--dry-run] [--lane]
 audience: claude-code
 ---
@@ -44,6 +44,8 @@ Artifacts are written to `%USERPROFILE%\.threadbare\cold-playtest\round-N\<perso
 | 8b. Complaints | Runs for warm rounds too, against the same `player-complaint-classes.md` |
 
 **The coverage-failure rule is deliberate.** A tester who reached none of faction / undertaking / ambition is a coverage failure — thread history does not count, because cold testers already reach it. Report it per tester, never hidden in a total; its verified findings still file. Never loosen the rule to make a round pass: if testers miss the mid-game, that is the finding. A marker that misses because copy changed is fixed by editing `coverageMarkers` in `config.json` (re-check with `extract.mjs --coverage-only` on a known round).
+
+**The warm world carries no dev test package (THR-2230, from round 5).** Before it, `?seeded&warm=` also ran `devSeedAscendantTestPackage`: eleven fixture Hooks (dev conditions, clues and agreements), essence in every pool including the elder ones, a two-thirds Mandate. Round 1–4 findings about "Hooks · 11 unfinished", elder pools the tester never earned, or the opening Mandate fill judged those fixtures. So round 5 onward is not comparable line-for-line with rounds 1–4 on Hooks, elder pools and the Mandate: a finding there that does not recur is "fixture gone", not "fixed". The plain `?view=game&seeded` route still loads the package.
 
 **Kill criteria** (plan § Kill criteria) the observer reports against: ≥2 coverage failures on brief v1 → bump `warmBriefVersion`, never the bar; a live warm-up over 180 s, or a pile-up at arrival on two consecutive rounds → the lever is the wrong shape; two consecutive warm rounds filing only what cold already filed → the retro retires warm mode.
 
