@@ -31,7 +31,6 @@ import {
   TRIALS_PHASE_END,
   CRISIS_PHASE_END,
   ORDEAL_PHASE_END,
-  ORDEAL_FORCE_FIRE_THRESHOLD,
   MAX_PENDING_VIGNETTES,
   JOURNEY_REACH_CHANGE_RAW_SCALE,
   ORDEAL_BAND_TO_OUTCOME,
@@ -247,16 +246,30 @@ export function buildStateSnapshot(
 /**
  * Check if a journey beat should fire for The First this tick.
  *
- * A beat fires when the doom clock crosses a beat threshold
- * that hasn't been recorded in the beat history yet.
+ * A beat fires on entering a new phase, or when the doom clock has reached the
+ * threshold of the phase's next beat not yet recorded in the beat history
+ * (THR-2233: reached, not merely crossed this tick — a missed crossing catches up).
  */
 export function shouldBeatFire(
   doomProgress: number,
   prevDoomProgress: number,
   storyPhase: CampbellianPhase,
   beatHistory: BeatOutcome[],
+  journeyStartDoom?: number,
 ): { shouldFire: boolean; phase: CampbellianPhase; beatIndex: number } {
   const currentPhase = getJourneyPhase(doomProgress);
+
+  // THR-2233 — no First reaches the Return without their Ordeal. In the Return phase
+  // with no Ordeal recorded (its window passed while a vision waited, a doom step
+  // jumped it, or the First was threaded that late), the Ordeal fires first — checked
+  // before the phase-entry branch, which would otherwise hand straight to the Return.
+  // `phaseJourneyBeat` then records storyPhase 'ordeal', so once it is answered the
+  // Return fires as the next phase entry. (Replaces the old ≥ ORDEAL_FORCE_FIRE_THRESHOLD
+  // force-fire, which only ran when storyPhase was already 'return' — never, since the
+  // Return clears the court position.)
+  if (currentPhase === 'return' && !beatHistory.some(b => b.phase === 'ordeal')) {
+    return { shouldFire: true, phase: 'ordeal', beatIndex: 0 };
+  }
 
   // Check if we've entered a new phase
   if (currentPhase !== storyPhase) {
@@ -268,26 +281,42 @@ export function shouldBeatFire(
     }
   }
 
-  // Check if we crossed a beat threshold within the current phase
+  // THR-2233 — catch-up rule. Within the current phase, the next unplayed beat
+  // fires once the Doom has reached its threshold, not only on the tick it was
+  // crossed: a crossing that landed while a vision was pending (or on a doom step
+  // taken outside `phaseDoom`) used to lose that beat for good. One beat per tick,
+  // in order; the count of this phase's `beatHistory` entries stays the index, so
+  // no beat fires twice. `prevDoomProgress` is no longer read here — kept in the
+  // signature for callers. A beat whose phase has ended is not caught up: the
+  // phase-entry branch above hands over to the next phase.
+  void prevDoomProgress;
+
   const thresholds = getBeatThresholds(currentPhase);
   const beatsInPhase = beatHistory.filter(b => b.phase === currentPhase).length;
+  // Beats that passed before this First's journey began are never caught up: the
+  // entry vision plays as #0 and the later ones skip them (`journeyStartDoom`).
+  const nextIndex = beatsInPhase + beatsBeforeJourney(thresholds, journeyStartDoom);
 
-  for (let i = beatsInPhase; i < thresholds.length; i++) {
-    if (prevDoomProgress < thresholds[i] && doomProgress >= thresholds[i]) {
-      return { shouldFire: true, phase: currentPhase, beatIndex: i };
-    }
-  }
-
-  // Force-fire Ordeal if we've passed the threshold and it hasn't fired yet
-  if (
-    doomProgress >= ORDEAL_FORCE_FIRE_THRESHOLD &&
-    !beatHistory.some(b => b.phase === 'ordeal') &&
-    currentPhase === 'return'
-  ) {
-    return { shouldFire: true, phase: 'ordeal', beatIndex: 0 };
+  if (nextIndex < thresholds.length && doomProgress >= thresholds[nextIndex]) {
+    return { shouldFire: true, phase: currentPhase, beatIndex: nextIndex };
   }
 
   return { shouldFire: false, phase: currentPhase, beatIndex: -1 };
+}
+
+/**
+ * THR-2233 — how many of a phase's within-phase beats (index ≥ 1; #0 is the entry
+ * vision, always played) lie at or before the Doom progress where this First's
+ * journey began. Zero when the journey started in an earlier phase or the floor is
+ * unknown (no vision yet, or a pre-THR-2233 save).
+ */
+export function beatsBeforeJourney(thresholds: number[], journeyStartDoom: number | undefined): number {
+  if (journeyStartDoom == null || !Number.isFinite(journeyStartDoom)) return 0;
+  let skipped = 0;
+  for (let i = 1; i < thresholds.length; i++) {
+    if (thresholds[i] <= journeyStartDoom) skipped++;
+  }
+  return skipped;
 }
 
 // ─── Template Selection ─────────────────────────────────────────────
@@ -989,9 +1018,27 @@ export function phaseJourneyBeat(
     const storyPhase = threadProps.storyPhase ?? 'call';
     const beatHistory = threadProps.beatHistory ?? [];
 
-    const beatCheck = shouldBeatFire(doomProgress, prevDoomProgress, storyPhase, beatHistory);
+    const beatCheck = shouldBeatFire(doomProgress, prevDoomProgress, storyPhase, beatHistory, threadProps.journeyStartDoom);
 
     if (!beatCheck.shouldFire) continue;
+
+    // THR-2233 — the journey's floor: where the Doom stood at this First's first vision.
+    if (beatHistory.length === 0 && threadProps.journeyStartDoom == null) {
+      graph.updateEdge(threadEdge.id, { properties: { journeyStartDoom: doomProgress } });
+      const startPhase = getJourneyPhase(doomProgress);
+      const skipped = beatsBeforeJourney(getBeatThresholds(startPhase), doomProgress);
+      emitTrace({
+        category: 'journey.start_floor',
+        tick,
+        agentId: threadEdge.target,
+        summary: `${agentNode.name}'s journey begins at Doom ${doomProgress.toFixed(3)} in the ${formatPhaseName(startPhase)}`
+          + (skipped > 0 ? `; ${skipped} ${formatPhaseName(startPhase)} vision(s) passed before the bond and will not play` : ''),
+        actorId: threadEdge.target,
+        journeyStartDoom: doomProgress,
+        phase: startPhase,
+        skippedBeats: skipped,
+      });
+    }
 
     // ── Return Phase: trigger convergence algorithm instead of normal vignette ──
     if (beatCheck.phase === 'return') {
@@ -1107,8 +1154,10 @@ export function phaseJourneyBeat(
       queuedTick: tick,
     });
 
-    // Update story phase on the thread edge
-    const newPhase = getJourneyPhase(doomProgress);
+    // Update story phase on the thread edge — to the phase of the beat that fired
+    // (THR-2233: a missed Ordeal fired in the Return phase records 'ordeal', so the
+    // Return still arrives as the next phase entry once the Ordeal is answered).
+    const newPhase = beatCheck.phase;
     if (newPhase !== storyPhase) {
       // Phase transition event
       newEvents.push({

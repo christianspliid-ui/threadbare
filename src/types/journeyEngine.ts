@@ -87,7 +87,10 @@ export const VISION_SCENE_FIT_BONUS = 0.3;
 /** Score a tagged vision variant loses when its `scenes` do not include the activity. */
 export const VISION_SCENE_MISMATCH_PENALTY = 0.6;
 
-/** Ticks before a force-fired Ordeal if doom clock ends before it fires normally */
+/**
+ * @deprecated THR-2233 — no longer read: a missed Ordeal now fires at the start of the
+ * Return phase (`shouldBeatFire`). Kept so nothing importing it breaks.
+ */
 export const ORDEAL_FORCE_FIRE_THRESHOLD = 0.90;
 
 /** Maximum number of pending vignettes in queue */

@@ -285,7 +285,29 @@ describe('shouldBeatFire', () => {
     const result = shouldBeatFire(0.91, 0.90, 'return', [
       { phase: 'ordeal', tick: 50, templateId: 't', variantKey: 'v', playerChoiceId: 'c', stateSnapshot: makeSnapshot() },
     ]);
-    expect(result.shouldFire).toBe(false);
+    // THR-2233: the Ordeal is not forced again; the reached-but-unplayed Return catches up.
+    expect(result.phase).not.toBe('ordeal');
+    expect(result).toEqual({ shouldFire: true, phase: 'return', beatIndex: 0 });
+  });
+
+  test('a Doom jump from the Crisis into the Return fires the missed Ordeal first, then the Return (THR-2233)', () => {
+    const history: BeatOutcome[] = [
+      { phase: 'crisis', tick: 40, templateId: 't', variantKey: 'v', playerChoiceId: 'c', stateSnapshot: makeSnapshot() },
+    ];
+    // Entering the Return phase (0.81 < the old 0.90 force threshold) with no Ordeal played.
+    expect(shouldBeatFire(0.81, 0.69, 'crisis', history)).toEqual({ shouldFire: true, phase: 'ordeal', beatIndex: 0 });
+    // The engine records storyPhase 'ordeal' for that beat; once it is answered the Return enters.
+    const answered: BeatOutcome[] = [...history, { phase: 'ordeal', tick: 41, templateId: 't', variantKey: 'v', playerChoiceId: 'c', stateSnapshot: makeSnapshot() }];
+    expect(shouldBeatFire(0.82, 0.81, 'ordeal', answered)).toEqual({ shouldFire: true, phase: 'return', beatIndex: 0 });
+  });
+
+  test('a beat reached but not crossed this tick still fires (THR-2233 catch-up)', () => {
+    const t = getBeatThresholds('road_of_trials');
+    const oneTrials: BeatOutcome[] = [
+      { phase: 'road_of_trials', tick: 10, templateId: 't', variantKey: 'v', playerChoiceId: 'c', stateSnapshot: makeSnapshot() },
+    ];
+    expect(shouldBeatFire(t[1] + 0.01, t[1] + 0.009, 'road_of_trials', oneTrials))
+      .toEqual({ shouldFire: true, phase: 'road_of_trials', beatIndex: 1 });
   });
 });
 
@@ -748,6 +770,119 @@ describe('phaseJourneyBeat', () => {
     // Should not add another vignette (beat already in queue, and threshold not re-crossed)
     // The engine won't fire again because prevDoomProgress == doomProgress
     expect(result2.pendingVignettes?.length ?? 0).toBeLessThanOrEqual(1);
+  });
+});
+
+// ─── THR-2233: no journey vision is lost ────────────────────────────
+
+describe('phaseJourneyBeat — a missed Road of Trials beat catches up (THR-2233)', () => {
+  const TOTAL = 1000;
+  const STEP = 1; // one Doom unit a tick → prev progress = progress - 0.001
+
+  function trialsBeat(tick: number): BeatOutcome {
+    return { phase: 'road_of_trials', tick, templateId: 't', variantKey: 'v', playerChoiceId: 'c', stateSnapshot: makeSnapshot() };
+  }
+
+  function setup(beatsPlayed: number) {
+    const { graph, ascendantId, agentId } = buildTestGraph();
+    const threadId = graph.getOutgoingEdges(ascendantId, 'thread')[0].id;
+    const record = (count: number) => graph.updateEdge(threadId, {
+      properties: makeThreadProps({
+        storyPhase: 'road_of_trials',
+        beatHistory: [
+          { phase: 'call', tick: 1, templateId: 't', variantKey: 'v', playerChoiceId: 'c', stateSnapshot: makeSnapshot() },
+          ...Array.from({ length: count }, (_, i) => trialsBeat(10 + i)),
+        ],
+      }) as unknown as Record<string, unknown>,
+    });
+    record(beatsPlayed);
+    const tickAt = (progress: number, pendingForFirst = false, step = STEP) => {
+      const currentTick = Math.round(progress * TOTAL);
+      return phaseJourneyBeat({
+        graph,
+        ascendantId,
+        doomClock: { currentTick, totalTicks: TOTAL, progress: currentTick / TOTAL, tickModifier: step, lastStep: step },
+        tick: currentTick,
+        seed: 42,
+        tickEvents: [],
+        pendingVignettes: pendingForFirst
+          ? [{ id: 'v_pending', data: { agentId }, priority: 100, queuedTick: 0 }]
+          : undefined,
+      } as any, JOURNEY_BEAT_TEMPLATES);
+    };
+    const fired = (r: ReturnType<typeof tickAt>) =>
+      (r.pendingVignettes ?? []).filter(v => v.id !== 'v_pending').map(v => `${v.data.phase}#${v.data.beatIndex}`);
+    return { tickAt, fired, record };
+  }
+
+  test('a crossing that lands while a vision is pending fires on the first free tick; the next still fires on its own crossing', () => {
+    const t = getBeatThresholds('road_of_trials');
+    const { tickAt, fired, record } = setup(1);
+    const crossing = Math.ceil(t[1] * TOTAL) / TOTAL;
+
+    // The tick that crosses beat 2's threshold: a vision is still waiting, so nothing new.
+    expect(fired(tickAt(crossing, true))).toEqual([]);
+    // Next tick — no crossing any more, but the beat was reached and never played.
+    expect(fired(tickAt(crossing + 1 / TOTAL))).toEqual(['road_of_trials#1']);
+    record(2);
+    // Answered: nothing more until beat 3's threshold.
+    expect(fired(tickAt(crossing + 2 / TOTAL))).toEqual([]);
+    const next = Math.ceil(t[2] * TOTAL) / TOTAL;
+    expect(fired(tickAt(next))).toEqual(['road_of_trials#2']);
+  });
+
+  test('a doom jump across two Trials thresholds fires one beat that tick and the second on the next', () => {
+    const t = getBeatThresholds('road_of_trials');
+    const { tickAt, fired, record } = setup(1);
+    const past = Math.ceil(t[2] * TOTAL) / TOTAL + 0.002;
+    expect(past).toBeLessThan(t[3]);
+    // One big Doom step from just below beat 2's threshold to past beat 3's.
+    const jump = Math.round((past - (t[1] - 0.002)) * TOTAL);
+
+    expect(fired(tickAt(past, false, jump))).toEqual(['road_of_trials#1']);
+    record(2);
+    expect(fired(tickAt(past + 1 / TOTAL))).toEqual(['road_of_trials#2']);
+    record(3);
+    // Beat 4's threshold not reached: no more.
+    expect(fired(tickAt(past + 2 / TOTAL))).toEqual([]);
+  });
+
+  test('a First whose journey begins mid-Trials is not handed the Trials beats that passed before it', () => {
+    const t = getBeatThresholds('road_of_trials');
+    const { graph, ascendantId } = buildTestGraph(); // fresh First: storyPhase 'call', no history
+    const threadId = graph.getOutgoingEdges(ascendantId, 'thread')[0].id;
+    const props = () => graph.getEdge(threadId)!.properties as unknown as ThreadEdgeProperties;
+    const tickAt = (progress: number) => {
+      const currentTick = Math.round(progress * TOTAL);
+      const r = phaseJourneyBeat({
+        graph, ascendantId,
+        doomClock: { currentTick, totalTicks: TOTAL, progress: currentTick / TOTAL, tickModifier: STEP, lastStep: STEP },
+        tick: currentTick, seed: 42, tickEvents: [], pendingVignettes: undefined,
+      } as any, JOURNEY_BEAT_TEMPLATES);
+      return (r.pendingVignettes ?? []).map(v => `${v.data.phase}#${v.data.beatIndex}`);
+    };
+    const answer = (tick: number) => graph.updateEdge(threadId, {
+      properties: { beatHistory: [...(props().beatHistory ?? []), trialsBeat(tick)], storyPhase: 'road_of_trials' } as never,
+    });
+
+    // Threaded with the Doom between beat 3's and beat 4's thresholds.
+    const start = (Math.ceil(t[2] * TOTAL) + 2) / TOTAL;
+    expect(start).toBeLessThan(t[3]);
+    expect(tickAt(start)).toEqual(['road_of_trials#0']);
+    expect(props().journeyStartDoom).toBeCloseTo(start);
+    answer(1);
+    // Beats #1 and #2 passed before this First held the thread: nothing to catch up.
+    expect(tickAt(start + 1 / TOTAL)).toEqual([]);
+    // Beat #3 still fires when its threshold is reached.
+    expect(tickAt(Math.ceil(t[3] * TOTAL) / TOTAL)).toEqual(['road_of_trials#3']);
+    answer(2);
+    expect(tickAt(Math.ceil(t[3] * TOTAL) / TOTAL + 1 / TOTAL)).toEqual([]);
+  });
+
+  test('a beat whose phase has ended is not caught up — the next phase entry takes over', () => {
+    const { tickAt, fired } = setup(2);
+    // In the Crisis now, two Trials beats unplayed: the Crisis entry beat fires, not Trials #2.
+    expect(fired(tickAt(TRIALS_PHASE_END + 0.001))).toEqual(['crisis#0']);
   });
 });
 

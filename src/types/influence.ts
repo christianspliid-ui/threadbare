@@ -200,6 +200,14 @@ export interface ThreadEdgeProperties {
   firstPathRecalledActionId?: string;
   /** History of journey beat outcomes (Phase 2+). */
   beatHistory?: BeatOutcome[];
+  /**
+   * THR-2233 — Doom progress when this First's first journey vision fired, written
+   * once by `phaseJourneyBeat`. Beats whose thresholds lie at or before it passed
+   * before this mortal held the thread, so the catch-up rule never replays them
+   * (a replacement First threaded mid-Trials starts at the entry beat, as before).
+   * Absent = no vision fired yet, or a save from before THR-2233 (no floor).
+   */
+  journeyStartDoom?: number;
 
   // ── Intervention tracking (Phase 4+) ──────────────────────
   interventionTracking?: Record<string, unknown>;

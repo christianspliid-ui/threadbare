@@ -138,6 +138,7 @@ export type TraceCategory =
   | 'founded_place_culture' // THR-1839
   | 'journey.choice_applied' // THR-1854: what a journey choice moved on the First
   | 'journey.vision_scene' | 'journey.ordeal_roll' // THR-2226: the vision's scene; the Ordeal's roll
+  | 'journey.start_floor' // THR-2233: where a First's journey began; visions passed before it
   | 'apotheosis.hand_built' | 'apotheosis.premonition' // THR-2227: the climax hand on entry; its warning
   | 'hex_state' | 'unrest_tick' | 'saturation_tick' | 'location_trait' | 'artifact_trait'
   // THR-1934 — unrest as pressure
@@ -822,6 +823,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'founded_place_culture',
   'journey.choice_applied',
   'journey.vision_scene', 'journey.ordeal_roll',
+  'journey.start_floor',
   'apotheosis.hand_built', 'apotheosis.premonition',
   'hex_state', 'unrest_tick', 'saturation_tick', 'location_trait', 'artifact_trait',
   'unrest.target', 'unrest.leave', 'unrest.leave.none', 'unrest.leave.skipped', 'unrest.riot_seed',
@@ -2486,6 +2488,19 @@ export interface JourneyVisionSceneTrace extends TraceBase {
   placeId?: string;
   variantKey: string;
   fit: 'fit' | 'mismatch' | 'untagged';
+}
+
+/**
+ * Trace: a First's journey began (THR-2233) — once per First, at the first vision.
+ * `skippedBeats` counts the visions of the starting phase that passed before the bond
+ * and will not be caught up.
+ */
+export interface JourneyStartFloorTrace extends TraceBase {
+  category: 'journey.start_floor';
+  actorId: string;
+  journeyStartDoom: number;
+  phase: string;
+  skippedBeats: number;
 }
 
 /**
@@ -5733,6 +5748,7 @@ export type TraceEntry =
   | FoundedPlaceCultureTrace
   | JourneyChoiceAppliedTrace
   | JourneyVisionSceneTrace
+  | JourneyStartFloorTrace
   | JourneyOrdealRollTrace
   | ApotheosisHandBuiltTrace
   | ApotheosisPremonitionTrace
