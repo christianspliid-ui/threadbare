@@ -100,13 +100,14 @@ export function isFirstSlotOpenBeforeAgeEnds(
   graph: WorldGraph,
   ascendantId: string,
   cooldownTicks: number,
-  doomTicksRemaining: number,
+  /** Game ticks until the Doom ends (not Doom-clock units; the caller converts by its step). */
+  gameTicksUntilAgeEnds: number,
 ): boolean {
   const holdsFirst = graph.getOutgoingEdges(ascendantId, 'thread').some(e =>
     (e.properties.courtPosition as string | undefined) === 'the_first');
   if (holdsFirst) return false;
   const cooldown = Number.isFinite(cooldownTicks) ? Math.max(0, cooldownTicks) : 0;
-  return cooldown < doomTicksRemaining;
+  return cooldown < gameTicksUntilAgeEnds;
 }
 
 /**
@@ -1004,10 +1005,16 @@ export function phaseJourneyBeat(
       // THR-2228 — the last days, named: time left in the Doom panel's words, and
       // whether another mortal can still carry the thread before the age ends.
       const doomTicksRemaining = Math.max(0, doomClock.totalTicks - doomClock.currentTick);
+      // The Return cooldown is in game ticks; the Doom moves `lastStep` units per game
+      // tick (a nudge can speed or slow it), so compare in game ticks at its current pace.
+      const doomStep = doomClock.lastStep ?? doomClock.tickModifier;
+      const gameTicksUntilAgeEnds = Number.isFinite(doomStep) && doomStep > 0
+        ? doomTicksRemaining / doomStep
+        : doomTicksRemaining;
       const remainingLine = buildReturnRemainingLine({
         firstName: agentNode.name,
         doomTicksRemaining,
-        threadOpen: isFirstSlotOpenBeforeAgeEnds(graph, ascendantId, returnResult.result.cooldownTicks, doomTicksRemaining),
+        threadOpen: isFirstSlotOpenBeforeAgeEnds(graph, ascendantId, returnResult.result.cooldownTicks, gameTicksUntilAgeEnds),
       });
 
       // Build a special return vignette for the UI to display

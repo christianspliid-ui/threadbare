@@ -774,3 +774,43 @@ describe('determinism', () => {
     expect(results.size).toBeGreaterThanOrEqual(1); // At minimum 1, likely more
   });
 });
+
+// ─── THR-2228: the Return's last-days line ─────────────────────────
+
+describe('phaseJourneyBeat — the Return names the last days (THR-2228)', () => {
+  function returnState(lastStep: number) {
+    const { graph, ascendantId } = buildTestGraph();
+    const threadId = graph.getOutgoingEdges(ascendantId, 'thread')[0].id;
+    graph.updateEdge(threadId, {
+      properties: makeThreadProps({
+        storyPhase: 'ordeal',
+        beatHistory: [{ phase: 'ordeal', tick: 1, templateId: 't', variantKey: 'v', playerChoiceId: 'c', stateSnapshot: makeSnapshot() }],
+      }),
+    });
+    return {
+      graph,
+      ascendantId,
+      // Ten Doom units left: the Return fires on the phase change into 'return'.
+      doomClock: { currentTick: 990, totalTicks: 1000, progress: 0.99, tickModifier: lastStep, lastStep },
+      tick: 500,
+      seed: 42,
+      tickEvents: [],
+      pendingVignettes: undefined,
+    } as any;
+  }
+
+  test('carries "Go on" and the line; the thread clause reads the Doom in game ticks', () => {
+    // Slow Doom (0.1 units a tick): 100 game ticks left, longer than any Return cooldown.
+    const slow = phaseJourneyBeat(returnState(0.1), JOURNEY_BEAT_TEMPLATES).pendingVignettes!;
+    const slowReturn = slow.find(v => v.data.phase === 'return')!.data;
+    expect(slowReturn.closeLabel).toBe('Go on');
+    expect(slowReturn.remainingLine).toContain("Test Hero's story is told.");
+    expect(slowReturn.remainingLine).toContain('Another mortal can carry your thread.');
+
+    // Fast Doom (5 units a tick): 2 game ticks left, shorter than every Return cooldown (3+).
+    const fast = phaseJourneyBeat(returnState(5), JOURNEY_BEAT_TEMPLATES).pendingVignettes!;
+    const fastReturn = fast.find(v => v.data.phase === 'return')!.data;
+    expect(fastReturn.remainingLine).toContain("Test Hero's story is told.");
+    expect(fastReturn.remainingLine).not.toContain('Another mortal');
+  });
+});
