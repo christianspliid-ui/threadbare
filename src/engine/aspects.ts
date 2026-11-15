@@ -195,14 +195,11 @@ export function apotheosisPremonitionDue(threadEdge: GraphEdge, tick: number): b
   const props = threadEdge.properties as unknown as ApotheosisThreadProps;
   if (props.tier !== 4) return false;
   const lastOffer = typeof props.apotheosisOfferedTick === 'number' ? props.apotheosisOfferedTick : Number.NEGATIVE_INFINITY;
-  // Warned already only when the warning fired since the last offer AND during the
-  // current tier-4 stint: a thread that fell below tier 4 and climbed back is warned again.
-  const stintStart = tick - (props.ticksAtCurrentTier ?? 0);
-  if (
-    typeof props.apotheosisPremonitionTick === 'number'
-    && props.apotheosisPremonitionTick > lastOffer
-    && props.apotheosisPremonitionTick >= stintStart
-  ) return false;
+  // Once per offer. A new tier-4 stint is warned again because checkTierPromotion
+  // clears the stamp on every promotion — never derive the stint from
+  // ticksAtCurrentTier: it only counts PAID ticks, so `tick - ticksAtCurrentTier`
+  // drifts forward on every unpaid tick and would re-fire the warning each one.
+  if (typeof props.apotheosisPremonitionTick === 'number' && props.apotheosisPremonitionTick > lastOffer) return false;
   return ticksUntilApotheosisOffer(threadEdge, tick) <= APOTHEOSIS_PREMONITION_LEAD_TICKS;
 }
 

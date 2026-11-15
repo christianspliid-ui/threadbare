@@ -5,6 +5,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { WorldGraph } from '../graph';
 import { seedApotheosisEncounters, ticksUntilApotheosisOffer } from '../aspects';
+import { checkTierPromotion } from '../influence';
 import { enableTracing, disableTracing, clearTraces, getTraces } from '../traceBuffer';
 import type { GameState } from '../../types/gameState';
 import { APOTHEOSIS_PREMONITION_LEAD_TICKS } from '../../data/nudge-constants';
@@ -88,23 +89,31 @@ describe('Apotheosis premonition (THR-2227)', () => {
     expect(traces).toHaveLength(1);
   });
 
-  it('warns again when the thread fell below tier 4 and climbed back before the offer', () => {
+  it('warns once while upkeep goes unpaid (the hold counter stands still)', () => {
     const graph = makeGraph();
     const edge = graph.getOutgoingEdges(ASC, 'thread')[0];
-    const props = edge.properties as { tier: number; ticksAtCurrentTier: number };
+    const props = edge.properties as { ticksAtCurrentTier: number; maintenanceCurrent: boolean };
     const warnedAt: number[] = [];
-    let offered = -1;
-    for (let tick = 0; tick < 200 && offered < 0; tick++) {
-      // Tier 4 from 0, a drop to tier 3 at 30, back to tier 4 at 100.
-      if (tick < 30) { props.tier = 4; props.ticksAtCurrentTier = tick; }
-      else if (tick < 100) { props.tier = 3; props.ticksAtCurrentTier = tick - 30; }
-      else { props.tier = 4; props.ticksAtCurrentTier = tick - 100; }
+    for (let tick = 0; tick < 50; tick++) {
+      // ticksAtCurrentTier counts paid ticks only, so unpaid upkeep leaves it at 0.
+      props.ticksAtCurrentTier = 0;
+      props.maintenanceCurrent = tick === 0;
       const patch = seedApotheosisEncounters(stateAt(graph, tick), tick);
       if ((patch.tickEvents ?? []).length > 0) warnedAt.push(tick);
-      if ((patch.pendingEncounterSeeds ?? []).length > 0) offered = tick;
     }
-    expect(warnedAt).toEqual([0, 100]);
-    expect(offered).toBeGreaterThan(100);
+    expect(warnedAt).toEqual([0]);
+  });
+
+  it('a promotion into tier 4 clears an old warning, so the new stint is warned afresh', () => {
+    const graph = makeGraph();
+    const edge = graph.getOutgoingEdges(ASC, 'thread')[0];
+    Object.assign(edge.properties, { tier: 3, ticksAtCurrentTier: 10_000, apotheosisPremonitionTick: 5 });
+    expect(checkTierPromotion(graph, ASC)).toEqual([MORTAL]);
+    const promoted = graph.getOutgoingEdges(ASC, 'thread')[0];
+    expect(promoted.properties.tier).toBe(4);
+    expect(promoted.properties.apotheosisPremonitionTick).toBeUndefined();
+    const patch = seedApotheosisEncounters(stateAt(graph, 20), 20);
+    expect(patch.tickEvents ?? []).toHaveLength(1);
   });
 
   it('ticksUntilApotheosisOffer is infinite below tier 4', () => {
