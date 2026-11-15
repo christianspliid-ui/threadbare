@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 121 |
-| **Total** | **367** |
+| 🔵 UNVERIFIED-OK | 122 |
+| **Total** | **368** |
 
 ## Contracts by producing subsystem
 
@@ -175,6 +175,7 @@ remediation ticket or the build fails.
 | `climax-fit-sizes-apotheosis-hand` | When an Apotheosis step is entered, its difficulty is fitted once so the no-card forecast reads "Uncertain" for this mortal, and the First's chapters the god paid into earn up to two extra cards on the deciding step; the Stage, the forecast and the roll all read that one stored value, and no other step's hand changes. | state-field: `climaxFit`, `ensureClimaxFits`, `apotheosisEarnedSlots` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `doom-floor-holds-unmaking` | No world ends before its First has had a life: however fast the clock is pushed, the Unmaking cannot begin until a floor of ticks has passed since the doom woke at the bond. | state-field: `wokeAtTick`, `doomFloorMetAtTick`, `DOOM_MIN_RUN_TICKS_AFTER_BOND` | Doom Clock & Journey | 🔵 UNVERIFIED-OK | — |
 | `doom-progress-paces-first-journey` | The First's hero's journey moves with the doom clock: its phases are fractions of doom progress, so a longer clock that starts at the bond stretches the whole call-to-return arc inside every run. | state-field: `doomClock` | Doom Clock & Journey | 🔵 UNVERIFIED-OK | — |
+| `doom-stage-feeds-warm-recap` | The warm recap says Doom moved (THR-2240). `snapshotWarmRecap` (`engine/views/warmRecap.ts`) records `doomClock.currentStage` before the warm-up; `buildWarmRecap` compares it at arrival and, when a stage passed, adds "Doom took a step while you were away: {stage}." with the stage name from `doomDefinition`, plus "Stay the Unmaking slows it." when the god already holds the card (`unlockedActionIds`). A snapshot without a stage gives no line. Read only. | state-field: `doomClock` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `first-apotheosis-follows-ordeal` | The First is offered the Apotheosis once, after the Ordeal vision is answered and before the Return, which waits while the offer is due, seeded or being played (until the Doom reaches 95%); other threaded mortals keep the tier-4 hold and the re-offer cooldown. | edge-prop: `apotheosisOfferedForJourney`, `apotheosisPassedForJourney`, `firstApotheosisStep`, `isFirstApotheosisPending` | Doom Clock & Journey | 🟢 LIVE | — |
 | `first-thread-tells-the-ending` | What the god did with its First is kept on the First's thread — how the Ordeal was leaned on and how it landed, and which Return ending closed the story — and the end of the age reads it back: the Twilight says it in beat 2, the harvest summary leads with the First's ending, and Threads names a First who is gone or transcended. | edge-prop: `ordealBand`, `ordealGodPaid`, `ordealLean`, `returnEnding` | Doom Clock & Journey | 🟢 LIVE | — |
 | `ordeal-roll-writes-thread-outcome` | The First's Ordeal is decided by a roll on the First's marble bag at a difficulty fitted to "Uncertain", which the god's choice only leans on; the band the roll lands is written to the thread edge as the Ordeal outcome the Return reads, never the outcome a choice names. | edge-prop: `ordealOutcome`, `rollOrdeal` | Doom Clock & Journey | 🟢 LIVE | — |
@@ -1701,10 +1702,22 @@ exit
 - **Producer → Consumer:** Doom Clock & Journey → Doom Clock & Journey
 - **UL terms:** *Doom Clock*, *The First*
 - **Module:** `src/engine/journeyEngine.ts`
-- **Production hits:** 55 total — 1 write, 1 read, 53 unclassified
+- **Production hits:** 57 total — 1 write, 1 read, 55 unclassified
 - **Write sites:** `src/engine/phaseDoom.ts`
 - **Read sites:** `src/engine/journeyEngine.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/DoomBar.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView/openingReveal.ts` +48 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/DoomBar.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView/openingReveal.ts` +50 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `doom-stage-feeds-warm-recap` — 🔵 UNVERIFIED-OK
+
+- **Intent:** The warm recap says Doom moved (THR-2240). `snapshotWarmRecap` (`engine/views/warmRecap.ts`) records `doomClock.currentStage` before the warm-up; `buildWarmRecap` compares it at arrival and, when a stage passed, adds "Doom took a step while you were away: {stage}." with the stage name from `doomDefinition`, plus "Stay the Unmaking slows it." when the god already holds the card (`unlockedActionIds`). A snapshot without a stage gives no line. Read only.
+- **Producer → Consumer:** Doom Clock & Journey → Attention, Chronicle & Narrative
+- **UL terms:** *Doom Clock*
+- **Module:** `src/engine/views/warmRecap.ts`
+- **Production hits:** 57 total — 1 write, 1 read, 55 unclassified
+- **Write sites:** `src/engine/phaseDoom.ts`
+- **Read sites:** `src/engine/views/warmRecap.ts`
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/DoomBar.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView/openingReveal.ts` +50 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `draw-together-carries-caster-sphere-to-the-name` — 🟢 LIVE
@@ -3308,10 +3321,10 @@ exit
 - **Producer → Consumer:** Ascendant Beats & Progression → Essence & Divine Economy
 - **UL terms:** *Ascendant Beat*, *Offering*
 - **Module:** `src/engine/ascendantBeat.ts`
-- **Production hits:** 30 total — 1 write, 3 read, 26 unclassified
+- **Production hits:** 31 total — 1 write, 3 read, 27 unclassified
 - **Write sites:** `src/engine/ascendantBeat.ts`
 - **Read sites:** `src/engine/actionUnlock.ts`, `src/engine/targetActions.ts`, `src/engine/views/godRail.ts`
-- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +21 more
+- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +22 more
 - **Verdict:** Verified 2026-10-14: THR-1811 — `godProgression.test.ts` "taking one up unlocks it, spends from the ledger, and never touches the earned counter": the card lands in `unlockedActionIds`, `essenceEarnedBySphere` is unchanged and `offeringSpentBySphere` rises by the traced `offering.taken` price; seed 42 headless rose an offering of three cards at tick 21 that passed at the tick-36 day boundary.
 
 ### `one-namer-shared-primitives` — 🟢 LIVE
@@ -3798,10 +3811,10 @@ exit
 - **Producer → Consumer:** Ascendant Beats & Progression → Essence & Divine Economy
 - **UL terms:** *Ascendant Beat*, *Rung*, *Key card*
 - **Module:** `src/engine/phaseAscendantProgression.ts`
-- **Production hits:** 30 total — 2 write, 1 read, 27 unclassified
+- **Production hits:** 31 total — 2 write, 1 read, 28 unclassified
 - **Write sites:** `src/engine/ascendantBeat.ts`, `src/engine/phaseAscendantProgression.ts`
 - **Read sites:** `src/engine/actionUnlock.ts`
-- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +22 more
+- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +23 more
 - **Verdict:** Verified 2026-10-14: THR-1811 — `godProgression.test.ts`: three summed marks open rung 2, the secondary signature is the first gift, the next key waits `RUNG_GIFT_SPACING`, a held key is skipped, and the resolve traces `via: rung`.
 
 ### `rung-reads-attunement-marks` — 🟢 LIVE
@@ -3969,10 +3982,10 @@ exit
 - **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 438 total — 1 write, 1 read, 436 unclassified
+- **Production hits:** 439 total — 1 write, 1 read, 437 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +431 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +432 more
 - **Verdict:** Verified 2026-09-10: THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.
 
 ### `settlement-economy-drives-tier` — 🟢 LIVE
