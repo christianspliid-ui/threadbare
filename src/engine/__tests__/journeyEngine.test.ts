@@ -529,8 +529,10 @@ describe('applyBeatChoice', () => {
     // THR-2226 — the roll decides; the choice's own `ordealOutcome` is ignored.
     const { updatedProps } = applyBeatChoice(threadProps, vignette, 'break', { band: 'success', outcome: 'triumph', godPaid: false });
     expect(updatedProps.ordealOutcome).toBe('triumph');
-    expect(updatedProps).not.toHaveProperty('ordealBand');
-    expect(updatedProps).not.toHaveProperty('ordealGodPaid');
+    // THR-2229 — the band, whether the god paid and the lean ride on the edge too.
+    expect(updatedProps.ordealBand).toBe('success');
+    expect(updatedProps.ordealGodPaid).toBe(false);
+    expect(updatedProps.ordealLean).toBe(0);
 
     const { updatedProps: unrolled } = applyBeatChoice(threadProps, vignette, 'triumph');
     expect(unrolled.ordealOutcome).toBeUndefined();

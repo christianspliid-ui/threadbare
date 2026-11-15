@@ -790,7 +790,7 @@ function CompactThreadRow({
                   display: 'inline-flex', alignItems: 'center', gap: 4,
                   padding: '1px 6px',
                   border: '1px solid var(--border-subtle, var(--text-tertiary))',
-                  borderRadius: 999,
+                  borderRadius: 'var(--radius-chip)',
                   fontSize: 'var(--text-xs)', fontFamily: 'var(--font-body)',
                   color: 'var(--text-secondary)',
                   backgroundColor: 'transparent',
