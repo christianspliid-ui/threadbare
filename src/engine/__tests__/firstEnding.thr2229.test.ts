@@ -188,6 +188,21 @@ describe('THR-2229 — Twilight beat 2 says what the god did', () => {
     expect(readFirstStory(state)!.id).toBe(otherId);
     expect(readFirstStory(state)!.returnEnding).toBe('monster');
   });
+
+  it('an older returned First who dies after a newer First\'s Return does not take the story back', () => {
+    const state = newWorld();
+    const { id: a, edge } = firstEdge(state);
+    // A returns at tick 10 and lives on; B is bonded later and returns at tick 40.
+    state.graph.updateEdge(edge.id, { properties: { ...edge.properties, courtPosition: null, returnEnding: 'vanishing', returnEndingTick: 10 } as never });
+    const b = 'ind_second_first';
+    state.graph.addNode({ id: b, type: 'individual', name: 'Corin', properties: { actorType: 'individual' } } as never);
+    state.graph.addEdge({ id: 'thread_b', type: 'thread', source: state.ascendantId, target: b, properties: { courtPosition: null, returnEnding: 'transcendence', returnEndingTick: 40 } } as never);
+    // A dies at tick 70: the death note remembers A, whose story ended at its Return (10).
+    markMortalDead(state.graph, a, 70, { cause: 'lifecycle', mode: 'remove' });
+    expect((state.graph.getNode(state.ascendantId)!.properties.firstRemembered as { id: string }).id).toBe(a);
+    expect(readFirstStory(state)!.id).toBe(b);
+    expect(readFirstStory(state)!.returnEnding).toBe('transcendence');
+  });
 });
 
 describe('THR-2229 — the Return ending is kept on the thread', () => {

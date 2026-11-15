@@ -125,8 +125,13 @@ export function readFirstStory(state: GameState): FirstStory | null {
     const raw = graph.getNode(state.ascendantId)?.properties?.firstRemembered as
       { id?: unknown; name?: unknown; diedTick?: unknown; returnEnding?: unknown } | undefined;
     const remembered = raw && typeof raw.id === 'string' ? raw : undefined;
+    // The remembered First's story ended at its own Return when it had one (it may have
+    // lived on and died after a newer First's Return), else at its death.
+    const rememberedEnd = typeof (remembered as { returnEndingTick?: unknown } | undefined)?.returnEndingTick === 'number'
+      ? (remembered as { returnEndingTick: number }).returnEndingTick
+      : remembered?.diedTick;
     const rememberedIsLater = !!remembered && !!returned && remembered.id !== returned.target
-      && typeof remembered.diedTick === 'number' && remembered.diedTick > tickOf(returned);
+      && typeof rememberedEnd === 'number' && rememberedEnd > tickOf(returned);
     let edge = edges.find(e => e.properties?.courtPosition === 'the_first')
       ?? (rememberedIsLater ? undefined : returned);
     let id: string | undefined = edge?.target;
