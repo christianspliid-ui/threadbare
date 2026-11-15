@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { RivalDefinition, RivalState } from '../../types/rival';
 import { RivalPanel } from './RivalPanel';
+import type { RivalAnswerInputs } from '../../engine/views/rivalEntry';
 import { IconButton } from '../shared/IconButton';
 import { Icon } from '../shared/Icon';
 import { Dropdown } from '../shared/Dropdown';
@@ -18,7 +19,7 @@ interface RivalsButtonProps {
   tick?: number;
   placeName?: (placeId: string) => string | undefined;
   /** THR-2237: whether the god holds Rebuke and where it can answer now. */
-  answer?: { holdsRebuke: boolean; rebukable: ReadonlySet<string> };
+  answer?: RivalAnswerInputs;
 }
 
 export function RivalsButton({ definitions, states, onOpenChange, tick, placeName, answer }: RivalsButtonProps) {

@@ -79,6 +79,22 @@ describe('the rival panel answer line', () => {
   });
 });
 
+describe('the answer line names only the rival a Rebuke there would answer (review gate)', () => {
+  it("another rival's fresher landing on the same place does not name it for this rival", () => {
+    const absorbedA: RivalState = { ...createRivalState(RIVAL.id), lastPressed: { placeId: 't0', tick: NOW - 2 * DAY, absorbed: true } };
+    const freshB = pressed(RIVAL2.id, 't0', NOW - DAY);
+    const state = makeState([absorbedA, freshB], HELD);
+    const inputs = rivalAnswerInputs(state);
+    const names = rivalPlaceNameLookup(state.graph);
+    expect(segmentsText(rivalAnswerSegments(absorbedA, inputs, names))).not.toMatch(/Rebuke/);
+    expect(segmentsText(rivalAnswerSegments(freshB, inputs, names))).toBe('Rebuke it at Ashford, or tend your places.');
+    // Both fresh: Rebuke answers the most recent landing only.
+    const olderA = pressed(RIVAL.id, 't0', NOW - 2 * DAY);
+    const both = makeState([olderA, freshB], HELD);
+    expect(segmentsText(rivalAnswerSegments(olderA, rivalAnswerInputs(both), names))).not.toMatch(/Rebuke/);
+  });
+});
+
 describe("the pressed place's Now line", () => {
   const ctx = (state: GameState, nodeId: string): SectionResolverContext =>
     ({ nodeId, pageKind: 'location', graph: state.graph, seed: 42, tick: state.tick, state } as unknown as SectionResolverContext);

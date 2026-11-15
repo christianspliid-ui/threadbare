@@ -135,17 +135,28 @@ export function godHoldsRebuke(state: Pick<GameState, 'unlockedActionIds'>): boo
 }
 
 /**
- * The entry's "How to answer it" line. While the god holds Rebuke and this rival's last
- * landing is still rebukable, it names the place: "Rebuke it at {place}, or tend your
- * places." Otherwise the tending line, as before.
+ * What a Rebuke can answer now: each rebukable place, keyed to the rival a Rebuke there
+ * answers (`rebukeTargetFor` — the most recent unabsorbed, unrebuked landing).
+ */
+export interface RivalAnswerInputs {
+  holdsRebuke: boolean;
+  /** placeId → the rivalId a Rebuke cast there answers. */
+  answeredBy: ReadonlyMap<string, string>;
+}
+
+/**
+ * The entry's "How to answer it" line. While the god holds Rebuke and a Rebuke on this
+ * rival's last-pressed place would answer *this* rival, it names the place: "Rebuke it at
+ * {place}, or tend your places." Otherwise the tending line, as before. (Review gate,
+ * THR-2237: another rival's fresher landing on the same place must not name it here.)
  */
 export function rivalAnswerSegments(
   state: RivalState | undefined,
-  answer: { holdsRebuke: boolean; rebukable: ReadonlySet<string> },
+  answer: RivalAnswerInputs,
   placeName: PlaceNameLookup,
 ): RivalLineSegment[] {
   const placeId = state?.lastPressed?.placeId;
-  if (answer.holdsRebuke && placeId && answer.rebukable.has(placeId)) {
+  if (answer.holdsRebuke && placeId && state && answer.answeredBy.get(placeId) === state.rivalId) {
     const name = placeName(placeId);
     if (name) return withPlace(rivalWords('ui.rival.answer_rebuke'), { placeId, name });
   }
@@ -155,14 +166,17 @@ export function rivalAnswerSegments(
 /** The panel's answer inputs, read once from state (the view-model seam; fail-soft). */
 export function rivalAnswerInputs(
   state: Pick<GameState, 'unlockedActionIds' | 'rivalStates' | 'tick'> & Partial<Pick<GameState, 'unifiedActions'>>,
-): { holdsRebuke: boolean; rebukable: ReadonlySet<string> } {
-  let rebukable: ReadonlySet<string> = new Set();
+): RivalAnswerInputs {
+  const answeredBy = new Map<string, string>();
   try {
-    rebukable = rebukablePlaceIds(state);
+    for (const placeId of rebukablePlaceIds(state)) {
+      const target = rebukeTargetFor(state, placeId);
+      if (target) answeredBy.set(placeId, target.rivalId);
+    }
   } catch {
     // fail-soft: no answerable place
   }
-  return { holdsRebuke: godHoldsRebuke(state), rebukable };
+  return { holdsRebuke: godHoldsRebuke(state), answeredBy };
 }
 
 /** A rival's landing the god can still answer: who pressed which place, and when. */

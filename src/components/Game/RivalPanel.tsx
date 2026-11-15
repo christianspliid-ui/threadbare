@@ -13,6 +13,7 @@ import {
   rivalLastPressedSegments,
   rivalAnswerSegments,
   type PlaceNameLookup,
+  type RivalAnswerInputs,
   type RivalLineSegment,
 } from '../../engine/views/rivalEntry';
 
@@ -51,14 +52,14 @@ interface RivalPanelProps {
    * THR-2237: whether the god holds Rebuke, and the places a Rebuke can answer now. With
    * both, a rival whose last landing is answerable reads "Rebuke it at {place}".
    */
-  answer?: { holdsRebuke: boolean; rebukable: ReadonlySet<string> };
+  answer?: RivalAnswerInputs;
 }
 
 const NO_PLACE_NAME: PlaceNameLookup = () => undefined;
 
 /** THR-2237 (Law 33): the panel scrolls inside the dropdown past this height, as Notables does. */
 const RIVAL_PANEL_MAX_HEIGHT = '70vh';
-const NO_ANSWER = { holdsRebuke: false, rebukable: new Set<string>() } as const;
+const NO_ANSWER: RivalAnswerInputs = { holdsRebuke: false, answeredBy: new Map() };
 
 /** A line's runs: words as text, a place as a link through the one router (Laws 1, 21). */
 function renderSegments(segments: readonly RivalLineSegment[]): React.ReactNode {

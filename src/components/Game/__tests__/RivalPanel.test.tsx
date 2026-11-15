@@ -222,7 +222,7 @@ describe('RivalPanel', () => {
         states={states}
         tick={120}
         placeName={placeName}
-        answer={{ holdsRebuke: true, rebukable: new Set(['loc-iron']) }}
+        answer={{ holdsRebuke: true, answeredBy: new Map([['loc-iron', mockDefinitions[0].id]]) }}
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: 'The Iron Tyrant' }));
