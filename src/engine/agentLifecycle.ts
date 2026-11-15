@@ -278,12 +278,14 @@ export function markMortalDead(
     if (tp.courtPosition !== 'the_first' && !returned) continue;
     const god = graph.getNode(e.source);
     if (!god) continue;
-    // A returned First's death never overwrites a later First's note (one who died after
-    // this one's Return closed its story).
-    const prior = god.properties.firstRemembered as { id?: unknown; diedTick?: unknown } | undefined;
+    // A returned First's death never overwrites a later First's note (one whose story
+    // ended after this one's Return). A noted First's story ended at its own Return when
+    // it had one, else at its death — the same rule `readFirstStory` uses.
+    const prior = god.properties.firstRemembered as { id?: unknown; diedTick?: unknown; returnEndingTick?: unknown } | undefined;
+    const priorEnd = typeof prior?.returnEndingTick === 'number' ? prior.returnEndingTick : prior?.diedTick;
     const returnTick = typeof tp.returnEndingTick === 'number' ? tp.returnEndingTick : -Infinity;
     if (tp.courtPosition !== 'the_first' && prior && prior.id !== mortalId
-      && typeof prior.diedTick === 'number' && prior.diedTick > returnTick) continue;
+      && typeof priorEnd === 'number' && priorEnd > returnTick) continue;
     // THR-2229 — the death sweeps the thread, so the note also keeps what the end of the
     // age tells about the god and its First (the threshold, the Ordeal, the Return).
     const facts: Record<string, unknown> = {};
