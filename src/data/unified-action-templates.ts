@@ -1802,7 +1802,8 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     id: DOOM_STAY_TEMPLATE_ID,
     progression: { tier: 1, offer: 'gift', giftBy: 'milestone', generic: true },
     name: 'Stay the Unmaking',
-    spellName: 'Hold the Hour',
+    // THR-2241: the Doom lines name this card, so its face says the same name.
+    spellName: 'Stay the Unmaking',
     rarityTier: 2,
     intrinsicTier: 'shaping',
     description: 'Set your will against the ending. While you hold it, the Unmaking comes slower. It never stops.',
@@ -2038,7 +2039,8 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     id: RIVAL_REBUKE_TEMPLATE_ID,
     progression: { tier: 1, offer: 'gift', giftBy: 'milestone', generic: true },
     name: 'Rebuke',
-    spellName: 'The Turned Hand',
+    // THR-2241: the rival lines name this card, so its face says the same name.
+    spellName: 'Rebuke',
     rarityTier: 2,
     intrinsicTier: 'shaping',
     description: 'Answer a rival god where it pressed. The place holds against them for a few days, and some of what was taken comes back. The rival will remember.',

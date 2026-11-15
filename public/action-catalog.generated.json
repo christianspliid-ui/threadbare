@@ -2918,7 +2918,7 @@
     {
       "id": "divine.self.stay_the_unmaking",
       "name": "Stay the Unmaking",
-      "spellName": "Hold the Hour",
+      "spellName": "Stay the Unmaking",
       "category": "divine",
       "reach": "star",
       "sphereAffinity": null,
@@ -5457,7 +5457,7 @@
     {
       "id": "loc.rebuke_rival",
       "name": "Rebuke",
-      "spellName": "The Turned Hand",
+      "spellName": "Rebuke",
       "category": "location",
       "reach": "star",
       "sphereAffinity": null,
