@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-15 21:58 local (20:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-15 22:59 local (21:59 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -25,25 +25,18 @@ The design lane leans (b), because canon calls a chapter "a moment … the playe
 
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
-## Decided for you
-
-- [Give both clocks a verb](https://linear.app/threadbare/issue/THR-2202/give-both-clocks-a-verb-the-mortals-deeds-fill-the-mandate-and-doom): **the answer to Doom now shows up where Doom is.** In warm round 4 no tester found the card that slows Doom. The Doom panel and the Doom bar's hover will say "Stay the Unmaking slows it", and the panel gets a **Stay it** button. The gift that hands you the card will name it and say where to find it. The "While you were away" summary will say if Doom took a step while you were gone. The card, its price and when you get it stay as they are. Built in [The answer to Doom is where Doom is](https://linear.app/threadbare/issue/THR-2240/the-answer-to-doom-is-where-doom-is-the-doom-panel-and-the-doom-bars). **Veto:** say "Doom should only be felt, not answered". The hold ended at 20:45 UTC, but a veto still reverses it. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-15c.md)*
-
-Say "veto <title>" to reverse any of these.
-
 ## This week's screens
 
 [Contact sheet — this week next to last week](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/ux-review/2026-11-12/contact-sheet.jpg) — better: The First's name fits, the essence and Doom readouts speak in words, and returning to the mid-game now opens on a "While you were away" summary, but arrival toasts still pile up and his thread row cuts his story short.
 
 ## Queue
 
-**Healthy: 4 tickets in Ready for Dev, all now out of their veto windows, and the builder is working.** A pickup run started at 20:43 UTC and is still working. [A longer look back is always more, not less](https://linear.app/threadbare/issue/THR-2235/a-longer-look-back-is-always-more-not-less-read-the-threads-fades-each) is half built: its work is saved on [its branch](https://github.com/christianspliid-ui/threadbare/tree/thr-2235-read-threads-fade-by-age) as a checkpoint from 08:56 UTC, with no pull request yet; its local copy has no unsaved edits. Ready next: [The Mandate says what moves it](https://linear.app/threadbare/issue/THR-2236/the-mandate-says-what-moves-it-the-fill-line-names-the-spend-rising), [The answer to a rival is where the threat is](https://linear.app/threadbare/issue/THR-2237/the-answer-to-a-rival-is-where-the-threat-is-the-rival-panel-says), [The answer to Doom is where Doom is](https://linear.app/threadbare/issue/THR-2240/the-answer-to-doom-is-where-doom-is-the-doom-panel-and-the-doom-bars), [Play promises only what it keeps](https://linear.app/threadbare/issue/THR-2238/play-promises-only-what-it-keeps-the-first-run-play-tooltip-says-the).
+**Healthy: 2 tickets in Ready for Dev, and the builder is working.** Since the last brief two builds went live: [Read the Threads fades each chapter by its age](https://linear.app/threadbare/issue/THR-2235/a-longer-look-back-is-always-more-not-less-read-the-threads-fades-each) ([#2845](https://github.com/christianspliid-ui/threadbare/pull/2845)) and [The Mandate says what moves it](https://linear.app/threadbare/issue/THR-2236/the-mandate-says-what-moves-it-the-fill-line-names-the-spend-rising) ([#2846](https://github.com/christianspliid-ui/threadbare/pull/2846)). A pickup run started at 21:51 UTC and is building [The answer to a rival is where the threat is](https://linear.app/threadbare/issue/THR-2237/the-answer-to-a-rival-is-where-the-threat-is-the-rival-panel-says). Ready next: [The answer to Doom is where Doom is](https://linear.app/threadbare/issue/THR-2240/the-answer-to-doom-is-where-doom-is-the-doom-panel-and-the-doom-bars), [Play promises only what it keeps](https://linear.app/threadbare/issue/THR-2238/play-promises-only-what-it-keeps-the-first-run-play-tooltip-says-the).
 
 Items for agents, not you:
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (26 days; In Dev since 15 Oct). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (26 days; In Dev since 15 Oct). No branch or local worktree holds work for it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
 - **Every lane was silent today from about 09:57 to 21:42 local (11.8 hours).** All lanes came back in the same minute, so the computer or app was off. It is a Sunday, so per your weekend ruling this is not an ask; it is one more case for the "open at login" setting above.
-- **Engine speed is back to normal:** tick cost 166 ms/tick steady, +2% vs the 7-day median (162). Last hour's 318 ms reading came from machine load while the lanes restarted. The orchestrator ran again at 20:44 UTC; all 10 scheduled tasks are on schedule.
-- The live site serves the latest commit on main (71d6586d). Checks on main and the 3 scheduled background jobs pass; no PRs are waiting. The worktree reaper ran at 21:40 local. Linear read live this run. No Discord messages from you since the last brief. The home copy of the repo is current with main.
+- Otherwise all green: the live site serves the latest commit on main (a503b9a5); checks on main and the 3 scheduled background jobs pass; no PRs are waiting; engine speed is normal (146 ms/tick, −10% vs the 7-day median). The worktree reaper ran within the hour. Linear read live this run. No Discord messages from you since the last brief. The home copy of the repo is current with main.

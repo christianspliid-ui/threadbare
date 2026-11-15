@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-15 21:58 local (20:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-15 22:59 local (21:59 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
 
@@ -58,6 +58,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-15: the Mandate now says what fills it, and "Rising" lasts three days. It is live** ([THR-2236](https://linear.app/threadbare/issue/THR-2236)). Merged via [#2846](https://github.com/christianspliid-ui/threadbare/pull/2846).
+- **2026-11-15: Read the Threads now fades each chapter by its age. It is live** ([THR-2235](https://linear.app/threadbare/issue/THR-2235)). Merged via [#2845](https://github.com/christianspliid-ui/threadbare/pull/2845).
 - **2026-11-15: The First's Apotheosis now follows the Ordeal, once, and the Return waits for it. It is live** ([THR-2234](https://linear.app/threadbare/issue/THR-2234)). Merged via [#2844](https://github.com/christianspliid-ui/threadbare/pull/2844).
 - **2026-11-15: no journey vision is lost when its moment passes. It is live** ([THR-2233](https://linear.app/threadbare/issue/THR-2233)). Merged via [#2843](https://github.com/christianspliid-ui/threadbare/pull/2843).
 - **2026-11-15: the end of the age now tells what the god did with its First. It is live** ([THR-2229](https://linear.app/threadbare/issue/THR-2229)). Merged via [#2842](https://github.com/christianspliid-ui/threadbare/pull/2842).
@@ -66,8 +68,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-15: the Return now closes on "Go on" and says how long the age has left. It is live** ([THR-2228](https://linear.app/threadbare/issue/THR-2228)). Merged via [#2839](https://github.com/christianspliid-ui/threadbare/pull/2839).
 - **2026-11-15: the Apotheosis's deciding step deals the run's biggest hand, opens at Uncertain, and is warned first. It is live** ([THR-2227](https://linear.app/threadbare/issue/THR-2227)). Merged via [#2837](https://github.com/christianspliid-ui/threadbare/pull/2837) and [#2838](https://github.com/christianspliid-ui/threadbare/pull/2838).
 - **2026-11-15: the Ordeal is now rolled, and journey visions read the scene the god leans on. It is live** ([THR-2226](https://linear.app/threadbare/issue/THR-2226)). Merged via [#2835](https://github.com/christianspliid-ui/threadbare/pull/2835) and [#2836](https://github.com/christianspliid-ui/threadbare/pull/2836).
-- **2026-11-14: second whole journey after the First's story ends? You answered A, no** ([THR-2204](https://linear.app/threadbare/issue/THR-2204)). Your words: *"A.. one run should try to aim for telling the firsts entire heroes journey and timing that makes sense"*. The pacing note went to the design lane.
-- **2026-11-14: a ruler's Story tab now folds repeat chapters into one counted chip, and it is live** ([THR-2223](https://linear.app/threadbare/issue/THR-2223)). Merged via [#2833](https://github.com/christianspliid-ui/threadbare/pull/2833).
 
 ---
 
