@@ -115,6 +115,8 @@ export interface StageHostProps {
   handleOrdealCommit?: (choiceId: string) => CommittedOrdeal | null;
   /** THR-2226 — the roll already committed for a vision, so a remounted Ordeal shows its result. */
   getCommittedOrdeal?: (vignetteId: string) => CommittedOrdeal | null;
+  /** THR-2226 — Escape on an unrolled Ordeal sets it aside, unrolled; it returns later. */
+  handleOrdealSetAside?: () => void;
   // Story beat
   activeStoryBeatId: string | null;
   activeStoryBeatTemplate: UnifiedActionTemplate | null;
@@ -172,6 +174,7 @@ export function StageHost({
   handleJourneyChoice,
   handleOrdealCommit,
   getCommittedOrdeal,
+  handleOrdealSetAside,
   activeStoryBeatId,
   activeStoryBeatTemplate,
   activeStoryBeatAgentName,
@@ -363,6 +366,7 @@ export function StageHost({
           payingSphere={encounterPayingSphere}
           onOrdealCommit={handleOrdealCommit}
           committedOrdeal={getCommittedOrdeal?.(activeVignette.id) ?? null}
+          onSetAside={handleOrdealSetAside}
           stageVM={vignetteStageVM}
           tick={gameState.tick}
           onClose={() => {

@@ -98,7 +98,35 @@ describe('the Ordeal is armed, then fired (THR-2226, Law 48)', () => {
     expect(screen.getByTestId('ordeal-commit').textContent).toBe(ORDEAL_PICK_PROMPT);
   });
 
-  it('Escape with nothing armed rolls the step-back and shows its result; the next Escape closes', () => {
+  it('Escape with nothing armed sets the Ordeal aside: no roll, no charge, no close (review cycle 4)', () => {
+    const onSetAside = vi.fn();
+    const onOrdealCommit = vi.fn((choiceId: string): CommittedOrdeal | null => ({ choiceId, outcome: 'triumph' }));
+    const onChoice = vi.fn();
+    const onClose = vi.fn();
+    render(
+      <JourneyVignetteModal
+        open
+        onClose={onClose}
+        onChoice={onChoice}
+        onOrdealCommit={onOrdealCommit}
+        onSetAside={onSetAside}
+        vignette={vignette}
+        essenceAvailable={20}
+      />,
+    );
+    // An armed lean is the top layer: the first Escape takes it back, nothing else.
+    fireEvent.click(screen.getByText('Pour everything into the thread'));
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
+    expect(onSetAside).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
+    expect(onSetAside).toHaveBeenCalledTimes(1);
+    expect(onOrdealCommit).not.toHaveBeenCalled();
+    expect(onChoice).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('a host with no set-aside: Escape with nothing armed rolls the step-back and shows its result; the next Escape closes', () => {
     const { onOrdealCommit, onChoice, onClose } = renderOrdeal('scraped_through');
     fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
 

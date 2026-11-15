@@ -91,7 +91,7 @@ import { useFirstScreenReveal } from './GameView/firstScreenReveal';
 import { useOpeningReveal } from './GameView/openingReveal';
 import { OpeningDirectionLine } from './OpeningDirectionLine';
 import { getPronouns } from '../../data/domain-prose';
-import { OPENING_REVEAL_TOAST_MS } from '../../data/ui-content';
+import { OPENING_REVEAL_TOAST_MS, ordealSetAsideLine } from '../../data/ui-content';
 import { MandateTracker } from './MandateTracker';
 import { DebugPanel } from './DebugPanel';
 import { getEncounterCacheManager } from '../../engine/orchestrator';
@@ -166,6 +166,7 @@ import {
 } from './encounterNotificationRuntime';
 import type { MeetingEncounterState, MeetingEncounterResult } from '../../types/meetingEncounter';
 import type { CommittedOrdeal, JourneyVignetteData, PendingVignette } from '../../types/journeyEngine';
+import { ORDEAL_SET_ASIDE_TICKS } from '../../types/journeyEngine';
 import { readOrdealResult, recordJourneyChoice } from '../../engine/journeyEngine';
 import { recordStoryBeatDismissed } from '../../engine/phaseAttention';
 import { getThreadsFrom } from '../../engine/graphQueries';
@@ -3540,12 +3541,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [warmStart.running, getFirstThreadEdge, gameState.graph]);
 
   // ── Journey vignette (auto-interrupt for The First) ──
+  // THR-2226 — unrolled Ordeals Escape set aside, keyed by vision id → the tick it
+  // returns on. A set-aside vision stays queued (never rolled, never paid) and is
+  // skipped until its tick comes round.
+  const [asideVignettes, setAsideVignettes] = useState<ReadonlyMap<string, number>>(() => new Map());
   const activeVignette: PendingVignette | null = useMemo(() => {
     const pending = gameState.pendingVignettes;
     if (!pending || pending.length === 0) return null;
-    // Highest priority first (already sorted by engine)
-    return pending[0];
-  }, [gameState.pendingVignettes]);
+    // Highest priority first (already sorted by engine), skipping a set-aside Ordeal.
+    return pending.find(v => (asideVignettes.get(v.id) ?? 0) <= gameState.tick) ?? null;
+  }, [gameState.pendingVignettes, asideVignettes, gameState.tick]);
 
   // ── Story beat modal (pacing governor) ──
   const activeStoryBeatId: string | null = useMemo(() => {
@@ -4403,6 +4408,25 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     return committed;
   }, [activeVignette, commitJourneyChoice, gameState.graph, gameState.ascendantId]);
 
+  /**
+   * THR-2226 (review cycle 4) — Escape on an unrolled Ordeal with nothing armed puts it
+   * aside: no roll, no charge (UI Law 48). It stays queued and takes the screen again
+   * after ORDEAL_SET_ASIDE_TICKS days; a toast says so (Law 23 still closes the layer).
+   */
+  const handleOrdealSetAside = useCallback(() => {
+    if (!activeVignette || committedOrdealsRef.current.has(activeVignette.id)) return;
+    const vignetteId = activeVignette.id;
+    const returnTick = gameState.tick + ORDEAL_SET_ASIDE_TICKS;
+    setAsideVignettes(prev => new Map(prev).set(vignetteId, returnTick));
+    handlePushToast({
+      id: `ordeal-aside-${vignetteId}-${gameState.tick}`,
+      message: ordealSetAsideLine(activeVignette.data.agentName, ORDEAL_SET_ASIDE_TICKS),
+      count: 1,
+      createdTick: gameState.tick,
+      expiresAt: Date.now() + NUDGE_REJECT_TOAST_MS,
+    });
+  }, [activeVignette, gameState.tick, handlePushToast]);
+
   // ── Debug levers (THR-1881) ──
   // Every `window.__DEBUG` registration and the `?spawn` / `?undertaking` / `?spell` /
   // `?testavatar` URL levers live in `useGameDebugLevers`. Called last so every value
@@ -4973,6 +4997,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         handleJourneyChoice={handleJourneyChoice}
         handleOrdealCommit={handleOrdealCommit}
         getCommittedOrdeal={getCommittedOrdeal}
+        handleOrdealSetAside={handleOrdealSetAside}
         activeStoryBeatId={activeStoryBeatId}
         activeStoryBeatTemplate={activeStoryBeatTemplate}
         activeStoryBeatAgentName={activeStoryBeatAgentName}

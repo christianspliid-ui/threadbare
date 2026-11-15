@@ -94,6 +94,12 @@ export const ORDEAL_FORCE_FIRE_THRESHOLD = 0.90;
 export const MAX_PENDING_VIGNETTES = 5;
 
 /**
+ * THR-2226 — days an unrolled Ordeal waits after Escape sets it aside before it takes
+ * the screen again. Escape never rolls the climax (UI Law 48); the vision returns.
+ */
+export const ORDEAL_SET_ASIDE_TICKS = 3;
+
+/**
  * THR-1854: a beat choice declares `reachChanges` on the 0–1 scale the meeting's
  * dilemmas use; the First's `domainCapabilities` are raw (10–40). The meeting converts
  * with the same ×100 when it mints the First (`createAgentFromMeeting`), so a journey

@@ -55,6 +55,12 @@ interface JourneyVignetteModalProps {
    * its roll (an encounter took the screen before Continue) opens on its result.
    */
   committedOrdeal?: CommittedOrdeal | null;
+  /**
+   * THR-2226 — Escape on an unrolled Ordeal with nothing armed: the host puts the vision
+   * aside, unrolled and unpaid, and it returns later (minimise, like an encounter).
+   * Absent ⇒ Escape rolls the step-back through the commit path and shows its result.
+   */
+  onSetAside?: () => void;
   /** THR-1897 — the Stage view model (lit hex, place tag, context line); absent ⇒ nothing lit. */
   stageVM?: StageVM | null;
   /** The game tick, for the Stage's traces. */
@@ -207,6 +213,7 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
   payingSphere,
   onOrdealCommit,
   committedOrdeal = null,
+  onSetAside,
   stageVM,
   tick = 0,
 }: JourneyVignetteModalProps) {
@@ -264,13 +271,18 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
 
   // THR-2226 — Escape on an unrolled Ordeal (Law 23 closes the topmost layer; Laws
   // 47/48 keep the result on screen). An armed lean is the top layer: Escape takes it
-  // back. With nothing armed, Escape is the step-back, as on every journey vision —
-  // but rolled through the commit path, so the vision stays to show what it rolled and
-  // the next Escape (or Continue) closes it. Never through `onClose`, which would roll
-  // the climax and drop the vision before its result could show.
+  // back. With nothing armed, Escape sets the Ordeal aside, unrolled and unpaid, and it
+  // returns later (Law 48: one keypress never rolls the climax). A host without a
+  // set-aside falls back to the step-back rolled through the commit path, so the vision
+  // stays to show what it rolled. Never through `onClose`, which would roll the climax
+  // and drop the vision before its result could show.
   const handleOrdealEscape = useCallback(() => {
     if (armedId) {
       setArmedId(null);
+      return;
+    }
+    if (onSetAside) {
+      onSetAside();
       return;
     }
     const stepBack = vignette.choices.find(c => c.effects.interventionType === 'withdrawn');
@@ -279,7 +291,7 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
       return;
     }
     commitOrdealLean(stepBack.id);
-  }, [armedId, commitOrdealLean, onClose, vignette.choices]);
+  }, [armedId, commitOrdealLean, onClose, onSetAside, vignette.choices]);
 
   // Once answered, any close commits the answer — the god has already spoken.
   const handleClose = answered ? handleContinue : (ordealCommits ? handleOrdealEscape : onClose);
