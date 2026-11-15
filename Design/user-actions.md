@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-15 07:58 local (06:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-15 09:02 local (08:02 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
 
@@ -58,6 +58,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-15: no journey vision is lost when its moment passes. It is live** ([THR-2233](https://linear.app/threadbare/issue/THR-2233)). Merged via [#2843](https://github.com/christianspliid-ui/threadbare/pull/2843).
+- **2026-11-15: the end of the age now tells what the god did with its First. It is live** ([THR-2229](https://linear.app/threadbare/issue/THR-2229)). Merged via [#2842](https://github.com/christianspliid-ui/threadbare/pull/2842).
 - **2026-11-15: each mark on the Stage now means one thing. It is live** ([THR-2231](https://linear.app/threadbare/issue/THR-2231)). Merged via [#2841](https://github.com/christianspliid-ui/threadbare/pull/2841).
 - **2026-11-15: warm playtests now arrive in a real world. It is live** ([THR-2230](https://linear.app/threadbare/issue/THR-2230)). Merged via [#2840](https://github.com/christianspliid-ui/threadbare/pull/2840).
 - **2026-11-15: the Return now closes on "Go on" and says how long the age has left. It is live** ([THR-2228](https://linear.app/threadbare/issue/THR-2228)). Merged via [#2839](https://github.com/christianspliid-ui/threadbare/pull/2839).
@@ -66,8 +68,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-14: second whole journey after the First's story ends? You answered A, no** ([THR-2204](https://linear.app/threadbare/issue/THR-2204)). Your words: *"A.. one run should try to aim for telling the firsts entire heroes journey and timing that makes sense"*. The pacing note went to the design lane.
 - **2026-11-14: a ruler's Story tab now folds repeat chapters into one counted chip, and it is live** ([THR-2223](https://linear.app/threadbare/issue/THR-2223)). Merged via [#2833](https://github.com/christianspliid-ui/threadbare/pull/2833).
 - **2026-11-14: the screen keeps two promises it used to break, and it is live** ([THR-2222](https://linear.app/threadbare/issue/THR-2222)). Merged via [#2832](https://github.com/christianspliid-ui/threadbare/pull/2832).
-- **2026-11-14: the map no longer pans to Kael on its own, and it is live** ([THR-2221](https://linear.app/threadbare/issue/THR-2221)). Merged via [#2831](https://github.com/christianspliid-ui/threadbare/pull/2831).
-- **2026-11-14: the purse is tuned (cards cost three times as much, pools hold 35, income 0.6), and it is live** ([THR-2216](https://linear.app/threadbare/issue/THR-2216)). Merged via [#2830](https://github.com/christianspliid-ui/threadbare/pull/2830).
 
 ---
 
