@@ -692,10 +692,10 @@ remediation ticket or the build fails.
 - **Intent:** Four ambitions are met by the undertakings that serve them (THR-1967): Dominate Regional Trade adds agent_holds_lanes (DOMINATE_TRADE_LANES_MIN lanes tolled via controlledBy, founded via the Route node's constructed_by, or held via owns on the Route node; a decayed edge no longer counts) and agent_means_at_least (DOMINATE_TRADE_MEANS_TIER) and completes on DOMINATE_TRADE_COMPLETION (3 of 5); Found Something New asks for a settlement-tier town with a constructed_by edge back to the holder (agent_controls_location, foundedBySelf); Rebuild from Ashes for a settlement-tier town of any size; Protect the Home for city-walls in the home settlement (agent_home_has_place: residence origin, else position, climbed to a settlement).
 - **Producer → Consumer:** Mortal Economy & Prosperity → Ambitions & Undertakings
 - **UL terms:** *Ambition*, *Means*, *Route*, *Freehold*
-- **Production hits:** 211 total — 2 write, 2 read, 207 unclassified
+- **Production hits:** 210 total — 2 write, 2 read, 206 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/undertakingEconomy.ts`
 - **Read sites:** `src/data/ambition-templates.ts`, `src/engine/graphConditions.ts`
-- **Other hits:** `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/shells/NudgePhaseShell.tsx` +202 more
+- **Other hits:** `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/shells/NudgePhaseShell.tsx` +201 more
 - **Verdict:** Verified 2026-10-21: THR-1967. undertakingEconomyS3.test.ts: a mortal who founds a town meets found_seat while a merely held town does not (it still meets rebuild_ground); two opened lanes plus Wealthy meet trade_lanes and trade_means; walls in another town do not meet protect_ward, walls at home do; the estate, camp and castle shapes are gone.
 
 ### `answered-prayer-pushes-dominion` — 🟢 LIVE
@@ -2505,10 +2505,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
 - **UL terms:** *Route*, *Freehold*
 - **Module:** `src/engine/undertakingEconomy.ts`
-- **Production hits:** 231 total — 2 write, 3 read, 226 unclassified
+- **Production hits:** 230 total — 2 write, 3 read, 225 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/undertakingEconomy.ts`
 - **Read sites:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/holdingIncome.ts`, `src/engine/phaseEconomicChronicle.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts` +221 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts` +220 more
 - **Verdict:** Verified 2026-10-21: THR-1937. undertakingEconomy.test.ts: after create × route the edge carries controlledBy = founder and taxRate 0.1, the identity node has constructed_by → founder and owns ← founder (a rival's control:claim is refused), collectHoldingPayments pays the founder a route_control toll, phaseEconomicChronicle writes a trade_route_established line naming both towns, and the line drops when either end is unnamed.
 
 ### `founded-town-has-ruler-and-founder` — 🟢 LIVE
@@ -2517,10 +2517,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Factions & Succession
 - **UL terms:** *Settlement*, *Freehold*, *Faction*
 - **Module:** `src/engine/undertakingEconomy.ts`
-- **Production hits:** 328 total — 2 write, 3 read, 323 unclassified
+- **Production hits:** 327 total — 2 write, 3 read, 322 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/undertakingEconomy.ts`
 - **Read sites:** `src/engine/factionPurse/income.ts`, `src/engine/holdingIncome.ts`, `src/engine/views/subjects/placeRows.ts`
-- **Other hits:** `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/BeatsDebugTab.tsx`, `src/components/Game/debug/debugPanelStyles.ts` +318 more
+- **Other hits:** `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/BeatsDebugTab.tsx`, `src/components/Game/debug/debugPanelStyles.ts` +317 more
 - **Verdict:** Verified 2026-10-21: THR-1937. src/engine/__tests__/undertakingEconomy.test.ts: the founded hamlet never shares a hex with its site and nothing is founded when the neighbourhood is full; the higher-rank town-holding faction rules, a tie goes to the realm then the lower id, a lone founder rules; the ruler's controls and the founder's owns are written and computePurseIncome lists the town under the ruler's taxHolderOf; the place row reads Founded by with the founder linked.
 
 ### `founding-patron-pays-from-faction-purse` — 🟢 LIVE
@@ -2667,10 +2667,10 @@ exit
 - **Producer → Consumer:** Companies & Group Travel → Attention, Chronicle & Narrative
 - **UL terms:** *Company*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 108 total — 1 write, 2 read, 105 unclassified
+- **Production hits:** 111 total — 1 write, 2 read, 108 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/views/subjects/personRows.ts`
-- **Other hits:** `src/components/Game/frame/frameDebugState.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/listDressing.ts` +100 more
+- **Other hits:** `src/components/Game/frame/frameDebugState.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/listDressing.ts` +103 more
 - **Verdict:** Verified 2026-07-25: Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).
 
 ### `guild-rank-gates-senior-content` — 🟢 LIVE
@@ -2774,10 +2774,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Attachment*, *Undertaking*
 - **Module:** `src/engine/holdings.ts`
-- **Production hits:** 197 total — 3 write, 7 read, 187 unclassified
+- **Production hits:** 196 total — 3 write, 7 read, 186 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/holdings.ts`
 - **Read sites:** `src/engine/effects/effectPredicates.ts`, `src/engine/graphConditions.ts`, `src/engine/graphQueries.ts`, `src/engine/notableAgendas.ts`, `src/engine/orchestrator.ts` +2 more
-- **Other hits:** `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/shells/NudgePhaseShell.tsx`, `src/components/Game/EncounterVeil.tsx` +182 more
+- **Other hits:** `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/shells/NudgePhaseShell.tsx`, `src/components/Game/EncounterVeil.tsx` +181 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 3. `owns` ships as a NEW edge beside `controls` rather than a reuse, on the inventory's measured ground: exactly one of ~30 production `controls` read sites discriminates by any property (`releaseControl`'s `controlType === 'strategic'` filter), `influence` is write-only, and reuse would have broken seven faction-territory consumers outright plus five `[0]?.source` sites that would have become nondeterministic (NFP #3) — including `battleAftermath`'s power vacuum, which would have deleted an agent's holdings on a razing. Both un-flagged agent writers migrated: `encounterAftermath`'s `spawn_unique_location` (`via: 'creation'`) and the two authored `add_edge` templates `action.iron.conquer` / `action.shadow.establish-network`, the latter routed through `grantHolding` from inside `executeAddEdge` so content-authored ownership obeys the single writer too — a raw `addEdge` there would have produced an `owns` edge violating its own `requiredProperties` and carrying no bearer-side face at all. Seize is one atomic call built on a new `WorldGraph.retargetEdgeSource`, because `updateEdge` rewrites the edge record without touching the `outgoing`/`incoming` adjacency maps and would have silently orphaned the edge (~30 existing `updateEdge` callers all pass `properties` only, so nothing depended on that). Non-vacuous by `src/engine/__tests__/holdings.test.ts` (18 tests) and `holdingsIntegration.test.ts` (9): the atomicity test wraps every graph mutator and asserts the place is never ownerless and never faceless at ANY observed instant, not just at the endpoints — falsified 2-of-18 red by replacing the atomic body with a release-then-grant, which is exactly the implementation the plan's kill criterion forbids and which the first draft of this module actually had. Home-ground scoring on your own holding ships as the handoff specified (Christian's veto invited, not exercised), paired with its negative: a non-owner in the same place gets no bonus, and an owner's title now overrides a hostile faction verdict on the same hex — the gap where an owner read as an enemy on their own land. Full suite 18601 green; 30-tick seed-42 smoke reached tick 30.
 
 ### `hunger-resonance-weighs-the-meeting-deal` — 🟢 LIVE
@@ -3308,10 +3308,10 @@ exit
 - **Producer → Consumer:** Ascendant Beats & Progression → Essence & Divine Economy
 - **UL terms:** *Ascendant Beat*, *Offering*
 - **Module:** `src/engine/ascendantBeat.ts`
-- **Production hits:** 29 total — 1 write, 3 read, 25 unclassified
+- **Production hits:** 30 total — 1 write, 3 read, 26 unclassified
 - **Write sites:** `src/engine/ascendantBeat.ts`
 - **Read sites:** `src/engine/actionUnlock.ts`, `src/engine/targetActions.ts`, `src/engine/views/godRail.ts`
-- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +20 more
+- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +21 more
 - **Verdict:** Verified 2026-10-14: THR-1811 — `godProgression.test.ts` "taking one up unlocks it, spends from the ledger, and never touches the earned counter": the card lands in `unlockedActionIds`, `essenceEarnedBySphere` is unchanged and `offeringSpentBySphere` rises by the traced `offering.taken` price; seed 42 headless rose an offering of three cards at tick 21 that passed at the tick-36 day boundary.
 
 ### `one-namer-shared-primitives` — 🟢 LIVE
@@ -3494,9 +3494,9 @@ exit
 - **Producer → Consumer:** Essence & Divine Economy → Rival Gods & Schemes
 - **UL terms:** *Dominion*, *Opposing Dominion*
 - **Module:** `src/engine/rivalRebuke.ts`
-- **Production hits:** 13 total — 2 write, 4 read, 7 unclassified
+- **Production hits:** 14 total — 2 write, 5 read, 7 unclassified
 - **Write sites:** `src/engine/rivalRebuke.ts`, `src/engine/unifiedActionResolution.ts`
-- **Read sites:** `src/engine/dominion.ts`, `src/engine/orchestrator.ts`, `src/engine/phaseSpherePressure.ts`, `src/engine/views/subjects/actOn.ts`
+- **Read sites:** `src/engine/dominion.ts`, `src/engine/orchestrator.ts`, `src/engine/phaseSpherePressure.ts`, `src/engine/views/rivalEntry.ts`, `src/engine/views/subjects/actOn.ts`
 - **Other hits:** `src/data/action-technical-effects.ts`, `src/debug-bridge.ts`, `src/engine/phaseAscendantProgression.ts`, `src/engine/phaseDominion.ts`, `src/engine/targetActions.ts` +2 more
 - **Verdict:** Verified 2026-11-14: THR-2209. rivalRebuke.thr2209.test.ts: a probe lands on untended t0 (lastPressed, not absorbed) → rebukablePlaceIds = {t0}; resolveRebuke on a clean landing writes rebukedPlaces.t0 = tick + 4 days, pushes 4 mind at t0 causedBy the god, raises the rival 0.30 → 0.38 with cause rebuked (panel: "You rebuked it at Town 0."), traces rival.rebuked; the next probe that draws t0 reads tendedBy [rebuke], is absorbed (dominion.raid absorbed: true), toasts "…but your rebuke held it.", and records lastPressed absorbed, so t0 is no longer rebukable. getTargetActionSlots offers the card only on a place in the rebuke set.
 
@@ -3729,10 +3729,10 @@ exit
 - **Intent:** A rival's temper says why (THR-2185). `phaseRivalActions` writes `RivalState.hostilityCause` on each rise (a scheme beat, or the god breaking a scheme, with the target place) and `lastPressed` when a probe lands (`landRivalProbe` now returns the landing; `rivalProbeMove` raises its toast only then, keeping the old flavour draw so the seeded stream is unchanged), and cools temper once a quiet day to `RIVAL_HOSTILITY_START`. The Rival gods panel reads both through `engine/views/rivalEntry.ts`: the cause sentence after the temper word, the last place pressed as a link, and the answer line. Every change emits `rival.hostility_changed`.
 - **Producer → Consumer:** Rival Gods & Schemes → Attention, Chronicle & Narrative
 - **UL terms:** *Dominion*
-- **Production hits:** 7 total — 1 write, 1 read, 5 unclassified
+- **Production hits:** 8 total — 1 write, 1 read, 6 unclassified
 - **Write sites:** `src/engine/orchestrator.ts`
 - **Read sites:** `src/engine/views/rivalEntry.ts`
-- **Other hits:** `src/data/player-progression.ts`, `src/debug-bridge.ts`, `src/engine/rival.ts`, `src/engine/rivalRebuke.ts`, `src/types/rival.ts`
+- **Other hits:** `src/data/player-progression.ts`, `src/debug-bridge.ts`, `src/engine/rival.ts`, `src/engine/rivalRebuke.ts`, `src/engine/views/warmRecap.ts` +1 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `rival-toast-location-ref-opens-place` — 🔵 UNVERIFIED-OK
@@ -3798,10 +3798,10 @@ exit
 - **Producer → Consumer:** Ascendant Beats & Progression → Essence & Divine Economy
 - **UL terms:** *Ascendant Beat*, *Rung*, *Key card*
 - **Module:** `src/engine/phaseAscendantProgression.ts`
-- **Production hits:** 29 total — 2 write, 1 read, 26 unclassified
+- **Production hits:** 30 total — 2 write, 1 read, 27 unclassified
 - **Write sites:** `src/engine/ascendantBeat.ts`, `src/engine/phaseAscendantProgression.ts`
 - **Read sites:** `src/engine/actionUnlock.ts`
-- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +21 more
+- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +22 more
 - **Verdict:** Verified 2026-10-14: THR-1811 — `godProgression.test.ts`: three summed marks open rung 2, the secondary signature is the first gift, the next key waits `RUNG_GIFT_SPACING`, a held key is skipped, and the resolve traces `via: rung`.
 
 ### `rung-reads-attunement-marks` — 🟢 LIVE
@@ -4715,10 +4715,10 @@ exit
 - **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) and, since THR-1654, one notable per settlement with a holding, an old quarrel and a secret or favour tied to a decider — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 324 total — 2 write, 6 read, 316 unclassified
+- **Production hits:** 323 total — 2 write, 6 read, 315 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx` +311 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx` +310 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
 
 ### `worldgen-ties-reach-ambition-and-grief` — 🟢 LIVE
