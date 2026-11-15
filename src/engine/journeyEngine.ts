@@ -78,8 +78,55 @@ import { FACTION_RANK_SENIOR } from '../data/agent-behavior-constants';
 import { emitTrace } from './traceBuffer';
 import { mulberry32 } from '../lib/prng';
 import { executeReturn } from './returnEngine';
+import { durationLabel } from './aftermathWords';
+import {
+  RETURN_CLOSE_LABEL,
+  RETURN_FIRST_FALLBACK_NAME,
+  RETURN_OPEN_THREAD_CLAUSE,
+  RETURN_REMAINING_LINE,
+} from '../data/return-content';
 import { touchWorld, type SimulationRuntime } from './simulationRuntime';
 import type { ReturnResolutionResult } from '../types/returnEngine';
+
+// ─── The Return's last-days line (THR-2228) ───────────────────────
+
+/**
+ * Whether another mortal can take the First's place before the age ends: the god
+ * holds no other `the_first` thread, and the Return's slot cooldown runs out before
+ * the Doom does. There is no other thread cap in the game; the First slot (its
+ * cooldown, `firstSlotCooldownUntil`) is the one limit on who carries the story next.
+ */
+export function isFirstSlotOpenBeforeAgeEnds(
+  graph: WorldGraph,
+  ascendantId: string,
+  cooldownTicks: number,
+  /** Game ticks until the Doom ends (not Doom-clock units; the caller converts by its step). */
+  gameTicksUntilAgeEnds: number,
+): boolean {
+  const holdsFirst = graph.getOutgoingEdges(ascendantId, 'thread').some(e =>
+    (e.properties.courtPosition as string | undefined) === 'the_first');
+  if (holdsFirst) return false;
+  const cooldown = Number.isFinite(cooldownTicks) ? Math.max(0, cooldownTicks) : 0;
+  return cooldown < gameTicksUntilAgeEnds;
+}
+
+/**
+ * The Return's line: "{first}'s story is told. The age has {timeWord} left." plus the
+ * open-thread clause only when `threadOpen` (UI Law 56). `{timeWord}` is the Doom
+ * panel's own reading of the ticks left (`durationLabel`, THR-2219). Pure.
+ */
+export function buildReturnRemainingLine(args: {
+  firstName: string | undefined;
+  doomTicksRemaining: number;
+  threadOpen: boolean;
+}): string {
+  const first = args.firstName?.trim() || RETURN_FIRST_FALLBACK_NAME;
+  const ticks = Number.isFinite(args.doomTicksRemaining) ? Math.max(0, args.doomTicksRemaining) : 0;
+  const line = RETURN_REMAINING_LINE
+    .replace('{first}', first)
+    .replace('{timeWord}', durationLabel(ticks));
+  return args.threadOpen ? line + RETURN_OPEN_THREAD_CLAUSE : line;
+}
 
 // ─── Phase Boundary Logic ──────────────────────────────────────────
 
@@ -955,8 +1002,25 @@ export function phaseJourneyBeat(
         properties: { ...returnResult.threadUpdate },
       });
 
+      // THR-2228 — the last days, named: time left in the Doom panel's words, and
+      // whether another mortal can still carry the thread before the age ends.
+      const doomTicksRemaining = Math.max(0, doomClock.totalTicks - doomClock.currentTick);
+      // The Return cooldown is in game ticks; the Doom moves `lastStep` units per game
+      // tick (a nudge can speed or slow it), so compare in game ticks at its current pace.
+      const doomStep = doomClock.lastStep ?? doomClock.tickModifier;
+      const gameTicksUntilAgeEnds = Number.isFinite(doomStep) && doomStep > 0
+        ? doomTicksRemaining / doomStep
+        : doomTicksRemaining;
+      const remainingLine = buildReturnRemainingLine({
+        firstName: agentNode.name,
+        doomTicksRemaining,
+        threadOpen: isFirstSlotOpenBeforeAgeEnds(graph, ascendantId, returnResult.result.cooldownTicks, gameTicksUntilAgeEnds),
+      });
+
       // Build a special return vignette for the UI to display
       const returnVignetteData: JourneyVignetteData = {
+        closeLabel: RETURN_CLOSE_LABEL,
+        remainingLine,
         agentId: threadEdge.target,
         agentName: agentNode.name,
         phase: 'return',

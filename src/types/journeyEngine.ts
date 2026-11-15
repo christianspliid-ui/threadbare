@@ -343,6 +343,10 @@ export interface JourneyVignetteData {
   agentGender?: string;
   /** THR-2226 — the Ordeal's lines above its choices, filled for this mortal (Law 17). */
   ordealLines?: { weight: string; stakes: string };
+  /** THR-2228 — the label of the button that closes a choice-less vision (the Return: "Go on"). */
+  closeLabel?: string;
+  /** THR-2228 — the Return's last-days line: the story is told, and the age's time left in words. */
+  remainingLine?: string;
 }
 
 // ─── Phase Boundaries ───────────────────────────────────────────────
