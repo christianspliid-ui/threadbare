@@ -12,6 +12,7 @@ import type { ControlEffect } from '../../../types/controlEffect';
 import { doomStayNotice } from '../doomStayNotice';
 import {
   DOOM_STAY_ACTIVE_LINE,
+  DOOM_STAY_GIFT_WAITING_LINE,
   DOOM_STAY_NOT_HELD_LINE,
   DOOM_STAY_TEMPLATE_ID,
 } from '../../../data/doom-stay-content';
@@ -76,6 +77,13 @@ describe('THR-2240 — doomStayNotice, three states', () => {
     expect(doomStayNotice(s)).toEqual({});
     expect(doomStayNotice(s, { includeNotHeld: true })).toEqual({ line: DOOM_STAY_NOT_HELD_LINE });
     expect(DOOM_STAY_NOT_HELD_LINE).toBe('Nothing you hold slows it yet. After its first step, you will be given a way to hold it back.');
+  });
+
+  it('not held but past the first step: the gift is waiting, not still to come (review gate)', () => {
+    const s = world({ doomClock: clock(2) });
+    expect(doomStayNotice(s)).toEqual({});
+    expect(doomStayNotice(s, { includeNotHeld: true })).toEqual({ line: DOOM_STAY_GIFT_WAITING_LINE });
+    expect(DOOM_STAY_GIFT_WAITING_LINE).not.toMatch(/After its first step/);
   });
 
   it('held, not active: the hint line and the "Stay it" button, on every surface', () => {

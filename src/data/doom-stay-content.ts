@@ -29,6 +29,12 @@ export const DOOM_STAY_HINT_SPHERE_FALLBACK = 'primary';
  */
 export const DOOM_STAY_NOT_HELD_LINE = 'Nothing you hold slows it yet. After its first step, you will be given a way to hold it back.';
 
+/**
+ * THR-2240 (review gate) — the same surfaces once Doom has taken its first step but the
+ * gift that hands the card over has not been received yet.
+ */
+export const DOOM_STAY_GIFT_WAITING_LINE = 'Nothing you hold slows it yet. A way to hold it back is waiting for you.';
+
 /** The Doom notice's second body line while the card is already held active. */
 export const DOOM_STAY_ACTIVE_LINE = 'You are holding it back.';
 

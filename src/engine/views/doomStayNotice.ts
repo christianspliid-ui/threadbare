@@ -18,6 +18,7 @@ import type { GameState } from '../../types/gameState';
 import {
   DOOM_STAY_ACTIVE_LINE,
   DOOM_STAY_BUTTON,
+  DOOM_STAY_GIFT_WAITING_LINE,
   DOOM_STAY_NOT_HELD_LINE,
   DOOM_STAY_TEMPLATE_ID,
   doomStayHint,
@@ -25,6 +26,7 @@ import {
 import { sphereWord } from '../../data/essence-format';
 import { findHeldNonStackingEffect, findPendingNonStackingCast } from '../controlEffectSpawn';
 import { getSpherePoints, rankSpherePoints } from '../spherePoints';
+import { MILESTONE_FIRST_STAGE_DOOM_STAGE } from '../../data/player-progression';
 
 /** The popup event type this notice decorates. */
 export const DOOM_STAY_NOTICE_EVENT_TYPE = 'doom_escalation';
@@ -42,12 +44,17 @@ export interface DoomStayNoticeOptions {
 }
 
 export function doomStayNotice(
-  state: Pick<GameState, 'ascendantId' | 'unlockedActionIds' | 'controlEffects' | 'unifiedActions' | 'graph'>,
+  state: Pick<GameState, 'ascendantId' | 'unlockedActionIds' | 'controlEffects' | 'unifiedActions' | 'graph'>
+    & Partial<Pick<GameState, 'doomClock'>>,
   opts: DoomStayNoticeOptions = {},
 ): DoomStayNotice {
   const ascendantId = state.ascendantId;
   if (!ascendantId || !(state.unlockedActionIds ?? []).includes(DOOM_STAY_TEMPLATE_ID)) {
-    return opts.includeNotHeld ? { line: DOOM_STAY_NOT_HELD_LINE } : {};
+    if (!opts.includeNotHeld) return {};
+    // Past the stage the first-stage gift fires at, the gift is already waiting to be
+    // received: say so, rather than promise a step that has happened (review gate).
+    const pastFirstStep = (state.doomClock?.currentStage ?? 0) >= MILESTONE_FIRST_STAGE_DOOM_STAGE;
+    return { line: pastFirstStep ? DOOM_STAY_GIFT_WAITING_LINE : DOOM_STAY_NOT_HELD_LINE };
   }
 
   const active = findHeldNonStackingEffect(state.controlEffects, DOOM_STAY_TEMPLATE_ID, ascendantId, ascendantId)
