@@ -596,7 +596,8 @@ const ASCEND_AFTERMATH = {
  *
  * The re-offer is governed by `ASPECT_REOFFER_COOLDOWN_TICKS` against the
  * `apotheosisOfferedTick` stamped at seed time (`aspects.ts`), which is
- * outcome-independent. So these endings describe how the *mortal* is left, and
+ * outcome-independent. The First is never re-offered (THR-2234: once per journey,
+ * `apotheosisOfferedForJourney`), so the declined line says so. So these endings describe how the *mortal* is left, and
  * none of them claims to lengthen the cooldown — the plan called for using the
  * existing constant rather than minting a second, and a `detail` line promising a
  * delay no code applies would be a contract written and never read.
@@ -614,8 +615,8 @@ const WITHHOLD_AFTERMATH = {
       kind: 'future_hook' as const,
       title: 'The Doorway Closed',
       detail:
-        'The mortal remained mortal, at the height of mortal devotion (tier 4). The offer can come ' +
-        'again once the cooldown has worn around.',
+        'The mortal remained mortal, at the height of mortal devotion (tier 4). Your First meets this ' +
+        'threshold only once; any other mortal may be offered it again once the cooldown has worn around.',
       polarity: 'mixed' as const,
     },
   ],

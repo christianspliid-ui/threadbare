@@ -140,6 +140,7 @@ export type TraceCategory =
   | 'journey.vision_scene' | 'journey.ordeal_roll' // THR-2226: the vision's scene; the Ordeal's roll
   | 'journey.start_floor' // THR-2233: where a First's journey began; visions passed before it
   | 'apotheosis.hand_built' | 'apotheosis.premonition' // THR-2227: the climax hand on entry; its warning
+  | 'apotheosis.first_offer' | 'apotheosis.first_passed' | 'journey.return_waits' // THR-2234: the First's offer after the Ordeal; the Return waits
   | 'hex_state' | 'unrest_tick' | 'saturation_tick' | 'location_trait' | 'artifact_trait'
   // THR-1934 — unrest as pressure
   | 'unrest.target' | 'unrest.leave' | 'unrest.leave.none' | 'unrest.leave.skipped' | 'unrest.riot_seed'
@@ -825,6 +826,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'journey.vision_scene', 'journey.ordeal_roll',
   'journey.start_floor',
   'apotheosis.hand_built', 'apotheosis.premonition',
+  'apotheosis.first_offer', 'apotheosis.first_passed', 'journey.return_waits',
   'hex_state', 'unrest_tick', 'saturation_tick', 'location_trait', 'artifact_trait',
   'unrest.target', 'unrest.leave', 'unrest.leave.none', 'unrest.leave.skipped', 'unrest.riot_seed',
   'larder.seed',
@@ -2547,7 +2549,30 @@ export interface ApotheosisHandBuiltTrace extends TraceBase {
 export interface ApotheosisPremonitionTrace extends TraceBase {
   category: 'apotheosis.premonition';
   mortalId: string;
-  ticksUntilOffer: number;
+  /** Ticks until the hold-and-cooldown offer; null for the First's journey (THR-2234). */
+  ticksUntilOffer: number | null;
+  /** THR-2234 — what brought the offer into view (absent on pre-THR-2234 traces). */
+  trigger?: 'offer_in_view' | 'crisis_answered' | 'ordeal_answered';
+}
+
+/** Trace: the First was offered the Apotheosis after the Ordeal (THR-2234) — once per journey. */
+export interface ApotheosisFirstOfferTrace extends TraceBase {
+  category: 'apotheosis.first_offer';
+  mortalId: string;
+}
+
+/** Trace: the First met the Ordeal below tier 4, so this journey has no Apotheosis (THR-2234). */
+export interface ApotheosisFirstPassedTrace extends TraceBase {
+  category: 'apotheosis.first_passed';
+  mortalId: string;
+  tier: number;
+}
+
+/** Trace: the First's Return held this tick, waiting for the Apotheosis (THR-2234). */
+export interface JourneyReturnWaitsTrace extends TraceBase {
+  category: 'journey.return_waits';
+  actorId: string;
+  doomProgress: number;
 }
 
 /** Trace: settlement changes tier (hamlet↔town↔city) via sustained prosperity */
@@ -5752,6 +5777,9 @@ export type TraceEntry =
   | JourneyOrdealRollTrace
   | ApotheosisHandBuiltTrace
   | ApotheosisPremonitionTrace
+  | ApotheosisFirstOfferTrace
+  | ApotheosisFirstPassedTrace
+  | JourneyReturnWaitsTrace
   | LocationTraitTrace
   | BattleRecordedTrace
   | FightRecordedTrace
