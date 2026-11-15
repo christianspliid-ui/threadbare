@@ -203,6 +203,117 @@ export function apotheosisPremonitionDue(threadEdge: GraphEdge, tick: number): b
   return ticksUntilApotheosisOffer(threadEdge, tick) <= APOTHEOSIS_PREMONITION_LEAD_TICKS;
 }
 
+// ─── The First's journey gate (THR-2234) ─────────────────────────────
+
+/**
+ * THR-2234 — a thread that carries (or carried) the First's hero's journey: it has a
+ * `storyPhase`. The journey owns its Apotheosis timing — Call → Road of Trials →
+ * Crisis → Ordeal → Apotheosis → Return — so the tier-4 hold and the re-offer
+ * cooldown never apply to it, not even after the Return clears the court position.
+ */
+export function isJourneyThread(props: ThreadEdgeProperties): boolean {
+  return props.storyPhase != null;
+}
+
+/** What the journey gate does this tick for the First's thread. */
+export type FirstApotheosisStep = 'none' | 'premonition' | 'offer' | 'pass';
+
+/**
+ * THR-2234 — the First's Apotheosis step, read from the thread alone:
+ *  - closed (offered, passed, or the Return happened) → `none`, forever;
+ *  - before the Ordeal is answered: `premonition` once the Crisis vision is answered
+ *    and the First is at tier 4 (the warning moves with the offer), else `none`;
+ *  - after the Ordeal is answered: below tier 4 → `pass` (no Apotheosis this journey);
+ *    at tier 4 → `offer`, or `premonition` first if none has fired (the offer then
+ *    comes the next tick, so the warning always precedes it).
+ */
+export function firstApotheosisStep(props: ThreadEdgeProperties): FirstApotheosisStep {
+  const p = props as ApotheosisThreadProps;
+  if (p.apotheosisOfferedForJourney === true || p.apotheosisPassedForJourney === true) return 'none';
+  if (p.returnEnding != null) return 'none';
+  const history = p.beatHistory ?? [];
+  const premonitionFired = typeof p.apotheosisPremonitionTick === 'number';
+  if (!history.some(b => b.phase === 'ordeal')) {
+    const crisisAnswered = history.some(b => b.phase === 'crisis');
+    return crisisAnswered && p.tier === 4 && !premonitionFired ? 'premonition' : 'none';
+  }
+  if (p.tier !== 4) return 'pass';
+  return premonitionFired ? 'offer' : 'premonition';
+}
+
+/**
+ * THR-2234 — does the First's Return wait for the Apotheosis? True while the First's
+ * offer is due (Ordeal answered at tier 4, not yet offered), seeded, or being played.
+ * The caller lets the Return through anyway at `FIRST_RETURN_APOTHEOSIS_WAIT_DOOM_CAP`.
+ */
+export function isFirstApotheosisPending(state: GameState, threadEdge: GraphEdge): boolean {
+  const props = threadEdge.properties as ThreadEdgeProperties;
+  if (!isJourneyThread(props)) return false;
+  const mortalId = threadEdge.target;
+  if (isAspect(state.graph, mortalId)) return false;
+  const seeded = (state.pendingEncounterSeeds ?? []).some(
+    s => s.templateId === APOTHEOSIS_ENCOUNTER_TEMPLATE_ID && s.targetAgentId === mortalId,
+  );
+  if (seeded) return true;
+  const active = (state.unifiedActions ?? []).some(
+    a => !a.resolved && a.templateId === APOTHEOSIS_ENCOUNTER_TEMPLATE_ID && a.actorId === mortalId,
+  );
+  if (active) return true;
+  const step = firstApotheosisStep(props);
+  return step === 'offer' || (step === 'premonition' && (props.beatHistory ?? []).some(b => b.phase === 'ordeal'));
+}
+
+/** Build the premonition event + trace (THR-2227's line), stamping the thread. */
+function firePremonition(
+  edge: GraphEdge,
+  mortalId: string,
+  name: string,
+  gender: unknown,
+  tick: number,
+  trigger: 'offer_in_view' | 'crisis_answered' | 'ordeal_answered',
+): TickEvent {
+  const props = edge.properties as unknown as ApotheosisThreadProps;
+  props.apotheosisPremonitionTick = tick;
+  const message = fillApotheosisLine(APOTHEOSIS_PREMONITION_LINE, name, gender);
+  emitTrace({
+    tick,
+    category: 'apotheosis.premonition',
+    agentId: mortalId,
+    mortalId,
+    trigger,
+    ticksUntilOffer: trigger === 'offer_in_view' ? ticksUntilApotheosisOffer(edge, tick) : null,
+    summary: `apotheosis.premonition: ${mortalId} nears the threshold (${trigger})`,
+  });
+  return {
+    id: `apotheosis_premonition_${mortalId}_${tick}`,
+    tick,
+    type: 'divine_premonition',
+    message,
+    significance: 0.7,
+    isInterventionBeat: true,
+    actorId: mortalId,
+    notification: { channel: 'toast' },
+  };
+}
+
+/** The capstone seed for a mortal (unchanged shape since THR-1929). */
+function apotheosisSeed(mortalId: string, tick: number): PendingEncounterSeed {
+  return {
+    seedId: `apotheosis_${mortalId}_${tick}`,
+    sourceEncounterId: 'system.apotheosis_eligibility',
+    sourceReactionId: 'eligibility',
+    templateId: APOTHEOSIS_ENCOUNTER_TEMPLATE_ID,
+    targetAgentId: mortalId,
+    eligibleAfterTick: tick,
+    priority: 1.5,
+    seedLabel: 'A mortal stands at the threshold of apotheosis.',
+    plantedTick: tick,
+    // THR-1929: the capstone fires wherever the mortal stands — its envelope binds
+    // the opening prose, never whether it can fire — so it skips the place wait.
+    firesPlaceless: true,
+  };
+}
+
 /**
  * Tick phase: seed the bespoke apotheosis capstone onto any tier-4 mortal that
  * has held the top rung long enough and is not already an Aspect. Pushes
@@ -249,50 +360,50 @@ export function seedApotheosisEncounters(
     if (!mortalNode || mortalNode.properties.actorType !== 'individual') continue;
     if (mortalNode.properties.deceased === true) continue;
 
+    // THR-2234 — the First's journey owns its Apotheosis: once, after the Ordeal.
+    const threadProps = edge.properties as ThreadEdgeProperties;
+    if (isJourneyThread(threadProps)) {
+      const step = firstApotheosisStep(threadProps);
+      if (step === 'premonition') {
+        const trigger = (threadProps.beatHistory ?? []).some(b => b.phase === 'ordeal') ? 'ordeal_answered' : 'crisis_answered';
+        premonitionEvents.push(firePremonition(edge, mortalId, mortalNode.name, mortalNode.properties.gender, tick, trigger));
+      } else if (step === 'offer') {
+        newSeeds.push(apotheosisSeed(mortalId, tick));
+        const props = edge.properties as unknown as ApotheosisThreadProps;
+        props.apotheosisOfferedTick = tick;
+        props.apotheosisOfferedForJourney = true;
+        emitTrace({
+          tick,
+          category: 'apotheosis.first_offer',
+          agentId: mortalId,
+          mortalId,
+          summary: `apotheosis.first_offer: ${mortalNode.name} stands at the threshold after the Ordeal (once per journey)`,
+        });
+      } else if (step === 'pass') {
+        (edge.properties as unknown as ApotheosisThreadProps).apotheosisPassedForJourney = true;
+        emitTrace({
+          tick,
+          category: 'apotheosis.first_passed',
+          agentId: mortalId,
+          mortalId,
+          tier: threadProps.tier,
+          summary: `apotheosis.first_passed: ${mortalNode.name} met the Ordeal below tier 4 — no Apotheosis this journey`,
+        });
+      }
+      continue;
+    }
+
     // THR-2227 — the premonition: once per offer, when the offer comes into view
     // (the eligibility hold starts), so a god can save essence for it. It always
     // lands on an earlier tick than the offer: a tick that fires it seeds nothing.
     if (apotheosisPremonitionDue(edge, tick)) {
-      const props = edge.properties as unknown as ApotheosisThreadProps;
-      props.apotheosisPremonitionTick = tick;
-      const message = fillApotheosisLine(APOTHEOSIS_PREMONITION_LINE, mortalNode.name, mortalNode.properties.gender);
-      premonitionEvents.push({
-        id: `apotheosis_premonition_${mortalId}_${tick}`,
-        tick,
-        type: 'divine_premonition',
-        message,
-        significance: 0.7,
-        isInterventionBeat: true,
-        actorId: mortalId,
-        notification: { channel: 'toast' },
-      });
-      emitTrace({
-        tick,
-        category: 'apotheosis.premonition',
-        agentId: mortalId,
-        mortalId,
-        ticksUntilOffer: ticksUntilApotheosisOffer(edge, tick),
-        summary: `apotheosis.premonition: ${mortalId} nears the threshold`,
-      });
+      premonitionEvents.push(firePremonition(edge, mortalId, mortalNode.name, mortalNode.properties.gender, tick, 'offer_in_view'));
       continue;
     }
 
     if (!isApotheosisEligible(edge, tick)) continue;
 
-    newSeeds.push({
-      seedId: `apotheosis_${mortalId}_${tick}`,
-      sourceEncounterId: 'system.apotheosis_eligibility',
-      sourceReactionId: 'eligibility',
-      templateId: APOTHEOSIS_ENCOUNTER_TEMPLATE_ID,
-      targetAgentId: mortalId,
-      eligibleAfterTick: tick,
-      priority: 1.5,
-      seedLabel: 'A mortal stands at the threshold of apotheosis.',
-      plantedTick: tick,
-      // THR-1929: the capstone fires wherever the mortal stands — its envelope binds
-      // the opening prose, never whether it can fire — so it skips the place wait.
-      firesPlaceless: true,
-    });
+    newSeeds.push(apotheosisSeed(mortalId, tick));
 
     // Stamp the offer so we respect the re-offer cooldown and don't double-seed.
     (edge.properties as ThreadEdgeProperties & { apotheosisOfferedTick?: number }).apotheosisOfferedTick = tick;

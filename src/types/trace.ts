@@ -140,6 +140,7 @@ export type TraceCategory =
   | 'journey.vision_scene' | 'journey.ordeal_roll' // THR-2226: the vision's scene; the Ordeal's roll
   | 'journey.start_floor' // THR-2233: where a First's journey began; visions passed before it
   | 'apotheosis.hand_built' | 'apotheosis.premonition' // THR-2227: the climax hand on entry; its warning
+  | 'apotheosis.first_offer' | 'apotheosis.first_passed' | 'journey.return_waits' // THR-2234: the First's offer after the Ordeal; the Return waits
   | 'hex_state' | 'unrest_tick' | 'saturation_tick' | 'location_trait' | 'artifact_trait'
   // THR-1934 — unrest as pressure
   | 'unrest.target' | 'unrest.leave' | 'unrest.leave.none' | 'unrest.leave.skipped' | 'unrest.riot_seed'
@@ -825,6 +826,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'journey.vision_scene', 'journey.ordeal_roll',
   'journey.start_floor',
   'apotheosis.hand_built', 'apotheosis.premonition',
+  'apotheosis.first_offer', 'apotheosis.first_passed', 'journey.return_waits',
   'hex_state', 'unrest_tick', 'saturation_tick', 'location_trait', 'artifact_trait',
   'unrest.target', 'unrest.leave', 'unrest.leave.none', 'unrest.leave.skipped', 'unrest.riot_seed',
   'larder.seed',

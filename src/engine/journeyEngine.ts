@@ -53,6 +53,8 @@ import {
   VISION_SCENE_OPENERS,
 } from '../data/vision-scene-content';
 import { ambitionPronounsFor, resolveAmbitionPronouns } from './ambitionProse';
+import { isFirstApotheosisPending } from './aspects';
+import { FIRST_RETURN_APOTHEOSIS_WAIT_DOOM_CAP } from '../data/aspect-content';
 import { computeCapability } from './domainCapability';
 import { fitDifficultyToForecast, scaledStepProbability } from './scaledForecast';
 // The core's re-export of the forecast classifier: this module reaches the dice only
@@ -1021,6 +1023,26 @@ export function phaseJourneyBeat(
     const beatCheck = shouldBeatFire(doomProgress, prevDoomProgress, storyPhase, beatHistory, threadProps.journeyStartDoom);
 
     if (!beatCheck.shouldFire) continue;
+
+    // THR-2234 — the Return waits for the First's Apotheosis: while the offer is due,
+    // seeded or being played, the Return holds and fires the tick after it resolves
+    // (the phase-entry rule re-checks every tick). Fail-soft: at the Doom cap the
+    // Return fires anyway, so the age never ends without its last chapter.
+    if (
+      beatCheck.phase === 'return'
+      && doomProgress < FIRST_RETURN_APOTHEOSIS_WAIT_DOOM_CAP
+      && isFirstApotheosisPending(state, threadEdge)
+    ) {
+      emitTrace({
+        category: 'journey.return_waits',
+        tick,
+        agentId: threadEdge.target,
+        actorId: threadEdge.target,
+        summary: `${agentNode.name}'s Return waits for the Apotheosis (Doom ${doomProgress.toFixed(3)})`,
+        doomProgress,
+      });
+      continue;
+    }
 
     // THR-2233 — the journey's floor: where the Doom stood at this First's first vision.
     if (beatHistory.length === 0 && threadProps.journeyStartDoom == null) {

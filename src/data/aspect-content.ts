@@ -31,6 +31,14 @@ export const ASPECT_ELIGIBILITY_TICKS = 60;
 export const ASPECT_REOFFER_COOLDOWN_TICKS = 90;
 
 /**
+ * THR-2234 — the Doom progress at which the First's Return stops waiting for an
+ * unresolved Apotheosis. Below it, the Return holds while the First's offer is due,
+ * seeded or being played; at or above it, the Return fires anyway (fail-soft: the
+ * age must not end without its last chapter). @range 0.90–0.99
+ */
+export const FIRST_RETURN_APOTHEOSIS_WAIT_DOOM_CAP = 0.95;
+
+/**
  * Living-conduit essence trickle per Aspect per tick (the "light
  * mechanic"). Below ESSENCE_PER_PLACE_OF_POWER (0.5) so an Aspect is
  * a modest conduit, not a power spike. A mythic echo (dead Aspect)

@@ -92,5 +92,7 @@ describe('personal-name sweep (THR-2170)', () => {
     // The generator still does its job — a cap that starves it would quietly hand
     // every name back to the curated pool. Fail-soft holds either way (null → pool).
     expect(nulls / (names.length + nulls)).toBeLessThan(0.05);
-  });
+    // 10 000 draws take ~2 s locally but 11.4 s on a busy CI shard (PR #2843, 2026-11-15),
+    // past vitest's 5 s default — a timeout, not a defect.
+  }, 60_000);
 });
