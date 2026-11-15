@@ -1,8 +1,16 @@
 # User Action Required
 
-**Last updated:** 2026-11-15 05:58 local (04:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-15 06:59 local (05:59 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
+
+### Should every one of The First's own chapters give you a hand? (new 15 Nov)
+
+About 1 in 4 of Kael's chapters is "Theirs alone": it plays out without you and says so. Two of three warm testers asked for cards in every one. **(a)** Keep it as now. **(b)** Every story chapter of The First deals you a small hand on its first step: about 4 more stops per 300 ticks, from about 10 to about 14. The design lane leans (b), but it changes how The First's life feels. Say **"every chapter asks"** or **"keep theirs alone"**. Details: [THR-2174](https://linear.app/threadbare/issue/THR-2174/the-player-cant-tell-which-chapters-wait-for-their-cards-the-gallows). *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-15b.md)*
+
+### Pick the carved icon shapes (reserved for you)
+
+Two picks wait on you. [THR-1908](https://linear.app/threadbare/issue/THR-1908/christian-picks-carved-shapes-for-the-five-open-icon-classes-doom): one shape each for the doom kinds, a mortal's strands, the card verbs, places of power and rival tempers, three candidates per idea on [the review sheet](https://claude.ai/artifact/X9woLDsYia4iP3uQkk6QjN). [THR-2104](https://linear.app/threadbare/issue/THR-2104/christian-picks-carved-shapes-for-the-inspectors-tabs-with-no-icon-yet): shapes for the Inspector tabs Prowess, Here now, Story and Reaches. Until you pick, those spots keep today's glyphs. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-15b.md)*
 
 ### Sunday 8 – Thursday 12 Nov: was the computer off or the app closed, or was this a pause? (new 12 Nov)
 
@@ -50,6 +58,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-15: each mark on the Stage now means one thing. It is live** ([THR-2231](https://linear.app/threadbare/issue/THR-2231)). Merged via [#2841](https://github.com/christianspliid-ui/threadbare/pull/2841).
+- **2026-11-15: warm playtests now arrive in a real world. It is live** ([THR-2230](https://linear.app/threadbare/issue/THR-2230)). Merged via [#2840](https://github.com/christianspliid-ui/threadbare/pull/2840).
 - **2026-11-15: the Return now closes on "Go on" and says how long the age has left. It is live** ([THR-2228](https://linear.app/threadbare/issue/THR-2228)). Merged via [#2839](https://github.com/christianspliid-ui/threadbare/pull/2839).
 - **2026-11-15: the Apotheosis's deciding step deals the run's biggest hand, opens at Uncertain, and is warned first. It is live** ([THR-2227](https://linear.app/threadbare/issue/THR-2227)). Merged via [#2837](https://github.com/christianspliid-ui/threadbare/pull/2837) and [#2838](https://github.com/christianspliid-ui/threadbare/pull/2838).
 - **2026-11-15: the Ordeal is now rolled, and journey visions read the scene the god leans on. It is live** ([THR-2226](https://linear.app/threadbare/issue/THR-2226)). Merged via [#2835](https://github.com/christianspliid-ui/threadbare/pull/2835) and [#2836](https://github.com/christianspliid-ui/threadbare/pull/2836).
@@ -58,8 +68,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-14: the screen keeps two promises it used to break, and it is live** ([THR-2222](https://linear.app/threadbare/issue/THR-2222)). Merged via [#2832](https://github.com/christianspliid-ui/threadbare/pull/2832).
 - **2026-11-14: the map no longer pans to Kael on its own, and it is live** ([THR-2221](https://linear.app/threadbare/issue/THR-2221)). Merged via [#2831](https://github.com/christianspliid-ui/threadbare/pull/2831).
 - **2026-11-14: the purse is tuned (cards cost three times as much, pools hold 35, income 0.6), and it is live** ([THR-2216](https://linear.app/threadbare/issue/THR-2216)). Merged via [#2830](https://github.com/christianspliid-ui/threadbare/pull/2830).
-- **2026-11-14: a dream that found no hold no longer says "held" or "Heart grew", and it is live** ([THR-2220](https://linear.app/threadbare/issue/THR-2220)). Merged via [#2829](https://github.com/christianspliid-ui/threadbare/pull/2829).
-- **2026-11-14: new Doom stages now say what each card does, with no more "many weeks", and it is live** ([THR-2219](https://linear.app/threadbare/issue/THR-2219)). Merged via [#2828](https://github.com/christianspliid-ui/threadbare/pull/2828).
 
 ---
 
