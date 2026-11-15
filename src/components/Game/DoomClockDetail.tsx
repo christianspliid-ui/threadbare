@@ -2,6 +2,7 @@ import type { DoomClockDefinition, DoomClockState } from '../../types/doomClock'
 import { Modal } from '../shared/Modal';
 import { Tooltip } from '../shared/Tooltip';
 import { Icon } from '../shared/Icon';
+import { Button } from '../shared/Button';
 import { DOOM_ARCHETYPE_COLORS } from '../../data/uiColorPalette';
 import { DOOM_CLIMAX_START } from '../../data/game-config';
 import { durationLabel } from '../../engine/aftermathWords';
@@ -14,6 +15,15 @@ interface DoomClockDetailProps {
   definition: DoomClockDefinition;
   state: DoomClockState;
   journeyLabel?: string;
+  /**
+   * THR-2240 — the answer line in the Act slot, from
+   * `doomStayNotice(state, { includeNotHeld: true })`: what slows the Doom, if anything.
+   */
+  stayLine?: string;
+  /** THR-2240 — the "Stay it" button's label, present only while the card is held and not active. */
+  stayButton?: string;
+  /** THR-2240 — the button's handler: the same one the stage notice's "Stay it" uses. */
+  onStay?: () => void;
 }
 
 const DOOM_ARCHETYPE_FLAVOR: Record<string, string> = {
@@ -60,6 +70,9 @@ export function DoomClockDetail({
   definition,
   state,
   journeyLabel,
+  stayLine,
+  stayButton,
+  onStay,
 }: DoomClockDetailProps) {
   const color = DOOM_ARCHETYPE_COLORS[definition.archetype] ?? DOOM_ARCHETYPE_COLORS.breach;
   const glyph = (DOOM_ARCHETYPE_GLYPHS as Readonly<Record<string, string>>)[definition.archetype] ?? DOOM_ARCHETYPE_FALLBACK_GLYPH;
@@ -67,6 +80,12 @@ export function DoomClockDetail({
   const ticksRemaining = Math.max(0, state.totalTicks - state.currentTick);
   const nextBeatLabel = getNextBeatLabel(definition, state);
   const recentResolved = [...(state.resolvedEvents ?? [])].slice(-4).reverse();
+  // THR-2240 — the answer sits under the current stage (Who → Now → Act); before the
+  // first stage, or once the doom has landed, it sits under the list (or not at all).
+  const hasCurrentStage = definition.stages.some((_, idx) => idx === state.currentStage - 1);
+  const answer = !state.expired && stayLine
+    ? <DoomStayAnswer line={stayLine} button={stayButton} onStay={onStay} color={color} />
+    : null;
 
   return (
     <Modal open={open} onClose={onClose} size="m" aria-label="Doom clock">
@@ -343,10 +362,14 @@ export function DoomClockDetail({
                         ))}
                       </div>
                     )}
+
+                    {isCurrent && answer}
                   </div>
                 );
               })}
             </div>
+
+            {!hasCurrentStage && answer}
 
             {recentResolved.length > 0 && (
               <div style={{ marginTop: '16px' }}>
@@ -395,6 +418,38 @@ export function DoomClockDetail({
         </div>
       </Modal.Footer>
     </Modal>
+  );
+}
+
+/** THR-2240 — the Doom panel's Act line: what slows it, and the button while it can be held. */
+function DoomStayAnswer({ line, button, onStay, color }: { line: string; button?: string; onStay?: () => void; color: string }) {
+  return (
+    <div
+      data-testid="doom-stay-answer"
+      style={{
+        marginTop: '8px',
+        marginLeft: '26px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        flexWrap: 'wrap',
+      }}
+    >
+      <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)', lineHeight: 1.5, flex: '1 1 12rem' }}>
+        {line}
+      </span>
+      {button && onStay && (
+        <Button
+          variant="secondary"
+          size="sm"
+          data-testid="doom-stay-button"
+          onClick={onStay}
+          style={{ borderColor: `${color}60`, flexShrink: 0 }}
+        >
+          {button}
+        </Button>
+      )}
+    </div>
   );
 }
 

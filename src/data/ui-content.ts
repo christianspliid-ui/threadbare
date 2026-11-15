@@ -1249,6 +1249,15 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Places grew',
     desc: '{list} are more yours now.',
   },
+  // THR-2240 — Doom took a step during the warm-up.
+  'ui.warm_recap.doom_step': {
+    label: 'Doom took a step',
+    desc: 'Doom took a step while you were away: {stage}.',
+  },
+  'ui.warm_recap.doom_stay_held': {
+    label: 'Stay the Unmaking',
+    desc: 'Stay the Unmaking slows it.',
+  },
   'ui.warm_recap.empty': {
     label: 'Nothing changed',
     desc: 'Nothing in your story changed while you were away.',

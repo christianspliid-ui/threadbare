@@ -7085,6 +7085,22 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/phaseDoom.ts'],
     readSites: ['src/engine/journeyEngine.ts'],
   },
+  // THR-2240: the warm recap says Doom moved during the warm-up.
+  {
+    id: 'doom-stage-feeds-warm-recap',
+    producerSystem: DOOM,
+    consumerSystem: NARRATIVE,
+    intent:
+      'The warm recap says Doom moved (THR-2240). `snapshotWarmRecap` (`engine/views/warmRecap.ts`) records `doomClock.currentStage` before the warm-up; `buildWarmRecap` compares it at arrival and, when a stage passed, adds "Doom took a step while you were away: {stage}." with the stage name from `doomDefinition`, plus "Stay the Unmaking slows it." when the god already holds the card (`unlockedActionIds`). A snapshot without a stage gives no line. Read only.',
+    ulTerms: ['Doom Clock'],
+    mechanism: {
+      kind: 'state-field',
+      symbols: ['doomClock'],
+      module: 'src/engine/views/warmRecap.ts',
+    },
+    writeSites: ['src/engine/phaseDoom.ts'],
+    readSites: ['src/engine/views/warmRecap.ts'],
+  },
   // THR-2226 (plan 2026-11-14-thr-2204-put-the-god-in-the-climax, slice 1): the Ordeal
   // is rolled. The choice is a lean on the roll, never a result (Law 10).
   {

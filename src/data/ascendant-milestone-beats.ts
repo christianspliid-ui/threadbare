@@ -220,7 +220,7 @@ export const MILESTONE_BEAT_PRESENTATION: Readonly<Record<string, SpineBeatPrese
     eyebrow: 'The First Stage',
     title: 'The Ending Has Begun to Move',
     prose:
-      'The Unmaking has taken its first real step. It will take the next one whether you watch or not, and nothing you hold will turn it back. But you are not nothing. You can set your will against it and hold the hour: while you hold, the ending comes slower. Holding costs you every day, from the same essence that moves your mortals, so every day you hold it is a day you chose the world over them.',
+      'The Unmaking has taken its first real step. It will take the next one whether you watch or not, and nothing you hold will turn it back. But you are not nothing. You can set your will against it and hold the hour: while you hold, the ending comes slower. Holding costs you every day, from the same essence that moves your mortals, so every day you hold it is a day you chose the world over them. It is yours now as Stay the Unmaking. You will find it on the Doom panel, and on your own page.',
     cta: 'Receive',
   },
   [MILESTONE_FIRST_REBUKE_BEAT_ID]: {

@@ -71,7 +71,7 @@ import { AscendantBeatModal } from '../AscendantBeatModal';
 import { DoomClockDetail } from '../DoomClockDetail';
 import { MandateDetail } from '../MandateDetail';
 import { EventPopup } from '../EventPopup';
-import { doomStayNotice, DOOM_STAY_NOTICE_EVENT_TYPE } from '../../../engine/views/doomStayNotice';
+import { doomStayNotice, DOOM_STAY_NOTICE_EVENT_TYPE, type DoomStayNotice } from '../../../engine/views/doomStayNotice';
 import { AgendaPicker } from '../AgendaPicker';
 import { InterventionConfirm } from '../InterventionConfirm';
 import { ChoiceSetModal } from '../ChoiceSetModal';
@@ -349,6 +349,8 @@ export function DialogHost({
     }
     }
   };
+  // THR-2240 — read only while the Doom panel is open.
+  const doomDetailStay: DoomStayNotice = doomDetailOpen ? doomStayNotice(gameState, { includeNotHeld: true }) : {};
   return (
     <>
       {renderDialog('divine-court')}
@@ -440,6 +442,11 @@ export function DialogHost({
         definition={gameState.doomDefinition}
         state={gameState.doomClock}
         journeyLabel={doomJourneyLabel}
+        // THR-2240: the answer line, and "Stay it" through the stage notice's own handler
+        // (close the panel, open the god's page, whose Act row holds the card).
+        stayLine={doomDetailStay.line}
+        stayButton={doomDetailStay.button}
+        onStay={() => { setDoomDetailOpen(false); openAgentSheetForId(gameState.ascendantId); }}
       />
 
       {/* Mandate detail modal */}
