@@ -31,7 +31,6 @@ import {
   TRIALS_PHASE_END,
   CRISIS_PHASE_END,
   ORDEAL_PHASE_END,
-  ORDEAL_FORCE_FIRE_THRESHOLD,
   MAX_PENDING_VIGNETTES,
   JOURNEY_REACH_CHANGE_RAW_SCALE,
   ORDEAL_BAND_TO_OUTCOME,
@@ -260,6 +259,18 @@ export function shouldBeatFire(
 ): { shouldFire: boolean; phase: CampbellianPhase; beatIndex: number } {
   const currentPhase = getJourneyPhase(doomProgress);
 
+  // THR-2233 — no First reaches the Return without their Ordeal. In the Return phase
+  // with no Ordeal recorded (its window passed while a vision waited, a doom step
+  // jumped it, or the First was threaded that late), the Ordeal fires first — checked
+  // before the phase-entry branch, which would otherwise hand straight to the Return.
+  // `phaseJourneyBeat` then records storyPhase 'ordeal', so once it is answered the
+  // Return fires as the next phase entry. (Replaces the old ≥ ORDEAL_FORCE_FIRE_THRESHOLD
+  // force-fire, which only ran when storyPhase was already 'return' — never, since the
+  // Return clears the court position.)
+  if (currentPhase === 'return' && !beatHistory.some(b => b.phase === 'ordeal')) {
+    return { shouldFire: true, phase: 'ordeal', beatIndex: 0 };
+  }
+
   // Check if we've entered a new phase
   if (currentPhase !== storyPhase) {
     // Phase transition — the first beat of the new phase should fire
@@ -279,17 +290,6 @@ export function shouldBeatFire(
   // signature for callers. A beat whose phase has ended is not caught up: the
   // phase-entry branch above hands over to the next phase.
   void prevDoomProgress;
-
-  // Force-fire Ordeal if we've passed the threshold and it hasn't fired yet. Checked
-  // before the catch-up so the Ordeal always precedes the Return (THR-2233: once the
-  // forced Ordeal is answered, the Return then catches up on the next tick).
-  if (
-    doomProgress >= ORDEAL_FORCE_FIRE_THRESHOLD &&
-    !beatHistory.some(b => b.phase === 'ordeal') &&
-    currentPhase === 'return'
-  ) {
-    return { shouldFire: true, phase: 'ordeal', beatIndex: 0 };
-  }
 
   const thresholds = getBeatThresholds(currentPhase);
   const beatsInPhase = beatHistory.filter(b => b.phase === currentPhase).length;
@@ -1022,6 +1022,19 @@ export function phaseJourneyBeat(
     // THR-2233 — the journey's floor: where the Doom stood at this First's first vision.
     if (beatHistory.length === 0 && threadProps.journeyStartDoom == null) {
       graph.updateEdge(threadEdge.id, { properties: { journeyStartDoom: doomProgress } });
+      const startPhase = getJourneyPhase(doomProgress);
+      const skipped = beatsBeforeJourney(getBeatThresholds(startPhase), doomProgress);
+      emitTrace({
+        category: 'journey.start_floor',
+        tick,
+        agentId: threadEdge.target,
+        summary: `${agentNode.name}'s journey begins at Doom ${doomProgress.toFixed(3)} in the ${formatPhaseName(startPhase)}`
+          + (skipped > 0 ? `; ${skipped} ${formatPhaseName(startPhase)} vision(s) passed before the bond and will not play` : ''),
+        actorId: threadEdge.target,
+        journeyStartDoom: doomProgress,
+        phase: startPhase,
+        skippedBeats: skipped,
+      });
     }
 
     // ── Return Phase: trigger convergence algorithm instead of normal vignette ──
@@ -1138,8 +1151,10 @@ export function phaseJourneyBeat(
       queuedTick: tick,
     });
 
-    // Update story phase on the thread edge
-    const newPhase = getJourneyPhase(doomProgress);
+    // Update story phase on the thread edge — to the phase of the beat that fired
+    // (THR-2233: a missed Ordeal fired in the Return phase records 'ordeal', so the
+    // Return still arrives as the next phase entry once the Ordeal is answered).
+    const newPhase = beatCheck.phase;
     if (newPhase !== storyPhase) {
       // Phase transition event
       newEvents.push({

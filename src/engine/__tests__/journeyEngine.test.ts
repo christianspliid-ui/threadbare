@@ -290,6 +290,17 @@ describe('shouldBeatFire', () => {
     expect(result).toEqual({ shouldFire: true, phase: 'return', beatIndex: 0 });
   });
 
+  test('a Doom jump from the Crisis into the Return fires the missed Ordeal first, then the Return (THR-2233)', () => {
+    const history: BeatOutcome[] = [
+      { phase: 'crisis', tick: 40, templateId: 't', variantKey: 'v', playerChoiceId: 'c', stateSnapshot: makeSnapshot() },
+    ];
+    // Entering the Return phase (0.81 < the old 0.90 force threshold) with no Ordeal played.
+    expect(shouldBeatFire(0.81, 0.69, 'crisis', history)).toEqual({ shouldFire: true, phase: 'ordeal', beatIndex: 0 });
+    // The engine records storyPhase 'ordeal' for that beat; once it is answered the Return enters.
+    const answered: BeatOutcome[] = [...history, { phase: 'ordeal', tick: 41, templateId: 't', variantKey: 'v', playerChoiceId: 'c', stateSnapshot: makeSnapshot() }];
+    expect(shouldBeatFire(0.82, 0.81, 'ordeal', answered)).toEqual({ shouldFire: true, phase: 'return', beatIndex: 0 });
+  });
+
   test('a beat reached but not crossed this tick still fires (THR-2233 catch-up)', () => {
     const t = getBeatThresholds('road_of_trials');
     const oneTrials: BeatOutcome[] = [
