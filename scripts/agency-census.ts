@@ -8,6 +8,10 @@
 //   --arm none    hands-off: every held step is released with no card played (the mortal's own odds);
 //   --arm greedy  played: every held step plays every card in hand order the pool can still pay for.
 // Forks are left to the mortal in both arms (Law 11): a held choice step is released the same way.
+// Journey visions are answered in both arms (THR-2229), or the First's journey never leaves its
+// phase and no arm reaches the Ordeal: the played arm takes the costliest choice the pool can pay
+// (paid from the primary pool, as the game charges it); the hands-off arm takes the "withdrawn"
+// choice, as dismissing a vision does in the game. A choice-less vision (the Return) is closed.
 // Nothing is cast. Determinism (NFP 3) makes every difference between the arms the player's doing;
 // run the same arm twice to confirm the zero-noise floor. The verdict (pure) is scripts/agency-verdict.ts.
 //
@@ -121,6 +125,10 @@ const [
   { getFirstId },
   { firstFate },
   { SPHERE_NAMES },
+  { recordJourneyChoice },
+  { spendAuthoredChoiceEssence },
+  { enableTracing, disableTracing, isTracingEnabled, getTraces },
+  { readLuckState },
 ] = await Promise.all([
   import('../src/engine/gameInit'),
   import('../src/engine/orchestrator'),
@@ -141,6 +149,10 @@ const [
   import('../src/engine/meetingEncounter'),
   import('../src/engine/twilight'),
   import('../src/types/index'),
+  import('../src/engine/journeyEngine'),
+  import('../src/components/Game/encounter-stage/nudgeCommit'),
+  import('../src/engine/traceBuffer'),
+  import('../src/engine/luck'),
 ]);
 
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
@@ -212,6 +224,71 @@ function handleHeldSteps(): void {
   }
 }
 
+// ─── THR-2229 — journey visions, answered in both arms ───────────────
+let visionsAnswered = 0;
+const visionChoices: string[] = [];
+const ordealRolls: any[] = [];
+function answerVisions(played: boolean): void {
+  const pending: any[] = state.pendingVignettes ?? [];
+  if (!pending.length) return;
+  let pool = state.essencePool;
+  let spent = false;
+  for (const v of pending) {
+    const data = v.data;
+    const choices: any[] = data?.choices ?? [];
+    let choice: any;
+    if (played) {
+      const affordable = choices.filter((c) => {
+        const cost = c.effects?.essenceCost ?? 0;
+        return cost <= 0 || spendAuthoredChoiceEssence(pool, cost, primary as any).ok;
+      });
+      choice = [...affordable].sort((a, b) => (b.effects?.essenceCost ?? 0) - (a.effects?.essenceCost ?? 0))[0];
+    } else {
+      choice = choices.find((c) => c.effects?.interventionType === 'withdrawn');
+    }
+    if (!choice) continue; // the Return (no choices) is closed below
+    const cost = choice.effects?.essenceCost ?? 0;
+    if (cost > 0) {
+      const r: any = spendAuthoredChoiceEssence(pool, cost, primary as any);
+      if (r.ok) { pool = r.pool; spent = true; essenceSpent += cost; }
+    }
+    const ordeal = !!data.isOrdeal;
+    const was = isTracingEnabled();
+    if (ordeal && !was) enableTracing();
+    const bagBefore = ordeal ? readLuckState(state.graph.getNode(data.agentId)).bagDraws : undefined;
+    recordJourneyChoice(state.graph, runtime, state.ascendantId, data, choice.id, state.tick, state.seed);
+    if (ordeal) {
+      const t: any = [...getTraces()].reverse().find((x: any) => x.category === 'journey.ordeal_roll' && x.actorId === data.agentId);
+      if (!was) disableTracing();
+      if (t) {
+        const hit = (p: number) => t.roll <= Math.floor(p * 100);
+        ordealRolls.push({
+          tick: state.tick, choiceId: choice.id, band: t.band, outcome: t.outcome, lean: t.lean,
+          chance: Number(t.chance.toFixed(3)), bareChance: Number(t.bareChance.toFixed(3)), roll: t.roll,
+          luckDrawIndex: t.luckDrawIndex ?? bagBefore ?? null,
+          // the lean decided the success line: the same roll at the bare chance lands on the other side
+          leanDecisive: hit(t.chance) !== hit(t.bareChance),
+        });
+      }
+    }
+    visionChoices.push(`t${state.tick}:${data.templateId}:${choice.id}`);
+    visionsAnswered++;
+  }
+  state = {
+    ...state,
+    ...(spent ? withEssenceSpend(state, pool, 'spend_nudge' as any) : {}),
+    pendingVignettes: undefined,
+  };
+}
+
+/** The Twilight's beat 2 as the ceremony would show it now (fate line, then the climax lines). */
+function beat2(): string | null {
+  try {
+    const f: any = firstFate(state);
+    return f ? [f.line, ...(f.lines ?? [])].join(' ') : null;
+  } catch { return null; }
+}
+
 function snapshot() {
   const ff = (() => { try { return firstFate(state); } catch { return undefined; } })();
   const chapters: any[] = (state.chapterArchive ?? []).filter((c: any) => c.actorId === firstId);
@@ -228,6 +305,14 @@ function snapshot() {
     mandateProgress: Number((state.mandateState?.progress ?? 0).toFixed(3)),
     mandateCompleted: !!state.mandateState?.completed,
     firstFate: (ff as any)?.fate ?? 'none',
+    // THR-2229 — the climax facts on the First's thread, and the Twilight beat 2 they read as.
+    ordealOutcome: thread?.properties?.ordealOutcome ?? null,
+    ordealBand: thread?.properties?.ordealBand ?? null,
+    ordealLean: thread?.properties?.ordealLean ?? null,
+    apotheosisBand: thread?.properties?.apotheosisBand ?? null,
+    apotheosisGodPaid: thread?.properties?.apotheosisGodPaid ?? null,
+    returnEnding: thread?.properties?.returnEnding ?? null,
+    beat2: beat2(),
     firstAlive: !!firstNode && firstNode.properties?.deceased !== true,
     threadTier: thread?.properties?.tier ?? null,
     apotheosis: chapters.some((c: any) => /apotheosis/.test(String(c.templateId))),
@@ -253,13 +338,14 @@ for (let i = 0; i < TICKS; i++) {
   state = runTick(state, [], runtime);
   if (warming) state = unattended(state);
   else handleHeldSteps();
+  answerVisions(ARM === 'greedy' && !warming);
   if (state.tick % AGENCY_SNAP_EVERY === 0) snaps.push(snapshot());
   if (state.tick % AGENCY_PROGRESS_EVERY === 0) console.error(`[agency] t${state.tick} ${((Date.now() - t0) / 1000).toFixed(0)}s held=${heldSteps} played=${cardsPlayed}`);
   if (state.phase && state.phase !== 'playing') { stopReason = `phase=${state.phase}`; break; }
 }
 const end = snapshot();
 const ms = Date.now() - t0;
-const result = { seed: SEED, arm: ARM, warm: WARM, ranTo: state.tick, seconds: Math.round(ms / 1000), stopReason, heldSteps, heldWithCards, cardsPlayed, essenceSpent: Math.round(essenceSpent), apotheosisSteps, end, snaps };
+const result = { seed: SEED, arm: ARM, warm: WARM, ranTo: state.tick, seconds: Math.round(ms / 1000), stopReason, heldSteps, heldWithCards, cardsPlayed, essenceSpent: Math.round(essenceSpent), apotheosisSteps, visionsAnswered, visionChoices, ordealRolls, end, snaps };
 const { firstChapterIds, ...endShort } = end;
 console.log(JSON.stringify({ ...result, end: endShort, snaps: undefined }));
 console.log(`  first chapters: ${firstChapterIds.join(' · ')}`);

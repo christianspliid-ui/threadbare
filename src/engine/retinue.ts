@@ -11,6 +11,7 @@ import type { AxiologicalProfile } from '../types/agent';
 import type { ReachDomain } from '../types/traits';
 import type { InfluenceTier, ThreadEdgeProperties, CourtPosition } from '../types/influence';
 import { TIER_NAMES } from '../types/influence';
+import { RETURN_ENDING_THREAD_WORDS } from '../data/twilight-content';
 import { getAgentPortraitUrlFromProperties } from '../data/portrait-assets';
 import { getAgentFaction, getFactionMembershipEdges } from './graphQueries';
 import { isPlaceNode } from './sublocationShape';
@@ -202,6 +203,11 @@ export interface ThreadedNodeBase {
   courtPosition: CourtPosition | null;
   /** Thread bond strength [0,1] — mutated by thread_strengthen/weaken/break effects (THR-116). */
   threadStrength: number;
+  /**
+   * THR-2229 — the Return ending's word for a First it took out of the god's hand
+   * ("Gone", "Transcended"). Replaces the tier name and the Aspect badge. Absent otherwise.
+   */
+  endingWord?: string;
 }
 
 export interface ThreadedAgent extends ThreadedNodeBase {
@@ -416,7 +422,10 @@ export function getThreadedNodes(
     if (tier === 0) continue;
 
     const nodeProps = targetNode.properties as Record<string, unknown>;
-    const tierName = TIER_NAMES[tier];
+    // THR-2229 — a First whose Return ending took them out of the god's hand reads
+    // that ending's word ("Gone", "Transcended"), not the tier name.
+    const endingWord = influenceProps.returnEnding ? RETURN_ENDING_THREAD_WORDS[influenceProps.returnEnding] : undefined;
+    const tierName = endingWord ?? TIER_NAMES[tier];
     const attentionMode = resolveAttentionMode(influenceProps);
     const courtPosition = (influenceProps.courtPosition as CourtPosition) ?? null;
 
@@ -432,6 +441,7 @@ export function getThreadedNodes(
       attentionMode,
       courtPosition,
       threadStrength,
+      ...(endingWord ? { endingWord } : {}),
     };
 
     // ── Classify by node type ──────────────────────────────────────
@@ -439,7 +449,8 @@ export function getThreadedNodes(
     if (targetNode.type === 'actor') {
       const actorType = nodeProps.actorType as string;
 
-      if (actorType === 'individual') {
+      // THR-2229 — a transcended First became a spirit; the thread stays, so the row does.
+      if (actorType === 'individual' || (actorType === 'spirit' && influenceProps.returnEnding === 'transcendence')) {
         // Agent
         const locEdges = graph.getOutgoingEdges(targetNode.id, 'located_at');
         const locationId = locEdges.length > 0

@@ -163,6 +163,22 @@ export interface ThreadEdgeProperties {
   /** Ordeal beat outcome (Phase 3+). THR-2226: written from the Ordeal's roll. */
   ordealOutcome?: OrdealOutcome;
   /**
+   * THR-2229 — the band the Ordeal's roll landed (the outcome above is its class).
+   * Written with the roll; read by the Twilight's Ordeal line and the agency census.
+   * Absent = never rolled (or a save from before the roll).
+   */
+  ordealBand?: import('./unifiedAction').StepOutcome;
+  /** THR-2229 — the god paid for the Ordeal choice it leaned with. */
+  ordealGodPaid?: boolean;
+  /** THR-2229 — the odds bonus the god's Ordeal choice added (0 = stepped back). */
+  ordealLean?: number;
+  /**
+   * THR-2229 — which of the six Return endings closed the First's story. Written by
+   * `applyReturnOutcome`. Read by the Twilight, the harvest summary and the Threads
+   * row ("Gone" / "Transcended"). Absent = no Return yet.
+   */
+  returnEnding?: import('./returnEngine').ReturnOutcome;
+  /**
    * THR-2227 — how the last Apotheosis this mortal faced ended (the action's final
    * outcome), written on completion. Read by the Twilight ending (THR-2204 slice 4)
    * and the agency census. Absent = never faced one.

@@ -99,6 +99,20 @@ export interface TwilightBeatsBuiltTrace extends TraceBase {
   fallbacks?: string[];
 }
 
+/**
+ * THR-2229 — beat 2's lines about what the god did with its First (plan THR-2204
+ * slice 4): which facts the thread edge held. One per ceremony opened with a First.
+ */
+export interface TwilightFirstLinesTrace extends TraceBase {
+  category: 'twilight.first_lines';
+  firstId?: string;
+  fate: 'aspect' | 'lived' | 'died';
+  /** `${band}:${result}` with `godPaid` / `alone`, when an Apotheosis was recorded. */
+  apotheosis?: string;
+  /** `${outcome}:${hand}`, when a rolled Ordeal was recorded. */
+  ordeal?: string;
+}
+
 /** The ceremony could not show; the age went straight to the harvest. */
 export interface TwilightFallbackTrace extends TraceBase {
   category: 'twilight.fallback';
