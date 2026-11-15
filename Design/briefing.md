@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-15 22:59 local (21:59 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-15 23:57 local (22:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -31,12 +31,13 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Queue
 
-**Healthy: 2 tickets in Ready for Dev, and the builder is working.** Since the last brief two builds went live: [Read the Threads fades each chapter by its age](https://linear.app/threadbare/issue/THR-2235/a-longer-look-back-is-always-more-not-less-read-the-threads-fades-each) ([#2845](https://github.com/christianspliid-ui/threadbare/pull/2845)) and [The Mandate says what moves it](https://linear.app/threadbare/issue/THR-2236/the-mandate-says-what-moves-it-the-fill-line-names-the-spend-rising) ([#2846](https://github.com/christianspliid-ui/threadbare/pull/2846)). A pickup run started at 21:51 UTC and is building [The answer to a rival is where the threat is](https://linear.app/threadbare/issue/THR-2237/the-answer-to-a-rival-is-where-the-threat-is-the-rival-panel-says). Ready next: [The answer to Doom is where Doom is](https://linear.app/threadbare/issue/THR-2240/the-answer-to-doom-is-where-doom-is-the-doom-panel-and-the-doom-bars), [Play promises only what it keeps](https://linear.app/threadbare/issue/THR-2238/play-promises-only-what-it-keeps-the-first-run-play-tooltip-says-the).
+**Thin: 1 ticket in Ready for Dev, and the builder is working.** Since the last brief one build went live: [The answer to a rival is where the threat is](https://linear.app/threadbare/issue/THR-2237/the-answer-to-a-rival-is-where-the-threat-is-the-rival-panel-says) ([#2847](https://github.com/christianspliid-ui/threadbare/pull/2847)). A pickup run started at 22:26 UTC and is now building [The answer to Doom is where Doom is](https://linear.app/threadbare/issue/THR-2240/the-answer-to-doom-is-where-doom-is-the-doom-panel-and-the-doom-bars). Ready next: [Play promises only what it keeps](https://linear.app/threadbare/issue/THR-2238/play-promises-only-what-it-keeps-the-first-run-play-tooltip-says-the). The orchestrator and design lane refill the shelf when it runs thin; their next runs are at about 23:17 and 23:28 UTC.
 
 Items for agents, not you:
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (26 days; In Dev since 15 Oct). No branch or local worktree holds work for it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (26 days; In Dev since 15 Oct). No pushed branch or local worktree holds work for it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
 - **Every lane was silent today from about 09:57 to 21:42 local (11.8 hours).** All lanes came back in the same minute, so the computer or app was off. It is a Sunday, so per your weekend ruling this is not an ask; it is one more case for the "open at login" setting above.
-- Otherwise all green: the live site serves the latest commit on main (a503b9a5); checks on main and the 3 scheduled background jobs pass; no PRs are waiting; engine speed is normal (146 ms/tick, −10% vs the 7-day median). The worktree reaper ran within the hour. Linear read live this run. No Discord messages from you since the last brief. The home copy of the repo is current with main.
+- **Engine speed is up but inside the limit:** 199 ms/tick, +23% vs the 7-day median (162), under the 25% drift line. Watch next hour; nothing to do yet.
+- Otherwise all green: the live site serves the latest commit on main (23c25e15); checks on main and the 3 scheduled background jobs pass; no PRs are waiting; all 10 scheduled tasks are on time. The worktree reaper ran within the hour. Linear read live this run. No Discord messages from you since the last brief. The home copy of the repo is 6 commits behind main (autosync catches it up).
