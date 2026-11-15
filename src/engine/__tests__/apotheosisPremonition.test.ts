@@ -5,6 +5,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { WorldGraph } from '../graph';
 import { seedApotheosisEncounters, ticksUntilApotheosisOffer } from '../aspects';
+import { checkTierPromotion } from '../influence';
 import { enableTracing, disableTracing, clearTraces, getTraces } from '../traceBuffer';
 import type { GameState } from '../../types/gameState';
 import { APOTHEOSIS_PREMONITION_LEAD_TICKS } from '../../data/nudge-constants';
@@ -86,6 +87,33 @@ describe('Apotheosis premonition (THR-2227)', () => {
     run(makeGraph(), 2);
     const traces = getTraces().filter((t) => t.category === 'apotheosis.premonition');
     expect(traces).toHaveLength(1);
+  });
+
+  it('warns once while upkeep goes unpaid (the hold counter stands still)', () => {
+    const graph = makeGraph();
+    const edge = graph.getOutgoingEdges(ASC, 'thread')[0];
+    const props = edge.properties as { ticksAtCurrentTier: number; maintenanceCurrent: boolean };
+    const warnedAt: number[] = [];
+    for (let tick = 0; tick < 50; tick++) {
+      // ticksAtCurrentTier counts paid ticks only, so unpaid upkeep leaves it at 0.
+      props.ticksAtCurrentTier = 0;
+      props.maintenanceCurrent = tick === 0;
+      const patch = seedApotheosisEncounters(stateAt(graph, tick), tick);
+      if ((patch.tickEvents ?? []).length > 0) warnedAt.push(tick);
+    }
+    expect(warnedAt).toEqual([0]);
+  });
+
+  it('a promotion into tier 4 clears an old warning, so the new stint is warned afresh', () => {
+    const graph = makeGraph();
+    const edge = graph.getOutgoingEdges(ASC, 'thread')[0];
+    Object.assign(edge.properties, { tier: 3, ticksAtCurrentTier: 10_000, apotheosisPremonitionTick: 5 });
+    expect(checkTierPromotion(graph, ASC)).toEqual([MORTAL]);
+    const promoted = graph.getOutgoingEdges(ASC, 'thread')[0];
+    expect(promoted.properties.tier).toBe(4);
+    expect(promoted.properties.apotheosisPremonitionTick).toBeUndefined();
+    const patch = seedApotheosisEncounters(stateAt(graph, 20), 20);
+    expect(patch.tickEvents ?? []).toHaveLength(1);
   });
 
   it('ticksUntilApotheosisOffer is infinite below tier 4', () => {

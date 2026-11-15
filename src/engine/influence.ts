@@ -288,9 +288,13 @@ export function checkTierPromotion(graph: WorldGraph, ascendantId: string): stri
     const threshold = TIER_PROMOTION_THRESHOLDS[nextTier];
 
     if (ticks >= threshold) {
+      // THR-2227 — a promotion starts a new stint: drop any Apotheosis premonition
+      // stamp so the next tier-4 stint is warned afresh. updateEdge MERGES properties,
+      // so the stamp is cleared by writing undefined, not by omitting it.
       graph.updateEdge(edge.id, {
         properties: {
           ...edge.properties,
+          apotheosisPremonitionTick: undefined,
           tier: nextTier,
           ticksAtCurrentTier: 0, // reset counter
         },

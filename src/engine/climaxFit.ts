@@ -36,7 +36,6 @@ import { actionGodPaid, resolveStepDefinition } from './unifiedActionLifecycle';
 import { computeBaseStepForecast } from './views/stage/baseStepForecast';
 import { collectHeldTraitIds, resolveTraitVariants } from './encounters/nudges';
 import { composeDealtStepFromState } from './encounters/dealHand';
-import { fitDifficultyToForecast } from './scaledForecast';
 import { emitTrace } from './traceBuffer';
 import { APOTHEOSIS_ENCOUNTER_TEMPLATE_ID } from '../data/aspect-content';
 import type { ThreadEdgeProperties } from '../types/influence';
@@ -87,19 +86,28 @@ export function computeClimaxFit(
   if (step.fitBareForecast !== undefined) {
     try {
       const variants = resolveTraitVariants(template, collectHeldTraitIds(state.graph, action.actorId));
-      const parts = computeBaseStepForecast(state.graph, state, action, template, step, variants);
-      // The variant delta rides on top of the step's difficulty in the forecast and
-      // the roll, so the fit solves for the effective difficulty and stores the base.
-      const variantDelta = parts.effectiveDifficulty - Math.max(0, Math.min(1, step.difficulty));
-      const fit = fitDifficultyToForecast(parts.capability, step.fitBareForecast, {
-        scale: parts.forecastScale,
-        actionModifiers: parts.forecastInput.actionModifiers ?? 0,
-        fallbackDifficulty: parts.effectiveDifficulty,
-        iterations: FIT_ITERATIONS,
-      });
-      bareChance = fit.bareChance;
-      fitted = fit.fitted;
-      if (fit.fitted) fittedDifficulty = Math.max(0, Math.min(1, fit.difficulty - variantDelta));
+      // Bisect on the Stage's own base forecast at each candidate difficulty, so every
+      // term that depends on the difficulty is re-decided as the Stage and the roll will
+      // re-decide it on the fitted step: the mortal's step cast (its pre-card chance is
+      // read at the step's difficulty), trait variants, test shapers, the scale floor.
+      // A fit taken at the authored difficulty and frozen would miss the target for a
+      // caster whose cast decision flips at the fitted one (review gate, round 1).
+      const chanceAt = (difficulty: number): number => computeBaseStepForecast(
+        state.graph, state, action, template, { ...step, difficulty }, variants,
+      ).baseSummary.successProbability;
+      const target = step.fitBareForecast;
+      if (chanceAt(0) >= target && chanceAt(1) <= target) {
+        let lo = 0;
+        let hi = 1;
+        for (let i = 0; i < Math.max(1, FIT_ITERATIONS); i++) {
+          const mid = (lo + hi) / 2;
+          if (chanceAt(mid) > target) lo = mid;
+          else hi = mid;
+        }
+        fittedDifficulty = (lo + hi) / 2;
+        fitted = true;
+      }
+      bareChance = chanceAt(fittedDifficulty);
     } catch {
       fitted = false;
       fittedDifficulty = step.difficulty;
