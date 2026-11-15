@@ -11,7 +11,7 @@
  * Design doc: Docs/plans/2026-04-05-attention-tier-model-design.md
  *
  * P2 additions:
- *   - Fidelity degradation: detail level scales with lookback depth
+ *   - Fidelity degradation: detail level scales with each chapter's age (THR-2235)
  *   - Overwhelmed degradation: pool < 10% capacity degrades fidelity one step
  *   - Cooldown: READ_THREADS_COOLDOWN ticks between uses, button shows countdown
  */
@@ -36,17 +36,20 @@ import {
 import type { EntityVisualDescriptor } from '../../engine/views/entityVisualResolver';
 import { RowPicture, rowDressingAttrs } from '../shared/RowPicture';
 import { ListHeadingIcon } from '../shared/ListHeadingIcon';
-import { listHeadingIcon, READ_THREADS_UNTOUCHED_LIVES_LABEL, type ListHeadingId } from '../../data/view-content';
+import { listHeadingIcon, READ_THREADS_UNTOUCHED_LIVES_LABEL, READ_THREADS_WINDOW_LINES, type ListHeadingId } from '../../data/view-content';
+import { pickStoryEntry } from '../../engine/threadDigest';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 /**
  * Fidelity levels for digest entry rendering (spec Section 5).
- * Depth of lookback determines how much detail is preserved.
- *   full     (6 ticks)  — all detail: names, deltas, attachments
- *   high     (12 ticks) — same but older entries may be compressed
- *   moderate (24 ticks) — encounter type and outcome only, no deltas
- *   vague    (36 ticks) — grouped summaries only
+ * THR-2235: a chapter's own AGE picks its level ("threads of the past fray with
+ * time"), not the window's length — so a longer read shows everything a shorter
+ * one does, plus older chapters.
+ *   full     (age ≤ 6 ticks)  — all detail: names, deltas, attachments
+ *   high     (age ≤ 12 ticks) — same
+ *   moderate (age ≤ 24 ticks) — mortal, chapter and outcome only, no deltas
+ *   vague    (older)          — one story line per group, then the tally
  */
 type Fidelity = 'full' | 'high' | 'moderate' | 'vague';
 
@@ -86,6 +89,12 @@ interface ReadTheThreadsPanelProps {
    * Filters the Untouched lives list. Absent ⇒ every entry shows.
    */
   canNameAgent?: (agentId: string) => boolean;
+  /**
+   * THR-2235 — tells one chapter in Story So Far words (`tellDigestEntry`), resolved by
+   * the host because the beat lines need the world graph. Absent ⇒ a faded group's
+   * story line falls back to the mortal, the chapter and its outcome.
+   */
+  tellChapter?: (entry: DigestEntry, currentTick: number) => string;
 }
 
 /** THR-2103 — the host's faces, read by every digest row without threading a prop through each group. */
@@ -134,16 +143,22 @@ const REACH_LABELS: Record<ReachDomain, string> = {
 
 // ─── Fidelity helpers ─────────────────────────────────────────────────────────
 
+/** THR-2235 — the age (ticks) up to which a chapter keeps each level of detail. */
+export const READ_THREADS_FULL_MAX_AGE = 6;
+export const READ_THREADS_HIGH_MAX_AGE = 12;
+export const READ_THREADS_MODERATE_MAX_AGE = 24;
+
 /**
- * Determine fidelity level based on lookback depth (spec Section 5) and
- * optional overwhelmed degradation (pool < ATTENTION_POOL_STRAINED_THRESHOLD).
+ * Fidelity for one chapter, from its own age (THR-2235; was the window's length,
+ * which blurred the dearest read everywhere) and the optional overwhelmed
+ * degradation (pool < ATTENTION_POOL_STRAINED_THRESHOLD), one step for every entry.
  */
-function computeFidelity(lookbackTicks: number, isOverwhelmed: boolean): Fidelity {
+export function computeFidelity(ageTicks: number, isOverwhelmed: boolean): Fidelity {
   let base: Fidelity;
-  if (lookbackTicks <= 6)       base = 'full';
-  else if (lookbackTicks <= 12) base = 'high';
-  else if (lookbackTicks <= 24) base = 'moderate';
-  else                          base = 'vague';
+  if (ageTicks <= READ_THREADS_FULL_MAX_AGE)          base = 'full';
+  else if (ageTicks <= READ_THREADS_HIGH_MAX_AGE)     base = 'high';
+  else if (ageTicks <= READ_THREADS_MODERATE_MAX_AGE) base = 'moderate';
+  else                                                base = 'vague';
 
   if (!isOverwhelmed) return base;
 
@@ -192,6 +207,8 @@ function DigestRow({ entry, fidelity }: { entry: DigestEntry; fidelity: Fidelity
     return (
       <div
         data-testid="digest-row"
+        data-fidelity={fidelity}
+        data-digest-key={digestKey(entry)}
         {...face.attrs}
         style={{
           padding: 'var(--space-2) 0',
@@ -223,6 +240,8 @@ function DigestRow({ entry, fidelity }: { entry: DigestEntry; fidelity: Fidelity
   return (
     <div
       data-testid="digest-row"
+      data-fidelity={fidelity}
+      data-digest-key={digestKey(entry)}
       {...face.attrs}
       style={{
         padding: 'var(--space-2) 0',
@@ -256,6 +275,39 @@ function DigestRow({ entry, fidelity }: { entry: DigestEntry; fidelity: Fidelity
         </div>
       )}
       </div>
+    </div>
+  );
+}
+
+/** THR-2235 — a stable key for one digest row (tests compare reads by it). */
+function digestKey(entry: DigestEntry): string {
+  return `${entry.agentId}|${entry.encounterId}|${entry.tick}`;
+}
+
+/**
+ * THR-2235 — a faded group's story line: its most significant faded chapter, told in
+ * Story So Far words by the host, led by the mortal's face. The line always names the
+ * mortal; a told line that does not is prefixed with their name.
+ */
+function FadedStoryLine({ entry, line }: { entry: DigestEntry; line: string }) {
+  const face = useDigestFace(entry.agentId);
+  const named = line.includes(entry.agentName) ? line : `${entry.agentName}: ${line}`;
+  return (
+    <div
+      data-testid="digest-faded-story"
+      {...face.attrs}
+      style={{
+        padding: 'var(--space-2) 0',
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 'var(--space-2)',
+        fontSize: 'var(--text-sm)',
+        color: 'var(--text-primary)',
+        lineHeight: 1.5,
+      }}
+    >
+      {face.picture}
+      <span>{named}</span>
     </div>
   );
 }
@@ -355,6 +407,14 @@ function PreReadState({
                 >
                   {formatEssence(opt.cost)} essence
                 </div>
+                {READ_THREADS_WINDOW_LINES[opt.label] && (
+                  <div
+                    data-testid="read-threads-window-line"
+                    style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', marginTop: '2px', lineHeight: 1.4 }}
+                  >
+                    {READ_THREADS_WINDOW_LINES[opt.label]}
+                  </div>
+                )}
               </button>
             );
           })}
@@ -430,11 +490,16 @@ export function vagueGroupSummary(
   return `${total} encounter${total !== 1 ? 's' : ''}: ${parts.join(', ')}.`;
 }
 
-function PostReadState({ entries, fidelity, canNameAgent }: {
+function PostReadState({ entries, readTick, lookbackTicks, isOverwhelmed, canNameAgent, tellChapter }: {
   entries: DigestEntry[];
-  fidelity: Fidelity;
+  /** The tick the read was made on; each chapter's age is measured from it. */
+  readTick: number;
+  lookbackTicks: number;
+  isOverwhelmed: boolean;
   canNameAgent?: (agentId: string) => boolean;
+  tellChapter?: (entry: DigestEntry, currentTick: number) => string;
 }) {
+  const fidelityOf = (e: DigestEntry): Fidelity => computeFidelity(readTick - e.tick, isOverwhelmed);
   // Partition entries
   const notable = entries.filter(e => e.isNotable && !e.wasCuratedOut);
   // THR-2055: a candidate demoted on several ticks is one missed chapter, and
@@ -480,7 +545,11 @@ function PostReadState({ entries, fidelity, canNameAgent }: {
           }}
         >
           <SectionLabel>Notable</SectionLabel>
-          {notable.map((e, i) => <DigestRow key={`notable-${i}`} entry={e} fidelity={fidelity} />)}
+          {/* THR-2235: a notable chapter never fades below a row (mortal, chapter, outcome). */}
+          {notable.map((e, i) => {
+            const f = fidelityOf(e);
+            return <DigestRow key={`notable-${i}`} entry={e} fidelity={f === 'vague' ? 'moderate' : f} />;
+          })}
         </div>
       )}
 
@@ -491,14 +560,17 @@ function PostReadState({ entries, fidelity, canNameAgent }: {
         return (
           <div key={reach} style={{ marginBottom: 'var(--space-2)' }}>
             <SectionLabel>{REACH_LABELS[reach]}</SectionLabel>
-            {fidelity === 'vague' ? (
-              // Vague: group-level summary only — no individual entries
-              <div style={{ padding: 'var(--space-2) 0', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
-                {vagueGroupSummary(group)}
-              </div>
-            ) : (
-              group.map((e, i) => <DigestRow key={`${reach}-${i}`} entry={e} fidelity={fidelity} />)
-            )}
+            {/* THR-2235: newer chapters as rows at their own age's detail… */}
+            {group.filter(e => fidelityOf(e) !== 'vague').map((e, i) => (
+              <DigestRow key={`${reach}-${i}`} entry={e} fidelity={fidelityOf(e)} />
+            ))}
+            {/* …and the faded ones as one story line, the tally under it. */}
+            <FadedGroup
+              faded={group.filter(e => fidelityOf(e) === 'vague')}
+              readTick={readTick}
+              lookbackTicks={lookbackTicks}
+              tellChapter={tellChapter}
+            />
           </div>
         );
       })}
@@ -560,6 +632,40 @@ function PostReadState({ entries, fidelity, canNameAgent }: {
   );
 }
 
+/**
+ * THR-2235 — the faded part of one reach group: one story line (its most significant
+ * told chapter) first, the tally under it, secondary. Nothing when nothing faded.
+ */
+function FadedGroup({ faded, readTick, lookbackTicks, tellChapter }: {
+  faded: DigestEntry[];
+  readTick: number;
+  lookbackTicks: number;
+  tellChapter?: (entry: DigestEntry, currentTick: number) => string;
+}) {
+  if (faded.length === 0) return null;
+  const story = pickStoryEntry(faded, readTick, lookbackTicks);
+  let line: string | null = null;
+  if (story) {
+    try {
+      line = tellChapter ? tellChapter(story, readTick) : null;
+    } catch {
+      line = null;
+    }
+    if (!line) line = `${story.agentName} — ${story.encounterName}. ${digestOutcomeLabel(story)}.`;
+  }
+  return (
+    <div data-testid="digest-faded-group">
+      {story && line && <FadedStoryLine entry={story} line={line} />}
+      <div
+        data-testid="digest-faded-tally"
+        style={{ padding: 'var(--space-1) 0 var(--space-2)', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}
+      >
+        {vagueGroupSummary(faded)}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function ReadTheThreadsPanel({
@@ -575,10 +681,14 @@ export function ReadTheThreadsPanel({
   attentionCapacity,
   digestVisuals,
   canNameAgent,
+  tellChapter,
 }: ReadTheThreadsPanelProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [readEntries, setReadEntries] = useState<DigestEntry[] | null>(null);
-  const [readFidelity, setReadFidelity] = useState<Fidelity>('full');
+  // THR-2235: what the read was made with — each chapter's age is measured from readTick.
+  const [readParams, setReadParams] = useState<{ readTick: number; lookbackTicks: number; isOverwhelmed: boolean }>(
+    { readTick: 0, lookbackTicks: LOOKBACK_OPTIONS[0].ticks, isOverwhelmed: false },
+  );
 
   // Cooldown: ticks remaining before next Read is allowed
   const cooldownTicksRemaining = Math.max(0, READ_THREADS_COOLDOWN - (currentTick - lastReadTick));
@@ -595,9 +705,8 @@ export function ReadTheThreadsPanel({
       fromTick: currentTick - opt.ticks,
       toTick: currentTick,
     });
-    const fidelity = computeFidelity(opt.ticks, isOverwhelmed);
     onSpendEssence(opt.cost);
-    setReadFidelity(fidelity);
+    setReadParams({ readTick: currentTick, lookbackTicks: opt.ticks, isOverwhelmed });
     setReadEntries(entries);
   }
 
@@ -635,7 +744,14 @@ export function ReadTheThreadsPanel({
             cooldownTicksRemaining={cooldownTicksRemaining}
           />
         ) : (
-          <PostReadState entries={readEntries} fidelity={readFidelity} canNameAgent={canNameAgent} />
+          <PostReadState
+            entries={readEntries}
+            readTick={readParams.readTick}
+            lookbackTicks={readParams.lookbackTicks}
+            isOverwhelmed={readParams.isOverwhelmed}
+            canNameAgent={canNameAgent}
+            tellChapter={tellChapter}
+          />
         )}
         </DigestVisualsContext.Provider>
       </Modal.Body>

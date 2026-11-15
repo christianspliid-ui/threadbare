@@ -590,3 +590,16 @@ export const HARVEST_ECHO_TILE_W = '11rem';
  * rank), and these people have no thread at all.
  */
 export const READ_THREADS_UNTOUCHED_LIVES_LABEL = 'Untouched lives';
+
+/**
+ * THR-2235 — what each Read the Threads window buys, shown under its cost. A chapter
+ * fades by its own age (full up to a day, then names and outcomes, then a line per
+ * group), so a longer look back is always more, never less. Keyed by the window's
+ * label in `ReadTheThreadsPanel`'s LOOKBACK_OPTIONS. Words only, no numerals (Law 13).
+ */
+export const READ_THREADS_WINDOW_LINES: Readonly<Record<string, string>> = {
+  'Half day': 'Every chapter, told in full.',
+  'Full day': 'The whole day, every chapter told in full.',
+  '2 days': 'The last day in full; the day before as who, what, and how it went.',
+  '3 days': 'The last day in full, then names and outcomes; the oldest day fades to a story line each.',
+};
