@@ -164,14 +164,14 @@ describe('rolling the Ordeal', () => {
 
     expect(readLuckState(graph.getNode(FIRST)).bagDraws).toBe(1);
     const result = readOrdealResult(graph, ASC, FIRST)!;
-    expect(result.band).toBeDefined();
-    expect(result.outcome).toBe(ORDEAL_BAND_TO_OUTCOME[result.band as StepOutcome]);
     const edge = graph.getOutgoingEdges(ASC, 'thread')[0];
+    expect(edge.properties).not.toHaveProperty('ordealBand');
     expect(edge.properties).not.toHaveProperty('ordealGodPaid');
 
     const traces = getTraces().filter(t => t.category === 'journey.ordeal_roll') as unknown as Array<Record<string, unknown>>;
     expect(traces).toHaveLength(1);
-    expect(traces[0].band).toBe(result.band);
+    expect(traces[0].band).toBeDefined();
+    expect(result.outcome).toBe(ORDEAL_BAND_TO_OUTCOME[traces[0].band as StepOutcome]);
     expect(traces[0].luckDrawIndex).toBe(0);
     expect(Math.abs((traces[0].chance as number) - CLIMAX_BARE_FORECAST)).toBeLessThan(0.03);
   });

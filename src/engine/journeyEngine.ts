@@ -577,11 +577,11 @@ export function readOrdealResult(
   graph: WorldGraph,
   ascendantId: string,
   agentId: string,
-): { band?: StepOutcome; outcome: OrdealOutcome } | null {
+): { outcome: OrdealOutcome } | null {
   const edge = getThreadsFrom(graph, ascendantId).find(e => e.target === agentId);
   const props = edge?.properties as ThreadEdgeProperties | undefined;
   if (!props?.ordealOutcome) return null;
-  return { band: props.ordealBand, outcome: props.ordealOutcome };
+  return { outcome: props.ordealOutcome };
 }
 
 /** The reply line for an Ordeal choice at a rolled outcome (`consequenceProse` is the fallback). */
@@ -733,9 +733,8 @@ export function applyBeatChoice(
   // roll, nothing is written and the Return reads its default (`scraped_through`).
   if (vignetteData.isOrdeal && ordealResult) {
     updatedProps.ordealOutcome = ordealResult.outcome;
-    updatedProps.ordealBand = ordealResult.band;
-    // Whether the god leaned rides on the `journey.ordeal_roll` trace (`godPaid`),
-    // not the edge: nothing reads it here until a reader exists.
+    // The band and whether the god leaned ride on the `journey.ordeal_roll` trace
+    // (`band`, `godPaid`), not the edge: nothing reads them here until a reader exists.
   }
 
   // Update intervention tracking

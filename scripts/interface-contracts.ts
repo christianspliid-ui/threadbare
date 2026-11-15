@@ -7096,20 +7096,20 @@ export const CONTRACTS: readonly Contract[] = [
     ulTerms: ['The First'],
     // `recordJourneyChoice` → `rollOrdeal` (resolveStepCore on the stored fitted
     // difficulty, d100 from `drawLuckRoll`, the core's own draw from the keyed
-    // `journey.ordeal` stream) → `applyBeatChoice` writes `ordealOutcome`,
-    // `ordealBand` on the thread edge (whether the god leaned rides only on the
-    // `journey.ordeal_roll` trace, as `godPaid`). `executeReturn` reads
+    // `journey.ordeal` stream) → `applyBeatChoice` writes `ordealOutcome` on the
+    // thread edge (the band and whether the god leaned ride only on the
+    // `journey.ordeal_roll` trace, as `band` / `godPaid`). `executeReturn` reads
     // `ordealOutcome`; the vision's result line reads it back via `readOrdealResult`.
     mechanism: {
       kind: 'edge-prop',
-      symbols: ['ordealOutcome', 'ordealBand', 'rollOrdeal'],
+      symbols: ['ordealOutcome', 'rollOrdeal'],
       module: 'src/engine/journeyEngine.ts',
     },
     writeSites: ['src/engine/journeyEngine.ts'],
     readSites: ['src/engine/returnEngine.ts', 'src/components/Game/GameView.tsx'],
     verifiedLive: {
       date: '2026-11-15',
-      evidence: 'THR-2226. ordealRollAndVisionScene.thr2226.test.ts: recordJourneyChoice on an Ordeal vision deals one draw from the First\x27s bag (bagDraws 0 → 1), writes ordealBand and the outcome ORDEAL_BAND_TO_OUTCOME maps it to, ignores a legacy choice\x27s ordealOutcome, and traces journey.ordeal_roll with the stepped-back chance within 0.01 of CLIMAX_BARE_FORECAST; over 200 seeds the full lean wins more Ordeals than stepping back and still loses some.',
+      evidence: 'THR-2226. ordealRollAndVisionScene.thr2226.test.ts: recordJourneyChoice on an Ordeal vision deals one draw from the First\x27s bag (bagDraws 0 → 1), writes the outcome ORDEAL_BAND_TO_OUTCOME maps the traced band to, ignores a legacy choice\x27s ordealOutcome, and traces journey.ordeal_roll with the stepped-back chance within 0.01 of CLIMAX_BARE_FORECAST; over 200 seeds the full lean wins more Ordeals than stepping back and still loses some.',
     },
   },
   {
