@@ -245,6 +245,13 @@ describe('THR-2234 — the Return waits for the Apotheosis', () => {
     expect(returnFired(journeyTick(graph, 0.81))).toBe(false);
   });
 
+  it('a dead First who kept the seat never holds the Return (seed 99 probe)', () => {
+    const graph = makeWorld({ storyPhase: 'ordeal', beatHistory: [beat('crisis', 400), beat('ordeal', 600)] });
+    Object.assign(graph.getNode(FIRST)!.properties, { deceased: true });
+    expect(isFirstApotheosisPending(seedState(graph, 800), graph.getEdge(FIRST_THREAD)!)).toBe(false);
+    expect(returnFired(journeyTick(graph, 0.81))).toBe(true);
+  });
+
   it('fires at the Doom cap regardless of an unresolved Apotheosis', () => {
     const graph = offeredWorld();
     const active = { id: 'ua_apo', templateId: APOTHEOSIS_ENCOUNTER_TEMPLATE_ID, actorId: FIRST, resolved: false };

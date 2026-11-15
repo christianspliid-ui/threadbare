@@ -266,6 +266,10 @@ export function isFirstApotheosisPending(state: GameState, threadEdge: GraphEdge
   if (!isJourneyThread(props)) return false;
   const mortalId = threadEdge.target;
   if (isAspect(state.graph, mortalId)) return false;
+  // A First who cannot be offered (dead, gone, or no longer an individual) has no
+  // Apotheosis coming, so the Return never waits on one — seeding skips the same three.
+  const mortalNode = state.graph.getNode(mortalId);
+  if (!mortalNode || mortalNode.properties.deceased === true || mortalNode.properties.actorType !== 'individual') return false;
   const seeded = (state.pendingEncounterSeeds ?? []).some(
     s => s.templateId === APOTHEOSIS_ENCOUNTER_TEMPLATE_ID && s.targetAgentId === mortalId,
   );
