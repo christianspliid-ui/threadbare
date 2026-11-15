@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-15 03:58 local (02:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-15 04:55 local (03:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
 
@@ -50,6 +50,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-15: the Ordeal is now rolled, and journey visions read the scene the god leans on. It is live** ([THR-2226](https://linear.app/threadbare/issue/THR-2226)). Merged via [#2835](https://github.com/christianspliid-ui/threadbare/pull/2835) and [#2836](https://github.com/christianspliid-ui/threadbare/pull/2836).
 - **2026-11-14: second whole journey after the First's story ends? You answered A, no** ([THR-2204](https://linear.app/threadbare/issue/THR-2204)). Your words: *"A.. one run should try to aim for telling the firsts entire heroes journey and timing that makes sense"*. The pacing note went to the design lane.
 - **2026-11-14: a ruler's Story tab now folds repeat chapters into one counted chip, and it is live** ([THR-2223](https://linear.app/threadbare/issue/THR-2223)). Merged via [#2833](https://github.com/christianspliid-ui/threadbare/pull/2833).
 - **2026-11-14: the screen keeps two promises it used to break, and it is live** ([THR-2222](https://linear.app/threadbare/issue/THR-2222)). Merged via [#2832](https://github.com/christianspliid-ui/threadbare/pull/2832).
@@ -59,7 +60,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-14: new Doom stages now say what each card does, with no more "many weeks", and it is live** ([THR-2219](https://linear.app/threadbare/issue/THR-2219)). Merged via [#2828](https://github.com/christianspliid-ui/threadbare/pull/2828).
 - **2026-11-14: a won chapter now credits the cards you played, and each card in the hand says which step it plays into. It is live** ([THR-2218](https://linear.app/threadbare/issue/THR-2218)). Merged via [#2826](https://github.com/christianspliid-ui/threadbare/pull/2826).
 - **2026-11-14: the garbled dashes in the anomaly chapters and lab-report lines are fixed, and it is live** ([THR-2217](https://linear.app/threadbare/issue/THR-2217)). Merged via [#2825](https://github.com/christianspliid-ui/threadbare/pull/2825).
-- **2026-11-14: the chosen path now draws The First toward the work that fits it, and it is live** ([THR-2214](https://linear.app/threadbare/issue/THR-2214)). Merged via [#2824](https://github.com/christianspliid-ui/threadbare/pull/2824).
 
 ---
 
