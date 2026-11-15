@@ -1,8 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-11-15 23:57 local (22:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-16 00:58 local (23:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
+
+### What should the design lane plan next? (new 16 Nov)
+
+The builders have nothing agreed left to build. The last pieces of "make the middle a game" shipped tonight: [answer a rival where it struck](https://linear.app/threadbare/issue/THR-2237), [slow Doom from its panel](https://linear.app/threadbare/issue/THR-2240), and [see what moves the Mandate](https://linear.app/threadbare/issue/THR-2236). **Reply with a system or a direction.** If you don't, the lanes wait for the next warm playtest round to check these fixes and turn up new problems. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-15c.md)*
 
 ### Should every one of The First's own chapters give you a hand? (new 15 Nov)
 
@@ -58,6 +62,9 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-16: each clock-answer card now has one name everywhere: Stay the Unmaking and Rebuke. It is live** ([THR-2241](https://linear.app/threadbare/issue/THR-2241)). Merged via [#2850](https://github.com/christianspliid-ui/threadbare/pull/2850).
+- **2026-11-15: the Play button now promises only what it keeps. It is live** ([THR-2238](https://linear.app/threadbare/issue/THR-2238)). Merged via [#2849](https://github.com/christianspliid-ui/threadbare/pull/2849).
+- **2026-11-15: the Doom panel and bar now say how to slow Doom, with a Stay it button. It is live** ([THR-2240](https://linear.app/threadbare/issue/THR-2240)). Merged via [#2848](https://github.com/christianspliid-ui/threadbare/pull/2848).
 - **2026-11-15: the rival panel now says where the threat is and how to answer it. It is live** ([THR-2237](https://linear.app/threadbare/issue/THR-2237)). Merged via [#2847](https://github.com/christianspliid-ui/threadbare/pull/2847).
 - **2026-11-15: the Mandate now says what fills it, and "Rising" lasts three days. It is live** ([THR-2236](https://linear.app/threadbare/issue/THR-2236)). Merged via [#2846](https://github.com/christianspliid-ui/threadbare/pull/2846).
 - **2026-11-15: Read the Threads now fades each chapter by its age. It is live** ([THR-2235](https://linear.app/threadbare/issue/THR-2235)). Merged via [#2845](https://github.com/christianspliid-ui/threadbare/pull/2845).
@@ -65,9 +72,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-15: no journey vision is lost when its moment passes. It is live** ([THR-2233](https://linear.app/threadbare/issue/THR-2233)). Merged via [#2843](https://github.com/christianspliid-ui/threadbare/pull/2843).
 - **2026-11-15: the end of the age now tells what the god did with its First. It is live** ([THR-2229](https://linear.app/threadbare/issue/THR-2229)). Merged via [#2842](https://github.com/christianspliid-ui/threadbare/pull/2842).
 - **2026-11-15: each mark on the Stage now means one thing. It is live** ([THR-2231](https://linear.app/threadbare/issue/THR-2231)). Merged via [#2841](https://github.com/christianspliid-ui/threadbare/pull/2841).
-- **2026-11-15: warm playtests now arrive in a real world. It is live** ([THR-2230](https://linear.app/threadbare/issue/THR-2230)). Merged via [#2840](https://github.com/christianspliid-ui/threadbare/pull/2840).
-- **2026-11-15: the Return now closes on "Go on" and says how long the age has left. It is live** ([THR-2228](https://linear.app/threadbare/issue/THR-2228)). Merged via [#2839](https://github.com/christianspliid-ui/threadbare/pull/2839).
-- **2026-11-15: the Apotheosis's deciding step deals the run's biggest hand, opens at Uncertain, and is warned first. It is live** ([THR-2227](https://linear.app/threadbare/issue/THR-2227)). Merged via [#2837](https://github.com/christianspliid-ui/threadbare/pull/2837) and [#2838](https://github.com/christianspliid-ui/threadbare/pull/2838).
 
 ---
 
