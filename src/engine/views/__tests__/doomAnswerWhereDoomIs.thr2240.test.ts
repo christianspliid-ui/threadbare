@@ -139,7 +139,7 @@ describe('THR-2240 — the warm recap says Doom moved', () => {
 
   it('a stage with no name reads a fallback, never a raw token (Law 43)', () => {
     const before = snapshotWarmRecap(world({ doomClock: clock(0) }), null, { readBands: () => ({}) });
-    const nameless = { ...DEFINITION, stages: DEFINITION.stages.map(st => ({ ...st, name: '' })) };
+    const nameless = { ...DEFINITION, stages: DEFINITION.stages.map(st => ({ ...st, name: '' })) } as unknown as DoomClockDefinition;
     const after = world({ doomClock: clock(1), doomDefinition: nameless });
     expect(recap(after, before)).toEqual(['Doom took a step while you were away: its next stage.']);
   });
