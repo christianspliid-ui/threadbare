@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-15 06:59 local (05:59 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-15 07:58 local (06:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -40,13 +40,14 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 6 tickets in Ready for Dev, and the builder is working.** Since the last brief, two more are live: [Warm playtests arrive in a real world](https://linear.app/threadbare/issue/THR-2230/warm-playtests-arrive-in-a-real-world-the-warm-start-stops-loading-the) ([PR #2840](https://github.com/christianspliid-ui/threadbare/pull/2840)) and [One mark, one meaning on the Stage](https://linear.app/threadbare/issue/THR-2231/one-mark-one-meaning-on-the-stage-the-steps-standing-reads-as-a-word) ([PR #2841](https://github.com/christianspliid-ui/threadbare/pull/2841)). Now being built: [The ending tells what this god did with its First](https://linear.app/threadbare/issue/THR-2229/the-ending-tells-what-this-god-did-with-its-first-the-ordeal-and-the) (claimed 05:30 UTC). Claimable next, their veto window now closed: [The Apotheosis comes after the Ordeal](https://linear.app/threadbare/issue/THR-2234/the-firsts-apotheosis-comes-after-the-ordeal-once-between-the-ordeal) and [No journey vision is lost](https://linear.app/threadbare/issue/THR-2233/no-journey-vision-is-lost-a-road-of-trials-beat-whose-moment-passed). The other four are held for your veto (see *Decided for you*); the next opens at 08:35 UTC.
+**Healthy: 5 tickets in Ready for Dev, and the builder is working.** Built and waiting on its checks: [The ending tells what this god did with its First](https://linear.app/threadbare/issue/THR-2229/the-ending-tells-what-this-god-did-with-its-first-the-ordeal-and-the) ([PR #2842](https://github.com/christianspliid-ui/threadbare/pull/2842)). Now being built: [No journey vision is lost](https://linear.app/threadbare/issue/THR-2233/no-journey-vision-is-lost-a-road-of-trials-beat-whose-moment-passed) (claimed about 06:50 UTC). Claimable next: [The Apotheosis comes after the Ordeal](https://linear.app/threadbare/issue/THR-2234/the-firsts-apotheosis-comes-after-the-ordeal-once-between-the-ordeal). The other four are held for your veto (see *Decided for you*); the next opens at 08:35 UTC.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (26 days; In Dev since 15 Oct). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- **Engine speed reads high again:** "tick cost 302 ms/tick steady, 89% above the 7-day median (159, 56 rows since e39f348f); top phase agent_decision, 638 agents. Name the merges between e39f348f and 14681372: git log --oneline --merges e39f348f..14681372". A pickup run was building at the same moment, and an equally high reading two hours ago was back to normal an hour later, so machine load is the likely cause; if next hour reads high again, it is the builder's to chase.
+- **Engine speed reads high for the second hour running:** "tick cost 321 ms/tick steady, 101% above the 7-day median (160, 56 rows since e39f348f); top phase agent_decision, 638 agents. Name the merges between e39f348f and 14681372: git log --oneline --merges e39f348f..14681372". A pickup run was building at the same moment again, so machine load may still explain it, but two high readings in a row make it the builder's to chase: measure on a quiet machine, then bisect the merges if it holds.
+- **[PR #2842](https://github.com/christianspliid-ui/threadbare/pull/2842) is not armed to merge**, though its run said it was. Its checks are still running (25 min old). If it is still unarmed next hour, the builder's unstick duty owns it.
 
-Everything else green. The live site serves the latest commit on main (14681372). Checks on main and the 3 scheduled background jobs pass. No PRs are waiting to merge. All 10 scheduled lanes are on time. The worktree reaper ran at 06:55 local. Linear read live this run. No Discord messages since the last brief. The home copy of the repo is current with main.
+Everything else green. The live site serves the latest commit on main (14681372). Checks on main and the 3 scheduled background jobs pass. All 10 scheduled lanes are on time. The worktree reaper ran at 07:40 local. Linear read live this run. No Discord messages from you since the last brief. The home copy of the repo is current with main.
