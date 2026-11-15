@@ -248,6 +248,51 @@ function buildBeatLine(beat: SelectedBeat, agentName: string, graph: WorldGraph)
   return enriched;
 }
 
+// ─── THR-2235: one chapter told for Read the Threads ─────────────────────────
+
+/**
+ * The most significant told chapter among `entries`, by the Story So Far's own
+ * significance score (`scoreSignificance`). Chapters still unfolding or ended out
+ * of sight say nothing about how they went, so they are never picked (THR-2055).
+ * Ties go to the later chapter. Pure; null when nothing can be told.
+ */
+export function pickStoryEntry(
+  entries: readonly DigestEntry[],
+  currentTick: number,
+  lookbackTicks: number = STORY_DIGEST_LOOKBACK_TICKS,
+): DigestEntry | null {
+  let best: DigestEntry | null = null;
+  let bestScore = -1;
+  for (const e of entries) {
+    if (e.unresolved || e.ended) continue;
+    const s = scoreSignificance(e, currentTick, Math.max(1, lookbackTicks));
+    if (s > bestScore || (s === bestScore && best !== null && e.tick > best.tick)) {
+      best = e;
+      bestScore = s;
+    }
+  }
+  return best;
+}
+
+/**
+ * One chapter told as a Story So Far opening line (the same beat templates and
+ * enrichment, or the cast's own line verbatim). Fail-soft: a graph read that
+ * throws falls back to the mortal's name and the chapter's name.
+ */
+export function tellDigestEntry(entry: DigestEntry, graph: WorldGraph, currentTick: number): string {
+  try {
+    const beat: SelectedBeat = {
+      entry,
+      significance: scoreSignificance(entry, currentTick, STORY_DIGEST_LOOKBACK_TICKS),
+      role: 'opener',
+      ticksAgo: currentTick - entry.tick,
+    };
+    return buildBeatLine(beat, entry.agentName, graph);
+  } catch {
+    return `${entry.agentName} — ${entry.encounterName}.`;
+  }
+}
+
 function buildTransitionPrefix(role: BeatRole, beatIndex: number, tick: number): string {
   if (role === 'opener') return '';
   const phrases = TRANSITION_PHRASES[role] ?? TRANSITION_PHRASES['compound'];

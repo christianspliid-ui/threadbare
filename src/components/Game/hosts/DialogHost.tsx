@@ -36,6 +36,7 @@ import type { RetinueAgent } from '../../../engine/retinue';
 import type { PlayerActionReceipt } from '../../../engine/playerReceipts';
 import type { SimulationRuntime } from '../../../engine/simulationRuntime';
 import type { WheelSlot } from '../../../engine/wheel';
+import { tellDigestEntry } from '../../../engine/threadDigest';
 import type { AgendaTemplate } from '../../../data/agenda-content';
 import type { InterventionType, LocalEncounterMode } from '../../../types/dream';
 import type { PendingChoiceData, ExecutionContext } from '../../../engine/effectExecutors';
@@ -384,6 +385,10 @@ export function DialogHost({
           : undefined}
         // THR-2155: Untouched lives lists only mortals the god has seen (the seen floor).
         canNameAgent={readThreadsOpen ? readThreadsCanName(gameState) : undefined}
+        // THR-2235: a faded group's story line, told in Story So Far words — the beat lines need the graph.
+        tellChapter={readThreadsOpen
+          ? (entry, tick) => tellDigestEntry(entry, gameState.graph, tick)
+          : undefined}
         onSpendEssence={(cost) => {
           setLastReadThreadsTick(gameState.tick);
           setGameState(prev => {
