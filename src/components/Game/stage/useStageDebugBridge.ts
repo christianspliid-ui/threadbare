@@ -27,7 +27,8 @@ import { inMiddleBand } from '../../HexMapV2/camera/stageCamera';
 import { STAGE_CLOSE_CENTRE_BAND_FRACTION } from '../../../data/stage-content';
 import { getThreadsFrom } from '../../../engine/graphQueries';
 import type { CampbellianPhase, ThreadEdgeProperties } from '../../../types/influence';
-import { buildStateSnapshot, composeJourneyVignette, readVisionScene, selectTemplate } from '../../../engine/journeyEngine';
+import { buildReturnRemainingLine, buildStateSnapshot, composeJourneyVignette, readVisionScene, selectTemplate } from '../../../engine/journeyEngine';
+import { RETURN_CLOSE_LABEL, RETURN_OUTCOME_PROSE } from '../../../data/return-content';
 import { JOURNEY_BEAT_TEMPLATES } from '../../../data/journey-content';
 import type { PendingChoiceData } from '../../../engine/effectExecutors';
 
@@ -284,7 +285,33 @@ export function useStageDebugBridge(args: {
           return prev;
         }
         const props = first.properties as unknown as ThreadEdgeProperties;
-        const phase = phaseOverride && phaseOverride !== 'return'
+        // THR-2228 — `:return` stages the Return's vision for review only: its shape (no
+        // choices, the last-days line, "Go on"), never `executeReturn`'s writes. The First
+        // still holds the slot, so the open-thread clause is shown as the open case.
+        if (phaseOverride === 'return') {
+          const ticksLeft = Math.max(0, prev.doomClock.totalTicks - prev.doomClock.currentTick);
+          resolve({ opened: true });
+          return {
+            ...prev,
+            pendingVignettes: [
+              ...(prev.pendingVignettes ?? []).filter(v => v.data.agentId !== agent.id),
+              {
+                id: `vignette_debug_return_${agent.id}_${prev.tick}`,
+                priority: 100,
+                queuedTick: prev.tick,
+                data: {
+                  agentId: agent.id, agentName: agent.name, phase: 'return', doomClockPercent: prev.doomClock.progress,
+                  beatIndex: 0, templateId: 'return_convergence', variantKey: 'vanishing',
+                  setupProse: RETURN_OUTCOME_PROSE.vanishing.replace(/\{name\}/g, agent.name), tensionProse: '',
+                  choices: [], stateSnapshot: buildStateSnapshot(prev.graph, agent.id, props), isOrdeal: false, tick: prev.tick,
+                  closeLabel: RETURN_CLOSE_LABEL,
+                  remainingLine: buildReturnRemainingLine({ firstName: agent.name, doomTicksRemaining: ticksLeft, threadOpen: true }),
+                },
+              },
+            ],
+          };
+        }
+        const phase = phaseOverride
           ? phaseOverride
           : props.storyPhase && props.storyPhase !== 'return' ? props.storyPhase : 'call';
         const snapshot = buildStateSnapshot(prev.graph, agent.id, props);
