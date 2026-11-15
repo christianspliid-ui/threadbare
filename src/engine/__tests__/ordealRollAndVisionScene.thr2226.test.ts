@@ -165,8 +165,9 @@ describe('rolling the Ordeal', () => {
     expect(readLuckState(graph.getNode(FIRST)).bagDraws).toBe(1);
     const result = readOrdealResult(graph, ASC, FIRST)!;
     const edge = graph.getOutgoingEdges(ASC, 'thread')[0];
-    expect(edge.properties).not.toHaveProperty('ordealBand');
-    expect(edge.properties).not.toHaveProperty('ordealGodPaid');
+    // THR-2229 — the band and whether the god paid are written beside the outcome.
+    expect(typeof edge.properties.ordealBand).toBe('string');
+    expect(edge.properties.ordealGodPaid).toBe(false);
 
     const traces = getTraces().filter(t => t.category === 'journey.ordeal_roll') as unknown as Array<Record<string, unknown>>;
     expect(traces).toHaveLength(1);
