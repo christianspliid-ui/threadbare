@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-15 09:02 local (08:02 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-15 09:58 local (08:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
 
@@ -58,6 +58,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-15: The First's Apotheosis now follows the Ordeal, once, and the Return waits for it. It is live** ([THR-2234](https://linear.app/threadbare/issue/THR-2234)). Merged via [#2844](https://github.com/christianspliid-ui/threadbare/pull/2844).
 - **2026-11-15: no journey vision is lost when its moment passes. It is live** ([THR-2233](https://linear.app/threadbare/issue/THR-2233)). Merged via [#2843](https://github.com/christianspliid-ui/threadbare/pull/2843).
 - **2026-11-15: the end of the age now tells what the god did with its First. It is live** ([THR-2229](https://linear.app/threadbare/issue/THR-2229)). Merged via [#2842](https://github.com/christianspliid-ui/threadbare/pull/2842).
 - **2026-11-15: each mark on the Stage now means one thing. It is live** ([THR-2231](https://linear.app/threadbare/issue/THR-2231)). Merged via [#2841](https://github.com/christianspliid-ui/threadbare/pull/2841).
@@ -67,7 +68,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-15: the Ordeal is now rolled, and journey visions read the scene the god leans on. It is live** ([THR-2226](https://linear.app/threadbare/issue/THR-2226)). Merged via [#2835](https://github.com/christianspliid-ui/threadbare/pull/2835) and [#2836](https://github.com/christianspliid-ui/threadbare/pull/2836).
 - **2026-11-14: second whole journey after the First's story ends? You answered A, no** ([THR-2204](https://linear.app/threadbare/issue/THR-2204)). Your words: *"A.. one run should try to aim for telling the firsts entire heroes journey and timing that makes sense"*. The pacing note went to the design lane.
 - **2026-11-14: a ruler's Story tab now folds repeat chapters into one counted chip, and it is live** ([THR-2223](https://linear.app/threadbare/issue/THR-2223)). Merged via [#2833](https://github.com/christianspliid-ui/threadbare/pull/2833).
-- **2026-11-14: the screen keeps two promises it used to break, and it is live** ([THR-2222](https://linear.app/threadbare/issue/THR-2222)). Merged via [#2832](https://github.com/christianspliid-ui/threadbare/pull/2832).
 
 ---
 
