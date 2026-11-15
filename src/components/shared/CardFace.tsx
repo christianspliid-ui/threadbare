@@ -53,6 +53,7 @@
  */
 
 import type React from 'react';
+import { useEffect } from 'react';
 import type { SphereName } from '../../types/index';
 import type { ReachDomain } from '../../types/traits';
 import type { RarityTier } from '../../types/rarity';
@@ -68,6 +69,7 @@ import { CostPips, OddsPips } from './OddsPips';
 import { RarityBadge } from './RarityBadge';
 import { sphereTint, sphereBrightToken } from './sphereTint';
 import { sphereWord } from './formatEssence';
+import { announcePricedSphere } from '../Game/ascendant-bar/essenceDisplay';
 import type { DominionBand } from '../../data/dominion-content';
 import { DOMINION_TOOLTIP_IDS } from '../../data/dominion-ui-content';
 import { FORECAST_TIER_WORDS } from '../../data/nudge-stage-content';
@@ -411,6 +413,12 @@ export function CardFace({
   const { id, testIdPrefix: p, dimmed } = model;
   const tintColor = model.sphereTint && cardSphereTintActive(model) ? sphereBrightToken(model.sphereTint) : null;
   const groundTint = tintColor ? sphereTint(tintColor, 'bg') : cardTint(model.selected);
+  // THR-2231 — a face that prints its paying pool ("✦2 Order") tells the essence
+  // rail, so the Elder powers header is up before the word needs a row to name.
+  const pricedSphere = model.costSphere && model.cost > 0 ? model.costSphere : undefined;
+  useEffect(() => {
+    if (pricedSphere) announcePricedSphere(pricedSphere);
+  }, [pricedSphere]);
 
   return (
     <button

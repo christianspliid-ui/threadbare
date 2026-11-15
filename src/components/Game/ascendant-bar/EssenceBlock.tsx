@@ -43,6 +43,9 @@ import {
   ESSENCE_FOUNDATION_FOLDED_DEFAULT,
   readElderHeaderLatch,
   writeElderHeaderLatch,
+  subscribePricedSpheres,
+  getPricedSpheresVersion,
+  hasPricedSphere,
   essenceFillPct,
   essenceBalanceText,
   getEssencePreviewSphere,
@@ -328,11 +331,19 @@ export function EssenceBlock({ rows }: EssenceBlockProps) {
   }, [elderCharged]);
   const [elderHeaderLatched, setElderHeaderLatched] = useState(readElderHeaderLatch);
   const elderHoveredNow = elderRows.some((r) => r.sphere === preview);
+  // THR-2231 — a card face that prices its cost in an elder pool ("✦2 Order")
+  // shows the header too: the word on the card must have a row to point at.
+  const pricedVersion = useSyncExternalStore(
+    subscribePricedSpheres,
+    getPricedSpheresVersion,
+    getPricedSpheresVersion,
+  );
+  const elderPricedNow = elderRows.some((r) => hasPricedSphere(r.sphere));
   useEffect(() => {
-    if (elderHeaderLatched || !(elderCharged || elderHoveredNow)) return;
+    if (elderHeaderLatched || !(elderCharged || elderHoveredNow || elderPricedNow)) return;
     setElderHeaderLatched(true);
     writeElderHeaderLatch();
-  }, [elderHeaderLatched, elderCharged, elderHoveredNow]);
+  }, [elderHeaderLatched, elderCharged, elderHoveredNow, elderPricedNow, pricedVersion]);
 
   if (rows.length === 0) {
     return (
@@ -348,7 +359,7 @@ export function EssenceBlock({ rows }: EssenceBlockProps) {
   const elderShown = elderOpen || elderHovered;
   // THR-1986 — the header itself waits for the first elder charge or elder-card
   // hover, then stays (latched, Law 51).
-  const elderHeaderShown = elderHeaderLatched || elderCharged || elderHovered;
+  const elderHeaderShown = elderHeaderLatched || elderCharged || elderHovered || elderPricedNow;
 
   return (
     // THR-1894 (frame plan § F6): the spheres held, two to a row, so the hand keeps the rail's height.
