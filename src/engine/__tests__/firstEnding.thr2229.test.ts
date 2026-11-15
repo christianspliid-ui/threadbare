@@ -13,6 +13,7 @@ import { getFirstId } from '../meetingEncounter';
 import { computeHarvest, firstEndingFact, harvestSummary, readFirstStory, startTwilight } from '../cycleEnd';
 import { apotheosisResultClass, buildTwilightBeats, firstFate, openTwilight, ordealHand } from '../twilight';
 import { applyReturnOutcome } from '../returnEngine';
+import { markMortalDead } from '../agentLifecycle';
 import { applyBeatChoice } from '../journeyEngine';
 import { getThreadedNodes } from '../retinue';
 import { clearTraces, enableTracing, getTraces } from '../traceBuffer';
@@ -128,6 +129,48 @@ describe('THR-2229 — Twilight beat 2 says what the god did', () => {
     const first = buildTwilightBeats(state, computeHarvest(state), state.cycle).first;
     expect(first?.id).toBe(id);
     expect(first?.fate).toBe('lived');
+  });
+
+  it('a returned First who later dies (remove mode) is still remembered with the ending', () => {
+    const state = newWorld();
+    const { id, edge } = firstEdge(state);
+    const name = state.graph.getNode(id)!.name;
+    const r = applyReturnOutcome(state.graph, id, name, state.ascendantId, 'vanishing', edge.id, 10);
+    state.graph.updateEdge(edge.id, { properties: { ...edge.properties, ...r.threadUpdate } as never });
+    markMortalDead(state.graph, id, 20, { cause: 'lifecycle', mode: 'remove' });
+    expect(state.graph.getNode(id)).toBeUndefined();
+    const story = readFirstStory(state)!;
+    expect(story.id).toBe(id);
+    expect(story.returnEnding).toBe('vanishing');
+    expect(firstFate(state)?.id).toBe(id);
+  });
+
+  it('a later First who died wins over an earlier returned First', () => {
+    const state = newWorld();
+    const { id: a, edge } = firstEdge(state);
+    const r = applyReturnOutcome(state.graph, a, 'A', state.ascendantId, 'vanishing', edge.id, 10);
+    state.graph.updateEdge(edge.id, { properties: { ...edge.properties, ...r.threadUpdate } as never });
+    // First B, bonded after A's Return, then died (its thread swept).
+    state.graph.getNode(state.ascendantId)!.properties.firstRemembered = { id: 'ind_b', name: 'Bren', diedTick: 50 };
+    const story = readFirstStory(state)!;
+    expect(story.id).toBe('ind_b');
+    expect(story.returnEnding).toBeUndefined();
+    expect(firstFate(state)?.id).toBe('ind_b');
+    // A dying later still does not overwrite B's note.
+    markMortalDead(state.graph, a, 60, { cause: 'lifecycle', mode: 'remove' });
+    expect((state.graph.getNode(state.ascendantId)!.properties.firstRemembered as { id: string }).id).toBe('ind_b');
+  });
+
+  it('with two returned Firsts, the latest Return is the story', () => {
+    const state = newWorld();
+    const { id: a, edge } = firstEdge(state);
+    state.graph.updateEdge(edge.id, { properties: { ...edge.properties, courtPosition: null, returnEnding: 'vanishing', returnEndingTick: 10 } as never });
+    const otherId = 'ind_second_first';
+    state.graph.addNode({ id: otherId, type: 'individual', name: 'Corin', properties: { actorType: 'individual' } } as never);
+    expect(a).not.toBe(otherId);
+    state.graph.addEdge({ id: 'thread_b', type: 'thread', source: state.ascendantId, target: otherId, properties: { courtPosition: null, returnEnding: 'monster', returnEndingTick: 40 } } as never);
+    expect(readFirstStory(state)!.id).toBe(otherId);
+    expect(readFirstStory(state)!.returnEnding).toBe('monster');
   });
 });
 

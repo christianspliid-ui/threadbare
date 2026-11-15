@@ -264,10 +264,21 @@ export function markMortalDead(
   // (1b) THR-1381 — the god remembers its First past the death. Both the Aspect echo
   // and the 'remove' mode sweep the `thread` edge that names the First, so the end of
   // the age could no longer say what became of them. One small note on the god's node.
+  // THR-2229 — a First the Return took out of the court is still the god's First: its
+  // thread carries `returnEnding`, which the note keeps when a 'remove' death sweeps it.
   for (const e of graph.getIncomingEdges(mortalId, 'thread')) {
-    if ((e.properties as { courtPosition?: string }).courtPosition !== 'the_first') continue;
+    const tp = e.properties as { courtPosition?: string; returnEnding?: unknown; returnEndingTick?: unknown };
+    const returned = typeof tp.returnEnding === 'string';
+    if (tp.courtPosition !== 'the_first' && !returned) continue;
     const god = graph.getNode(e.source);
-    if (god) god.properties.firstRemembered = { id: mortalId, name: node.name, diedTick: tick };
+    if (!god) continue;
+    // A returned First's death never overwrites a later First's note (one who died after
+    // this one's Return closed its story).
+    const prior = god.properties.firstRemembered as { id?: unknown; diedTick?: unknown } | undefined;
+    const returnTick = typeof tp.returnEndingTick === 'number' ? tp.returnEndingTick : -Infinity;
+    if (tp.courtPosition !== 'the_first' && prior && prior.id !== mortalId
+      && typeof prior.diedTick === 'number' && prior.diedTick > returnTick) continue;
+    god.properties.firstRemembered = { id: mortalId, name: node.name, diedTick: tick, ...(returned ? { returnEnding: tp.returnEnding } : {}) };
   }
 
   // (2) The Aspect echo. The conduit closes, the bond endures; the node is retained

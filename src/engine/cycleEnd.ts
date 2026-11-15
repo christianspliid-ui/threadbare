@@ -102,32 +102,50 @@ export interface FirstStory {
  * The god's First: the target of its `the_first` thread, else the thread a Return
  * closed (the Return clears the court position but keeps the edge, and writes
  * `returnEnding`; only the First's thread ever gets one), else the First the god
- * remembers after a death swept the thread. Null when no First was bonded.
+ * remembers after a death swept the thread. When a returned thread and a remembered
+ * death are both present, the later of the two is the story (a newer First may have
+ * been bonded after the Return and died). Null when no First was bonded.
  */
 export function readFirstStory(state: GameState): FirstStory | null {
   try {
     const graph = state.graph;
     const edges = graph.getOutgoingEdges(state.ascendantId, 'thread');
-    const edge = edges.find(e => e.properties?.courtPosition === 'the_first')
-      ?? edges.find(e => typeof e.properties?.returnEnding === 'string');
+    const tickOf = (e: (typeof edges)[number]): number => {
+      const t = (e.properties as { returnEndingTick?: unknown } | undefined)?.returnEndingTick;
+      return typeof t === 'number' ? t : -Infinity;
+    };
+    // The latest Return, when several Firsts have returned.
+    const returned = edges
+      .filter(e => typeof e.properties?.returnEnding === 'string')
+      .reduce<(typeof edges)[number] | undefined>((best, e) => (!best || tickOf(e) >= tickOf(best) ? e : best), undefined);
+    const raw = graph.getNode(state.ascendantId)?.properties?.firstRemembered as
+      { id?: unknown; name?: unknown; diedTick?: unknown; returnEnding?: unknown } | undefined;
+    const remembered = raw && typeof raw.id === 'string' ? raw : undefined;
+    const rememberedIsLater = !!remembered && !!returned && remembered.id !== returned.target
+      && typeof remembered.diedTick === 'number' && remembered.diedTick > tickOf(returned);
+    let edge = edges.find(e => e.properties?.courtPosition === 'the_first')
+      ?? (rememberedIsLater ? undefined : returned);
     let id: string | undefined = edge?.target;
     let name: string | undefined;
+    let rememberedEnding: ReturnOutcome | undefined;
     if (!id) {
-      const raw = graph.getNode(state.ascendantId)?.properties?.firstRemembered as { id?: unknown; name?: unknown } | undefined;
-      if (!raw || typeof raw.id !== 'string') return null;
-      id = raw.id;
-      name = typeof raw.name === 'string' && raw.name.trim() ? raw.name : undefined;
+      if (!remembered) return null;
+      id = remembered.id as string;
+      name = typeof remembered.name === 'string' && remembered.name.trim() ? remembered.name : undefined;
+      if (typeof remembered.returnEnding === 'string') rememberedEnding = remembered.returnEnding as ReturnOutcome;
+      edge = undefined;
     }
     const node = graph.getNode(id);
     const props = edge ? (edge.properties as unknown as ThreadEdgeProperties) : undefined;
     const pronouns = ambitionPronounsFor(node?.properties?.gender);
+    const returnEnding = props?.returnEnding ?? rememberedEnding;
     return {
       id,
       name: node?.name?.trim() || name || FIRST_ENDING_WORDS.firstFallback,
       present: !!node,
       pronouns,
       ...(props ? { props } : {}),
-      ...(props?.returnEnding ? { returnEnding: props.returnEnding } : {}),
+      ...(returnEnding ? { returnEnding } : {}),
       dead: !node || node.properties?.deceased === true || node.properties?.alive === false,
       aspect: !!node && isAspect(graph, id),
     };
