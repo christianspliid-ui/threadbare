@@ -256,6 +256,7 @@ export function shouldBeatFire(
   prevDoomProgress: number,
   storyPhase: CampbellianPhase,
   beatHistory: BeatOutcome[],
+  journeyStartDoom?: number,
 ): { shouldFire: boolean; phase: CampbellianPhase; beatIndex: number } {
   const currentPhase = getJourneyPhase(doomProgress);
 
@@ -292,12 +293,30 @@ export function shouldBeatFire(
 
   const thresholds = getBeatThresholds(currentPhase);
   const beatsInPhase = beatHistory.filter(b => b.phase === currentPhase).length;
+  // Beats that passed before this First's journey began are never caught up: the
+  // entry vision plays as #0 and the later ones skip them (`journeyStartDoom`).
+  const nextIndex = beatsInPhase + beatsBeforeJourney(thresholds, journeyStartDoom);
 
-  if (beatsInPhase < thresholds.length && doomProgress >= thresholds[beatsInPhase]) {
-    return { shouldFire: true, phase: currentPhase, beatIndex: beatsInPhase };
+  if (nextIndex < thresholds.length && doomProgress >= thresholds[nextIndex]) {
+    return { shouldFire: true, phase: currentPhase, beatIndex: nextIndex };
   }
 
   return { shouldFire: false, phase: currentPhase, beatIndex: -1 };
+}
+
+/**
+ * THR-2233 — how many of a phase's within-phase beats (index ≥ 1; #0 is the entry
+ * vision, always played) lie at or before the Doom progress where this First's
+ * journey began. Zero when the journey started in an earlier phase or the floor is
+ * unknown (no vision yet, or a pre-THR-2233 save).
+ */
+export function beatsBeforeJourney(thresholds: number[], journeyStartDoom: number | undefined): number {
+  if (journeyStartDoom == null || !Number.isFinite(journeyStartDoom)) return 0;
+  let skipped = 0;
+  for (let i = 1; i < thresholds.length; i++) {
+    if (thresholds[i] <= journeyStartDoom) skipped++;
+  }
+  return skipped;
 }
 
 // ─── Template Selection ─────────────────────────────────────────────
@@ -996,9 +1015,14 @@ export function phaseJourneyBeat(
     const storyPhase = threadProps.storyPhase ?? 'call';
     const beatHistory = threadProps.beatHistory ?? [];
 
-    const beatCheck = shouldBeatFire(doomProgress, prevDoomProgress, storyPhase, beatHistory);
+    const beatCheck = shouldBeatFire(doomProgress, prevDoomProgress, storyPhase, beatHistory, threadProps.journeyStartDoom);
 
     if (!beatCheck.shouldFire) continue;
+
+    // THR-2233 — the journey's floor: where the Doom stood at this First's first vision.
+    if (beatHistory.length === 0 && threadProps.journeyStartDoom == null) {
+      graph.updateEdge(threadEdge.id, { properties: { journeyStartDoom: doomProgress } });
+    }
 
     // ── Return Phase: trigger convergence algorithm instead of normal vignette ──
     if (beatCheck.phase === 'return') {

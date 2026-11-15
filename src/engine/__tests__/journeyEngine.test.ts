@@ -834,6 +834,38 @@ describe('phaseJourneyBeat — a missed Road of Trials beat catches up (THR-2233
     expect(fired(tickAt(past + 2 / TOTAL))).toEqual([]);
   });
 
+  test('a First whose journey begins mid-Trials is not handed the Trials beats that passed before it', () => {
+    const t = getBeatThresholds('road_of_trials');
+    const { graph, ascendantId } = buildTestGraph(); // fresh First: storyPhase 'call', no history
+    const threadId = graph.getOutgoingEdges(ascendantId, 'thread')[0].id;
+    const props = () => graph.getEdge(threadId)!.properties as unknown as ThreadEdgeProperties;
+    const tickAt = (progress: number) => {
+      const currentTick = Math.round(progress * TOTAL);
+      const r = phaseJourneyBeat({
+        graph, ascendantId,
+        doomClock: { currentTick, totalTicks: TOTAL, progress: currentTick / TOTAL, tickModifier: STEP, lastStep: STEP },
+        tick: currentTick, seed: 42, tickEvents: [], pendingVignettes: undefined,
+      } as any, JOURNEY_BEAT_TEMPLATES);
+      return (r.pendingVignettes ?? []).map(v => `${v.data.phase}#${v.data.beatIndex}`);
+    };
+    const answer = (tick: number) => graph.updateEdge(threadId, {
+      properties: { beatHistory: [...(props().beatHistory ?? []), trialsBeat(tick)], storyPhase: 'road_of_trials' } as never,
+    });
+
+    // Threaded with the Doom between beat 3's and beat 4's thresholds.
+    const start = (Math.ceil(t[2] * TOTAL) + 2) / TOTAL;
+    expect(start).toBeLessThan(t[3]);
+    expect(tickAt(start)).toEqual(['road_of_trials#0']);
+    expect(props().journeyStartDoom).toBeCloseTo(start);
+    answer(1);
+    // Beats #1 and #2 passed before this First held the thread: nothing to catch up.
+    expect(tickAt(start + 1 / TOTAL)).toEqual([]);
+    // Beat #3 still fires when its threshold is reached.
+    expect(tickAt(Math.ceil(t[3] * TOTAL) / TOTAL)).toEqual(['road_of_trials#3']);
+    answer(2);
+    expect(tickAt(Math.ceil(t[3] * TOTAL) / TOTAL + 1 / TOTAL)).toEqual([]);
+  });
+
   test('a beat whose phase has ended is not caught up — the next phase entry takes over', () => {
     const { tickAt, fired } = setup(2);
     // In the Crisis now, two Trials beats unplayed: the Crisis entry beat fires, not Trials #2.
