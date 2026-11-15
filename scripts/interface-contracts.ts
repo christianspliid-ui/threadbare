@@ -7182,7 +7182,7 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/engine/twilight.ts'],
     verifiedLive: {
       date: '2026-11-15',
-      evidence: 'THR-2229. firstEnding.thr2229.test.ts: an apotheosisBand / apotheosisGodPaid on the First's thread renders beat 2's threshold line ("you spent on him" / "stood alone", "became your Aspect" / "turned away" / "fell back") and traces twilight.first_lines; AgeTwilightScreen.thr2229.test.tsx renders it after the fate line.',
+      evidence: 'THR-2229. firstEnding.thr2229.test.ts: an apotheosisBand / apotheosisGodPaid on the First\x27s thread renders beat 2\x27s threshold line ("you spent on him" / "stood alone", "became your Aspect" / "turned away" / "fell back") and traces twilight.first_lines; AgeTwilightScreen.thr2229.test.tsx renders it after the fate line.',
     },
   },
   // THR-2229 (plan 2026-11-14-thr-2204-put-the-god-in-the-climax slice 4): the end of
