@@ -38,13 +38,20 @@ const CARD: NudgeHandCard = {
 };
 
 describe('ReachStanding — the sheet readout as a primitive', () => {
-  it('draws reach name, rank word and five magnitude dots, inline', () => {
+  it('draws reach name and rank word inline, with no dot row (THR-2231)', () => {
     render(<ReachStanding reach="stone" tier={2} layout="inline" data-testid="rs" />);
     const el = screen.getByTestId('rs');
     expect(el.textContent).toContain('Stone');
     expect(el.textContent).toContain(DOMAIN_WORD_SCALES.stone[2]);
     expect(el.getAttribute('data-reach-tier')).toBe('2');
     expect(el.style.flexDirection).toBe('row');
+    // The Stage header's chip: the word is the magnitude; the cards' odds rows
+    // are the only five-slot row on the Stage.
+    expect(screen.queryByRole('img')).toBeNull();
+  });
+
+  it('keeps the five magnitude dots in the stacked (sheet) layout', () => {
+    render(<ReachStanding reach="stone" tier={2} layout="stacked" data-testid="rs" />);
     expect(screen.getByRole('img').getAttribute('aria-label')).toBe('Stone magnitude 3 of 5');
   });
 

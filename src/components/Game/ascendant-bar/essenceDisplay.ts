@@ -40,8 +40,9 @@ export const ESSENCE_FOUNDATION_FOLDED_DEFAULT = true;
 
 /**
  * THR-1986 — Law 51 key for the Elder powers header latch. The header stays off
- * the rail until the first charge to an elder pool or the first hover of a card
- * that draws on one, then stays for good.
+ * the rail until the first charge to an elder pool, the first hover of a card
+ * that draws on one, or (THR-2231) the first card face that prices a cost in
+ * one, then stays for good.
  */
 export const ESSENCE_ELDER_HEADER_LATCH_KEY = 'threadbare.ui.elderPowersSeen';
 
@@ -109,8 +110,50 @@ export function subscribeEssencePreview(listener: () => void): () => void {
   };
 }
 
+// ─── Priced pools (THR-2231) ───────────────────────────────────────────────
+//
+// A card face names its paying pool in words ("✦2 Order"). The Elder powers
+// header used to wait for a charge or a hover, so a footer could price "Order"
+// before the player had ever seen an Order row. Every rendered card face that
+// prints a paying pool announces it here; the essence block latches the header
+// (Law 51) the first time an announced pool is one of its elder rows. Same
+// shape as the hover store above — one value set crossing two unrelated trees
+// (the Stage hand / god-rail hand and the ascendant bar), no prop threading.
+
+const pricedSpheres = new Set<SphereName>();
+let pricedVersion = 0;
+const pricedListeners = new Set<() => void>();
+
+/** Record that a visible card face prices its cost in `sphere`. Idempotent. */
+export function announcePricedSphere(sphere: SphereName): void {
+  if (pricedSpheres.has(sphere)) return;
+  pricedSpheres.add(sphere);
+  pricedVersion += 1;
+  for (const listener of pricedListeners) listener();
+}
+
+/** Whether any card face has priced a cost in `sphere` this session. */
+export function hasPricedSphere(sphere: SphereName): boolean {
+  return pricedSpheres.has(sphere);
+}
+
+/** `getSnapshot` for `useSyncExternalStore` — bumps on each new pool. */
+export function getPricedSpheresVersion(): number {
+  return pricedVersion;
+}
+
+export function subscribePricedSpheres(listener: () => void): () => void {
+  pricedListeners.add(listener);
+  return () => {
+    pricedListeners.delete(listener);
+  };
+}
+
 /** Test seam — restores the module to its initial state. */
 export function resetEssencePreview(): void {
   previewSphere = null;
   listeners.clear();
+  pricedSpheres.clear();
+  pricedVersion = 0;
+  pricedListeners.clear();
 }

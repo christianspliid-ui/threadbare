@@ -33,8 +33,24 @@ import { ActionCard } from '../../ActionCard';
 import { getEssencePreviewSphere } from '../essenceDisplay';
 import type { WheelSlot } from '../../../../engine/wheel';
 import { recordEssenceMovement, type EssenceMovementBySphere } from '../../../../engine/essenceMovement';
+import { NudgeCard } from '../../encounter-stage/shells/NudgePhaseShell';
+import type { NudgeHandCard } from '../../encounter-stage/useNudgeHand';
 
-const FORECAST_TIERS: readonly ForecastTier[] = ['doomed', 'perilous', 'uncertain', 'favorable', 'fated'];
+const PRICED_CARD: NudgeHandCard = {
+  id: 'nudge.steady_hand',
+  libraryCardId: 'card.boost',
+  keyword: 'Boost',
+  name: 'Steady The Hand',
+  effectLine: 'His grip stops shaking.',
+  essenceCost: 2,
+  sphere: 'force',
+  state: 'playable',
+  forecastDelta: 0.08,
+  selected: false,
+  interactive: true,
+};
+
+const FORECAST_TIERS: readonly ForecastTier[] =['doomed', 'perilous', 'uncertain', 'favorable', 'fated'];
 
 afterEach(() => {
   cleanup();
@@ -276,6 +292,34 @@ describe('EssenceBlock', () => {
     expect(screen.getByTestId('essence-elder-fold')).toBeTruthy();
     act(() => { setEssencePreviewSphere(null); });
     expect(screen.getByTestId('essence-elder-fold')).toBeTruthy();
+  });
+
+  // THR-2231 — a card face naming an elder pool ("✦2 Chaos") shows the header
+  // with no charge and no hover; the fold stays closed (THR-1858 owns opening).
+  it('the Elder powers header arrives when a rendered card prices its cost in an elder pool', () => {
+    const elderCard: NudgeHandCard = { ...PRICED_CARD, payingSphere: 'chaos' };
+    render(
+      <>
+        <EssenceBlock rows={rowsFor(fullPool())} />
+        <NudgeCard card={elderCard} designerView={false} onToggle={() => {}} />
+      </>,
+    );
+    expect(screen.getByTestId('essence-elder-fold')).toBeTruthy();
+    expect(screen.getByTestId('essence-elder-fold').getAttribute('aria-expanded')).toBe('false');
+    expect(getEssencePreviewSphere()).toBeNull();
+    expect(localStorage.getItem(ESSENCE_ELDER_HEADER_LATCH_KEY)).toBe('1');
+  });
+
+  it('a card priced in the player\'s own pool does not bring the Elder powers header', () => {
+    const ownCard: NudgeHandCard = { ...PRICED_CARD, payingSphere: 'mind' };
+    render(
+      <>
+        <EssenceBlock rows={rowsFor(fullPool())} />
+        <NudgeCard card={ownCard} designerView={false} onToggle={() => {}} />
+      </>,
+    );
+    expect(screen.queryByTestId('essence-elder-fold')).toBeNull();
+    expect(localStorage.getItem(ESSENCE_ELDER_HEADER_LATCH_KEY)).toBeNull();
   });
 
   it('an elder pool refilling does not open the fold', () => {

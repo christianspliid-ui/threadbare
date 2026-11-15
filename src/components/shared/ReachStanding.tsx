@@ -9,7 +9,10 @@
  *
  * Two layouts:
  *  - `stacked` — name and word on one line, dots beneath (the sheet's card).
- *  - `inline`  — all three on one line (the encounter title row's chip).
+ *  - `inline`  — name and word on one line, NO dots (the encounter title row's
+ *    chip). THR-2231: on the Stage the cards' odds rows are five-slot dot rows,
+ *    so a second five-dot row in the header read as a rival "real chance". The
+ *    word already is the magnitude (Law 13), so the inline chip drops the dots.
  *
  * The word is the magnitude (Law 13); the dots repeat it as a level, never as
  * progress. An unrevealed reach shows `???` and no dots, as the sheet always has.
@@ -104,7 +107,7 @@ export function ReachStanding({
   );
 
   // Magnitude dots — a level, not progress. Tier 0–4 → 1–5 filled.
-  const dots = revealed ? (
+  const dots = revealed && layout === 'stacked' ? (
     <span
       role="img"
       aria-label={`${name} magnitude ${clampedTier + 1} of ${MAGNITUDE_DOTS_TOTAL}`}
