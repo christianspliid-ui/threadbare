@@ -165,7 +165,7 @@ import {
   selectEncounterRuntimeForNotification,
 } from './encounterNotificationRuntime';
 import type { MeetingEncounterState, MeetingEncounterResult } from '../../types/meetingEncounter';
-import type { JourneyVignetteData, OrdealOutcome, PendingVignette } from '../../types/journeyEngine';
+import type { CommittedOrdeal, JourneyVignetteData, PendingVignette } from '../../types/journeyEngine';
 import { readOrdealResult, recordJourneyChoice } from '../../engine/journeyEngine';
 import { recordStoryBeatDismissed } from '../../engine/phaseAttention';
 import { getThreadsFrom } from '../../engine/graphQueries';
@@ -4307,9 +4307,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [handleThreadDetailClose, handleHexDetailClose]);
   useEscapeLayer(!!selectedThreadNode || !!selectedHexCoord, closeDetailPanels, ESCAPE_LAYER_Z_PANEL);
 
-  // THR-2226 — an Ordeal vision whose choice was already committed (rolled and paid)
-  // at the click; its Continue only closes it.
-  const committedVignetteIdsRef = useRef<Set<string>>(new Set());
+  // THR-2226 — Ordeal visions whose choice was already committed (rolled and paid) at
+  // the click, keyed by vision id. Its Continue only closes it, a second commit returns
+  // the stored roll, and a remounted vision (after an encounter took the screen) shows
+  // the result instead of the choices.
+  const committedOrdealsRef = useRef<Map<string, CommittedOrdeal>>(new Map());
+  const getCommittedOrdeal = useCallback(
+    (vignetteId: string): CommittedOrdeal | null => committedOrdealsRef.current.get(vignetteId) ?? null,
+    [],
+  );
 
   /**
    * Charge a journey choice's price and record it on the world. Returns false, doing
@@ -4369,8 +4375,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const handleJourneyChoice = useCallback((choiceId: string) => {
     if (!activeVignette) return;
     // THR-2226 — a rolled Ordeal was paid and recorded at the click; this closes it.
-    if (committedVignetteIdsRef.current.has(activeVignette.id)) {
-      committedVignetteIdsRef.current.delete(activeVignette.id);
+    if (committedOrdealsRef.current.has(activeVignette.id)) {
+      committedOrdealsRef.current.delete(activeVignette.id);
       setGameState(prev => ({
         ...prev,
         pendingVignettes: (prev.pendingVignettes ?? []).filter(v => v.id !== activeVignette.id),
@@ -4384,11 +4390,17 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
    * THR-2226 — the Ordeal commits at the click: pay, roll, record. The vision stays
    * open and reads its result from the band written to the thread edge.
    */
-  const handleOrdealCommit = useCallback((choiceId: string): OrdealOutcome | null => {
+  const handleOrdealCommit = useCallback((choiceId: string): CommittedOrdeal | null => {
     if (!activeVignette) return null;
+    // Rolled once already: never charge or roll again — return the stored result.
+    const stored = committedOrdealsRef.current.get(activeVignette.id);
+    if (stored) return stored;
     if (!commitJourneyChoice(choiceId, false)) return null;
-    committedVignetteIdsRef.current.add(activeVignette.id);
-    return readOrdealResult(gameState.graph, gameState.ascendantId, activeVignette.data.agentId)?.outcome ?? null;
+    const outcome = readOrdealResult(gameState.graph, gameState.ascendantId, activeVignette.data.agentId)?.outcome;
+    if (!outcome) return null;
+    const committed: CommittedOrdeal = { choiceId, outcome };
+    committedOrdealsRef.current.set(activeVignette.id, committed);
+    return committed;
   }, [activeVignette, commitJourneyChoice, gameState.graph, gameState.ascendantId]);
 
   // ── Debug levers (THR-1881) ──
@@ -4960,6 +4972,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         activeVignette={activeVignette}
         handleJourneyChoice={handleJourneyChoice}
         handleOrdealCommit={handleOrdealCommit}
+        getCommittedOrdeal={getCommittedOrdeal}
         activeStoryBeatId={activeStoryBeatId}
         activeStoryBeatTemplate={activeStoryBeatTemplate}
         activeStoryBeatAgentName={activeStoryBeatAgentName}

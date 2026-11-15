@@ -21,7 +21,7 @@ import { StageContextLine } from './StoryBeatModal';
 import { StageLabelIcon } from './stage/StageLabelIcon';
 import { StageSubjectPortrait } from './stage/StageSubjectPortrait';
 import { fallbackStageView, type StageVM } from '../../engine/views/stage/stageView';
-import type { JourneyVignetteData, BeatChoice, OrdealOutcome } from '../../types/journeyEngine';
+import type { JourneyVignetteData, BeatChoice, CommittedOrdeal, OrdealOutcome } from '../../types/journeyEngine';
 import type { ForecastTier } from '../../types/traces/encounter-traces';
 import { formatPhaseName, ordealConsequence } from '../../engine/journeyEngine';
 import { formatEssence } from '../shared/formatEssence';
@@ -46,10 +46,15 @@ interface JourneyVignetteModalProps {
   payingSphere?: string;
   /**
    * THR-2226 — on an Ordeal the click commits at once: the host pays, rolls and records,
-   * and returns the rolled outcome (null when nothing was committed). The result line
+   * and returns the committed roll (null when nothing was committed). The result line
    * renders from it; Continue then only closes. Absent ⇒ the two-stage flow.
    */
-  onOrdealCommit?: (choiceId: string) => OrdealOutcome | null;
+  onOrdealCommit?: (choiceId: string) => CommittedOrdeal | null;
+  /**
+   * THR-2226 — the roll already committed for this vision. A vision that remounts after
+   * its roll (an encounter took the screen before Continue) opens on its result.
+   */
+  committedOrdeal?: CommittedOrdeal | null;
   /** THR-1897 — the Stage view model (lit hex, place tag, context line); absent ⇒ nothing lit. */
   stageVM?: StageVM | null;
   /** The game tick, for the Stage's traces. */
@@ -201,13 +206,17 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
   essenceAvailable,
   payingSphere,
   onOrdealCommit,
+  committedOrdeal = null,
   stageVM,
   tick = 0,
 }: JourneyVignetteModalProps) {
-  // The answered choice, while its consequence line is showing (THR-1854).
-  const [answered, setAnswered] = useState<BeatChoice | null>(null);
+  // The answered choice, while its consequence line is showing (THR-1854). THR-2226: a
+  // vision remounted after its Ordeal rolled opens on that result, never on the choices.
+  const [answered, setAnswered] = useState<BeatChoice | null>(
+    () => (committedOrdeal ? vignette.choices.find(c => c.id === committedOrdeal.choiceId) ?? null : null),
+  );
   // THR-2226 — the Ordeal's rolled outcome, once the click has committed it.
-  const [rolledOutcome, setRolledOutcome] = useState<OrdealOutcome | null>(null);
+  const [rolledOutcome, setRolledOutcome] = useState<OrdealOutcome | null>(committedOrdeal?.outcome ?? null);
   // THR-2226 — the Ordeal's picked lean, armed and waiting for the commit (Law 48).
   const [armedId, setArmedId] = useState<string | null>(null);
   const ordealCommits = vignette.isOrdeal && onOrdealCommit !== undefined;
@@ -233,11 +242,12 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
   // THR-2226 — the second beat: pay the armed lean's price and roll the Ordeal.
   const handleOrdealFire = useCallback(() => {
     if (answered || !armedId || !onOrdealCommit) return;
-    const choice = vignette.choices.find(c => c.id === armedId);
+    const committed = onOrdealCommit(armedId);
+    if (committed === null) return; // nothing committed (the pool could not pay)
+    // The host returns the roll it holds — the stored one if this vision already rolled.
+    const choice = vignette.choices.find(c => c.id === committed.choiceId);
     if (!choice) return;
-    const outcome = onOrdealCommit(armedId);
-    if (outcome === null) return; // nothing committed (the pool could not pay)
-    setRolledOutcome(outcome);
+    setRolledOutcome(committed.outcome);
     setAnswered(choice);
   }, [answered, armedId, onOrdealCommit, vignette.choices]);
   const answeredLine = answered

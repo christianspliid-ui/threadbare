@@ -106,6 +106,12 @@ export const JOURNEY_REACH_CHANGE_RAW_SCALE = 100;
 /** The three possible Ordeal outcomes — drives the Return (System 6). */
 export type OrdealOutcome = 'triumph' | 'scraped_through' | 'broken';
 
+/** THR-2226 — an Ordeal already paid and rolled: the lean the god picked and what it rolled. */
+export interface CommittedOrdeal {
+  choiceId: string;
+  outcome: OrdealOutcome;
+}
+
 // ─── Vision Scene (THR-2226) ────────────────────────────────────────
 
 /** What the First is doing when a vision arrives. */

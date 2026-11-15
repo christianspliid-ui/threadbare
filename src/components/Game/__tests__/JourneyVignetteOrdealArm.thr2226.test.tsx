@@ -6,7 +6,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { JourneyVignetteModal } from '../JourneyVignetteModal';
 import { JOURNEY_CONTINUE_LABEL, ORDEAL_COMMIT_LABEL, ORDEAL_PICK_PROMPT } from '../../../data/ui-content';
-import type { JourneyVignetteData, OrdealOutcome } from '../../../types/journeyEngine';
+import type { CommittedOrdeal, JourneyVignetteData, OrdealOutcome } from '../../../types/journeyEngine';
 
 const vignette: JourneyVignetteData = {
   agentId: 'agent.first',
@@ -40,16 +40,17 @@ const vignette: JourneyVignetteData = {
   tick: 360,
 } as JourneyVignetteData;
 
-function renderOrdeal(outcome: OrdealOutcome | null = 'triumph') {
+function renderOrdeal(outcome: OrdealOutcome | null = 'triumph', committedOrdeal: CommittedOrdeal | null = null) {
   const onChoice = vi.fn();
   const onClose = vi.fn();
-  const onOrdealCommit = vi.fn(() => outcome);
+  const onOrdealCommit = vi.fn((choiceId: string): CommittedOrdeal | null => (outcome ? { choiceId, outcome } : null));
   render(
     <JourneyVignetteModal
       open
       onClose={onClose}
       onChoice={onChoice}
       onOrdealCommit={onOrdealCommit}
+      committedOrdeal={committedOrdeal}
       vignette={vignette}
       essenceAvailable={20}
     />,
@@ -95,6 +96,26 @@ describe('the Ordeal is armed, then fired (THR-2226, Law 48)', () => {
     expect(onOrdealCommit).not.toHaveBeenCalled();
     expect(onChoice).not.toHaveBeenCalled();
     expect(screen.getByTestId('ordeal-commit').textContent).toBe(ORDEAL_PICK_PROMPT);
+  });
+
+  it('a vision remounted after its roll opens on the stored result, with no choices to buy again', () => {
+    const { onOrdealCommit, onChoice } = renderOrdeal('triumph', { choiceId: 'pour', outcome: 'broken' });
+    expect(screen.getByTestId('journey-consequence').textContent).toContain('They fall.');
+    expect(screen.queryByTestId('ordeal-commit')).toBeNull();
+    expect(onOrdealCommit).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByText(JOURNEY_CONTINUE_LABEL));
+    expect(onChoice).toHaveBeenCalledWith('pour');
+  });
+
+  it('the result line follows the lean the host committed, not the one re-armed', () => {
+    const onOrdealCommit = vi.fn((): CommittedOrdeal => ({ choiceId: 'pour', outcome: 'scraped_through' }));
+    render(
+      <JourneyVignetteModal open onClose={vi.fn()} onChoice={vi.fn()} onOrdealCommit={onOrdealCommit} vignette={vignette} essenceAvailable={20} />,
+    );
+    fireEvent.click(screen.getByText('Step back'));
+    fireEvent.click(screen.getByTestId('ordeal-commit'));
+    expect(screen.getByTestId('journey-consequence').textContent).toContain('They hold.');
   });
 
   it('a commit the pool cannot pay leaves the choices up', () => {

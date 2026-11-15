@@ -36,7 +36,7 @@ import type { EncounterNotification } from '../../../types/encounterVisibility';
 import type { UndertakingMomentRecord } from '../../../types/strategicAction';
 import type { UnifiedActionTemplate } from '../../../types/unifiedAction';
 import type { WhisperNudge, CompulsionCandidate, PremonitionEvent } from '../../../types/premonition';
-import type { OrdealOutcome, PendingVignette } from '../../../types/journeyEngine';
+import type { CommittedOrdeal, PendingVignette } from '../../../types/journeyEngine';
 import type { RefRouter } from '../../../hooks/useRefRouter';
 import { WORLD_REF_KIND_BY_VISUAL_KIND } from '../../../types/worldRefAdapters';
 import { resolveEmergenceDecision } from '../../../engine/ruins/delveVariant';
@@ -111,8 +111,10 @@ export interface StageHostProps {
   // Journey vignette
   activeVignette: PendingVignette | null;
   handleJourneyChoice: (choiceId: string) => void;
-  /** THR-2226 — the Ordeal commits at the click (pay, roll, record) and returns the rolled outcome. */
-  handleOrdealCommit?: (choiceId: string) => OrdealOutcome | null;
+  /** THR-2226 — the Ordeal commits at the click (pay, roll, record) and returns the committed roll. */
+  handleOrdealCommit?: (choiceId: string) => CommittedOrdeal | null;
+  /** THR-2226 — the roll already committed for a vision, so a remounted Ordeal shows its result. */
+  getCommittedOrdeal?: (vignetteId: string) => CommittedOrdeal | null;
   // Story beat
   activeStoryBeatId: string | null;
   activeStoryBeatTemplate: UnifiedActionTemplate | null;
@@ -169,6 +171,7 @@ export function StageHost({
   activeVignette,
   handleJourneyChoice,
   handleOrdealCommit,
+  getCommittedOrdeal,
   activeStoryBeatId,
   activeStoryBeatTemplate,
   activeStoryBeatAgentName,
@@ -359,6 +362,7 @@ export function StageHost({
           essenceAvailable={encounterPayingEssence}
           payingSphere={encounterPayingSphere}
           onOrdealCommit={handleOrdealCommit}
+          committedOrdeal={getCommittedOrdeal?.(activeVignette.id) ?? null}
           stageVM={vignetteStageVM}
           tick={gameState.tick}
           onClose={() => {
