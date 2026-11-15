@@ -36,6 +36,10 @@ describe('THR-2229 — AgeTwilightScreen beat 2', () => {
     expect(lines[1]).toMatch(/^At the Ordeal you poured yourself into the thread, and still \w+ broke\.$/);
     const section = screen.getByTestId('age-twilight-first').textContent ?? '';
     expect(section.indexOf(beats.first!.line.slice(-20))).toBeLessThan(section.indexOf('At the threshold'));
+    // Law 21: the First's name in the new lines is a link, as in the fate line.
+    // (EntityLink renders through the router; with none mounted it is a span of the name.)
+    const firstLine = screen.getAllByTestId('age-twilight-first-line')[0];
+    expect([...firstLine.querySelectorAll('*')].some(n => n.textContent === beats.first!.name)).toBe(true);
     // Law 13/14: no numerals in the new lines.
     for (const l of lines) expect(l).not.toMatch(/\d/);
   });
