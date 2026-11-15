@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-15 01:58 local (00:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-15 02:58 local (01:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -34,12 +34,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 7 tickets in Ready for Dev, and the builder is working.** [The Ordeal is rolled](https://linear.app/threadbare/issue/THR-2226/the-ordeal-is-rolled-and-journey-visions-read-the-scene-the-god-leans) is built and on its branch ([thr-2226-ordeal-roll](https://github.com/christianspliid-ui/threadbare/tree/thr-2226-ordeal-roll)), with no PR yet; the pickup run that started at 00:19 UTC is finishing it now. Next up: [The Apotheosis deals the run's largest hand](https://linear.app/threadbare/issue/THR-2227) is claimable now. The rest are held for your veto (see *Decided for you*), the first opening at 02:40 UTC.
+**Healthy: 7 tickets in Ready for Dev, and the builder is working.** [The Ordeal is rolled](https://linear.app/threadbare/issue/THR-2226/the-ordeal-is-rolled-and-journey-visions-read-the-scene-the-god-leans) is open as [PR #2835](https://github.com/christianspliid-ui/threadbare/pull/2835): every check is green, and it is not yet armed to merge. A pickup run has been working since 01:31 UTC. Next up: [The Apotheosis deals the run's largest hand](https://linear.app/threadbare/issue/THR-2227/the-apotheosis-deals-the-runs-largest-hand-at-the-step-that-decides-it) is claimable now. The other five are held for your veto (see *Decided for you*), the first two opening at 02:40 UTC.
 
 Items for agents, not you:
-- **Two pickup runs overlapped on THR-2226.** The 23:51 UTC run had built it when the 00:19 run took its worktree as stranded work and removed it. Two uncommitted touches were lost: choose-then-confirm for Ordeal spends (two clicks, UI Law 48) and a better fallback for a very weak First. The 00:19 run, or the review on the PR, should restore both before merge.
+- **THR-2226's PR is green but unarmed.** Before it merges, the review should check that the two touches lost when the 00:19 run removed the 23:51 run's worktree are back: choose-then-confirm for Ordeal spends (two clicks, UI Law 48) and a better fallback for a very weak First.
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (26 days; In Dev since 15 Oct). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- All green. The live site serves the latest commit on main (b7ab4c12). Checks on main and the 3 scheduled background jobs pass; no PRs are waiting. All 10 scheduled lanes are on time. The worktree reaper ran at 01:54 local. Engine speed: 184 ms/tick, +16% on the 7-day median (158), inside the normal range. Linear read live this run.
+- All green. The live site serves the latest commit on main (b7ab4c12). Checks on main and the 3 scheduled background jobs pass. One PR is open and not armed ([#2835](https://github.com/christianspliid-ui/threadbare/pull/2835), above). All 10 scheduled lanes are on time. The worktree reaper ran at 02:40 local. Engine speed: 157 ms/tick, -1% on the 7-day median (158). Linear read live this run. No Discord messages since the last brief.
