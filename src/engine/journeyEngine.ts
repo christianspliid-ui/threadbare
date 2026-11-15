@@ -247,8 +247,9 @@ export function buildStateSnapshot(
 /**
  * Check if a journey beat should fire for The First this tick.
  *
- * A beat fires when the doom clock crosses a beat threshold
- * that hasn't been recorded in the beat history yet.
+ * A beat fires on entering a new phase, or when the doom clock has reached the
+ * threshold of the phase's next beat not yet recorded in the beat history
+ * (THR-2233: reached, not merely crossed this tick — a missed crossing catches up).
  */
 export function shouldBeatFire(
   doomProgress: number,
@@ -268,23 +269,32 @@ export function shouldBeatFire(
     }
   }
 
-  // Check if we crossed a beat threshold within the current phase
-  const thresholds = getBeatThresholds(currentPhase);
-  const beatsInPhase = beatHistory.filter(b => b.phase === currentPhase).length;
+  // THR-2233 — catch-up rule. Within the current phase, the next unplayed beat
+  // fires once the Doom has reached its threshold, not only on the tick it was
+  // crossed: a crossing that landed while a vision was pending (or on a doom step
+  // taken outside `phaseDoom`) used to lose that beat for good. One beat per tick,
+  // in order; the count of this phase's `beatHistory` entries stays the index, so
+  // no beat fires twice. `prevDoomProgress` is no longer read here — kept in the
+  // signature for callers. A beat whose phase has ended is not caught up: the
+  // phase-entry branch above hands over to the next phase.
+  void prevDoomProgress;
 
-  for (let i = beatsInPhase; i < thresholds.length; i++) {
-    if (prevDoomProgress < thresholds[i] && doomProgress >= thresholds[i]) {
-      return { shouldFire: true, phase: currentPhase, beatIndex: i };
-    }
-  }
-
-  // Force-fire Ordeal if we've passed the threshold and it hasn't fired yet
+  // Force-fire Ordeal if we've passed the threshold and it hasn't fired yet. Checked
+  // before the catch-up so the Ordeal always precedes the Return (THR-2233: once the
+  // forced Ordeal is answered, the Return then catches up on the next tick).
   if (
     doomProgress >= ORDEAL_FORCE_FIRE_THRESHOLD &&
     !beatHistory.some(b => b.phase === 'ordeal') &&
     currentPhase === 'return'
   ) {
     return { shouldFire: true, phase: 'ordeal', beatIndex: 0 };
+  }
+
+  const thresholds = getBeatThresholds(currentPhase);
+  const beatsInPhase = beatHistory.filter(b => b.phase === currentPhase).length;
+
+  if (beatsInPhase < thresholds.length && doomProgress >= thresholds[beatsInPhase]) {
+    return { shouldFire: true, phase: currentPhase, beatIndex: beatsInPhase };
   }
 
   return { shouldFire: false, phase: currentPhase, beatIndex: -1 };
