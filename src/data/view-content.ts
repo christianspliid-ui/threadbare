@@ -606,8 +606,9 @@ export const READ_THREADS_WINDOW_LINES: Readonly<Record<string, string>> = {
 
 /**
  * THR-2235 (review gate) — shown under the windows while the attention pool is strained
- * (below ATTENTION_POOL_STRAINED_THRESHOLD), because every chapter then reads one step
- * fainter than its window line promises. Words only (Law 13).
+ * (below ATTENTION_POOL_STRAINED_THRESHOLD). The strain drops every chapter one level, but
+ * the first drop (full → high) renders the same, so only chapters older than half a day
+ * visibly fade, and the oldest already sit at a story line. Words only (Law 13).
  */
 export const READ_THREADS_STRAINED_LINE =
-  'Your attention is strained: every chapter will read one step fainter than told above.';
+  'Your attention is strained: chapters older than half a day will read one step fainter than told above, down to a story line.';
