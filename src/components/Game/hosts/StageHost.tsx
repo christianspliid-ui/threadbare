@@ -36,7 +36,7 @@ import type { EncounterNotification } from '../../../types/encounterVisibility';
 import type { UndertakingMomentRecord } from '../../../types/strategicAction';
 import type { UnifiedActionTemplate } from '../../../types/unifiedAction';
 import type { WhisperNudge, CompulsionCandidate, PremonitionEvent } from '../../../types/premonition';
-import type { PendingVignette } from '../../../types/journeyEngine';
+import type { OrdealOutcome, PendingVignette } from '../../../types/journeyEngine';
 import type { RefRouter } from '../../../hooks/useRefRouter';
 import { WORLD_REF_KIND_BY_VISUAL_KIND } from '../../../types/worldRefAdapters';
 import { resolveEmergenceDecision } from '../../../engine/ruins/delveVariant';
@@ -111,6 +111,8 @@ export interface StageHostProps {
   // Journey vignette
   activeVignette: PendingVignette | null;
   handleJourneyChoice: (choiceId: string) => void;
+  /** THR-2226 — the Ordeal commits at the click (pay, roll, record) and returns the rolled outcome. */
+  handleOrdealCommit?: (choiceId: string) => OrdealOutcome | null;
   // Story beat
   activeStoryBeatId: string | null;
   activeStoryBeatTemplate: UnifiedActionTemplate | null;
@@ -166,6 +168,7 @@ export function StageHost({
   emergenceStageVM,
   activeVignette,
   handleJourneyChoice,
+  handleOrdealCommit,
   activeStoryBeatId,
   activeStoryBeatTemplate,
   activeStoryBeatAgentName,
@@ -354,6 +357,8 @@ export function StageHost({
           key={activeVignette.id}
           open={true}
           essenceAvailable={encounterPayingEssence}
+          payingSphere={encounterPayingSphere}
+          onOrdealCommit={handleOrdealCommit}
           stageVM={vignetteStageVM}
           tick={gameState.tick}
           onClose={() => {

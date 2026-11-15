@@ -78,3 +78,67 @@ export function scaledStepProbability(input: ResolutionInput, scale: ActionScale
   const p = computeResolutionThreshold({ ...input, difficulty: adjustedDifficulty });
   return Math.max(p, MIN_PROBABILITY_BY_SCALE[scale ?? 'regional']);
 }
+
+// ─── THR-2226: fit a climax's difficulty to a target forecast ─────────────
+
+/** What `fitDifficultyToForecast` found. */
+export interface DifficultyFit {
+  /** The difficulty to roll against (the fallback when `fitted` is false). */
+  readonly difficulty: number;
+  /** The bare chance at that difficulty — the same continuous number the roll uses. */
+  readonly bareChance: number;
+  /** False when the target could not be bracketed in [0, 1]; the fallback was used. */
+  readonly fitted: boolean;
+}
+
+export interface DifficultyFitOptions {
+  readonly scale?: ActionScale;
+  /** Standing modifiers that ride on every roll of this step (not the god's lean). */
+  readonly actionModifiers?: number;
+  /** Difficulty to return when the target cannot be bracketed. */
+  readonly fallbackDifficulty: number;
+  /** Bisection steps (`FIT_ITERATIONS`). */
+  readonly iterations: number;
+}
+
+/**
+ * THR-2226 (plan THR-2204 § Decisions 2) — the difficulty at which an actor of
+ * `capability` rolls a bare chance of `target`, found by bisection over [0, 1]
+ * against `scaledStepProbability`, the probability `resolveStepCore` itself rolls
+ * against (Law 18: never a copy of the curve). Pure and rng-free.
+ *
+ * Fail-soft (NFP #4): when even difficulty 0 sits under the target, or difficulty
+ * 1 over it, the fit returns `fallbackDifficulty` with `fitted: false`.
+ */
+export function fitDifficultyToForecast(
+  capability: number,
+  target: number,
+  options: DifficultyFitOptions,
+): DifficultyFit {
+  const chanceAt = (difficulty: number): number => scaledStepProbability({
+    actorId: '',
+    domain: 'star',
+    capability,
+    difficulty,
+    sphereFactor: 0,
+    actionModifiers: options.actionModifiers ?? 0,
+    testShapers: [],
+  }, options.scale);
+  const fallback = (): DifficultyFit => ({
+    difficulty: options.fallbackDifficulty,
+    bareChance: chanceAt(options.fallbackDifficulty),
+    fitted: false,
+  });
+  if (!Number.isFinite(capability) || !Number.isFinite(target)) return fallback();
+  // Chance falls as difficulty rises; the target must sit between the two ends.
+  if (chanceAt(0) < target || chanceAt(1) > target) return fallback();
+  let lo = 0;
+  let hi = 1;
+  for (let i = 0; i < Math.max(1, options.iterations); i++) {
+    const mid = (lo + hi) / 2;
+    if (chanceAt(mid) > target) lo = mid;
+    else hi = mid;
+  }
+  const difficulty = (lo + hi) / 2;
+  return { difficulty, bareChance: chanceAt(difficulty), fitted: true };
+}

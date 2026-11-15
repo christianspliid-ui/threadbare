@@ -21,10 +21,14 @@ import { StageContextLine } from './StoryBeatModal';
 import { StageLabelIcon } from './stage/StageLabelIcon';
 import { StageSubjectPortrait } from './stage/StageSubjectPortrait';
 import { fallbackStageView, type StageVM } from '../../engine/views/stage/stageView';
-import type { JourneyVignetteData, BeatChoice } from '../../types/journeyEngine';
-import { formatPhaseName } from '../../engine/journeyEngine';
+import type { JourneyVignetteData, BeatChoice, OrdealOutcome } from '../../types/journeyEngine';
+import type { ForecastTier } from '../../types/traces/encounter-traces';
+import { formatPhaseName, ordealConsequence } from '../../engine/journeyEngine';
 import { formatEssence } from '../shared/formatEssence';
 import { JOURNEY_STAGE_LABELS, JOURNEY_CONTINUE_LABEL, JOURNEY_CHOICE_UNAFFORDABLE } from '../../data/ui-content';
+import { VISION_PRICE_LINE } from '../../data/vision-scene-content';
+import { FORECAST_TIER_WORDS } from '../../data/nudge-stage-content';
+import { sphereWord } from '../../data/essence-format';
 
 // ─── Props ──────────────────────────────────────────────────────────
 
@@ -38,6 +42,14 @@ interface JourneyVignetteModalProps {
    * A choice costing more renders disabled. Omitted = unknown, nothing disabled.
    */
   essenceAvailable?: number;
+  /** THR-2226 — the pool that pays, named on each price line ("Costs 2 Mind"). */
+  payingSphere?: string;
+  /**
+   * THR-2226 — on an Ordeal the click commits at once: the host pays, rolls and records,
+   * and returns the rolled outcome (null when nothing was committed). The result line
+   * renders from it; Continue then only closes. Absent ⇒ the two-stage flow.
+   */
+  onOrdealCommit?: (choiceId: string) => OrdealOutcome | null;
   /** THR-1897 — the Stage view model (lit hex, place tag, context line); absent ⇒ nothing lit. */
   stageVM?: StageVM | null;
   /** The game tick, for the Stage's traces. */
@@ -78,27 +90,35 @@ function PhaseBadge({ phase }: { phase: string }) {
 
 // ─── Choice Button ──────────────────────────────────────────────────
 
+/** THR-2226 — "Costs 2 Mind": the price and the pool that pays it. */
+export function visionPriceLine(essenceCost: number, payingSphere: string | undefined): string {
+  return VISION_PRICE_LINE
+    .replace('{n}', formatEssence(essenceCost))
+    .replace('{sphere}', payingSphere ? sphereWord(payingSphere) : 'essence');
+}
+
 function ChoiceButton({
   choice,
   onSelect,
-  isOrdeal,
   disabled,
   unaffordable,
+  payingSphere,
+  forecast,
 }: {
   choice: BeatChoice;
   onSelect: (id: string) => void;
-  isOrdeal: boolean;
   disabled: boolean;
   unaffordable: boolean;
+  payingSphere?: string;
+  /** THR-2226 — on an Ordeal, the forecast this choice leaves (shown before the spend). */
+  forecast?: ForecastTier;
 }) {
   const [hovered, setHovered] = useState(false);
 
   const essenceCost = choice.effects.essenceCost ?? 0;
-  const borderColor = isOrdeal
-    // THR-1586: the polarity tokens, not a second gold (Law 30) — triumph and broken stay
-    // distinct from the scraped-through default.
-    ? (choice.effects.ordealOutcome === 'triumph' ? 'var(--positive)' : choice.effects.ordealOutcome === 'broken' ? 'var(--negative)' : 'var(--accent-gold)')
-    : 'var(--accent-gold)';
+  // THR-2226 — an Ordeal choice no longer names an outcome, so no polarity colour.
+  const borderColor = 'var(--accent-gold)';
+  const showMeta = essenceCost > 0 || forecast !== undefined;
 
   return (
     <button
@@ -139,13 +159,27 @@ function ChoiceButton({
           "{choice.godVoice}"
         </div>
       )}
-      {essenceCost > 0 && (
-        <div style={{
+      {showMeta && (
+        <div data-testid="journey-choice-meta" style={{
           color: 'var(--text-muted)',
           fontSize: 'var(--text-xs)',
           marginTop: '4px',
         }}>
-          Cost: {formatEssence(essenceCost)} essence{unaffordable ? ` · ${JOURNEY_CHOICE_UNAFFORDABLE}` : ''}
+          {essenceCost > 0 && (
+            <span data-testid="journey-choice-price">
+              {visionPriceLine(essenceCost, payingSphere)}{unaffordable ? ` · ${JOURNEY_CHOICE_UNAFFORDABLE}` : ''}
+            </span>
+          )}
+          {essenceCost > 0 && forecast && ' · '}
+          {forecast && (
+            <span
+              data-testid="journey-choice-forecast"
+              data-forecast-tier={forecast}
+              style={{ color: `rgb(var(--forecast-${forecast}-rgb))`, fontWeight: 700 }}
+            >
+              {FORECAST_TIER_WORDS[forecast]}
+            </span>
+          )}
         </div>
       )}
     </button>
@@ -160,23 +194,38 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
   onChoice,
   vignette,
   essenceAvailable,
+  payingSphere,
+  onOrdealCommit,
   stageVM,
   tick = 0,
 }: JourneyVignetteModalProps) {
   // The answered choice, while its consequence line is showing (THR-1854).
   const [answered, setAnswered] = useState<BeatChoice | null>(null);
+  // THR-2226 — the Ordeal's rolled outcome, once the click has committed it.
+  const [rolledOutcome, setRolledOutcome] = useState<OrdealOutcome | null>(null);
 
   const handleChoice = useCallback((choiceId: string) => {
     if (answered) return; // Prevent double-click
     const choice = vignette.choices.find(c => c.id === choiceId);
     if (!choice) return;
+    // THR-2226 — the Ordeal commits at the click: there is no result until the roll.
+    if (vignette.isOrdeal && onOrdealCommit) {
+      const outcome = onOrdealCommit(choiceId);
+      if (outcome === null) return; // nothing committed (the pool could not pay)
+      setRolledOutcome(outcome);
+      setAnswered(choice);
+      return;
+    }
     // Fail-soft: a choice with no reply line commits at once, as before.
     if (!choice.effects.consequenceProse) {
       onChoice(choiceId);
       return;
     }
     setAnswered(choice);
-  }, [answered, onChoice, vignette.choices]);
+  }, [answered, onChoice, onOrdealCommit, vignette.choices, vignette.isOrdeal]);
+  const answeredLine = answered
+    ? (vignette.isOrdeal ? ordealConsequence(answered, rolledOutcome ?? undefined) : answered.effects.consequenceProse)
+    : null;
 
   const handleContinue = useCallback(() => {
     if (answered) onChoice(answered.id);
@@ -242,9 +291,10 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
           {vignette.tensionProse}
         </div>
 
-        {/* Ordeal warning */}
-        {vignette.isOrdeal && (
-          <div style={{
+        {/* THR-2226 — the Ordeal's weight and stakes, before the spend (Law 17). The old
+            banner ("Your choice determines their fate.") went: the roll decides now. */}
+        {vignette.isOrdeal && vignette.ordealLines && (
+          <div data-testid="ordeal-lines" style={{
             background: 'rgb(var(--veil-gold-rgb) / 0.06)',
             border: '1px solid rgb(var(--veil-gold-rgb) / 0.2)',
             borderRadius: '6px',
@@ -254,7 +304,8 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
             color: 'var(--accent-gold)',
             textAlign: 'center',
           }}>
-            This is the peak moment of {vignette.agentName}'s journey. Your choice determines their fate.
+            <div data-testid="ordeal-weight">{vignette.ordealLines.weight}</div>
+            <div data-testid="ordeal-stakes" style={{ color: 'var(--text-secondary)' }}>{vignette.ordealLines.stakes}</div>
           </div>
         )}
 
@@ -277,7 +328,7 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
               borderLeft: '2px solid var(--accent-gold)',
               marginBottom: 'var(--space-3)',
             }}>
-              {answered.effects.consequenceProse}
+              {answeredLine}
             </div>
             <Button
               variant="primary"
@@ -300,9 +351,10 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
                   key={choice.id}
                   choice={choice}
                   onSelect={handleChoice}
-                  isOrdeal={vignette.isOrdeal}
                   disabled={unaffordable}
                   unaffordable={unaffordable}
+                  payingSphere={payingSphere}
+                  forecast={vignette.isOrdeal ? vignette.forecastByChoice?.[choice.id] : undefined}
                 />
               );
             })}

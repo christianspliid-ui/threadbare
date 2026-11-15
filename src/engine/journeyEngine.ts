@@ -20,6 +20,10 @@ import type {
   PendingVignette,
   BeatVariant,
   BeatChoice,
+  OrdealOutcome,
+  OrdealRollSpec,
+  SceneActivity,
+  VisionScene,
 } from '../types/journeyEngine';
 import {
   PHASE_BOUNDARIES,
@@ -30,7 +34,35 @@ import {
   ORDEAL_FORCE_FIRE_THRESHOLD,
   MAX_PENDING_VIGNETTES,
   JOURNEY_REACH_CHANGE_RAW_SCALE,
+  ORDEAL_BAND_TO_OUTCOME,
+  ORDEAL_FALLBACK_DIFFICULTY,
+  ORDEAL_REACH,
+  ORDEAL_SCALE,
+  VISION_SCENE_FIT_BONUS,
+  VISION_SCENE_MISMATCH_PENALTY,
 } from '../types/journeyEngine';
+import type { StepOutcome } from '../types/unifiedAction';
+import type { StrategicRuntimeState } from '../types/strategicAction';
+import type { ForecastTier } from '../types/traces/encounter-traces';
+import { CLIMAX_BARE_FORECAST, DIFFICULTY_WORD_BANDS, FIT_ITERATIONS } from '../data/nudge-constants';
+import {
+  ORDEAL_FIRST_FALLBACK,
+  ORDEAL_STAKES_LINE,
+  ORDEAL_WEIGHT_LINE,
+  VISION_ACTIVITY_BY_PLACE_KIND,
+  VISION_ACTIVITY_BY_UNDERTAKING_VERB,
+  VISION_SCENE_OPENERS,
+} from '../data/vision-scene-content';
+import { ambitionPronounsFor, resolveAmbitionPronouns } from './ambitionProse';
+import { computeCapability } from './domainCapability';
+import { fitDifficultyToForecast, scaledStepProbability } from './scaledForecast';
+import { classifyForecast } from './resolutionService';
+import { resolveStepCore } from './stepResolutionCore';
+import { drawLuckRoll, readLuckState } from './luck';
+import { rollTableUnit } from '../lib/drawTable';
+import { outcomePinFor } from './debugOutcomePin';
+import { resolveToParentLocation } from './sublocationShape';
+import { getStrategicTemplate } from './strategicActionCandidates';
 import type { ValuePair } from '../types/agent';
 import type { ReachDomain } from '../types/traits';
 import {
@@ -222,6 +254,7 @@ export function selectTemplate(
   snapshot: StateSnapshot,
   seed: number,
   played: readonly BeatOutcome[] = [],
+  scene?: VisionScene,
 ): { template: JourneyBeatTemplate; variant: BeatVariant } | null {
   // Filter templates valid for this phase, minus the moments already lived (THR-1854)
   const validTemplates = excludePlayed(templates.filter(t => t.validPhases.includes(phase)), played);
@@ -237,12 +270,23 @@ export function selectTemplate(
   const scored: Array<{ template: JourneyBeatTemplate; variant: BeatVariant; score: number }> = [];
   for (const template of validTemplates) {
     for (const variant of template.variants) {
-      const score = variant.score(snapshot);
+      // THR-2226 — the scene term: a moment that fits what the First is doing wins
+      // over one that does not, so a battlefield vision never fires over a shrine.
+      const score = variant.score(snapshot) + sceneScoreTerm(variant, scene?.activity);
       scored.push({ template, variant, score });
     }
   }
 
   if (scored.length === 0) return null;
+
+  // THR-2226 — when some moment fits the scene, a tagged moment that does not is
+  // never drawn: the weighted top-3 pick could otherwise still land on it.
+  const activity = scene?.activity;
+  if (activity && scored.some(c => sceneFit(c.variant, activity) === 'fit')) {
+    for (let i = scored.length - 1; i >= 0; i--) {
+      if (sceneFit(scored[i].variant, activity) === 'mismatch') scored.splice(i, 1);
+    }
+  }
 
   // Sort by score descending
   scored.sort((a, b) => b.score - a.score);
@@ -291,6 +335,261 @@ function excludePlayed(
   return freshVariants.length > 0 ? freshVariants : phaseTemplates;
 }
 
+// ─── Vision Scene (THR-2226) ────────────────────────────────────────
+
+/** How a variant's `scenes` tag reads against the First's activity. */
+export function sceneFit(variant: BeatVariant, activity: SceneActivity | undefined): 'fit' | 'mismatch' | 'untagged' {
+  if (!variant.scenes || variant.scenes.length === 0 || !activity) return 'untagged';
+  return variant.scenes.includes(activity) ? 'fit' : 'mismatch';
+}
+
+/** The scene's contribution to a variant's score (`VISION_SCENE_*`). */
+function sceneScoreTerm(variant: BeatVariant, activity: SceneActivity | undefined): number {
+  switch (sceneFit(variant, activity)) {
+    case 'fit': return VISION_SCENE_FIT_BONUS;
+    case 'mismatch': return -VISION_SCENE_MISMATCH_PENALTY;
+    default: return 0;
+  }
+}
+
+/**
+ * THR-2226 — where the First is and what they are doing, read once when a vision is
+ * built. The place is the `located_at` target, resolved up to its Location for the
+ * name and kind. The activity is the verb of an active undertaking when the First has
+ * one (`VISION_ACTIVITY_BY_UNDERTAKING_VERB`), else the place's kind
+ * (`VISION_ACTIVITY_BY_PLACE_KIND`), else `rest`. A chapter in progress needs no tier
+ * of its own: it plays where the First stands, which the place already reads.
+ *
+ * Pure: reads the graph and the strategic state, draws nothing. Fail-soft (NFP #4):
+ * no position reads as `rest` with no place.
+ */
+export function readVisionScene(
+  graph: WorldGraph,
+  agentId: string,
+  strategicState?: StrategicRuntimeState,
+): VisionScene {
+  let placeId: string | undefined;
+  let placeName: string | undefined;
+  let placeKind: string | undefined;
+  try {
+    const locEdge = graph.getOutgoingEdges(agentId, 'located_at')[0];
+    const here = locEdge ? graph.getNode(locEdge.target) : undefined;
+    const place = resolveToParentLocation(graph, here) ?? here;
+    if (place) {
+      placeId = place.id;
+      placeName = typeof place.name === 'string' && place.name.trim() ? place.name : undefined;
+      const kind = place.properties?.locationSubtype ?? place.properties?.locationType;
+      placeKind = typeof kind === 'string' ? kind : undefined;
+    }
+  } catch {
+    // fail-soft: no place
+  }
+
+  let activity: SceneActivity | undefined;
+  for (const project of strategicState?.projects ?? []) {
+    if (project.actorId !== agentId || project.status !== 'active') continue;
+    const verb = getStrategicTemplate(project.templateId)?.undertakingVerb;
+    const mapped = verb ? VISION_ACTIVITY_BY_UNDERTAKING_VERB[verb] : undefined;
+    if (mapped) { activity = mapped; break; }
+  }
+  if (!activity && placeKind) activity = VISION_ACTIVITY_BY_PLACE_KIND[placeKind];
+
+  return { placeId, placeName, placeKind, activity: activity ?? 'rest' };
+}
+
+/**
+ * The clause a vision's setup opens with, then the setup itself (THR-2226). The
+ * setup's first letter is lowered to read on from the clause, unless it opens on
+ * the role title, which becomes the mortal's name.
+ */
+export function openWithScene(setupProse: string, scene: VisionScene | undefined): string {
+  if (!scene || !setupProse) return setupProse;
+  const opener = VISION_SCENE_OPENERS[scene.activity];
+  if (!opener) return setupProse;
+  const lead = scene.placeName
+    ? opener.withPlace.replace('{place}', scene.placeName)
+    : opener.withoutPlace;
+  const body = /^The First\b/.test(setupProse)
+    ? setupProse
+    : setupProse.charAt(0).toLowerCase() + setupProse.slice(1);
+  return `${lead} ${body}`;
+}
+
+// ─── The Ordeal's roll (THR-2226) ───────────────────────────────────
+
+/** The difficulty word (`DIFFICULTY_WORD_BANDS`) for a difficulty. */
+function ordealDifficultyWord(difficulty: number): string {
+  for (const band of DIFFICULTY_WORD_BANDS) {
+    if (difficulty >= band.min) return band.word;
+  }
+  return DIFFICULTY_WORD_BANDS[DIFFICULTY_WORD_BANDS.length - 1].word;
+}
+
+/**
+ * Fit the Ordeal for this mortal: the difficulty at which stepping back leaves the
+ * bare chance `CLIMAX_BARE_FORECAST`, computed once and stored on the vision so the
+ * shown forecast and the roll read one value (Law 18). Pure: never deals the bag.
+ */
+export function buildOrdealRollSpec(graph: WorldGraph, agentId: string): OrdealRollSpec {
+  let capability = 0;
+  try {
+    capability = computeCapability(graph, agentId, ORDEAL_REACH);
+  } catch {
+    capability = 0;
+  }
+  const fit = fitDifficultyToForecast(capability, CLIMAX_BARE_FORECAST, {
+    scale: ORDEAL_SCALE,
+    fallbackDifficulty: ORDEAL_FALLBACK_DIFFICULTY,
+    iterations: FIT_ITERATIONS,
+  });
+  return {
+    reach: ORDEAL_REACH,
+    scale: ORDEAL_SCALE,
+    capability,
+    difficulty: fit.difficulty,
+    bareChance: fit.bareChance,
+    fitted: fit.fitted,
+  };
+}
+
+/** The chance the Ordeal rolls against with `lean` added — the core's own number. */
+export function ordealChance(spec: OrdealRollSpec, lean: number): number {
+  return scaledStepProbability({
+    actorId: '',
+    domain: spec.reach,
+    capability: spec.capability,
+    difficulty: spec.difficulty,
+    sphereFactor: 0,
+    actionModifiers: lean,
+    testShapers: [],
+  }, spec.scale);
+}
+
+/**
+ * Give an Ordeal vision its fitted roll, the forecast word each choice leaves and
+ * the trial's difficulty word. Anything but an Ordeal comes back unchanged.
+ */
+export function attachOrdealRoll(graph: WorldGraph, vignette: JourneyVignetteData): JourneyVignetteData {
+  if (!vignette.isOrdeal) return vignette;
+  const spec = buildOrdealRollSpec(graph, vignette.agentId);
+  const forecastByChoice: Record<string, ForecastTier> = {};
+  for (const choice of vignette.choices) {
+    forecastByChoice[choice.id] = classifyForecast(ordealChance(spec, choice.effects.ordealLean ?? 0));
+  }
+  const difficultyWord = ordealDifficultyWord(spec.difficulty);
+  const first = vignette.agentName.trim() || ORDEAL_FIRST_FALLBACK;
+  const pronouns = ambitionPronounsFor(vignette.agentGender);
+  return {
+    ...vignette,
+    ordealRoll: spec,
+    forecastByChoice,
+    difficultyWord,
+    ordealLines: {
+      weight: ORDEAL_WEIGHT_LINE.replace('{first}', first),
+      stakes: resolveAmbitionPronouns(ORDEAL_STAKES_LINE.replace('{difficultyWord}', difficultyWord), pronouns),
+    },
+  };
+}
+
+/** What the Ordeal's roll landed. */
+export interface OrdealRollResult {
+  band: StepOutcome;
+  outcome: OrdealOutcome;
+  godPaid: boolean;
+  chance: number;
+  bareChance: number;
+  roll: number;
+}
+
+/**
+ * THR-2226 — roll the Ordeal (plan THR-2204 slice 1). One `resolveStepCore` call on
+ * the stored fitted difficulty, with the choice's lean as the modifier. The d100 is
+ * dealt from the First's marble bag (`drawLuckRoll`, Law 4); the core's own draw —
+ * and the plain dice when the bag is off — come from a keyed unit stream
+ * `journey.ordeal:${seed}:${firstId}:${beatIndex}`, never the tick's shared stream,
+ * because this runs at click time while the game is paused (NFP #3, Law 8). A
+ * `?outcome=` pin on the Ordeal template is honoured as on every step.
+ *
+ * Emits one `journey.ordeal_roll` trace. Returns null for anything but an Ordeal or
+ * an unknown choice (fail-soft: nothing is written).
+ */
+export function rollOrdeal(
+  graph: WorldGraph,
+  seed: number,
+  ascendantId: string,
+  vignette: JourneyVignetteData,
+  choiceId: string,
+  tick: number,
+): OrdealRollResult | null {
+  if (!vignette.isOrdeal) return null;
+  const choice = vignette.choices.find(c => c.id === choiceId);
+  if (!choice) return null;
+  // An old save's vision carries no stored fit: fit it now (fail-soft).
+  const spec = vignette.ordealRoll ?? buildOrdealRollSpec(graph, vignette.agentId);
+  const lean = choice.effects.ordealLean ?? 0;
+  const agentId = vignette.agentId;
+  const luckDrawIndex = readLuckState(graph.getNode(agentId)).bagDraws;
+  const luckRoll = drawLuckRoll(graph, seed, ascendantId, agentId, tick);
+  let draws = 0;
+  const rng = (): number => rollTableUnit('journey.ordeal', `${seed}:${agentId}:${vignette.beatIndex}:${draws++}`);
+  const core = resolveStepCore({
+    actorId: agentId,
+    reach: spec.reach,
+    capability: spec.capability,
+    difficulty: spec.difficulty,
+    scale: spec.scale,
+    actionModifiers: lean,
+    testShapers: [],
+    variancePolicy: 'agent',
+    quintessencePolicy: 'none',
+    bandOverride: outcomePinFor(vignette.templateId),
+    luckRoll,
+    tick,
+    sourceLabel: 'encounter',
+  }, rng);
+  const band = core.outcome;
+  const outcome = ORDEAL_BAND_TO_OUTCOME[band] ?? 'scraped_through';
+  const godPaid = choice.effects.interventionType !== 'withdrawn' || (choice.effects.essenceCost ?? 0) > 0;
+  emitTrace({
+    category: 'journey.ordeal_roll',
+    tick,
+    agentId,
+    summary: `${vignette.agentName}'s Ordeal (${vignette.templateId}): "${choice.id}" leaned ${lean.toFixed(2)}, `
+      + `chance ${core.probability.toFixed(2)} (bare ${spec.bareChance.toFixed(2)}), rolled ${core.roll} → ${band} (${outcome})`,
+    actorId: agentId,
+    choiceId: choice.id,
+    difficulty: spec.difficulty,
+    lean,
+    bareChance: spec.bareChance,
+    chance: core.probability,
+    roll: core.roll,
+    luckDrawIndex: luckRoll !== undefined ? luckDrawIndex : undefined,
+    band,
+    outcome,
+    godPaid,
+  });
+  return { band, outcome, godPaid, chance: core.probability, bareChance: spec.bareChance, roll: core.roll };
+}
+
+/** The Ordeal's result as written to the thread edge, or null before it is rolled. */
+export function readOrdealResult(
+  graph: WorldGraph,
+  ascendantId: string,
+  agentId: string,
+): { band?: StepOutcome; outcome: OrdealOutcome } | null {
+  const edge = getThreadsFrom(graph, ascendantId).find(e => e.target === agentId);
+  const props = edge?.properties as ThreadEdgeProperties | undefined;
+  if (!props?.ordealOutcome) return null;
+  return { band: props.ordealBand, outcome: props.ordealOutcome };
+}
+
+/** The reply line for an Ordeal choice at a rolled outcome (`consequenceProse` is the fallback). */
+export function ordealConsequence(choice: BeatChoice, outcome: OrdealOutcome | undefined): string | null {
+  return (outcome ? choice.effects.consequenceByOutcome?.[outcome] : undefined)
+    ?? choice.effects.consequenceProse
+    ?? null;
+}
+
 // ─── Beat Execution ─────────────────────────────────────────────────
 
 /** THR-2198 — the role title the journey content was authored around. */
@@ -307,15 +606,29 @@ export function personalizeJourneyText(text: string, agentName: string): string 
   return text.replace(FIRST_ROLE_TITLE, name);
 }
 
-function personalizeChoice(choice: BeatChoice, agentName: string): BeatChoice {
-  const consequenceProse = choice.effects.consequenceProse;
-  return {
-    ...choice,
-    text: personalizeJourneyText(choice.text, agentName),
-    effects: consequenceProse === undefined
-      ? choice.effects
-      : { ...choice.effects, consequenceProse: personalizeJourneyText(consequenceProse, agentName) },
-  };
+/**
+ * THR-2226 — the mortal's name for the role title, then the mortal's own pronouns for
+ * the `{they}` / `{them}` / `{their}` / `{theirs}` tokens (never a default "they"
+ * over a gendered mortal; an unrecorded gender reads they/them).
+ */
+function personalizeLine(text: string, agentName: string, gender: unknown): string {
+  return resolveAmbitionPronouns(personalizeJourneyText(text, agentName), ambitionPronounsFor(gender));
+}
+
+function personalizeChoice(choice: BeatChoice, agentName: string, gender?: unknown): BeatChoice {
+  const { consequenceProse, consequenceByOutcome } = choice.effects;
+  let effects = choice.effects;
+  if (consequenceProse !== undefined) {
+    effects = { ...effects, consequenceProse: personalizeLine(consequenceProse, agentName, gender) };
+  }
+  if (consequenceByOutcome) {
+    const lines: Partial<Record<OrdealOutcome, string>> = {};
+    for (const [outcome, line] of Object.entries(consequenceByOutcome) as [OrdealOutcome, string | undefined][]) {
+      if (line !== undefined) lines[outcome] = personalizeLine(line, agentName, gender);
+    }
+    effects = { ...effects, consequenceByOutcome: lines };
+  }
+  return { ...choice, text: personalizeLine(choice.text, agentName, gender), effects };
 }
 
 /**
@@ -332,6 +645,8 @@ export function buildVignetteData(
   variant: BeatVariant,
   snapshot: StateSnapshot,
   tick: number,
+  scene?: VisionScene,
+  gender?: string,
 ): JourneyVignetteData {
   return {
     agentId,
@@ -341,13 +656,41 @@ export function buildVignetteData(
     beatIndex,
     templateId: template.id,
     variantKey: variant.key,
-    setupProse: personalizeJourneyText(variant.setupProse, agentName),
-    tensionProse: personalizeJourneyText(variant.tensionProse, agentName),
-    choices: variant.choices.map(choice => personalizeChoice(choice, agentName)),
+    // THR-2226 — the setup opens where the First is, doing what they are doing.
+    setupProse: personalizeLine(openWithScene(variant.setupProse, scene), agentName, gender),
+    tensionProse: personalizeLine(variant.tensionProse, agentName, gender),
+    choices: variant.choices.map(choice => personalizeChoice(choice, agentName, gender)),
     stateSnapshot: snapshot,
     isOrdeal: phase === 'ordeal',
     tick,
+    ...(scene ? { scene } : {}),
+    ...(gender ? { agentGender: gender } : {}),
   };
+}
+
+/**
+ * THR-2226 — the whole vision for a beat: the scene read, the vignette built in it,
+ * and, on an Ordeal, its fitted roll. Shared by the tick phase and the debug lever
+ * that opens a vision on demand, so both build the same thing.
+ */
+export function composeJourneyVignette(
+  graph: WorldGraph,
+  agentId: string,
+  phase: CampbellianPhase,
+  beatIndex: number,
+  doomClockPercent: number,
+  template: JourneyBeatTemplate,
+  variant: BeatVariant,
+  snapshot: StateSnapshot,
+  tick: number,
+  scene?: VisionScene,
+): JourneyVignetteData {
+  const agent = graph.getNode(agentId);
+  const gender = typeof agent?.properties?.gender === 'string' ? agent.properties.gender : undefined;
+  const data = buildVignetteData(
+    agentId, agent?.name ?? '', phase, beatIndex, doomClockPercent, template, variant, snapshot, tick, scene, gender,
+  );
+  return attachOrdealRoll(graph, data);
 }
 
 // ─── Apply Beat Choice ──────────────────────────────────────────────
@@ -360,6 +703,7 @@ export function applyBeatChoice(
   threadProps: ThreadEdgeProperties,
   vignetteData: JourneyVignetteData,
   choiceId: string,
+  ordealResult?: Pick<OrdealRollResult, 'band' | 'outcome' | 'godPaid'> | null,
 ): {
   updatedProps: Partial<ThreadEdgeProperties>;
   beatOutcome: BeatOutcome;
@@ -383,9 +727,13 @@ export function applyBeatChoice(
     storyPhase: currentPhase,
   };
 
-  // Record ordeal outcome if this is the Ordeal phase
-  if (vignetteData.isOrdeal && choice?.effects.ordealOutcome) {
-    updatedProps.ordealOutcome = choice.effects.ordealOutcome;
+  // THR-2226 — the Ordeal's outcome comes from its roll, never from the choice
+  // (Law 10). An old save's choice still carrying `ordealOutcome` is ignored; with no
+  // roll, nothing is written and the Return reads its default (`scraped_through`).
+  if (vignetteData.isOrdeal && ordealResult) {
+    updatedProps.ordealOutcome = ordealResult.outcome;
+    updatedProps.ordealBand = ordealResult.band;
+    updatedProps.ordealGodPaid = ordealResult.godPaid;
   }
 
   // Update intervention tracking
@@ -513,6 +861,10 @@ export function applyBeatChoiceEffects(
  * nothing, when the god holds no thread to the vignette's mortal.
  *
  * The essence price is the caller's: it is charged against GameState, not the graph.
+ *
+ * THR-2226: on an Ordeal the choice is a lean, and the roll happens here, at the
+ * click (`rollOrdeal`, on the world `seed`). Its band is written to the thread edge,
+ * where the vision's result line reads it (`readOrdealResult`).
  */
 export function recordJourneyChoice(
   graph: WorldGraph,
@@ -521,10 +873,16 @@ export function recordJourneyChoice(
   vignetteData: JourneyVignetteData,
   choiceId: string,
   tick: number,
+  seed = 0,
 ): boolean {
   const threadEdge = getThreadsFrom(graph, ascendantId).find(e => e.target === vignetteData.agentId);
   if (!threadEdge) return false;
-  const { updatedProps } = applyBeatChoice(threadEdge.properties as unknown as ThreadEdgeProperties, vignetteData, choiceId);
+  const ordealResult = vignetteData.isOrdeal
+    ? rollOrdeal(graph, seed, ascendantId, vignetteData, choiceId, tick)
+    : null;
+  const { updatedProps } = applyBeatChoice(
+    threadEdge.properties as unknown as ThreadEdgeProperties, vignetteData, choiceId, ordealResult,
+  );
   graph.updateEdge(threadEdge.id, { properties: updatedProps });
   applyBeatChoiceEffects(graph, vignetteData, choiceId, tick);
   if (runtime) touchWorld(runtime);
@@ -631,9 +989,12 @@ export function phaseJourneyBeat(
     // Build state snapshot
     const snapshot = buildStateSnapshot(graph, threadEdge.target, threadProps);
 
+    // THR-2226 — where the First is and what they are doing, read before the pick.
+    const scene = readVisionScene(graph, threadEdge.target, state.strategicState);
+
     // Select template + variant
     const beatSeed = hashSeed(seed, threadEdge.target, beatCheck.phase, beatCheck.beatIndex);
-    const selection = selectTemplate(templates, beatCheck.phase, snapshot, beatSeed, beatHistory);
+    const selection = selectTemplate(templates, beatCheck.phase, snapshot, beatSeed, beatHistory, scene);
 
     if (!selection) {
       // Fail-soft: no template available, skip this beat
@@ -642,10 +1003,23 @@ export function phaseJourneyBeat(
 
     const { template, variant } = selection;
 
-    // Build vignette data
-    const vignetteData = buildVignetteData(
+    emitTrace({
+      category: 'journey.vision_scene',
+      tick,
+      agentId: threadEdge.target,
+      summary: `${agentNode.name}'s ${formatPhaseName(beatCheck.phase)} vision reads ${scene.activity}`
+        + `${scene.placeName ? ` at ${scene.placeName}` : ''}: ${template.id}/${variant.key} (${sceneFit(variant, scene.activity)})`,
+      actorId: threadEdge.target,
+      activity: scene.activity,
+      placeId: scene.placeId,
+      variantKey: variant.key,
+      fit: sceneFit(variant, scene.activity),
+    });
+
+    // Build vignette data — on an Ordeal, with its fitted roll (THR-2226)
+    const vignetteData = composeJourneyVignette(
+      graph,
       threadEdge.target,
-      agentNode.name,
       beatCheck.phase,
       beatCheck.beatIndex,
       doomProgress,
@@ -653,6 +1027,7 @@ export function phaseJourneyBeat(
       variant,
       snapshot,
       tick,
+      scene,
     );
 
     // Queue the vignette
