@@ -13,8 +13,8 @@
  * Pure and read-only: no tick phase, no PRNG, no write. Every name the line carries is
  * a segment with a `WorldRef` where one still resolves (Law 2 / Law 21); a band word
  * carries its `ui.dominion.<band>` hover. A line whose slot cannot fill is dropped, so
- * no raw `{token}` reaches the card (Law 43). The rival behind a slipped place is
- * deliberately never named (THR-2172 owns rival causes).
+ * no raw `{token}` reaches the card (Law 43). THR-2237: a slipped place a rival pressed
+ * during the window names that rival ("{Rival} pressed it.").
  */
 
 import type { GameState } from '../../types/gameState';
@@ -100,6 +100,8 @@ const FALLBACK_WORDS: Record<string, string> = {
   'ui.warm_recap.first_more_one': '{first} finished one more chapter.',
   'ui.warm_recap.slipped_one': '{place} slipped from {from} to {to}.',
   'ui.warm_recap.slipped_many': '{count} of your places slipped: {list}.',
+  'ui.warm_recap.rival_pressed_one': '{rival} pressed it.',
+  'ui.warm_recap.rival_pressed_many': '{rival} pressed {place}.',
   'ui.warm_recap.grew_one': '{place} is {to} now.',
   'ui.warm_recap.grew_many': '{list} are more yours now.',
   'ui.warm_recap.empty': 'Nothing in your story changed while you were away.',
@@ -224,6 +226,44 @@ function finishedLine(state: GameState, rec: ChapterRecord): WarmRecapLine {
   };
 }
 
+/**
+ * THR-2237 — the rival behind a slipped place: the first slipped place (in the line's
+ * order) whose last rival landing came during the window and was not shrugged off.
+ * The most recent landing wins when two rivals pressed it. Null when none did.
+ */
+function rivalWhoPressed(state: GameState, sinceTick: number, placeIds: readonly string[]): { rivalName: string; placeId: string } | null {
+  for (const placeId of placeIds) {
+    let best: { rivalName: string; tick: number } | null = null;
+    for (const rs of state.rivalStates ?? []) {
+      const last = rs?.lastPressed;
+      if (!last || last.placeId !== placeId || last.absorbed || last.tick <= sinceTick) continue;
+      const name = (state.rivalDefinitions ?? []).find(r => r.id === rs.rivalId)?.name;
+      if (name && (!best || last.tick > best.tick)) best = { rivalName: name, tick: last.tick };
+    }
+    if (best) return { rivalName: best.rivalName, placeId };
+  }
+  return null;
+}
+
+/** Append "{Rival} pressed it." (one place) or "{Rival} pressed {place}." (a list) to a slipped line. */
+function withRivalPressed(
+  state: GameState,
+  sinceTick: number,
+  segs: WarmRecapSegment[],
+  places: readonly WarmRecapSegment[],
+  one: boolean,
+): WarmRecapSegment[] {
+  const ids = places.map(p => p.ref?.id).filter((id): id is string => !!id);
+  const hit = rivalWhoPressed(state, sinceTick, ids);
+  if (!hit) return segs;
+  const place = places.find(p => p.ref?.id === hit.placeId);
+  const extra = fillSegments(words(one ? 'ui.warm_recap.rival_pressed_one' : 'ui.warm_recap.rival_pressed_many'), {
+    rival: [{ text: hit.rivalName }],
+    ...(place ? { place: [place] } : {}),
+  });
+  return extra ? [...segs, { text: ' ' }, ...extra] : segs;
+}
+
 // ── Build ───────────────────────────────────────────────────────────────────
 
 /**
@@ -300,13 +340,13 @@ export function buildWarmRecap(state: GameState, before: WarmRecapSnapshot, opts
       const segs = fillSegments(words('ui.warm_recap.slipped_one'), {
         place: [s.seg], from: [bandSegment(s.from)], to: [bandSegment(s.to)],
       });
-      if (segs) slots.set('slipped', { kind: 'slipped', segments: segs });
+      if (segs) slots.set('slipped', { kind: 'slipped', segments: withRivalPressed(state, before.startTick, segs, slipped.map(x => x.seg), true) });
     } else if (slipped.length > 1) {
       const segs = fillSegments(words('ui.warm_recap.slipped_many'), {
         count: [{ text: capitalise(countWord(slipped.length)) }],
         list: listSegments(slipped.map(s => s.seg)),
       });
-      if (segs) slots.set('slipped', { kind: 'slipped', segments: segs });
+      if (segs) slots.set('slipped', { kind: 'slipped', segments: withRivalPressed(state, before.startTick, segs, slipped.map(x => x.seg), false) });
     }
     if (grew.length === 1) {
       const g = grew[0];

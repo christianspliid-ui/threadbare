@@ -11,7 +11,10 @@
  * Plan: `Docs/plans/2026-11-06-thr-2172-a-rival-move-has-a-place-and-an-answer.md` § Decisions 5–6.
  */
 import type { RivalState } from '../../types/rival';
+import type { GameState } from '../../types/gameState';
 import { resolveTooltip } from '../tooltipResolver';
+import { rebukablePlaceIds, rebukeTargetFor } from '../rivalRebuke';
+import { RIVAL_REBUKE_TEMPLATE_ID } from '../../data/rival-rebuke-content';
 import { countWord } from '../aftermathWords';
 import { TICKS_PER_DAY } from '../../data/attention-constants';
 import { RIVAL_HOSTILITY_CAUSE_STALE_DAYS, RIVAL_HOSTILITY_START } from '../../data/rival-scheme-config';
@@ -31,6 +34,10 @@ const FALLBACK_WORDS: Record<string, string> = {
   'ui.rival.cause_none': 'as rival gods are',
   'ui.rival.last_pressed': 'Last pressed {place}, {when}.',
   'ui.rival.answer': 'Places you tend shrug off its hand. Your seat, your threaded, a claim, or an anointed faction tends one.',
+  'ui.rival.answer_rebuke': 'Rebuke it at {place}, or tend your places.',
+  'ui.rival.pressed_now': '{rival} pressed it {when}.',
+  'ui.rival.pressed_answer_rebuke': 'Rebuke it here, or tend it, and its next blow is turned.',
+  'ui.rival.pressed_answer_tend': 'A place you tend turns its next blow.',
 };
 
 /** The registry's words for a `ui.rival.*` id, or the fallback. */
@@ -117,6 +124,117 @@ export function rivalPlaceNameLookup(graph: { getNode(id: string): { name?: stri
     } catch {
       return undefined;
     }
+  };
+}
+
+// ─── THR-2237: the answer is where the threat is ───────────────────────────
+
+/** Whether the god holds Rebuke (the first-rebuke gift has been received). */
+export function godHoldsRebuke(state: Pick<GameState, 'unlockedActionIds'>): boolean {
+  return (state.unlockedActionIds ?? []).includes(RIVAL_REBUKE_TEMPLATE_ID);
+}
+
+/**
+ * What a Rebuke can answer now: each rebukable place, keyed to the rival a Rebuke there
+ * answers (`rebukeTargetFor` — the most recent unabsorbed, unrebuked landing).
+ */
+export interface RivalAnswerInputs {
+  holdsRebuke: boolean;
+  /** placeId → the rivalId a Rebuke cast there answers. */
+  answeredBy: ReadonlyMap<string, string>;
+}
+
+/**
+ * The entry's "How to answer it" line. While the god holds Rebuke and a Rebuke on this
+ * rival's last-pressed place would answer *this* rival, it names the place: "Rebuke it at
+ * {place}, or tend your places." Otherwise the tending line, as before. (Review gate,
+ * THR-2237: another rival's fresher landing on the same place must not name it here.)
+ */
+export function rivalAnswerSegments(
+  state: RivalState | undefined,
+  answer: RivalAnswerInputs,
+  placeName: PlaceNameLookup,
+): RivalLineSegment[] {
+  const placeId = state?.lastPressed?.placeId;
+  if (answer.holdsRebuke && placeId && state && answer.answeredBy.get(placeId) === state.rivalId) {
+    const name = placeName(placeId);
+    if (name) return withPlace(rivalWords('ui.rival.answer_rebuke'), { placeId, name });
+  }
+  return [{ text: rivalWords('ui.rival.answer') }];
+}
+
+/** The panel's answer inputs, read once from state (the view-model seam; fail-soft). */
+export function rivalAnswerInputs(
+  state: Pick<GameState, 'unlockedActionIds' | 'rivalStates' | 'tick'> & Partial<Pick<GameState, 'unifiedActions'>>,
+): RivalAnswerInputs {
+  const answeredBy = new Map<string, string>();
+  try {
+    for (const placeId of rebukablePlaceIds(state)) {
+      const target = rebukeTargetFor(state, placeId);
+      if (target) answeredBy.set(placeId, target.rivalId);
+    }
+  } catch {
+    // fail-soft: no answerable place
+  }
+  return { holdsRebuke: godHoldsRebuke(state), answeredBy };
+}
+
+/** A rival's landing the god can still answer: who pressed which place, and when. */
+export interface RivalPressedView {
+  readonly rivalId: string;
+  readonly rivalName: string;
+  readonly placeId: string;
+  readonly placeName: string;
+  readonly pressedAt: number;
+}
+
+type PressedReadState = Pick<GameState, 'rivalStates' | 'rivalDefinitions' | 'tick' | 'graph'>
+  & Partial<Pick<GameState, 'unifiedActions'>>;
+
+function pressedView(state: PressedReadState, placeId: string): RivalPressedView | null {
+  const target = rebukeTargetFor(state, placeId);
+  if (!target) return null;
+  const rivalName = (state.rivalDefinitions ?? []).find(r => r.id === target.rivalId)?.name;
+  const placeName = rivalPlaceNameLookup(state.graph)(placeId);
+  if (!rivalName || !placeName) return null;
+  return { rivalId: target.rivalId, rivalName, placeId, placeName, pressedAt: target.pressedAt };
+}
+
+/** The rival whose rebukable landing is on `placeId`, or null (fail-soft on any gap). */
+export function rivalPressedOn(state: PressedReadState, placeId: string): RivalPressedView | null {
+  try {
+    return rebukablePlaceIds(state).has(placeId) ? pressedView(state, placeId) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** The most recent rebukable landing anywhere (the Rebuke gift's place), or null. */
+export function latestRebukableLanding(state: PressedReadState): RivalPressedView | null {
+  try {
+    let best: RivalPressedView | null = null;
+    for (const placeId of [...rebukablePlaceIds(state)].sort()) {
+      const v = pressedView(state, placeId);
+      if (v && (!best || v.pressedAt > best.pressedAt)) best = v;
+    }
+    return best;
+  } catch {
+    return null;
+  }
+}
+
+/** The pressed place's Now line: headline "{Rival} pressed it {when}." and its answer line. */
+export function rivalPressedNowLine(
+  view: RivalPressedView,
+  tick: number,
+  holdsRebuke: boolean,
+): { headline: string; answer: string } {
+  const headline = rivalWords('ui.rival.pressed_now')
+    .replace('{rival}', view.rivalName)
+    .replace('{when}', rivalWhenWords(tick - view.pressedAt));
+  return {
+    headline,
+    answer: rivalWords(holdsRebuke ? 'ui.rival.pressed_answer_rebuke' : 'ui.rival.pressed_answer_tend'),
   };
 }
 

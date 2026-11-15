@@ -266,6 +266,9 @@ import { getUITooltip } from '../../data/ui-content';
 import { MAP_LENSES, type MapLensId } from '../../data/map-lenses';
 import type { MapLensChangeSource } from '../../types/traces/ui-traces';
 import { toggleLensValue } from './frame/GameScreenState';
+import { MILESTONE_FIRST_REBUKE_BEAT_ID } from '../../data/player-progression';
+import { firstRebukeGiftCopy } from '../../data/ascendant-milestone-beats';
+import { latestRebukableLanding } from '../../engine/views/rivalEntry';
 
 interface GameViewProps {
   archetype: AscendantArchetype;
@@ -1931,6 +1934,17 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // ── Ascendant beat: offer → enter → resolve (THR-517) ─────────────────────
   const pendingBeat = gameState.ascendantBeats?.pending ?? null;
 
+  // THR-2237: the "A Rival's Hand" gift names who pressed which place and takes the god
+  // there. Read live, so a window that closed while the gift waited falls back to "Receive".
+  const rebukeGift = useMemo(() => {
+    if (pendingBeat?.beatId !== MILESTONE_FIRST_REBUKE_BEAT_ID) return null;
+    const landing = latestRebukableLanding(gameState);
+    const copy = firstRebukeGiftCopy(landing);
+    if (!landing || !copy) return null;
+    const ref: WorldRef = { kind: 'location', id: landing.placeId, name: landing.placeName };
+    return { copy, ref };
+  }, [pendingBeat, gameState]);
+
   /**
    * Run-specific title + body for a template-backed pool beat (THR-514). Resolves the
    * beat's content template (`ASCENDANT_POOL_BEAT_TEMPLATES`, via `getUnifiedTemplateById`)
@@ -1943,6 +1957,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
    */
   const beatProseOverride = useMemo((): { title: string; prose: string } | undefined => {
     if (!pendingBeat || isSpineBeatId(pendingBeat.beatId)) return undefined;
+    if (rebukeGift) return { title: rebukeGift.copy.title, prose: rebukeGift.copy.prose };
     // THR-1650: a delivery beat's id is prefixed (`beat.delivery.<templateId>`); look up
     // the source encounter so the modal shows its real teaser, not the kind placeholder.
     const template = getUnifiedTemplateById(sourceTemplateIdOf(pendingBeat.beatId) ?? pendingBeat.beatId);
@@ -1972,16 +1987,19 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     } catch {
       return undefined; // fail-soft: never crash the beat surface over prose
     }
-  }, [pendingBeat, gameState]);
+  }, [pendingBeat, gameState, rebukeGift]);
 
   // THR-1851: the people an introduction beat names, as a ref the modal can open.
   const beatSubjectId = pendingBeat?.kind === 'introduction' ? pendingBeat.boundNodeIds?.[0] : undefined;
   const beatSubjectRef = useMemo(() => {
+    // THR-2237: the Rebuke gift's button opens the place the rival pressed.
+    if (rebukeGift) return rebukeGift.ref;
     if (!beatSubjectId) return undefined;
     // A bound culture resolves to the Realm over it — a culture has no sheet of its own.
     const ref = worldRefForNodeId(gameState.graph, beatSubjectId);
     return ref?.kind === 'faction' ? ref : undefined;
-  }, [beatSubjectId, gameState.graph]);
+  }, [beatSubjectId, gameState.graph, rebukeGift]);
+  const beatCtaOverride = rebukeGift?.copy.cta;
 
   /**
    * Resolve the pending beat: apply its grants into `unlockedActionIds` and clear
@@ -4928,6 +4946,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         beatProseOverride={beatProseOverride}
         avatarName={avatarName}
         beatSubjectRef={beatSubjectRef}
+        beatCtaOverride={beatCtaOverride}
         codexInitialFilter={codexInitialFilter}
         codexInitialEntryId={codexInitialEntryId}
         doomJourneyLabel={doomJourneyLabel}

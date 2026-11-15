@@ -136,6 +136,8 @@ export interface DialogHostProps {
   beatProseOverride: { title: string; prose: string } | undefined;
   avatarName: string;
   beatSubjectRef: WorldRef | undefined;
+  /** THR-2237: the gift's button words when the beat names its place ("Go to {place}"). */
+  beatCtaOverride?: string;
   // Codex
   codexInitialFilter: CodexRunStateFilter;
   codexInitialEntryId: string | null;
@@ -182,6 +184,7 @@ export function DialogHost({
   beatProseOverride,
   avatarName,
   beatSubjectRef,
+  beatCtaOverride,
   codexInitialFilter,
   codexInitialEntryId,
   doomJourneyLabel,
@@ -312,6 +315,8 @@ export function DialogHost({
           signatureGrantId={previewReachSignatureGrant(gameState, pendingBeat.beatId)}
           // THR-1851: an introduction beat's bound people, so "Attend" can open them.
           subjectRef={beatSubjectRef}
+          // THR-2237: the Rebuke gift's button names the place it opens.
+          ctaOverride={beatCtaOverride}
           // Spine beats are not dismissable (onboarding); pool beats can be deferred.
           onClose={isSpineBeatId(pendingBeat.beatId) ? undefined : () => setBeatEntered(false)}
         />

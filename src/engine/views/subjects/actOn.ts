@@ -41,6 +41,7 @@ import type { ActOnCardVM, ActOnVM } from './subjectTypes';
 import { godSpheres } from './pageResolvers';
 import { tileAt } from './pageResolvers';
 import { rebukablePlaceIds } from '../../rivalRebuke';
+import { RIVAL_REBUKE_TEMPLATE_ID } from '../../../data/rival-rebuke-content';
 
 /** What the row is for: a person, a place (either tier), an artifact or a bare hex. */
 export type ActOnTarget =
@@ -178,7 +179,30 @@ export function buildActOn(state: GameState, target: ActOnTarget, name: string, 
   if (!read) return empty();
   const cards = cardsOf(read.slots);
   if (cards.length === 0) return empty();
-  return { heading, cards: withFates(state, target, read.slots, cards), emptyLine: null };
+  return { heading, cards: rebukeFirst(state, read.ctx.nodeId, read.slots, withFates(state, target, read.slots, cards)), emptyLine: null };
+}
+
+/**
+ * THR-2237 — while a rival's landing on this place can still be rebuked, Rebuke leads the
+ * Act row: the answer is the first thing the page offers. Otherwise the order is untouched.
+ * Stable: every other card keeps its slot order.
+ */
+export function rebukeFirst<C extends { actionId: string }>(
+  state: GameState,
+  nodeId: string,
+  slots: readonly WheelSlot[],
+  cards: C[],
+): C[] {
+  let open = false;
+  try {
+    open = rebukablePlaceIds(state).has(nodeId);
+  } catch {
+    return cards;
+  }
+  if (!open) return cards;
+  const rebukeIds = new Set(slots.filter(s => (s.templateId ?? s.id) === RIVAL_REBUKE_TEMPLATE_ID).map(s => s.id));
+  if (rebukeIds.size === 0) return cards;
+  return [...cards.filter(c => rebukeIds.has(c.actionId)), ...cards.filter(c => !rebukeIds.has(c.actionId))];
 }
 
 /**

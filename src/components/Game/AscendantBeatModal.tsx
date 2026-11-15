@@ -95,6 +95,11 @@ interface AscendantBeatModalProps {
    * beat and then opens that people's sheet — the popup used to lead nowhere.
    */
   subjectRef?: WorldRef;
+  /**
+   * THR-2237: the resolve button's words when the beat names where it leads ("Go to
+   * {place}" on the Rebuke gift). Absent → the authored / kind CTA.
+   */
+  ctaOverride?: string;
 }
 
 // ─── Kind-derived presentation (placeholder until THR-514 prose) ─────
@@ -465,6 +470,7 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
   rungOpening,
   signatureGrantId,
   subjectRef,
+  ctaOverride,
 }: AscendantBeatModalProps) {
   const router = useRefRouterContext();
   const def = useMemo(() => getBeatDefinitionById(pending.beatId), [pending.beatId]);
@@ -583,12 +589,13 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
             onClick={() => {
               onResolve();
               // THR-1851: attending a people means meeting them — open their sheet.
+              // THR-2237: the Rebuke gift goes to the place the rival pressed.
               if (subjectRef && router) router.open(subjectRef, 'sheet', { via: 'beat' });
             }}
             style={PRIMARY_BUTTON_STYLE}
             data-testid="beat-resolve-button"
           >
-            {presentation.cta}
+            {ctaOverride ?? presentation.cta}
           </button>
         </div>
       )}

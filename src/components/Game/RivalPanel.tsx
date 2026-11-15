@@ -11,8 +11,9 @@ import { Icon } from '../shared/Icon';
 import {
   rivalCauseSegments,
   rivalLastPressedSegments,
-  rivalWords,
+  rivalAnswerSegments,
   type PlaceNameLookup,
+  type RivalAnswerInputs,
   type RivalLineSegment,
 } from '../../engine/views/rivalEntry';
 
@@ -47,9 +48,18 @@ interface RivalPanelProps {
   tick?: number;
   /** THR-2185: a place's name, undefined when it no longer resolves. */
   placeName?: PlaceNameLookup;
+  /**
+   * THR-2237: whether the god holds Rebuke, and the places a Rebuke can answer now. With
+   * both, a rival whose last landing is answerable reads "Rebuke it at {place}".
+   */
+  answer?: RivalAnswerInputs;
 }
 
 const NO_PLACE_NAME: PlaceNameLookup = () => undefined;
+
+/** THR-2237 (Law 33): the panel scrolls inside the dropdown past this height, as Notables does. */
+const RIVAL_PANEL_MAX_HEIGHT = '70vh';
+const NO_ANSWER: RivalAnswerInputs = { holdsRebuke: false, answeredBy: new Map() };
 
 /** A line's runs: words as text, a place as a link through the one router (Laws 1, 21). */
 function renderSegments(segments: readonly RivalLineSegment[]): React.ReactNode {
@@ -63,7 +73,7 @@ function sphereWord(sphere: string): string {
   return sphere.charAt(0).toUpperCase() + sphere.slice(1);
 }
 
-export const RivalPanel = React.memo(function RivalPanel({ definitions, states, tick = 0, placeName = NO_PLACE_NAME }: RivalPanelProps) {
+export const RivalPanel = React.memo(function RivalPanel({ definitions, states, tick = 0, placeName = NO_PLACE_NAME, answer = NO_ANSWER }: RivalPanelProps) {
   // THR-1780: a rival god's name opens its entry in place. Rivals are run state, not graph
   // nodes, so there is no sheet for the ref router to open — the disclosure is the sheet.
   const [openRivalId, setOpenRivalId] = useState<string | null>(null);
@@ -79,13 +89,16 @@ export const RivalPanel = React.memo(function RivalPanel({ definitions, states, 
   }
 
   return (
-    <div className="space-y-2" data-testid="rival-panel">
-      <div>
+    // THR-2237 (Law 33): the dropdown has no scroll of its own, so an opened rival with a
+    // few schemes ran its answer line past the fold. The rows scroll inside this cap, as the
+    // Notables panel's do (THR-1655).
+    <div className="flex flex-col gap-2" data-testid="rival-panel" style={{ maxHeight: RIVAL_PANEL_MAX_HEIGHT }}>
+      <div className="shrink-0">
         <Tooltip id="ui.rival_panel">
           <SectionHeading as="h2" count={definitions.length} icon={listHeadingIcon('rivalGods')}>Rival gods</SectionHeading>
         </Tooltip>
       </div>
-      <div role="list" aria-label="Rival gods">
+      <div role="list" aria-label="Rival gods" className="overflow-y-auto overflow-x-hidden pr-1 min-h-0 flex-1" data-testid="rival-list">
         {definitions.map((def) => {
           const rivalState = states.find(s => s.rivalId === def.id);
           const hostility = rivalState?.hostilityToPlayer ?? 0;
@@ -157,7 +170,7 @@ export const RivalPanel = React.memo(function RivalPanel({ definitions, states, 
                         return last ? <p data-testid="rival-last-pressed">{renderSegments(last)}</p> : null;
                       })()}
                       <p data-testid="rival-answer" style={{ color: 'var(--text-tertiary)' }}>
-                        {rivalWords('ui.rival.answer')}
+                        {renderSegments(rivalAnswerSegments(rivalState, answer, placeName))}
                       </p>
                     </div>
                   )}

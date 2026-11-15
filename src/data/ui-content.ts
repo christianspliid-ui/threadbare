@@ -544,6 +544,31 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'How to answer it',
     desc: 'Places you tend shrug off its hand. Your seat, your threaded, a claim, or an anointed faction tends one.',
   },
+  // THR-2237: the answer is where the threat is. While the god holds Rebuke and the
+  // rival's last landing can still be rebuked, the answer line names that place.
+  'ui.rival.answer_rebuke': {
+    label: 'How to answer it',
+    desc: 'Rebuke it at {place}, or tend your places.',
+  },
+  // THR-2237: the pressed place's own page leads with who pressed it. `{rival}` is the
+  // rival god's name; `{when}` is "today", "yesterday" or "two days ago".
+  'ui.rival.pressed_now': {
+    label: 'Pressed by a rival',
+    desc: '{rival} pressed it {when}.',
+  },
+  // The row label's hover (a static explainer, never a fill string).
+  'ui.rival.pressed_row': {
+    label: 'A rival’s hand',
+    desc: 'Another god pressed this place, and it gave ground. For a few days you can answer it here.',
+  },
+  'ui.rival.pressed_answer_rebuke': {
+    label: 'How to answer it',
+    desc: 'Rebuke it here, or tend it, and its next blow is turned.',
+  },
+  'ui.rival.pressed_answer_tend': {
+    label: 'How to answer it',
+    desc: 'A place you tend turns its next blow.',
+  },
   'ui.retinue_panel': {
     label: 'Retinue',
     desc: 'Mortal agents under your divine influence, ranked by tier.',
@@ -1205,6 +1230,16 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   'ui.warm_recap.slipped_many': {
     label: 'Places slipped',
     desc: '{count} of your places slipped: {list}.',
+  },
+  // THR-2237: the rival behind a slipped place. `_one` follows a one-place line ("it"),
+  // `_many` follows a list and names the place.
+  'ui.warm_recap.rival_pressed_one': {
+    label: 'A rival pressed it',
+    desc: '{rival} pressed it.',
+  },
+  'ui.warm_recap.rival_pressed_many': {
+    label: 'A rival pressed it',
+    desc: '{rival} pressed {place}.',
   },
   'ui.warm_recap.grew_one': {
     label: 'A place grew',

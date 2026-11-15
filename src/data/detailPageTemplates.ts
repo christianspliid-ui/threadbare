@@ -371,6 +371,9 @@ const PLACE_SCHEMA: SectionSchemaEntry[] = [
     showcaseOverridable: true,
     visibleAt: HOVER,
   },
+  // THR-2237 (rule R5): a rival's answerable landing here is the page's Now line, so the
+  // page leads with who pressed it. Absent unless the place is rebukable.
+  sheetRow('rival_pressed', PLACE_ROW_RESOLVERS.rival_pressed, 8, 'overview', DWF, { icon: 'rivals' }),
   // The resolver sets the page's own idea (`place` / `place-within`); this is its fallback.
   sheetRow('place_prose', PLACE_ROW_RESOLVERS.place_prose, 10, 'overview', DWF, { icon: 'place' }),
   {
