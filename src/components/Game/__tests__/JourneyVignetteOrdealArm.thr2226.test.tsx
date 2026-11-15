@@ -86,7 +86,7 @@ describe('the Ordeal is armed, then fired (THR-2226, Law 48)', () => {
     expect(onChoice).toHaveBeenCalledWith('pour');
   });
 
-  it('Escape on an unrolled Ordeal takes back the lean and never rolls or closes it', () => {
+  it('Escape on an armed Ordeal takes back the lean and never rolls or closes it', () => {
     const { onOrdealCommit, onChoice, onClose } = renderOrdeal();
     fireEvent.click(screen.getByText('Pour everything into the thread'));
     expect(screen.getByTestId('ordeal-commit').textContent).toBe(ORDEAL_COMMIT_LABEL);
@@ -96,6 +96,20 @@ describe('the Ordeal is armed, then fired (THR-2226, Law 48)', () => {
     expect(onOrdealCommit).not.toHaveBeenCalled();
     expect(onChoice).not.toHaveBeenCalled();
     expect(screen.getByTestId('ordeal-commit').textContent).toBe(ORDEAL_PICK_PROMPT);
+  });
+
+  it('Escape with nothing armed rolls the step-back and shows its result; the next Escape closes', () => {
+    const { onOrdealCommit, onChoice, onClose } = renderOrdeal('scraped_through');
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
+
+    expect(onOrdealCommit).toHaveBeenCalledTimes(1);
+    expect(onOrdealCommit).toHaveBeenCalledWith('back');
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.getByTestId('journey-consequence').textContent).toContain('They stand alone.');
+
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
+    expect(onChoice).toHaveBeenCalledWith('back');
+    expect(onOrdealCommit).toHaveBeenCalledTimes(1);
   });
 
   it('a vision remounted after its roll opens on the stored result, with no choices to buy again', () => {

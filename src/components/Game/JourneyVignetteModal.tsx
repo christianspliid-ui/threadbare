@@ -240,16 +240,20 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
   }, [answered, onChoice, ordealCommits, vignette.choices]);
 
   // THR-2226 — the second beat: pay the armed lean's price and roll the Ordeal.
-  const handleOrdealFire = useCallback(() => {
-    if (answered || !armedId || !onOrdealCommit) return;
-    const committed = onOrdealCommit(armedId);
-    if (committed === null) return; // nothing committed (the pool could not pay)
+  const commitOrdealLean = useCallback((leanId: string): boolean => {
+    if (answered || !onOrdealCommit) return false;
+    const committed = onOrdealCommit(leanId);
+    if (committed === null) return false; // nothing committed (the pool could not pay)
     // The host returns the roll it holds — the stored one if this vision already rolled.
     const choice = vignette.choices.find(c => c.id === committed.choiceId);
-    if (!choice) return;
+    if (!choice) return false;
     setRolledOutcome(committed.outcome);
     setAnswered(choice);
-  }, [answered, armedId, onOrdealCommit, vignette.choices]);
+    return true;
+  }, [answered, onOrdealCommit, vignette.choices]);
+  const handleOrdealFire = useCallback(() => {
+    if (armedId) commitOrdealLean(armedId);
+  }, [armedId, commitOrdealLean]);
   const answeredLine = answered
     ? (vignette.isOrdeal ? ordealConsequence(answered, rolledOutcome ?? undefined) : answered.effects.consequenceProse)
     : null;
@@ -258,10 +262,24 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
     if (answered) onChoice(answered.id);
   }, [answered, onChoice]);
 
-  // THR-2226 — an unrolled Ordeal is answered, never dismissed: Escape only takes back
-  // the armed lean. Closing it through `onClose` would roll the climax as a bare
-  // step-back and drop the vision before its result could show (Laws 47/48).
-  const handleOrdealEscape = useCallback(() => setArmedId(null), []);
+  // THR-2226 — Escape on an unrolled Ordeal (Law 23 closes the topmost layer; Laws
+  // 47/48 keep the result on screen). An armed lean is the top layer: Escape takes it
+  // back. With nothing armed, Escape is the step-back, as on every journey vision —
+  // but rolled through the commit path, so the vision stays to show what it rolled and
+  // the next Escape (or Continue) closes it. Never through `onClose`, which would roll
+  // the climax and drop the vision before its result could show.
+  const handleOrdealEscape = useCallback(() => {
+    if (armedId) {
+      setArmedId(null);
+      return;
+    }
+    const stepBack = vignette.choices.find(c => c.effects.interventionType === 'withdrawn');
+    if (!stepBack) {
+      onClose(); // no step-back authored: the host dismisses without a roll
+      return;
+    }
+    commitOrdealLean(stepBack.id);
+  }, [armedId, commitOrdealLean, onClose, vignette.choices]);
 
   // Once answered, any close commits the answer — the god has already spoken.
   const handleClose = answered ? handleContinue : (ordealCommits ? handleOrdealEscape : onClose);
