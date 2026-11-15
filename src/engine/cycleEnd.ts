@@ -31,6 +31,15 @@ import { DOMINION_BAND_RANK } from '../data/dominion-content';
 import { getLocationNodes } from './sublocationShape';
 import { isAspect } from './aspects';
 import { emitTrace } from './traceBuffer';
+import { ambitionPronounsFor } from './ambitionProse';
+import type { ThreadEdgeProperties } from '../types/influence';
+import type { ReturnOutcome } from '../types/returnEngine';
+import {
+  FIRST_ENDING_WORDS,
+  HARVEST_SUMMARY_WORDS,
+  RETURN_ENDING_FACTS,
+  type FirstPronouns,
+} from '../data/twilight-content';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -71,6 +80,112 @@ export function completeTwilight(state: GameState): GameState {
     ...state,
     phase: 'harvest',
   };
+}
+
+// ─── THR-2229 — the First's story at the end of the age ────────────
+
+/** What the end of the age knows about the First, read from state (never rolled). */
+export interface FirstStory {
+  id: string;
+  name: string;
+  /** False when the First's node is gone. */
+  present: boolean;
+  pronouns: FirstPronouns;
+  /** The First's thread edge, when the god still holds one to them. */
+  props?: ThreadEdgeProperties;
+  returnEnding?: ReturnOutcome;
+  dead: boolean;
+  aspect: boolean;
+}
+
+/**
+ * The god's First: the target of its `the_first` thread, else the thread a Return
+ * closed (the Return clears the court position but keeps the edge, and writes
+ * `returnEnding`; only the First's thread ever gets one), else the First the god
+ * remembers after a death swept the thread. When a returned thread and a remembered
+ * death are both present, the later of the two is the story (a newer First may have
+ * been bonded after the Return and died). Null when no First was bonded.
+ */
+export function readFirstStory(state: GameState): FirstStory | null {
+  try {
+    const graph = state.graph;
+    const edges = graph.getOutgoingEdges(state.ascendantId, 'thread');
+    const tickOf = (e: (typeof edges)[number]): number => {
+      const t = (e.properties as { returnEndingTick?: unknown } | undefined)?.returnEndingTick;
+      if (typeof t === 'number') return t;
+      // A thread returned before `returnEndingTick` existed: its last journey beat.
+      const beats = (e.properties as { beatHistory?: Array<{ tick?: number }> } | undefined)?.beatHistory ?? [];
+      const last = beats.length ? beats[beats.length - 1]?.tick : undefined;
+      return typeof last === 'number' ? last : -Infinity;
+    };
+    // The latest Return, when several Firsts have returned.
+    const returned = edges
+      .filter(e => typeof e.properties?.returnEnding === 'string')
+      .reduce<(typeof edges)[number] | undefined>((best, e) => (!best || tickOf(e) >= tickOf(best) ? e : best), undefined);
+    const raw = graph.getNode(state.ascendantId)?.properties?.firstRemembered as
+      { id?: unknown; name?: unknown; diedTick?: unknown; returnEnding?: unknown } | undefined;
+    const remembered = raw && typeof raw.id === 'string' ? raw : undefined;
+    // The remembered First's story ended at its own Return when it had one (it may have
+    // lived on and died after a newer First's Return), else at its death.
+    const rememberedEnd = typeof (remembered as { returnEndingTick?: unknown } | undefined)?.returnEndingTick === 'number'
+      ? (remembered as { returnEndingTick: number }).returnEndingTick
+      : remembered?.diedTick;
+    const rememberedIsLater = !!remembered && !!returned && remembered.id !== returned.target
+      && typeof rememberedEnd === 'number' && rememberedEnd > tickOf(returned);
+    let edge = edges.find(e => e.properties?.courtPosition === 'the_first')
+      ?? (rememberedIsLater ? undefined : returned);
+    let id: string | undefined = edge?.target;
+    let name: string | undefined;
+    let rememberedEnding: ReturnOutcome | undefined;
+    let rememberedFacts: ThreadEdgeProperties | undefined;
+    if (!id) {
+      if (!remembered) return null;
+      id = remembered.id as string;
+      name = typeof remembered.name === 'string' && remembered.name.trim() ? remembered.name : undefined;
+      if (typeof remembered.returnEnding === 'string') rememberedEnding = remembered.returnEnding as ReturnOutcome;
+      // THR-2229 — the climax facts the death note kept from the swept thread.
+      const r = remembered as Record<string, unknown>;
+      if (r.apotheosisBand !== undefined || r.ordealOutcome !== undefined) rememberedFacts = r as unknown as ThreadEdgeProperties;
+      edge = undefined;
+    }
+    const node = graph.getNode(id);
+    const props = edge ? (edge.properties as unknown as ThreadEdgeProperties) : rememberedFacts;
+    const pronouns = ambitionPronounsFor(node?.properties?.gender);
+    const returnEnding = props?.returnEnding ?? rememberedEnding;
+    return {
+      id,
+      name: node?.name?.trim() || name || FIRST_ENDING_WORDS.firstFallback,
+      present: !!node,
+      pronouns,
+      ...(props ? { props } : {}),
+      ...(returnEnding ? { returnEnding } : {}),
+      dead: !node || node.properties?.deceased === true || node.properties?.alive === false,
+      aspect: !!node && isAspect(graph, id),
+    };
+  } catch {
+    return null; // NFP #4 — an unreadable graph leaves the ending as it was.
+  }
+}
+
+/** The clause the harvest summary closes the First's story with. */
+export function firstEndingFact(story: FirstStory): string {
+  const byReturn = story.returnEnding ? RETURN_ENDING_FACTS[story.returnEnding] : undefined;
+  if (byReturn) return byReturn(story.pronouns);
+  if (story.aspect) return FIRST_ENDING_WORDS.endingAspect();
+  if (story.dead) return FIRST_ENDING_WORDS.endingDied(story.pronouns);
+  return FIRST_ENDING_WORDS.endingUnfinished();
+}
+
+/**
+ * The harvest summary: with a First, their story leads and the most remembered name
+ * follows (dropped when it is the First); without one, today's line.
+ */
+export function harvestSummary(harvestType: HarvestType, topName: string, story: FirstStory | null): string {
+  const opening = HARVEST_SUMMARY_WORDS.opening[harvestType];
+  const top = HARVEST_SUMMARY_WORDS.topClause[harvestType](topName);
+  if (!story) return `${opening} ${top}.`;
+  const first = HARVEST_SUMMARY_WORDS.firstStory(story.name, firstEndingFact(story));
+  return topName === story.name ? `${opening} ${first}.` : `${opening} ${first}; ${top}.`;
 }
 
 // ─── Harvest ──────────────────────────────────────────────────────
@@ -175,11 +290,8 @@ export function computeHarvest(state: GameState): HarvestResult {
 
   // Generate summary
   const topName = candidates[0]?.node.name ?? 'the world';
-  const chronicleSummary = harvestType === 'triumphant'
-    ? `A triumphant age. ${topName} shone brightest among the echoes.`
-    : harvestType === 'somber'
-    ? `A somber age. ${topName} faded into memory.`
-    : `A bittersweet age. ${topName} left a lasting mark.`;
+  // THR-2229 — the First's story leads; the most remembered name follows.
+  const chronicleSummary = harvestSummary(harvestType, topName, readFirstStory(state));
 
   // THR-887 — the fourth preserved thing: the card that defined the run.
   // Selected, never rolled, so a saved run replays to the same echo card.

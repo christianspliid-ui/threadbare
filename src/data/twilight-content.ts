@@ -73,6 +73,93 @@ export const TWILIGHT_WORDS = {
   chronicleMandate: (mandateName: string) => `${capitalizeFirst(mandateName)} is fulfilled.`,
 } as const;
 
+// ─── THR-2229 — what the god did with its First ──────────────────────
+//
+// Plan `Docs/plans/2026-11-14-thr-2204-put-the-god-in-the-climax.md` slice 4. Plain
+// facts from the thread edge, never a roll: beat 2 adds the Apotheosis line, then the
+// Ordeal line, each only when its fact exists; the harvest summary leads with the
+// First's ending; the Threads row reads the Return ending's word.
+
+/** The pronouns a line needs, as the mortal's own (`ambitionPronounsFor`). */
+export interface FirstPronouns {
+  readonly they: string;
+  readonly them: string;
+  readonly their: string;
+}
+
+/** How an Apotheosis read at its end. `turned_away` is the withdrawal pole's success. */
+export type ApotheosisResultClass = 'aspect' | 'aspect_at_cost' | 'turned_away' | 'turned_away_at_cost' | 'fell_back';
+/** How hard the god leaned on the Ordeal (from the choice's lean). */
+export type OrdealHand = 'pour' | 'steady' | 'alone';
+export type OrdealOutcomeWord = 'triumph' | 'scraped_through' | 'broken';
+
+export const APOTHEOSIS_RESULT_WORDS: Readonly<Record<ApotheosisResultClass, string>> = {
+  aspect: 'became your Aspect',
+  aspect_at_cost: 'became your Aspect, at a cost',
+  turned_away: 'turned away',
+  turned_away_at_cost: 'turned away, at a cost',
+  fell_back: 'fell back',
+};
+
+export const ORDEAL_OUTCOME_VERBS: Readonly<Record<OrdealOutcomeWord, string>> = {
+  triumph: 'triumphed',
+  scraped_through: 'scraped through',
+  broken: 'broke',
+};
+
+/** The Return ending's clause in the harvest summary ("…'s story ended {fact}"). */
+export const RETURN_ENDING_FACTS: Readonly<Record<string, (p: FirstPronouns) => string>> = {
+  loyal_ascension: () => 'at your side',
+  sacrifice: (p) => `in ${p.their} sacrifice`,
+  vanishing: (p) => `when ${p.they} ${p.they === 'they' ? 'were' : 'was'} simply gone`,
+  transcendence: (p) => `when ${p.they} became one with the land`,
+  usurper: (p) => `when ${p.they} turned against you`,
+  monster: (p) => `when ${p.they} became a terror`,
+};
+
+/**
+ * The Threads row's word for a First whose Return ending took them out of the god's
+ * hand while the thread stays. Other endings keep the tier word.
+ */
+export const RETURN_ENDING_THREAD_WORDS: Readonly<Partial<Record<string, string>>> = {
+  vanishing: 'Gone',
+  transcendence: 'Transcended',
+};
+
+export const FIRST_ENDING_WORDS = {
+  /** The First's name when the node has none. */
+  firstFallback: 'your First',
+  apotheosisWithHand: (p: FirstPronouns, result: ApotheosisResultClass) =>
+    `At the threshold you spent on ${p.them}, and ${p.they} ${APOTHEOSIS_RESULT_WORDS[result]}.`,
+  apotheosisAlone: (first: string, p: FirstPronouns, result: ApotheosisResultClass) =>
+    `At the threshold ${first} stood alone, and ${p.they} ${APOTHEOSIS_RESULT_WORDS[result]}.`,
+  ordeal: (first: string, p: FirstPronouns, hand: OrdealHand, outcome: OrdealOutcomeWord) => {
+    const verb = ORDEAL_OUTCOME_VERBS[outcome];
+    if (hand === 'alone') return `At the Ordeal you stepped back, and ${first} ${verb}.`;
+    const what = hand === 'pour' ? 'poured yourself into the thread' : 'steadied the thread';
+    // The god's hand shows at every band (Law 23): a broken First after a lean is "still".
+    return `At the Ordeal you ${what}, and ${outcome === 'broken' ? `still ${p.they}` : first} ${verb}.`;
+  },
+  /** The harvest's clause when no Return closed the story. */
+  endingAspect: () => 'as your Aspect',
+  endingDied: (p: FirstPronouns) => `with ${p.their} death`,
+  endingUnfinished: () => "in the age's last days",
+} as const;
+
+/**
+ * The harvest summary (`computeHarvest`). With a First, it leads with the First's
+ * ending and keeps the most remembered name second (dropped when it is the First).
+ */
+export const HARVEST_SUMMARY_WORDS = {
+  opening: { triumphant: 'A triumphant age.', somber: 'A somber age.', bittersweet: 'A bittersweet age.' },
+  topClause: {
+    triumphant: (top: string) => `${top} shone brightest among the echoes`,
+    somber: (top: string) => `${top} faded into memory`,
+    bittersweet: (top: string) => `${top} left a lasting mark`,
+  },
+  firstStory: (first: string, fact: string) => `${first}'s story ended ${fact}`,
+} as const;
+
 /** The god's name when the identity is unreadable. */
 export const TWILIGHT_GOD_FALLBACK = 'the god';
 

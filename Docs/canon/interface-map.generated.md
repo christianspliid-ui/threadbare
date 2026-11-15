@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 235 |
+| 🟢 LIVE | 237 |
 | 🟠 PARTIAL | 1 |
-| 🔴 LEAKED | 8 |
+| 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 121 |
-| **Total** | **365** |
+| **Total** | **366** |
 
 ## Contracts by producing subsystem
 
@@ -175,6 +175,7 @@ remediation ticket or the build fails.
 | `climax-fit-sizes-apotheosis-hand` | When an Apotheosis step is entered, its difficulty is fitted once so the no-card forecast reads "Uncertain" for this mortal, and the First's chapters the god paid into earn up to two extra cards on the deciding step; the Stage, the forecast and the roll all read that one stored value, and no other step's hand changes. | state-field: `climaxFit`, `ensureClimaxFits`, `apotheosisEarnedSlots` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `doom-floor-holds-unmaking` | No world ends before its First has had a life: however fast the clock is pushed, the Unmaking cannot begin until a floor of ticks has passed since the doom woke at the bond. | state-field: `wokeAtTick`, `doomFloorMetAtTick`, `DOOM_MIN_RUN_TICKS_AFTER_BOND` | Doom Clock & Journey | 🔵 UNVERIFIED-OK | — |
 | `doom-progress-paces-first-journey` | The First's hero's journey moves with the doom clock: its phases are fractions of doom progress, so a longer clock that starts at the bond stretches the whole call-to-return arc inside every run. | state-field: `doomClock` | Doom Clock & Journey | 🔵 UNVERIFIED-OK | — |
+| `first-thread-tells-the-ending` | What the god did with its First is kept on the First's thread — how the Ordeal was leaned on and how it landed, and which Return ending closed the story — and the end of the age reads it back: the Twilight says it in beat 2, the harvest summary leads with the First's ending, and Threads names a First who is gone or transcended. | edge-prop: `ordealBand`, `ordealGodPaid`, `ordealLean`, `returnEnding` | Doom Clock & Journey | 🟢 LIVE | — |
 | `ordeal-roll-writes-thread-outcome` | The First's Ordeal is decided by a roll on the First's marble bag at a difficulty fitted to "Uncertain", which the god's choice only leans on; the band the roll lands is written to the thread edge as the Ordeal outcome the Return reads, never the outcome a choice names. | edge-prop: `ordealOutcome`, `rollOrdeal` | Doom Clock & Journey | 🟢 LIVE | — |
 
 ### Effects & Conditions
@@ -195,7 +196,7 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `a-concealed-sale-ends-the-company-that-was-sold` | A member who took coin for what the company knew is why it ends — the sale is recorded as the dissolution reason, not laundered into the collapse it caused. | property: `hiddenMarks` | Companies & Group Travel | 🟢 LIVE | — |
-| `apotheosis-result-writes-thread-edge` | When an Apotheosis ends, how it ended and whether the god played a card in it are written to the mortal's thread edge once, for the ending and the agency census to read. | edge-prop: `apotheosisBand`, `apotheosisGodPaid`, `recordApotheosisResults` | Doom Clock & Journey | 🔴 LEAKED | THR-2229 |
+| `apotheosis-result-writes-thread-edge` | When an Apotheosis ends, how it ended and whether the god played a card in it are written to the mortal's thread edge once, for the ending and the agency census to read. | edge-prop: `apotheosisBand`, `apotheosisGodPaid`, `recordApotheosisResults` | Doom Clock & Journey | 🟢 LIVE | — |
 | `appointment-discount-reaches-board` | A mortal leaning toward an appointment discounts every encounter that would outlast the slack, and the discount reaches the unified decision board, where the choice is made: the regime stamps `appointmentDiscount` on the candidate and `scoreUnifiedBoard` multiplies it into the entry score beside the arrival commitment. `APPOINTMENT_DISCOUNT_ON_BOARD = false` restores the board exactly. | function: `appointmentDiscount`, `rerankForAppointmentRegime`, `APPOINTMENT_DISCOUNT_ON_BOARD` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `appointment-pulls-agent-movement` | An encounter ending can bind a mortal to a place by a time (THR-1479). The seed carries an `appointment` block — place, due tick, window, counterparty, missed branch — and the decision phase reads it every tick: slack (due − now − travel) is priced by the movement graph, the mortal *leans* toward the place through a second additive term on the relocation channel while the slack is inside the horizon, and *departs* through a journey candidate scored by `scoreMovementCandidate` and queued through the ordinary `initMovementState` writer once the slack falls under their leave margin (a formula over `courage_prudence` and `loyalty_ambition` that can go negative, so a Renegade chooses to miss). No second movement path; if the board outvotes the promise, `appointment_regime` traces it and nothing is forced. Registered LEAKED-with-ticket at filing: slice 1 lands the primitive and its first user; slice 2 (THR-1518) lands the census that proves a seeded run actually pulls a mortal — the reachability row, proven by a census hit rather than by a gate that reads the code (the THR-1497 lesson). | function: `plantAppointmentPromise`, `agentAppointmentSeeds`, `resolveAppointmentContext`, `computeAppointmentPull`, `appointmentRegime`, `computeAppointmentSlack` | Movement & Colocation | 🟢 LIVE | — |
 | `ascendant-affinity-cast-capability` | The ascendant's persisted reach affinities become its capability for a cast — the god's innate aptitude is not on the raw scale `computeRawScore` walks, so a literal read left every cast at capability 0.02 and one reachable outcome band. | node-prop: `domainAffinities`, `computeCapabilityWithRawBonus` | Encounters & Dilemmas | 🟢 LIVE | — |
@@ -707,17 +708,17 @@ remediation ticket or the build fails.
 - **Other hits:** `src/engine/battleAftermath.ts`, `src/engine/essenceEarned.ts`, `src/engine/lairEscalation.ts`, `src/engine/mandateLedger.ts`, `src/engine/notableAgendas.ts` +10 more
 - **Verdict:** Verified 2026-10-17: THR-1935. prayers.test.ts: Bless the Harvest on a praying town writes participated_in and pushes summing to 2 split mind 0.6 / spirit 0.4; a failed cast and an unflagged card do nothing; a hungry Foreign town pushes 1 once inside the cooldown.
 
-### `apotheosis-result-writes-thread-edge` — 🔴 LEAKED
+### `apotheosis-result-writes-thread-edge` — 🟢 LIVE
 
 - **Intent:** When an Apotheosis ends, how it ended and whether the god played a card in it are written to the mortal's thread edge once, for the ending and the agency census to read.
 - **Producer → Consumer:** Encounters & Dilemmas → Doom Clock & Journey
 - **UL terms:** *The First*
 - **Module:** `src/engine/climaxFit.ts`
-- **Production hits:** 3 total — 1 write, 0 read, 2 unclassified
+- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
 - **Write sites:** `src/engine/climaxFit.ts`
-- **Read sites:** —
-- **Other hits:** `src/engine/orchestrator.ts`, `src/types/influence.ts`
-- **Verdict:** Tier 2: the registry declares no read sites and none were found — producer writes into nothing. — or the row under-declares its sites: confirm `apotheosisBand` is the symbol actually used at the real site, then register that site before treating this as a leak.
+- **Read sites:** `src/engine/twilight.ts`
+- **Other hits:** `src/engine/agentLifecycle.ts`, `src/engine/cycleEnd.ts`, `src/engine/orchestrator.ts`, `src/types/influence.ts`
+- **Verdict:** Verified 2026-11-15: THR-2229. firstEnding.thr2229.test.ts: an apotheosisBand / apotheosisGodPaid on the First's thread renders beat 2's threshold line ("you spent on him" / "stood alone", "became your Aspect" / "turned away" / "fell back") and traces twilight.first_lines; AgeTwilightScreen.thr2229.test.tsx renders it after the fate line.
 
 ### `appointment-discount-reaches-board` — 🟢 LIVE
 
@@ -2439,6 +2440,18 @@ exit
 - **Other hits:** `src/types/influence.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
+### `first-thread-tells-the-ending` — 🟢 LIVE
+
+- **Intent:** What the god did with its First is kept on the First's thread — how the Ordeal was leaned on and how it landed, and which Return ending closed the story — and the end of the age reads it back: the Twilight says it in beat 2, the harvest summary leads with the First's ending, and Threads names a First who is gone or transcended.
+- **Producer → Consumer:** Doom Clock & Journey → Doom Clock & Journey
+- **UL terms:** *The First*
+- **Module:** `src/engine/journeyEngine.ts`
+- **Production hits:** 9 total — 3 write, 3 read, 3 unclassified
+- **Write sites:** `src/engine/agentLifecycle.ts`, `src/engine/journeyEngine.ts`, `src/engine/returnEngine.ts`
+- **Read sites:** `src/engine/cycleEnd.ts`, `src/engine/retinue.ts`, `src/engine/twilight.ts`
+- **Other hits:** `src/data/journey-content.ts`, `src/types/influence.ts`, `src/types/journeyEngine.ts`
+- **Verdict:** Verified 2026-11-15: THR-2229. firstEnding.thr2229.test.ts: applyBeatChoice writes the Ordeal band, godPaid and lean; applyReturnOutcome writes returnEnding for all six endings; a returned First is still found by the Twilight; the Ordeal line reads pour / steady / stepped back and "still … broke"; the harvest summary leads with the First and drops the second clause when it is the First; a vanished First reads "Gone" in Threads and a transcended one "Transcended".
+
 ### `food-balance-sets-famine-tier` — 🟢 LIVE
 
 - **Intent:** On a settlement the economy has reached, its foodBalance sets the stock tier of every food staple (grain, grazing, fish, water), so a fed town reads adequate and a starving one scarce; the scarcity arcs and the livelihood tug read the tier. The unrest hunger counter reads foodStore / foodBalance directly.
@@ -3027,10 +3040,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *The First*
 - **Module:** `src/engine/meetingEncounter.ts`
-- **Production hits:** 50 total — 2 write, 1 read, 47 unclassified
+- **Production hits:** 51 total — 2 write, 1 read, 48 unclassified
 - **Write sites:** `src/engine/meetingEncounter.ts`, `src/engine/threadingRite.ts`
 - **Read sites:** `src/engine/attentionTier.ts`
-- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/encounterBadgeModel.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts` +42 more
+- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/encounterBadgeModel.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts` +43 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `meeting-leans-on-nature` — 🔵 UNVERIFIED-OK
@@ -3153,10 +3166,10 @@ exit
 - **Intent:** Every mortal leaves the world through one function, so every death owes the same guards and every reader sees the same shape. `markMortalDead` carries, in order: the `death_prevented` ward (THR-1241 — the ward wins and the caller resolves as *survived*, never as an error), the Aspect echo (THR-479 — an Aspect of the god is never unmade), and then the write in the caller's `mode`. `retain` leaves the node carrying `deceased`, `deceasedTick`, `deathCause` and `slainBy` so the chronicle can still name the dead and the grievance lane can still avenge them; `remove` sweeps the edges and deletes, which is what the lifecycle's own low-reputation death has always done. Callers today: the lifecycle (`remove`), band opposition, the plot, and the god's commissioned killing (`retain`), and all four ask the ward. THR-1534 closed the two that did not: band opposition's `applyCasualty` now builds the override context, and `GraphOpContext.overrideCtx` carries it to `mark_mortal_dead` from every builder that holds `GameState`. Behaviour is preserved for every death that existed before the extraction; whether *every* death should retain is deliberately left open, because it would change every node-absence reader at once. The Physical Conflict fight framework (THR-1258) is the next caller — it calls this, it does not extract its own (THR-1430).
 - **Producer → Consumer:** Agent Lifecycle → Ambitions & Undertakings
 - **Module:** `src/engine/agentLifecycle.ts`
-- **Production hits:** 62 total — 5 write, 3 read, 54 unclassified
+- **Production hits:** 63 total — 5 write, 3 read, 55 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/agentLifecycle.ts`, `src/engine/battleAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/groups/bandOpposition.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/factionNetwork.ts`, `src/engine/groups/groupQueries.ts`
-- **Other hits:** `src/data/fight-screen-content.ts`, `src/debug-bridge.ts`, `src/engine/aspects.ts`, `src/engine/battleRecord.ts`, `src/engine/battleResolution.ts` +49 more
+- **Other hits:** `src/data/fight-screen-content.ts`, `src/debug-bridge.ts`, `src/engine/aspects.ts`, `src/engine/battleRecord.ts`, `src/engine/battleResolution.ts` +50 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mortal-inflicts-a-condition` — 🟢 LIVE
@@ -3317,10 +3330,10 @@ exit
 - **Producer → Consumer:** Doom Clock & Journey → Doom Clock & Journey
 - **UL terms:** *The First*
 - **Module:** `src/engine/journeyEngine.ts`
-- **Production hits:** 7 total — 1 write, 2 read, 4 unclassified
+- **Production hits:** 10 total — 1 write, 2 read, 7 unclassified
 - **Write sites:** `src/engine/journeyEngine.ts`
 - **Read sites:** `src/components/Game/GameView.tsx`, `src/engine/returnEngine.ts`
-- **Other hits:** `src/types/influence.ts`, `src/types/journeyEngine.ts`, `src/types/returnEngine.ts`, `src/types/trace.ts`
+- **Other hits:** `src/engine/agentLifecycle.ts`, `src/engine/cycleEnd.ts`, `src/engine/twilight.ts`, `src/types/influence.ts`, `src/types/journeyEngine.ts` +2 more
 - **Verdict:** Verified 2026-11-15: THR-2226. ordealRollAndVisionScene.thr2226.test.ts: recordJourneyChoice on an Ordeal vision deals one draw from the First's bag (bagDraws 0 → 1), writes the outcome ORDEAL_BAND_TO_OUTCOME maps the traced band to, ignores a legacy choice's ordealOutcome, and traces journey.ordeal_roll with the stepped-back chance within 0.01 of CLIMAX_BARE_FORECAST; over 200 seeds the full lean wins more Ordeals than stepping back and still loses some.
 
 ### `pending-rite-opens-surface` — 🔵 UNVERIFIED-OK
@@ -3478,10 +3491,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 487 total — 1 write, 1 read, 485 unclassified
+- **Production hits:** 490 total — 1 write, 1 read, 488 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +480 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +483 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `recovered-town-keeps-faith` — 🟢 LIVE
@@ -3863,10 +3876,10 @@ exit
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **UL terms:** *Location*
 - **Module:** `src/engine/worldPast.ts`
-- **Production hits:** 55 total — 1 write, 4 read, 50 unclassified
+- **Production hits:** 56 total — 1 write, 4 read, 51 unclassified
 - **Write sites:** `src/engine/worldPast.ts`
 - **Read sites:** `src/engine/graphQueries.ts`, `src/engine/hexActorIndex.ts`, `src/engine/hexZoom.ts`, `src/engine/phases/routeEvents.ts`
-- **Other hits:** `src/data/fight-screen-content.ts`, `src/data/undertaking-objects.ts`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts`, `src/engine/agentLifecycle.ts` +45 more
+- **Other hits:** `src/data/fight-screen-content.ts`, `src/data/undertaking-objects.ts`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts`, `src/engine/agentLifecycle.ts` +46 more
 - **Verdict:** Verified 2026-09-28: THR-1631 S1. The first 200-tick census on seed 99 found a seeded founder drawn as the actor of `mct.quest.settle_dispute` and `cg.quest.investigate_disturbance` from tick 27 (`routeEvents.pickTargetAgent` walked `located_at` without a death check). That reader was fixed, not the dead, and so were the three location readers that counted the dead as residents: `graphQueries.getAgentsAtLocation` (birth density, rumour hearers, mentorship and strategic pools), `hexZoom.getAgentsAtLocation` and `buildHexActorIndex`. The run-time dead had the same leak. After the fix, `readers/past.ts` over 200 ticks on seeds 42 and 99 (medium) found 0 seeded dead alive, deciding or acting. The heavy test `worldPast-generatedWorld.test.ts` repeats the check every tick for 200 ticks on a small world, including resident counts and the hex actor index.
 
 ### `seeded-notable-holds-a-local-agenda` — 🟢 LIVE

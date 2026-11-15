@@ -15,13 +15,18 @@ import { DOOM_CLOCK_ARCHETYPES } from '../types/doomClock';
 import type { MemoryType, ResonanceMemory } from '../types/worldSoul';
 import type { SphereName } from '../types/index';
 import type { HarvestResult } from './cycleEnd';
-import { completeTwilight, computeHarvest } from './cycleEnd';
+import { completeTwilight, computeHarvest, readFirstStory, type FirstStory } from './cycleEnd';
+import { ORDEAL_LEAN_POUR } from '../types/journeyEngine';
 import { emitTrace } from './traceBuffer';
 import { ARCHETYPE_STAGE_NAMES } from '../data/doom-content';
 import {
   DOOM_ENDING_FALLBACK_TITLE,
   DOOM_ENDING_LINES,
+  FIRST_ENDING_WORDS,
   MANDATE_FALLBACK_NAME,
+  type ApotheosisResultClass,
+  type OrdealHand,
+  type OrdealOutcomeWord,
   TWILIGHT_GOD_FALLBACK,
   TWILIGHT_WORDS,
 } from '../data/twilight-content';
@@ -54,6 +59,15 @@ export interface TwilightFirst {
   line: string;
   /** False when the First's node is gone (a death removed it): name them, link nothing. */
   present: boolean;
+  /**
+   * THR-2229 — the lines after `line`, in order: the Apotheosis, then the Ordeal, each
+   * only when the thread edge holds its fact. Empty when neither does.
+   */
+  lines?: string[];
+  /** THR-2229 — the Apotheosis fact behind its line. */
+  apotheosis?: { band: string; godPaid: boolean; result: ApotheosisResultClass };
+  /** THR-2229 — the Ordeal fact behind its line. */
+  ordeal?: { outcome: OrdealOutcomeWord; godPaid: boolean; hand: OrdealHand; band?: string };
 }
 
 export interface TwilightBeats {
@@ -136,10 +150,61 @@ function rememberedFirst(state: GameState): { id: string; name: string } | null 
   return raw && typeof raw.id === 'string' ? { id: raw.id, name: typeof raw.name === 'string' && raw.name.trim() ? raw.name : 'Your First' } : null;
 }
 
+const APOTHEOSIS_FELL_BACK_BANDS: ReadonlySet<string> = new Set(['failure', 'critical_failure', 'contested_lost']);
+
+/**
+ * THR-2229 — how an Apotheosis read at its end. The band alone does not say which
+ * pole was taken, so a success is "became your Aspect" when the First is one and
+ * "turned away" (the withdrawal pole) when not.
+ */
+export function apotheosisResultClass(band: string, aspect: boolean): ApotheosisResultClass {
+  if (APOTHEOSIS_FELL_BACK_BANDS.has(band)) return 'fell_back';
+  const atCost = band === 'success_at_cost' || band === 'near_miss';
+  if (aspect) return atCost ? 'aspect_at_cost' : 'aspect';
+  return atCost ? 'turned_away_at_cost' : 'turned_away';
+}
+
+/** THR-2229 — how hard the god leaned on the Ordeal, from the choice's stored lean. */
+export function ordealHand(lean: number | undefined): OrdealHand {
+  const l = typeof lean === 'number' && Number.isFinite(lean) ? lean : 0;
+  if (l >= ORDEAL_LEAN_POUR) return 'pour';
+  return l > 0 ? 'steady' : 'alone';
+}
+
+/**
+ * THR-2229 — beat 2's facts and lines about what the god did with its First: the
+ * Apotheosis (the god's hand on it or not, and how it went), then the Ordeal (same).
+ * Each only when the thread edge holds its fact; an old save's edge yields none.
+ */
+export function firstEndingLines(story: FirstStory): Pick<TwilightFirst, 'lines' | 'apotheosis' | 'ordeal'> {
+  const props = story.props;
+  const lines: string[] = [];
+  const out: Pick<TwilightFirst, 'lines' | 'apotheosis' | 'ordeal'> = { lines };
+  if (!props) return out;
+  if (typeof props.apotheosisBand === 'string') {
+    const result = apotheosisResultClass(props.apotheosisBand, story.aspect);
+    const godPaid = props.apotheosisGodPaid === true;
+    lines.push(godPaid
+      ? FIRST_ENDING_WORDS.apotheosisWithHand(story.pronouns, result)
+      : FIRST_ENDING_WORDS.apotheosisAlone(story.name, story.pronouns, result));
+    out.apotheosis = { band: props.apotheosisBand, godPaid, result };
+  }
+  // Only an Ordeal written by its roll (THR-2226) carries `ordealGodPaid`.
+  if (props.ordealOutcome && typeof props.ordealGodPaid === 'boolean') {
+    const hand = ordealHand(props.ordealLean);
+    lines.push(FIRST_ENDING_WORDS.ordeal(story.name, story.pronouns, hand, props.ordealOutcome));
+    out.ordeal = { outcome: props.ordealOutcome, godPaid: props.ordealGodPaid, hand, ...(props.ordealBand ? { band: props.ordealBand } : {}) };
+  }
+  return out;
+}
+
 /** The First and their fate (Decided 4), or undefined when no First was bonded. */
 export function firstFate(state: GameState): TwilightFirst | undefined {
   const graph = state.graph;
-  const id = getFirstId(graph, state.ascendantId);
+  // THR-2229 — the First's thread survives the Return (its court position clears), so
+  // a returned First is still found here; only a death sweeps it.
+  const story = readFirstStory(state);
+  const id = story?.props ? story.id : getFirstId(graph, state.ascendantId);
   if (!id || !graph.getNode(id)) {
     // The thread is gone: a death swept it. An Aspect stays an Aspect (its echo keeps
     // `aspect_of`); anyone else died before the age ended.
@@ -152,13 +217,15 @@ export function firstFate(state: GameState): TwilightFirst | undefined {
       fate,
       line: fate === 'aspect' ? TWILIGHT_WORDS.firstAspect(remembered.name) : TWILIGHT_WORDS.firstDied(remembered.name),
       present: !!graph.getNode(remembered.id),
+      // THR-2229 — the death note keeps the climax facts, so the lines survive it.
+      ...(story && story.id === remembered.id ? firstEndingLines({ ...story, name: remembered.name }) : { lines: [] }),
     };
   }
   const node = graph.getNode(id)!;
   const name = node.name?.trim() || 'Your First';
   const fate: FirstFate = isAspect(graph, id)
     ? 'aspect'
-    : node.properties?.deceased === true ? 'died' : 'lived';
+    : node.properties?.deceased === true || node.properties?.alive === false ? 'died' : 'lived';
   const callingTitle = readStoredCalling(node)?.title?.trim();
   const calling = callingTitle ? callingTitle.toLowerCase() : undefined;
   const line = fate === 'aspect'
@@ -166,7 +233,8 @@ export function firstFate(state: GameState): TwilightFirst | undefined {
     : fate === 'died'
     ? TWILIGHT_WORDS.firstDied(name)
     : TWILIGHT_WORDS.firstLived(name, calling);
-  return { id, name, fate, ...(calling ? { calling } : {}), line, present: true };
+  const ending = story && story.id === id ? firstEndingLines({ ...story, name }) : { lines: [] };
+  return { id, name, fate, ...(calling ? { calling } : {}), line, present: true, ...ending };
 }
 
 function capitalize(s: string): string {
@@ -271,6 +339,22 @@ export function openTwilight(
       ...(beats.fallbacks.length > 0 ? { fallbacks: [...beats.fallbacks] } : {}),
       summary: `twilight: "${beats.ending.title}" — First ${beats.first?.fate ?? 'none'}, ${beats.memories.length} memories`,
     });
+    const first = beats.first;
+    if (first) {
+      const apotheosis = first.apotheosis
+        ? `${first.apotheosis.band}:${first.apotheosis.result}:${first.apotheosis.godPaid ? 'godPaid' : 'alone'}`
+        : undefined;
+      const ordeal = first.ordeal ? `${first.ordeal.outcome}:${first.ordeal.hand}` : undefined;
+      emitTrace({
+        tick: state.tick,
+        category: 'twilight.first_lines',
+        firstId: first.id,
+        fate: first.fate,
+        ...(apotheosis ? { apotheosis } : {}),
+        ...(ordeal ? { ordeal } : {}),
+        summary: `twilight.first_lines: ${first.name} ${first.fate}; Apotheosis ${apotheosis ?? 'none'}; Ordeal ${ordeal ?? 'none'}`,
+      });
+    }
     return { ok: true, beats };
   } catch {
     return { ok: false, state: failTwilight(state, 'beats_threw') };

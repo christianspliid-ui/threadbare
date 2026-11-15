@@ -611,6 +611,9 @@ export function applyReturnOutcome(
   const threadUpdate: Partial<ThreadEdgeProperties> = {
     courtPosition: null, // Clear court slot for all outcomes
     storyPhase: 'return' as const,
+    // THR-2229 — which ending closed the story, for the Twilight, the harvest and Threads.
+    returnEnding: outcome,
+    returnEndingTick: tick,
   };
 
   switch (outcome) {

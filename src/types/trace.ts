@@ -40,7 +40,7 @@ import type {
   HuntTrackCompletedTrace,
 } from './traces/monster-traces';
 import type { SpherePressureResolvedTrace, SphereSeededTrace, SpherePointsFallbackTrace, HexPressureTrace, TownPressureTrace } from './traces/sphere-traces';
-import type { AccountLoadedTrace, AccountSavedTrace, AccountUnreadableTrace, HarvestDivineEchoPickedTrace, AccountWorldShapedTrace, AccountPlacesTiltedTrace, EchoSeededTrace, EchoSeedSkippedTrace, AgeEndedTrace, TwilightBeatsBuiltTrace, TwilightFallbackTrace, ResonanceMemoryCapturedTrace, ResonanceMemoryEvictedTrace, AccountHungerWokenTrace, AccountCardsUnsealedTrace } from './traces/account-traces';
+import type { AccountLoadedTrace, AccountSavedTrace, AccountUnreadableTrace, HarvestDivineEchoPickedTrace, AccountWorldShapedTrace, AccountPlacesTiltedTrace, EchoSeededTrace, EchoSeedSkippedTrace, AgeEndedTrace, TwilightBeatsBuiltTrace, TwilightFirstLinesTrace, TwilightFallbackTrace, ResonanceMemoryCapturedTrace, ResonanceMemoryEvictedTrace, AccountHungerWokenTrace, AccountCardsUnsealedTrace } from './traces/account-traces';
 import type { DominionBandChangeTrace, DominionTendTrace, DominionNeglectTrace, DominionRaidTrace, DominionAttunementTrace, DominionSeatFloorTrace, DominionReadTrace, DominionLensRebuiltTrace } from './traces/dominion-traces';
 import type { ItemGeneratedTrace, ItemGenerateFallbackTrace, RewardGeneratedTrace } from './traces/item-generator-traces';
 import type { LuckBagRollTrace, LuckLegendaryCycleTrace } from './traces/luck-traces';
@@ -762,6 +762,7 @@ export type TraceCategory =
   // The end of the age — Twilight beats and World-Soul memories (THR-1381). Interfaces in `src/types/traces/account-traces.ts`.
   | 'age.ended'
   | 'twilight.beats_built'
+  | 'twilight.first_lines' // THR-2229
   | 'twilight.fallback'
   | 'resonance.memory_captured'
   | 'resonance.memory_evicted'
@@ -1155,6 +1156,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // The end of the age (THR-1381)
   'age.ended',
   'twilight.beats_built',
+  'twilight.first_lines',
   'twilight.fallback',
   'resonance.memory_captured',
   'resonance.memory_evicted',
@@ -6090,6 +6092,7 @@ export type TraceEntry =
   // The end of the age (THR-1381)
   | AgeEndedTrace
   | TwilightBeatsBuiltTrace
+  | TwilightFirstLinesTrace
   | TwilightFallbackTrace
   | ResonanceMemoryCapturedTrace
   | ResonanceMemoryEvictedTrace

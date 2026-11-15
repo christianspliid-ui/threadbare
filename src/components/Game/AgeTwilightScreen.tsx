@@ -138,17 +138,30 @@ export function AgeTwilightScreen({ beats, gameState, primarySphere, remembered,
             >
               {firstFace && <EntityVisual size="portrait" descriptor={firstFace} />}
             </div>
-            {first.fate === 'aspect' ? (
-              <Tooltip id="ui.aspect_badge">
-                <p className="text-base text-amber-100/90 leading-relaxed cursor-help">
+            <div className="flex flex-col gap-2">
+              {first.fate === 'aspect' ? (
+                <Tooltip id="ui.aspect_badge">
+                  <p className="text-base text-amber-100/90 leading-relaxed cursor-help">
+                    {firstRest !== null ? <><EntityLink id={first.id} name={first.name} entityRef={{ kind: 'agent', id: first.id }} />{firstRest}</> : first.line}
+                  </p>
+                </Tooltip>
+              ) : (
+                <p className="text-base text-amber-100/90 leading-relaxed">
                   {firstRest !== null ? <><EntityLink id={first.id} name={first.name} entityRef={{ kind: 'agent', id: first.id }} />{firstRest}</> : first.line}
                 </p>
-              </Tooltip>
-            ) : (
-              <p className="text-base text-amber-100/90 leading-relaxed">
-                {firstRest !== null ? <><EntityLink id={first.id} name={first.name} entityRef={{ kind: 'agent', id: first.id }} />{firstRest}</> : first.line}
-              </p>
-            )}
+              )}
+              {/* THR-2229 — what the god did with its First: the threshold, then the Ordeal. */}
+              {(first.lines ?? []).map((l, i) => (
+                <p key={i} className="text-sm text-amber-100/80 leading-relaxed" data-testid="age-twilight-first-line">
+                  {/* Law 21 — the First's name links here as it does in the fate line. */}
+                  {first.present && first.name
+                    ? l.split(first.name).flatMap((part, j) => j === 0
+                      ? [part]
+                      : [<EntityLink key={j} id={first.id} name={first.name} entityRef={{ kind: 'agent', id: first.id }} />, part])
+                    : l}
+                </p>
+              ))}
+            </div>
           </section>
         )}
 

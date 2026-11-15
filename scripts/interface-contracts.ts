@@ -7178,9 +7178,40 @@ export const CONTRACTS: readonly Contract[] = [
       module: 'src/engine/climaxFit.ts',
     },
     writeSites: ['src/engine/climaxFit.ts'],
-    // Its readers (the Twilight ending and the agency census) are slice 4 of the plan.
-    readSites: [],
-    deferralTicket: 'THR-2229',
+    // THR-2229 — read by the Twilight's beat 2 (`firstEndingLines`) and the agency census.
+    readSites: ['src/engine/twilight.ts'],
+    verifiedLive: {
+      date: '2026-11-15',
+      evidence: 'THR-2229. firstEnding.thr2229.test.ts: an apotheosisBand / apotheosisGodPaid on the First\x27s thread renders beat 2\x27s threshold line ("you spent on him" / "stood alone", "became your Aspect" / "turned away" / "fell back") and traces twilight.first_lines; AgeTwilightScreen.thr2229.test.tsx renders it after the fate line.',
+    },
+  },
+  // THR-2229 (plan 2026-11-14-thr-2204-put-the-god-in-the-climax slice 4): the end of
+  // the age tells this run's First from the thread edge — the Ordeal's band, whether the
+  // god paid and how hard it leaned (written with the roll), and the Return's ending.
+  {
+    id: 'first-thread-tells-the-ending',
+    producerSystem: DOOM,
+    consumerSystem: DOOM,
+    intent:
+      'What the god did with its First is kept on the First\x27s thread — how the Ordeal was leaned on and how it landed, and which Return ending closed the story — and the end of the age reads it back: the Twilight says it in beat 2, the harvest summary leads with the First\x27s ending, and Threads names a First who is gone or transcended.',
+    ulTerms: ['The First'],
+    // `applyBeatChoice` writes `ordealBand` / `ordealGodPaid` / `ordealLean` beside
+    // `ordealOutcome`; `applyReturnOutcome` writes `returnEnding`. `readFirstStory`
+    // (cycleEnd) finds the First through the thread a Return closed; `firstEndingLines`
+    // (twilight) renders the lines; `getThreadedNodes` (retinue) sets `endingWord`.
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['ordealBand', 'ordealGodPaid', 'ordealLean', 'returnEnding'],
+      module: 'src/engine/journeyEngine.ts',
+    },
+    // A death sweeps the thread: `markMortalDead` copies these facts into the god's
+    // `firstRemembered` note, which `readFirstStory` reads back.
+    writeSites: ['src/engine/journeyEngine.ts', 'src/engine/returnEngine.ts', 'src/engine/agentLifecycle.ts'],
+    readSites: ['src/engine/twilight.ts', 'src/engine/cycleEnd.ts', 'src/engine/retinue.ts'],
+    verifiedLive: {
+      date: '2026-11-15',
+      evidence: 'THR-2229. firstEnding.thr2229.test.ts: applyBeatChoice writes the Ordeal band, godPaid and lean; applyReturnOutcome writes returnEnding for all six endings; a returned First is still found by the Twilight; the Ordeal line reads pour / steady / stepped back and "still … broke"; the harvest summary leads with the First and drops the second clause when it is the First; a vanished First reads "Gone" in Threads and a transcended one "Transcended".',
+    },
   },
   // THR-1647 (plan 2026-09-27-thr-1605-the-opening S4): the opening's spine gifts
   // 1–4 wait for the player — one act (cast, avatar move, Follow) between gifts,
