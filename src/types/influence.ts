@@ -178,6 +178,8 @@ export interface ThreadEdgeProperties {
    * row ("Gone" / "Transcended"). Absent = no Return yet.
    */
   returnEnding?: import('./returnEngine').ReturnOutcome;
+  /** THR-2229 — the tick the Return closed the story; orders it against a later First's death. */
+  returnEndingTick?: number;
   /**
    * THR-2227 — how the last Apotheosis this mortal faced ended (the action's final
    * outcome), written on completion. Read by the Twilight ending (THR-2204 slice 4)

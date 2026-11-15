@@ -613,6 +613,7 @@ export function applyReturnOutcome(
     storyPhase: 'return' as const,
     // THR-2229 — which ending closed the story, for the Twilight, the harvest and Threads.
     returnEnding: outcome,
+    returnEndingTick: tick,
   };
 
   switch (outcome) {
