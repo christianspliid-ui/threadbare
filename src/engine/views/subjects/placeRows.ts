@@ -587,7 +587,7 @@ const rivalPressed: SectionResolver = (ctx) => {
   if (!view) return null;
   const line = rivalPressedNowLine(view, p.state.tick, godHoldsRebuke(p.state));
   return sentenceSection('rival_pressed', SUBJECT_ROW_LABELS.rivalPressed, [[line.answer]], 'rivalEntry.rivalPressedOn', {
-    labelTooltipId: 'ui.rival.pressed_now',
+    labelTooltipId: 'ui.rival.pressed_row',
     icon: 'rivals',
     highlight: { icon: 'rivals', headline: line.headline },
   });

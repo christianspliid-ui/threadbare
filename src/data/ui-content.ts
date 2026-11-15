@@ -556,6 +556,11 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Pressed by a rival',
     desc: '{rival} pressed it {when}.',
   },
+  // The row label's hover (a static explainer, never a fill string).
+  'ui.rival.pressed_row': {
+    label: 'A rival’s hand',
+    desc: 'Another god pressed this place, and it gave ground. For a few days you can answer it here.',
+  },
   'ui.rival.pressed_answer_rebuke': {
     label: 'How to answer it',
     desc: 'Rebuke it here, or tend it, and its next blow is turned.',

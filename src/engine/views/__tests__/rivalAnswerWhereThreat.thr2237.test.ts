@@ -30,6 +30,7 @@ import {
 } from '../rivalEntry';
 import { PLACE_ROW_RESOLVERS } from '../subjects/placeRows';
 import { rebukeFirst } from '../subjects/actOn';
+import { resolveTooltip } from '../../tooltipResolver';
 
 const GOD = 'asc.test';
 const DAY = TICKS_PER_DAY;
@@ -88,6 +89,10 @@ describe("the pressed place's Now line", () => {
     expect(row).not.toBeNull();
     expect(row && 'highlight' in row ? row.highlight : null).toEqual({ icon: 'rivals', headline: 'The Hollow Warden pressed it yesterday.' });
     expect(row && 'parts' in row ? row.parts?.join('') : '').toBe('Rebuke it here, or tend it, and its next blow is turned.');
+    // The label's hover is a static explainer: no raw {token} reaches the player (Law 43).
+    const tip = row && 'labelTooltipId' in row ? row.labelTooltipId : undefined;
+    expect(tip).toBe('ui.rival.pressed_row');
+    expect(resolveTooltip(tip!)?.desc ?? '').not.toMatch(/\{\w+\}/);
   });
 
   it('not held: the tending answer', () => {
