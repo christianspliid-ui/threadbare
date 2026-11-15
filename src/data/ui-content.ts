@@ -481,9 +481,12 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     desc: 'Advance or pause the world simulation.',
   },
   // THR-1716: the Play control's tooltip while the first-run prompt shows.
+  // THR-2238: promise only what Play keeps — it stops when a moment waits for
+  // the god's hand (`ui.chapter.waits`), and "Theirs alone" chapters
+  // (`ui.chapter.theirs_alone`) play out without the god.
   'ui.sim_first_run': {
     label: 'Let the world move',
-    desc: 'The world waits while time is still. Play lets mortals live their days; it stops again for every moment that matters.',
+    desc: 'The world waits while time is still. Play lets mortals live their days; it stops whenever a moment waits for your hand. Chapters marked "Theirs alone" play out without you; you can read them after.',
   },
   'ui.sim_speed': {
     label: 'Speed',

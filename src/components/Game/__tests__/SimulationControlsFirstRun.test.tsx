@@ -61,6 +61,14 @@ describe('SimulationControls — first-run prompt (THR-1716)', () => {
     expect((tip.desc ?? '').length).toBeLessThanOrEqual(200);
   });
 
+  it('promises only what Play keeps, in the chapter words (THR-2238)', () => {
+    const desc = UI_TOOLTIPS['ui.sim_first_run'].desc ?? '';
+    expect(desc).not.toContain('every moment that matters');
+    expect(desc).toContain('waits for your hand');
+    expect(desc).toContain(`"${UI_TOOLTIPS['ui.chapter.theirs_alone'].label}"`);
+    expect(UI_TOOLTIPS['ui.chapter.waits'].desc).toContain('waits for your hand');
+  });
+
   it('pulses at full motion', () => {
     stubMatchMedia(false);
     renderControls({ firstRunPrompt: true });
