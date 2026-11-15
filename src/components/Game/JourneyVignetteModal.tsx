@@ -248,8 +248,13 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
     if (answered) onChoice(answered.id);
   }, [answered, onChoice]);
 
+  // THR-2226 — an unrolled Ordeal is answered, never dismissed: Escape only takes back
+  // the armed lean. Closing it through `onClose` would roll the climax as a bare
+  // step-back and drop the vision before its result could show (Laws 47/48).
+  const handleOrdealEscape = useCallback(() => setArmedId(null), []);
+
   // Once answered, any close commits the answer — the god has already spoken.
-  const handleClose = answered ? handleContinue : onClose;
+  const handleClose = answered ? handleContinue : (ordealCommits ? handleOrdealEscape : onClose);
 
   const phaseName = formatPhaseName(vignette.phase);
 

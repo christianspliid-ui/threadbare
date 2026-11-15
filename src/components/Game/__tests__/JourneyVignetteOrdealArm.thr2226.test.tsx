@@ -85,6 +85,18 @@ describe('the Ordeal is armed, then fired (THR-2226, Law 48)', () => {
     expect(onChoice).toHaveBeenCalledWith('pour');
   });
 
+  it('Escape on an unrolled Ordeal takes back the lean and never rolls or closes it', () => {
+    const { onOrdealCommit, onChoice, onClose } = renderOrdeal();
+    fireEvent.click(screen.getByText('Pour everything into the thread'));
+    expect(screen.getByTestId('ordeal-commit').textContent).toBe(ORDEAL_COMMIT_LABEL);
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
+
+    expect(onClose).not.toHaveBeenCalled();
+    expect(onOrdealCommit).not.toHaveBeenCalled();
+    expect(onChoice).not.toHaveBeenCalled();
+    expect(screen.getByTestId('ordeal-commit').textContent).toBe(ORDEAL_PICK_PROMPT);
+  });
+
   it('a commit the pool cannot pay leaves the choices up', () => {
     renderOrdeal(null);
     fireEvent.click(screen.getByText('Pour everything into the thread'));
