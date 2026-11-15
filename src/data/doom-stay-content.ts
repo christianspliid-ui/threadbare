@@ -23,6 +23,12 @@ export const DOOM_STAY_HINT = 'Stay the Unmaking slows it. Holding it draws on y
 /** Fallback for `{Sphere}` when the god's primary cannot be read. */
 export const DOOM_STAY_HINT_SPHERE_FALLBACK = 'primary';
 
+/**
+ * THR-2240 — the Doom panel and Doom bar hover line while the god does not hold the
+ * card yet. Only those two surfaces show it; the stage notice stays silent (THR-2207).
+ */
+export const DOOM_STAY_NOT_HELD_LINE = 'Nothing you hold slows it yet. After its first step, you will be given a way to hold it back.';
+
 /** The Doom notice's second body line while the card is already held active. */
 export const DOOM_STAY_ACTIVE_LINE = 'You are holding it back.';
 

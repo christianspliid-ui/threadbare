@@ -26,6 +26,7 @@ import { getUITooltip } from '../../../data/ui-content';
 import type { NeedsYouRowVM, NeedsYouVM } from '../../../engine/views/needsYou';
 
 import type { GameState } from '../../../types/gameState';
+import { doomStayNotice } from '../../../engine/views/doomStayNotice';
 import type { FirstScreenReveal } from './firstScreenReveal';
 import { NEWLY_REVEALED_STYLE, type OpeningRevealShow } from './openingReveal';
 import type { OpeningRevealSurfaceId } from '../../../data/opening-reveal-table';
@@ -365,6 +366,7 @@ export function GameViewTopBar({
           journeyLabel={doomJourneyLabel}
           locked={encounterOpen}
           hideStageName={y.has('doom_name')}
+          stayLine={doomStayNotice(gameState, { includeNotHeld: true }).line}
         />
       </div>
       <FirstUseCaption id="doom" floating />

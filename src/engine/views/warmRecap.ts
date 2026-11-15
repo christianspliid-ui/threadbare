@@ -36,6 +36,7 @@ import { activeLedgerEncounters } from '../threadedChapters';
 import { getChapterTemplateName, isRoutineChapter } from '../chapterArchive';
 import { countWord, outcomeSentence } from '../aftermathWords';
 import { resolveTooltip } from '../tooltipResolver';
+import { DOOM_STAY_TEMPLATE_ID } from '../../data/doom-stay-content';
 
 // ── Constants (NFP #1) ──────────────────────────────────────────────────────
 
@@ -45,7 +46,7 @@ export const WARM_RECAP_MAX_LINES = 5;
 export const WARM_RECAP_FIRST_CHAPTERS = 2;
 /** Which lines survive the cap, most important first. Shown in story order regardless. */
 export const WARM_RECAP_KEEP_ORDER: readonly WarmRecapSlot[] = [
-  'first_finished#1', 'slipped', 'first_now', 'first_finished#2', 'grew', 'first_more',
+  'first_finished#1', 'doom', 'slipped', 'first_now', 'first_finished#2', 'grew', 'first_more',
 ];
 /** Place names listed before "and others". */
 export const WARM_RECAP_LIST_NAMES = 3;
@@ -54,7 +55,7 @@ export const WARM_RECAP_SLIPPED_FROM_BAND: DominionBand = 'touched';
 
 /** Story order: the order lines are shown in. */
 const WARM_RECAP_SHOW_ORDER: readonly WarmRecapSlot[] = [
-  'first_finished#1', 'first_finished#2', 'first_more', 'first_now', 'slipped', 'grew',
+  'first_finished#1', 'first_finished#2', 'first_more', 'first_now', 'slipped', 'grew', 'doom',
 ];
 
 // ── Types ───────────────────────────────────────────────────────────────────
@@ -63,10 +64,12 @@ export interface WarmRecapSnapshot {
   startTick: number;
   firstId: string | null;
   bands: Readonly<Record<string, DominionBand>>;
+  /** THR-2240 — the Doom stage before the warm-up; absent = no Doom line. */
+  doomStage?: number;
 }
 
-export type WarmRecapLineKind = 'first_finished' | 'first_more' | 'first_now' | 'slipped' | 'grew' | 'empty';
-type WarmRecapSlot = 'first_finished#1' | 'first_finished#2' | 'first_more' | 'first_now' | 'slipped' | 'grew';
+export type WarmRecapLineKind = 'first_finished' | 'first_more' | 'first_now' | 'slipped' | 'grew' | 'doom' | 'empty';
+type WarmRecapSlot = 'first_finished#1' | 'first_finished#2' | 'first_more' | 'first_now' | 'slipped' | 'grew' | 'doom';
 
 /** A recap run: a `ChronicleSegment`, plus the concept hover a band word carries. */
 export interface WarmRecapSegment extends ChronicleSegment {
@@ -104,6 +107,8 @@ const FALLBACK_WORDS: Record<string, string> = {
   'ui.warm_recap.rival_pressed_many': '{rival} pressed {place}.',
   'ui.warm_recap.grew_one': '{place} is {to} now.',
   'ui.warm_recap.grew_many': '{list} are more yours now.',
+  'ui.warm_recap.doom_step': 'Doom took a step while you were away: {stage}.',
+  'ui.warm_recap.doom_stay_held': 'Stay the Unmaking slows it.',
   'ui.warm_recap.empty': 'Nothing in your story changed while you were away.',
 };
 
@@ -179,7 +184,12 @@ export function readWarmRecapBands(state: GameState): Record<string, DominionBan
 
 /** Take the "before" reading. Call after the opening gifts settle, before the first tick. */
 export function snapshotWarmRecap(state: GameState, firstId: string | null, opts: WarmRecapOptions = {}): WarmRecapSnapshot {
-  return { startTick: state.tick, firstId, bands: (opts.readBands ?? readWarmRecapBands)(state) };
+  return {
+    startTick: state.tick,
+    firstId,
+    bands: (opts.readBands ?? readWarmRecapBands)(state),
+    ...(state.doomClock ? { doomStage: state.doomClock.currentStage } : {}),
+  };
 }
 
 function nodeName(state: GameState, id: string): string | null {
@@ -262,6 +272,24 @@ function withRivalPressed(
     ...(place ? { place: [place] } : {}),
   });
   return extra ? [...segs, { text: ' ' }, ...extra] : segs;
+}
+
+/**
+ * THR-2240 — "Doom took a step while you were away: {stage}." when the Doom stage rose
+ * during the window; null when it did not, or when the snapshot has no stage. The stage
+ * name falls back to the stage word so the slot always fills (Law 43).
+ */
+function doomStepLine(state: GameState, before: WarmRecapSnapshot): WarmRecapLine | null {
+  const from = before.doomStage;
+  const now = state.doomClock?.currentStage;
+  if (from === undefined || now === undefined || now <= from) return null;
+  const stageName = state.doomDefinition?.stages?.[now - 1]?.name?.trim() || 'its next stage';
+  const segs = fillSegments(words('ui.warm_recap.doom_step'), { stage: [{ text: stageName }] });
+  if (!segs) return null;
+  if ((state.unlockedActionIds ?? []).includes(DOOM_STAY_TEMPLATE_ID)) {
+    segs.push({ text: ' ' }, { text: words('ui.warm_recap.doom_stay_held') });
+  }
+  return { kind: 'doom', segments: segs };
 }
 
 // ── Build ───────────────────────────────────────────────────────────────────
@@ -357,6 +385,11 @@ export function buildWarmRecap(state: GameState, before: WarmRecapSnapshot, opts
       if (segs) slots.set('grew', { kind: 'grew', segments: segs });
     }
   }
+
+  // THR-2240 — Doom took a step during the warm-up: name the stage it reached, and
+  // that Stay the Unmaking slows it when the god already holds the card.
+  const doomLine = doomStepLine(state, before);
+  if (doomLine) slots.set('doom', doomLine);
 
   // Keep by priority, show in story order.
   const kept = new Set<WarmRecapSlot>();
