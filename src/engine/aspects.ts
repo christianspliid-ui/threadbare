@@ -368,6 +368,8 @@ export function seedApotheosisEncounters(
 
   const newSeeds: PendingEncounterSeed[] = [];
   const premonitionEvents: TickEvent[] = [];
+  // THR-2234 — a pass stamp is a graph write with no seed or event, so it bumps the version too.
+  let stamped = false;
 
   for (const edge of threadEdges) {
     const mortalId = edge.target;
@@ -398,6 +400,7 @@ export function seedApotheosisEncounters(
         });
       } else if (step === 'pass') {
         threadProps.apotheosisPassedForJourney = true;
+        stamped = true;
         emitTrace({
           tick,
           category: 'apotheosis.first_passed',
@@ -426,6 +429,7 @@ export function seedApotheosisEncounters(
     (edge.properties as ThreadEdgeProperties & { apotheosisOfferedTick?: number }).apotheosisOfferedTick = tick;
   }
 
+  if (stamped && newSeeds.length === 0 && premonitionEvents.length === 0 && runtime) touchWorld(runtime);
   if (newSeeds.length === 0 && premonitionEvents.length === 0) return {};
 
   if (runtime) touchWorld(runtime);
