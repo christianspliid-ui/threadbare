@@ -7178,7 +7178,9 @@ export const CONTRACTS: readonly Contract[] = [
       module: 'src/engine/climaxFit.ts',
     },
     writeSites: ['src/engine/climaxFit.ts'],
+    // Its readers (the Twilight ending and the agency census) are slice 4 of the plan.
     readSites: [],
+    deferralTicket: 'THR-2229',
   },
   // THR-1647 (plan 2026-09-27-thr-1605-the-opening S4): the opening's spine gifts
   // 1–4 wait for the player — one act (cast, avatar move, Follow) between gifts,
