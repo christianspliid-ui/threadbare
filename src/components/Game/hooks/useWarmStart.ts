@@ -118,6 +118,17 @@ export function parseWarmStartTicks(search: string): number {
   return Math.min(Math.floor(n), WARM_START_MAX_TICKS);
 }
 
+/**
+ * THR-2230 — whether a dev quick-start loads `devSeedAscendantTestPackage` (fixture
+ * conditions, clues and agreements; essence in every pool; a two-thirds Mandate).
+ * A warm start does not: warm playtesters judge the world a real run produces, and the
+ * package's eleven fixture Hooks and pre-filled elder pools are not in one. The plain
+ * `?view=game&seeded` route keeps it for the showcase and the Inspector lab.
+ */
+export function seedsDevTestPackage(isDevQuickStart: boolean, warmTicks: number): boolean {
+  return isDevQuickStart && warmTicks <= 0;
+}
+
 // ── Season words (Law 13: never a tick count) ───────────────────────────────
 
 const SEASON_WORDS = ['Spring', 'Summer', 'Autumn', 'Winter'] as const;

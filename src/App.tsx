@@ -18,7 +18,7 @@ import { HexV2View } from './components/HexMapV2/HexV2View';
 import { TerrainTextureLab } from './components/HexMapV2/lab/TerrainTextureLab';
 import { StartPage } from './components/StartPage/StartPage';
 import { RemembranceFlow } from './components/Remembrance/RemembranceFlow';
-import { parseWarmStartTicks } from './components/Game/hooks/useWarmStart';
+import { parseWarmStartTicks, seedsDevTestPackage } from './components/Game/hooks/useWarmStart';
 import { parseDoomArchetypeParam, DEV_SHOWCASE_DOOM_ARCHETYPE } from './engine/doomArchetypeSelection';
 import type { AccountRecord, LoadedAccount } from './types/account';
 import { loadAccount, saveAccount } from './engine/accountStore';
@@ -309,7 +309,8 @@ function App() {
         mapSize={resolvedMapSize}
         ascendantIdentity={gamePhase.identity}
         seedFirst={devSeedFirst}
-        seedTestPackage={isDevQuickStart}
+        // THR-2230: a warm start arrives in a real world — no dev fixture package.
+        seedTestPackage={seedsDevTestPackage(isDevQuickStart, warmTicks)}
         placeAvatarForMeeting={isDevQuickStart && devFlags.firstUnmet}
         warmTicks={warmTicks}
         doomArchetype={doomArchetype}
