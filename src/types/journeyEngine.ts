@@ -100,6 +100,13 @@ export const MAX_PENDING_VIGNETTES = 5;
 export const ORDEAL_SET_ASIDE_TICKS = 3;
 
 /**
+ * THR-2226 — how many times one Ordeal may be set aside. A set-aside vision stays
+ * queued, and a queued vision holds the First's journey (no Return, no force-fire), so
+ * the deferral is bounded: past the cap, Escape takes the step-back and shows its roll.
+ */
+export const ORDEAL_SET_ASIDE_MAX = 2;
+
+/**
  * THR-1854: a beat choice declares `reachChanges` on the 0–1 scale the meeting's
  * dilemmas use; the First's `domainCapabilities` are raw (10–40). The meeting converts
  * with the same ×100 when it mints the First (`createAgentFromMeeting`), so a journey

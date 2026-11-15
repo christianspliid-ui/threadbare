@@ -166,7 +166,7 @@ import {
 } from './encounterNotificationRuntime';
 import type { MeetingEncounterState, MeetingEncounterResult } from '../../types/meetingEncounter';
 import type { CommittedOrdeal, JourneyVignetteData, PendingVignette } from '../../types/journeyEngine';
-import { ORDEAL_SET_ASIDE_TICKS } from '../../types/journeyEngine';
+import { ORDEAL_SET_ASIDE_MAX, ORDEAL_SET_ASIDE_TICKS } from '../../types/journeyEngine';
 import { readOrdealResult, recordJourneyChoice } from '../../engine/journeyEngine';
 import { recordStoryBeatDismissed } from '../../engine/phaseAttention';
 import { getThreadsFrom } from '../../engine/graphQueries';
@@ -2076,7 +2076,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // the offer affordance. THR-1744: a gift waits while a journey vignette is pending, so
   // two held decisions open one at a time. THR-1809: the entry itself is decided by
   // `resolveGiftDelivery` (the effect sits after `interruptResolution`, which it reads).
-  const journeyVignettePending = (gameState.pendingVignettes?.length ?? 0) > 0;
+  // THR-2226 — unrolled Ordeals Escape set aside, keyed by vision id → the tick it
+  // returns on and how often it was set aside. A set-aside vision stays queued (never
+  // rolled, never paid) and is skipped until its tick comes round — and while it is
+  // skipped it holds nothing on screen, so it does not hold a gift either.
+  const [asideVignettes, setAsideVignettes] = useState<ReadonlyMap<string, { returnTick: number; count: number }>>(() => new Map());
+  const journeyVignettePending = (gameState.pendingVignettes ?? [])
+    .some(v => (asideVignettes.get(v.id)?.returnTick ?? 0) <= gameState.tick);
 
   const retinueActiveEncounters = useMemo(() => {
     const map = new Map<string, { encounter: ActiveEncounterDisplay; template: UnifiedActionTemplate }>();
@@ -3541,15 +3547,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [warmStart.running, getFirstThreadEdge, gameState.graph]);
 
   // ── Journey vignette (auto-interrupt for The First) ──
-  // THR-2226 — unrolled Ordeals Escape set aside, keyed by vision id → the tick it
-  // returns on. A set-aside vision stays queued (never rolled, never paid) and is
-  // skipped until its tick comes round.
-  const [asideVignettes, setAsideVignettes] = useState<ReadonlyMap<string, number>>(() => new Map());
   const activeVignette: PendingVignette | null = useMemo(() => {
     const pending = gameState.pendingVignettes;
     if (!pending || pending.length === 0) return null;
     // Highest priority first (already sorted by engine), skipping a set-aside Ordeal.
-    return pending.find(v => (asideVignettes.get(v.id) ?? 0) <= gameState.tick) ?? null;
+    return pending.find(v => (asideVignettes.get(v.id)?.returnTick ?? 0) <= gameState.tick) ?? null;
   }, [gameState.pendingVignettes, asideVignettes, gameState.tick]);
 
   // ── Story beat modal (pacing governor) ──
@@ -4416,16 +4418,22 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const handleOrdealSetAside = useCallback(() => {
     if (!activeVignette || committedOrdealsRef.current.has(activeVignette.id)) return;
     const vignetteId = activeVignette.id;
+    const count = (asideVignettes.get(vignetteId)?.count ?? 0) + 1;
+    if (count > ORDEAL_SET_ASIDE_MAX) return; // the host stops offering it past the cap
     const returnTick = gameState.tick + ORDEAL_SET_ASIDE_TICKS;
-    setAsideVignettes(prev => new Map(prev).set(vignetteId, returnTick));
+    setAsideVignettes(prev => new Map(prev).set(vignetteId, { returnTick, count }));
     handlePushToast({
       id: `ordeal-aside-${vignetteId}-${gameState.tick}`,
-      message: ordealSetAsideLine(activeVignette.data.agentName, ORDEAL_SET_ASIDE_TICKS),
+      message: ordealSetAsideLine(activeVignette.data.agentName, ORDEAL_SET_ASIDE_TICKS, count >= ORDEAL_SET_ASIDE_MAX),
       count: 1,
       createdTick: gameState.tick,
       expiresAt: Date.now() + NUDGE_REJECT_TOAST_MS,
     });
-  }, [activeVignette, gameState.tick, handlePushToast]);
+  }, [activeVignette, asideVignettes, gameState.tick, handlePushToast]);
+  // THR-2226 — past ORDEAL_SET_ASIDE_MAX the set-aside is not offered: a queued vision
+  // holds the First's journey, so the Ordeal cannot be deferred forever.
+  const ordealSetAsideOffered = !!activeVignette
+    && (asideVignettes.get(activeVignette.id)?.count ?? 0) < ORDEAL_SET_ASIDE_MAX;
 
   // ── Debug levers (THR-1881) ──
   // Every `window.__DEBUG` registration and the `?spawn` / `?undertaking` / `?spell` /
@@ -4997,7 +5005,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         handleJourneyChoice={handleJourneyChoice}
         handleOrdealCommit={handleOrdealCommit}
         getCommittedOrdeal={getCommittedOrdeal}
-        handleOrdealSetAside={handleOrdealSetAside}
+        handleOrdealSetAside={ordealSetAsideOffered ? handleOrdealSetAside : undefined}
         activeStoryBeatId={activeStoryBeatId}
         activeStoryBeatTemplate={activeStoryBeatTemplate}
         activeStoryBeatAgentName={activeStoryBeatAgentName}
