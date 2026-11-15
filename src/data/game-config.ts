@@ -170,8 +170,13 @@ export const MANDATE_DEED_BAND_FACTOR = {
   critical_failure: 0.1,
 } as const;
 
-/** One day of ledger change decides the Mandate's trend word (12 = `TICKS_PER_DAY`). */
-export const MANDATE_TREND_WINDOW_TICKS = 12;
+/**
+ * Three days of ledger change decide the Mandate's trend word (36 = 3 × `TICKS_PER_DAY`).
+ * THR-2208 read one day (12); THR-2236 widened it, because a chapter that offers a move
+ * comes about every 25 ticks, so "Rising" lapsed to "Holding" before the next chance and
+ * read as progress lost.
+ */
+export const MANDATE_TREND_WINDOW_TICKS = 36;
 
 /** A deed crediting at least this many points reads "raised … far". */
 export const MANDATE_DEED_STRONG_POINTS = 4;

@@ -1,7 +1,7 @@
 /**
  * THR-2154 — the goal says what fills it: the Mandate row leads with the hunger's own
  * words (`def.description`, not the stage description), counts the mortals bound to
- * the god, and says their deeds count.
+ * the god, and says their deeds count. Strings updated by THR-2236 (the line names the spend).
  */
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../../graph';
@@ -55,19 +55,19 @@ describe('selectMandateRow — THR-2154', () => {
   it('n = 0: only the god fills it', () => {
     const row = selectMandateRow(stateWith(0))!;
     expect(row.boundCount).toBe(0);
-    expect(row.fillLine).toBe('Filled by what you raise in Life and Spirit.');
+    expect(row.fillLine).toBe('Rises when you spend Life or Spirit essence on places.');
   });
 
   it('n = 1: the one mortal bound to you', () => {
     const row = selectMandateRow(stateWith(1))!;
     expect(row.boundCount).toBe(1);
-    expect(row.fillLine).toBe('Filled by what you and the one mortal bound to you raise in Life and Spirit.');
+    expect(row.fillLine).toBe("Rises when you spend Life or Spirit essence on Mortal 0's chapters, or on places.");
   });
 
   it('n = 3: the count is spelled out, the avatar is not counted', () => {
     const row = selectMandateRow(stateWith(3))!;
     expect(row.boundCount).toBe(3);
-    expect(row.fillLine).toBe('Filled by what you and the three mortals bound to you raise in Life and Spirit.');
+    expect(row.fillLine).toBe('Rises when you spend Life or Spirit essence on the chapters of the three mortals bound to you, or on places.');
   });
 
   it('a threaded artifact is not a mortal', () => {
@@ -89,11 +89,11 @@ describe('selectMandateRow — THR-2154', () => {
   });
 
   it('the fill line survives a hunger with one sphere or none', () => {
-    expect(mandateFillLine(0, 'zero', ['Life'])).toBe('Filled by what you raise in Life.');
-    expect(mandateFillLine(2, 'two', [])).toBe('Filled by what you and the two mortals bound to you raise in your spheres.');
+    expect(mandateFillLine(0, 'zero', ['Life'])).toBe('Rises when you spend Life essence on places.');
+    expect(mandateFillLine(2, 'two', [])).toBe("Rises when you spend your spheres' essence on the chapters of the two mortals bound to you, or on places.");
   });
 
   it('the detail line names the bound mortals', () => {
-    expect(MANDATE_RAISED_BY_LINE).toBe('Raised by your hand and the deeds of the mortals bound to you');
+    expect(MANDATE_RAISED_BY_LINE).toBe("Raised when you spend this essence on a bound mortal's chapter, or on a place.");
   });
 });

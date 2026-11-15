@@ -445,8 +445,9 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Active Mandates',
     // THR-2004 — a mandate neither slows the Doom nor grants essence: a checkpoint kept
     // well banks counter-omens that soften the next stage (phaseDoom computeEscalationSeverity).
-    // THR-2208 — the trend word reads the last day, and a bound mortal's deeds count.
-    desc: 'The second clock, racing the {{ui.doom_bar}}; keep a checkpoint well to blunt the doom\'s next blow. Rising or Slipping: how it moved today. Cards in its spheres count for a mortal bound to you.',
+    // THR-2208 — a bound mortal's deeds count. THR-2236 — the trend word reads the last
+    // three days (MANDATE_TREND_WINDOW_TICKS), and the line names the act that counts.
+    desc: 'Races the {{ui.doom_bar}}; a kept checkpoint blunts its next blow. Rising or Slipping: how it moved in the last three days. Any card you play for a mortal bound to you, paid in its spheres, counts.',
   },
 
   // ─── Ascendant identity (THR-1118) ─────────────────────────────
