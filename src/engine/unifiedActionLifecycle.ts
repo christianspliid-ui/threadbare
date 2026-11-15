@@ -58,6 +58,19 @@ export function resolveStepDefinition(
 }
 
 /**
+ * THR-2227 — did the god commit at least one card anywhere in this chapter? A card
+ * on an earlier step (`cardsCommitted`, set as the spent hand is cleared), a card on
+ * the current or final step (`activeNudges`), or a remembered nudge commit.
+ */
+export function actionGodPaid(
+  action: Pick<UnifiedAction, 'activeNudges' | 'choiceHistory'> & Partial<Pick<UnifiedAction, 'cardsCommitted'>>,
+): boolean {
+  if (action.cardsCommitted === true) return true;
+  if ((action.activeNudges?.length ?? 0) > 0) return true;
+  return (action.choiceHistory ?? []).some((c) => c.interventionType === 'nudge_committed');
+}
+
+/**
  * THR-2227 — hand back the step with its stored climax fit applied: the fitted
  * difficulty on a `fitBareForecast` step, the earned slots on a `dealEarned` step's
  * deal count. A fit for another step, or a step that asks for neither, comes back
@@ -301,6 +314,12 @@ export function advanceStep(
   // the god was there, so the chapter's ending still stops for them.
   if (action.activeNudges !== undefined && action.activeNudges.length === 0) {
     withoutSpentHand.emptyHandCommitted = true;
+  }
+  // THR-2227 — a hand with cards in it was paid for; keep that fact too. The
+  // choice-history entry cannot carry it on a pole or branch step (the decided
+  // pole replaces it at the same step index).
+  if ((action.activeNudges?.length ?? 0) > 0) {
+    withoutSpentHand.cardsCommitted = true;
   }
 
   return {

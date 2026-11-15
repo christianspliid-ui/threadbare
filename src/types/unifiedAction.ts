@@ -3421,6 +3421,12 @@ export interface UnifiedAction {
    */
   readonly emptyHandCommitted?: true;
   /**
+   * THR-2227 — the god committed at least one card on a step of this chapter that
+   * has since advanced (set as the spent hand is cleared). Read through
+   * `actionGodPaid`. Absent on older records ⇒ unknown, read as not.
+   */
+  readonly cardsCommitted?: true;
+  /**
    * THR-2227 — the fitted climax step: computed once when a step carrying
    * `fitBareForecast` (or `dealEarned`) is entered, and read by every derivation
    * of that step through `resolveStepDefinition`. Keyed by `stepIndex`, so a

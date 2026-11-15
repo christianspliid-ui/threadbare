@@ -7135,6 +7135,51 @@ export const CONTRACTS: readonly Contract[] = [
       evidence: 'THR-2226. ordealRollAndVisionScene.thr2226.test.ts: every LOCATION_SUBTYPES entry and every undertaking verb maps to an activity; a shrine reads worship and a battleground conflict; over 200 seeds a worship scene picks the worship-tagged variant over a conflict-only one scored higher, and with no fitting variant the tagged one still plays.',
     },
   },
+  // THR-2227 (plan 2026-11-14-thr-2204-put-the-god-in-the-climax, slice 2): the
+  // Apotheosis is the biggest hand of the run, at the step that decides it.
+  {
+    id: 'climax-fit-sizes-apotheosis-hand',
+    producerSystem: DOOM,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'When an Apotheosis step is entered, its difficulty is fitted once so the no-card forecast reads "Uncertain" for this mortal, and the First\x27s chapters the god paid into earn up to two extra cards on the deciding step; the Stage, the forecast and the roll all read that one stored value, and no other step\x27s hand changes.',
+    ulTerms: ['The First'],
+    // `ensureClimaxFits` (orchestrator, after unified_action_progress and after
+    // encounter_seeding) → `UnifiedAction.climaxFit` → `resolveStepDefinition` hands
+    // every reader the fitted difficulty and the earned `deal.count`; `dealHand` reads
+    // the step\x27s own `handMax` / `handMaxTotalDelta`. Earned slots read
+    // `chapterArchive[].godPaid` via `apotheosisEarnedSlots`.
+    mechanism: {
+      kind: 'state-field',
+      symbols: ['climaxFit', 'ensureClimaxFits', 'apotheosisEarnedSlots'],
+      module: 'src/engine/climaxFit.ts',
+    },
+    writeSites: ['src/engine/climaxFit.ts', 'src/engine/orchestrator.ts', 'src/engine/chapterArchive.ts'],
+    readSites: [
+      'src/engine/unifiedActionLifecycle.ts',
+      'src/engine/encounters/dealHand.ts',
+      'src/engine/views/stage/buildNudgePhaseModel.ts',
+    ],
+    verifiedLive: {
+      date: '2026-11-15',
+      evidence: 'THR-2227. agency census, seeds 42 / 7 / 1234 to tick 470: every Apotheosis step 1 was held with 8 cards (hands-off) and its bare chance read uncertain (0.41-0.50); the played arm dealt 9 with the arrival line on seeds 7 and 1234. climaxFit.test.ts pins the earned slots, the stored fit and that no other library step changes its dealer ceiling.',
+    },
+  },
+  {
+    id: 'apotheosis-result-writes-thread-edge',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: DOOM,
+    intent:
+      'When an Apotheosis ends, how it ended and whether the god played a card in it are written to the mortal\x27s thread edge once, for the ending and the agency census to read.',
+    ulTerms: ['The First'],
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['apotheosisBand', 'apotheosisGodPaid', 'recordApotheosisResults'],
+      module: 'src/engine/climaxFit.ts',
+    },
+    writeSites: ['src/engine/climaxFit.ts'],
+    readSites: [],
+  },
   // THR-1647 (plan 2026-09-27-thr-1605-the-opening S4): the opening's spine gifts
   // 1–4 wait for the player — one act (cast, avatar move, Follow) between gifts,
   // or an idle fallback — instead of arriving back to back on a turn timer.

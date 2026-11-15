@@ -45,10 +45,9 @@ import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { getAnyEncounterById } from '../data/encounter-content';
 import { isBranchingTemplate, isFactoryEncounterTemplate } from './kpi/gameplayKpi';
 import { enrichProse, gatherNarrativeContext, resolveEncounterTitle } from './proseEnrichment';
-import { resolveStepDefinition } from './unifiedActionLifecycle';
+import { actionGodPaid, resolveStepDefinition } from './unifiedActionLifecycle';
 import { stepOutcomeToOutcomeBand } from '../data/outcome-band-content';
 import { emitTrace } from './traceBuffer';
-import { NUDGE_COMMIT_INTERVENTION_TYPE } from './encounterChoiceMemory';
 import { rememberedStakesLine } from './encounters/stakesLine';
 import type { ChapterArchivedTrace } from '../types/trace';
 
@@ -164,8 +163,7 @@ export function buildChapterRecord(
     // THR-2068 — the god compelled this chapter; the archive raises its done line.
     ...(action.compelledByGod ? { compelled: true as const } : {}),
     // THR-2227 — the god committed a card on some step (the Apotheosis's earned slots).
-    ...((action.choiceHistory ?? []).some((c) => c.interventionType === NUDGE_COMMIT_INTERVENTION_TYPE)
-      ? { godPaid: true as const } : {}),
+    ...(actionGodPaid(action) ? { godPaid: true as const } : {}),
     participants,
     eventNodeId: action.eventNodeId,
     aftermathProse: action.aftermathSummary?.overview,

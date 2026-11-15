@@ -32,13 +32,12 @@ import {
   NUDGE_ESSENCE_COST_SCALE,
 } from '../data/nudge-constants';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
-import { resolveStepDefinition } from './unifiedActionLifecycle';
+import { actionGodPaid, resolveStepDefinition } from './unifiedActionLifecycle';
 import { computeBaseStepForecast } from './views/stage/baseStepForecast';
 import { collectHeldTraitIds, resolveTraitVariants } from './encounters/nudges';
 import { composeDealtStepFromState } from './encounters/dealHand';
 import { fitDifficultyToForecast } from './scaledForecast';
 import { emitTrace } from './traceBuffer';
-import { NUDGE_COMMIT_INTERVENTION_TYPE } from './encounterChoiceMemory';
 import { APOTHEOSIS_ENCOUNTER_TEMPLATE_ID } from '../data/aspect-content';
 import type { ThreadEdgeProperties } from '../types/influence';
 
@@ -205,8 +204,7 @@ export function recordApotheosisResults(state: GameState): boolean {
       const props = edge.properties as unknown as ThreadEdgeProperties;
       if (props.apotheosisResultActionId === action.actionId) continue;
       props.apotheosisBand = action.outcome;
-      props.apotheosisGodPaid = (action.choiceHistory ?? [])
-        .some((c) => c.interventionType === NUDGE_COMMIT_INTERVENTION_TYPE);
+      props.apotheosisGodPaid = actionGodPaid(action);
       props.apotheosisResultActionId = action.actionId;
       wrote = true;
     } catch {
