@@ -171,7 +171,7 @@ function getCurrentStep(
   template: UnifiedActionTemplate,
   action: UnifiedAction,
 ): ActionStep {
-  return resolveStepDefinition(template, action.currentStep, action.choiceHistory);
+  return resolveStepDefinition(template, action.currentStep, action.choiceHistory, action.climaxFit);
 }
 
 /** Last-resort opening line when a template carries neither template-level nor
@@ -594,7 +594,7 @@ function buildHistory(
       outcome = activeAction.stepOutcomes[index];
       const success = isStepSuccess(outcome);
       // Use authored afterimage text if available, otherwise fall back to bare status
-      const resolvedStep = resolveStepDefinition(template, index, activeAction.choiceHistory);
+      const resolvedStep = resolveStepDefinition(template, index, activeAction.choiceHistory, activeAction.climaxFit);
       // THR-1041: resolve the band the step actually landed on, not just
       // success-vs-failure. A `critical_failure` afterimage an author wrote was
       // reaching the chapter ledger and never reaching Scene So Far, because

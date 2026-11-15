@@ -14,7 +14,7 @@
 import type { WorldGraph } from './graph';
 import type { GraphEdge } from '../types/graph';
 import type { AspectEdgeProperties, InfluenceTier, ThreadEdgeProperties } from '../types/influence';
-import type { GameState } from '../types/gameState';
+import type { GameState, TickEvent } from '../types/gameState';
 import type { PendingEncounterSeed } from '../types/unifiedAction';
 import type { SimulationRuntime } from './simulationRuntime';
 import { touchWorld } from './simulationRuntime';
@@ -25,7 +25,10 @@ import {
   ASPECT_REOFFER_COOLDOWN_TICKS,
   ASPECT_GRAVITY_BONUS,
   APOTHEOSIS_ENCOUNTER_TEMPLATE_ID,
+  APOTHEOSIS_PREMONITION_LINE,
 } from '../data/aspect-content';
+import { APOTHEOSIS_PREMONITION_LEAD_TICKS } from '../data/nudge-constants';
+import { fillApotheosisLine } from './apotheosisLines';
 
 // ─── Selectors ───────────────────────────────────────────────────────
 
@@ -161,6 +164,41 @@ export function isApotheosisEligible(threadEdge: GraphEdge, tick: number): boole
   return true;
 }
 
+/** The thread edge's apotheosis bookkeeping (stamped in place, like the offer tick). */
+type ApotheosisThreadProps = ThreadEdgeProperties & {
+  apotheosisOfferedTick?: number;
+  /** THR-2227 — the tick the premonition for the coming offer fired. */
+  apotheosisPremonitionTick?: number;
+};
+
+/**
+ * THR-2227 — ticks until this tier-4 thread is offered the Apotheosis: the rest of
+ * the eligibility hold, or the rest of the re-offer cooldown, whichever is longer.
+ * `Infinity` below tier 4 (no offer is coming).
+ */
+export function ticksUntilApotheosisOffer(threadEdge: GraphEdge, tick: number): number {
+  const props = threadEdge.properties as unknown as ApotheosisThreadProps;
+  if (props.tier !== 4) return Number.POSITIVE_INFINITY;
+  const holdLeft = ASPECT_ELIGIBILITY_TICKS - (props.ticksAtCurrentTier ?? 0);
+  const coolLeft = typeof props.apotheosisOfferedTick === 'number'
+    ? ASPECT_REOFFER_COOLDOWN_TICKS - (tick - props.apotheosisOfferedTick)
+    : 0;
+  return Math.max(0, holdLeft, coolLeft);
+}
+
+/**
+ * THR-2227 — is the premonition due? Once per offer: when the offer is
+ * `APOTHEOSIS_PREMONITION_LEAD_TICKS` away or closer and no premonition has fired
+ * since the last offer.
+ */
+export function apotheosisPremonitionDue(threadEdge: GraphEdge, tick: number): boolean {
+  const props = threadEdge.properties as unknown as ApotheosisThreadProps;
+  if (props.tier !== 4) return false;
+  const lastOffer = typeof props.apotheosisOfferedTick === 'number' ? props.apotheosisOfferedTick : Number.NEGATIVE_INFINITY;
+  if (typeof props.apotheosisPremonitionTick === 'number' && props.apotheosisPremonitionTick > lastOffer) return false;
+  return ticksUntilApotheosisOffer(threadEdge, tick) <= APOTHEOSIS_PREMONITION_LEAD_TICKS;
+}
+
 /**
  * Tick phase: seed the bespoke apotheosis capstone onto any tier-4 mortal that
  * has held the top rung long enough and is not already an Aspect. Pushes
@@ -196,6 +234,7 @@ export function seedApotheosisEncounters(
   );
 
   const newSeeds: PendingEncounterSeed[] = [];
+  const premonitionEvents: TickEvent[] = [];
 
   for (const edge of threadEdges) {
     const mortalId = edge.target;
@@ -205,6 +244,35 @@ export function seedApotheosisEncounters(
     const mortalNode = graph.getNode(mortalId);
     if (!mortalNode || mortalNode.properties.actorType !== 'individual') continue;
     if (mortalNode.properties.deceased === true) continue;
+
+    // THR-2227 — the premonition: once per offer, when the offer comes into view
+    // (the eligibility hold starts), so a god can save essence for it. It always
+    // lands on an earlier tick than the offer: a tick that fires it seeds nothing.
+    if (apotheosisPremonitionDue(edge, tick)) {
+      const props = edge.properties as unknown as ApotheosisThreadProps;
+      props.apotheosisPremonitionTick = tick;
+      const message = fillApotheosisLine(APOTHEOSIS_PREMONITION_LINE, mortalNode.name, mortalNode.properties.gender);
+      premonitionEvents.push({
+        id: `apotheosis_premonition_${mortalId}_${tick}`,
+        tick,
+        type: 'divine_premonition',
+        message,
+        significance: 0.7,
+        isInterventionBeat: true,
+        actorId: mortalId,
+        notification: { channel: 'toast' },
+      });
+      emitTrace({
+        tick,
+        category: 'apotheosis.premonition',
+        agentId: mortalId,
+        mortalId,
+        ticksUntilOffer: ticksUntilApotheosisOffer(edge, tick),
+        summary: `apotheosis.premonition: ${mortalId} nears the threshold`,
+      });
+      continue;
+    }
+
     if (!isApotheosisEligible(edge, tick)) continue;
 
     newSeeds.push({
@@ -226,10 +294,13 @@ export function seedApotheosisEncounters(
     (edge.properties as ThreadEdgeProperties & { apotheosisOfferedTick?: number }).apotheosisOfferedTick = tick;
   }
 
-  if (newSeeds.length === 0) return {};
+  if (newSeeds.length === 0 && premonitionEvents.length === 0) return {};
 
   if (runtime) touchWorld(runtime);
-  return { pendingEncounterSeeds: [...existingSeeds, ...newSeeds] };
+  return {
+    ...(newSeeds.length > 0 ? { pendingEncounterSeeds: [...existingSeeds, ...newSeeds] } : {}),
+    ...(premonitionEvents.length > 0 ? { tickEvents: [...(state.tickEvents ?? []), ...premonitionEvents] } : {}),
+  };
 }
 
 // ─── Death → mythic echo ───────────────────────────────────────────────

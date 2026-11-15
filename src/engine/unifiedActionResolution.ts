@@ -664,7 +664,7 @@ export function decideStepCast(
   try {
     if (action.source === 'player') return null;
     const step = resolvedStep ?? composeDealtStepFromState(
-      resolveStepDefinition(template, action.currentStep, action.choiceHistory),
+      resolveStepDefinition(template, action.currentStep, action.choiceHistory, action.climaxFit),
       state,
     ).step;
     if (!step || step.difficulty === 0 || checkFightContinuation(state, action, step)) return null;
@@ -779,7 +779,7 @@ export function previewStepProbability(
 ): number | undefined {
   const probeAction = activeNudges ? { ...action, activeNudges: [...activeNudges] } : action;
   const step = composeDealtStepFromState(
-    resolveStepDefinition(template, probeAction.currentStep, probeAction.choiceHistory),
+    resolveStepDefinition(template, probeAction.currentStep, probeAction.choiceHistory, probeAction.climaxFit),
     state,
   ).step;
   if (!step || checkFightContinuation(state, probeAction, step)) return undefined;
@@ -814,7 +814,7 @@ export function resolveUncontestedStep(
   // A step with no `deal` comes back by reference, so this is a no-op for every
   // shipped template.
   const step = composeDealtStepFromState(
-    resolveStepDefinition(template, action.currentStep, action.choiceHistory),
+    resolveStepDefinition(template, action.currentStep, action.choiceHistory, action.climaxFit),
     state,
   ).step;
   const noPushResist = { pushAttempted: false, pushCost: 0, resistAttempted: false, resistSucceeded: false, resistCost: 0 };
@@ -1613,7 +1613,7 @@ function applyGateDutyBranchConsequences(
     return { clearanceGateStates: nextStates, reputationDelta: 0, suffix: '' };
   }
 
-  if (!resolveStepDefinition(template, action.currentStep, action.choiceHistory)) {
+  if (!resolveStepDefinition(template, action.currentStep, action.choiceHistory, action.climaxFit)) {
     return { clearanceGateStates: nextStates, reputationDelta: 0, suffix: '' };
   }
 
@@ -2334,7 +2334,7 @@ export function executeStepResult(
   // THR-1543 (fight block §12) — a fight step draws only mid-fight events, and
   // names its opponent. The step definition is resolved once more below for the
   // handler; both reads are pure.
-  const complicationFightStep = resolveStepDefinition(template, action.currentStep, action.choiceHistory);
+  const complicationFightStep = resolveStepDefinition(template, action.currentStep, action.choiceHistory, action.climaxFit);
   const complicationFight = fightRoleOf(complicationFightStep)
     ? fightComplicationScope(state, action, complicationFightStep)
     : undefined;
@@ -2358,7 +2358,7 @@ export function executeStepResult(
     // resolved at (`FIGHT_STEP_SCALE`), not the template's.
     critFailureSeverity: resolveCritFailureSeverity(stepScaleFor(
       template,
-      resolveStepDefinition(template, action.currentStep, action.choiceHistory),
+      resolveStepDefinition(template, action.currentStep, action.choiceHistory, action.climaxFit),
     )),
     ...(complicationFight ? { fight: complicationFight } : {}),
   };
@@ -2367,7 +2367,7 @@ export function executeStepResult(
   // Phase 6: Gate removed for success tiers — all templates receive band-differentiated consequences
   // THR-1539 — a fight step's quintessence is its own harm (queued by the fight
   // handler below), so the generic band quintessence event is skipped for it.
-  const fightStepDef = resolveStepDefinition(template, action.currentStep, action.choiceHistory);
+  const fightStepDef = resolveStepDefinition(template, action.currentStep, action.choiceHistory, action.climaxFit);
   const consequence = computeOutcomeConsequence(
     action.templateId, outcome, action.actorId, tick,
     resolutionStats?.noComplications ? undefined : complicationContext,
@@ -2462,7 +2462,7 @@ export function executeStepResult(
   // hand, which is precisely the kind of drift that only surfaces once the
   // corpus lands (THR-1248) and then reads as a branch bug.
   const step = composeDealtStepFromState(
-    resolveStepDefinition(template, action.currentStep, action.choiceHistory),
+    resolveStepDefinition(template, action.currentStep, action.choiceHistory, action.climaxFit),
     state,
   ).step;
   // THR-1537 (plan doc §3c) — below, every post-roll reader of the step's reach
@@ -3396,7 +3396,7 @@ function executeFightNoRollEnd(
   runtime?: SimulationRuntime,
 ): { updatedAction: UnifiedAction; events: TickEvent[] } {
   const events: TickEvent[] = [];
-  const step = resolveStepDefinition(template, action.currentStep, action.choiceHistory);
+  const step = resolveStepDefinition(template, action.currentStep, action.choiceHistory, action.climaxFit);
   const midFight = action.fightState !== undefined;
   const outcome = FIGHT_RESULT_ACTION_OUTCOME.broke_off;
 

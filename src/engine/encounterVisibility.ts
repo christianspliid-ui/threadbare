@@ -666,7 +666,7 @@ export function phaseEncounterVisibility(
     const encounterName = encounter?.name ?? unifiedTemplate?.name ?? action.templateId;
     const resolvedTemplate = unifiedTemplate ?? undefined;
     const currentStep = resolvedTemplate
-      ? resolveStepDefinition(resolvedTemplate, stepIndex, action.choiceHistory)
+      ? resolveStepDefinition(resolvedTemplate, stepIndex, action.choiceHistory, action.climaxFit)
       : undefined;
     // The band of the step that just resolved (currentStep advanced past it).
     const lastResolvedOutcome = action.stepOutcomes.length > 0

@@ -920,6 +920,13 @@ export interface EncounterStageNudgePhaseModel {
   actionId: string;
   templateId: string;
   stepIndex: number;
+  /**
+   * THR-2227 — the climax step's line above the hand, state-backed (Law 56):
+   * `arrival` only when earned cards made the hand larger than any other chapter's
+   * (`DEAL_HAND_MAX`); `empty_purse` when no card on the step can be paid for.
+   * Absent on every other step.
+   */
+  climaxLine?: { readonly kind: 'arrival' | 'empty_purse'; readonly text: string };
   motive?: EncounterStageMotiveModel;
   testPanel: EncounterStageTestPanelModel;
   /** Forecast with no nudges committed — the hand recomputes from here. */

@@ -138,6 +138,7 @@ export type TraceCategory =
   | 'founded_place_culture' // THR-1839
   | 'journey.choice_applied' // THR-1854: what a journey choice moved on the First
   | 'journey.vision_scene' | 'journey.ordeal_roll' // THR-2226: the vision's scene; the Ordeal's roll
+  | 'apotheosis.hand_built' | 'apotheosis.premonition' // THR-2227: the climax hand on entry; its warning
   | 'hex_state' | 'unrest_tick' | 'saturation_tick' | 'location_trait' | 'artifact_trait'
   // THR-1934 — unrest as pressure
   | 'unrest.target' | 'unrest.leave' | 'unrest.leave.none' | 'unrest.leave.skipped' | 'unrest.riot_seed'
@@ -820,6 +821,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'founded_place_culture',
   'journey.choice_applied',
   'journey.vision_scene', 'journey.ordeal_roll',
+  'apotheosis.hand_built', 'apotheosis.premonition',
   'hex_state', 'unrest_tick', 'saturation_tick', 'location_trait', 'artifact_trait',
   'unrest.target', 'unrest.leave', 'unrest.leave.none', 'unrest.leave.skipped', 'unrest.riot_seed',
   'larder.seed',
@@ -2503,6 +2505,32 @@ export interface JourneyOrdealRollTrace extends TraceBase {
   band: StepOutcome;
   outcome: OrdealOutcome;
   godPaid: boolean;
+}
+
+/**
+ * Trace: an Apotheosis step was entered and its hand built (THR-2227) — one per
+ * step entry. `bareChance` is the fitted no-card chance; `earned` the cards the
+ * First's paid chapters added; `payable` a coarse count of cards the purse covers.
+ */
+export interface ApotheosisHandBuiltTrace extends TraceBase {
+  category: 'apotheosis.hand_built';
+  actorId: string;
+  actionId: string;
+  stepIndex: number;
+  authored: number;
+  dealt: number;
+  earned: number;
+  payable: number;
+  fittedDifficulty: number;
+  bareChance: number;
+  fitted: boolean;
+}
+
+/** Trace: the Apotheosis premonition fired for a mortal (THR-2227), once per offer. */
+export interface ApotheosisPremonitionTrace extends TraceBase {
+  category: 'apotheosis.premonition';
+  mortalId: string;
+  ticksUntilOffer: number;
 }
 
 /** Trace: settlement changes tier (hamlet↔town↔city) via sustained prosperity */
@@ -5704,6 +5732,8 @@ export type TraceEntry =
   | JourneyChoiceAppliedTrace
   | JourneyVisionSceneTrace
   | JourneyOrdealRollTrace
+  | ApotheosisHandBuiltTrace
+  | ApotheosisPremonitionTrace
   | LocationTraitTrace
   | BattleRecordedTrace
   | FightRecordedTrace

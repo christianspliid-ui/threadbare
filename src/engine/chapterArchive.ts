@@ -48,6 +48,7 @@ import { enrichProse, gatherNarrativeContext, resolveEncounterTitle } from './pr
 import { resolveStepDefinition } from './unifiedActionLifecycle';
 import { stepOutcomeToOutcomeBand } from '../data/outcome-band-content';
 import { emitTrace } from './traceBuffer';
+import { NUDGE_COMMIT_INTERVENTION_TYPE } from './encounterChoiceMemory';
 import { rememberedStakesLine } from './encounters/stakesLine';
 import type { ChapterArchivedTrace } from '../types/trace';
 
@@ -162,6 +163,9 @@ export function buildChapterRecord(
     threaded: isActorThreaded(graph, action.actorId, state.ascendantId),
     // THR-2068 — the god compelled this chapter; the archive raises its done line.
     ...(action.compelledByGod ? { compelled: true as const } : {}),
+    // THR-2227 — the god committed a card on some step (the Apotheosis's earned slots).
+    ...((action.choiceHistory ?? []).some((c) => c.interventionType === NUDGE_COMMIT_INTERVENTION_TYPE)
+      ? { godPaid: true as const } : {}),
     participants,
     eventNodeId: action.eventNodeId,
     aftermathProse: action.aftermathSummary?.overview,
@@ -283,7 +287,7 @@ function buildStepRecord(
   let afterimageProse: string | undefined;
 
   try {
-    const resolved = resolveStepDefinition(template, index, action.choiceHistory);
+    const resolved = resolveStepDefinition(template, index, action.choiceHistory, action.climaxFit);
     // THR-1543 (fight block §3c) — label a step by the reach it actually tested,
     // frozen on its prose record at resolution (a clash the card moved to Eye is
     // an Eye step); the authored reach otherwise, identical on ordinary steps.

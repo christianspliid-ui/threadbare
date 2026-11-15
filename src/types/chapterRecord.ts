@@ -96,6 +96,12 @@ export interface ChapterRecord {
   readonly threaded: boolean;
   /** THR-2068 — the god's paid compulsion chose this chapter (`UnifiedAction.compelledByGod`). */
   readonly compelled?: true;
+  /**
+   * THR-2227 — the god committed at least one card in this chapter (a
+   * `nudge_committed` entry in its choice history). Read by
+   * `apotheosisEarnedSlots`. Absent on records from before the field ⇒ unpaid.
+   */
+  readonly godPaid?: true;
   /** Support cast/places, snapshotted — enables the per-entity Chapters tab. */
   readonly participants: readonly ChapterParticipant[];
   /**

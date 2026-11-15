@@ -84,3 +84,31 @@ export const ASPECT_ECHO_CHRONICLE_PROSE =
 export const ASPECT_ECHO_THREAD_DETAIL_PROSE =
   'An aspect, now an echo. The vessel is gone; the bond endures as myth. No longer channels, ' +
   'but is never forgotten and never unmade.';
+
+// ─── The Apotheosis hand (THR-2227, plan THR-2204 slice 2) ─────────────
+//
+// Tokens: `{first}` is the mortal's name (empty ⇒ "your First"); `{they}` /
+// `{them}` / `{their}` / `{They}` take the mortal's stored pronouns
+// (`ambitionPronounsFor`), never a default "they" over a gendered mortal.
+
+/** Fallback for an empty `{first}`. */
+export const APOTHEOSIS_FIRST_FALLBACK = 'your First';
+
+/**
+ * The premonition, once per offer, when the Apotheosis clock starts (the eligibility
+ * hold), so a god can save essence for it. A toast, the existing premonition kind.
+ */
+export const APOTHEOSIS_PREMONITION_LINE =
+  '{first} is nearing a threshold. What you hold when {they} arrive{s} there is what you can give.';
+
+/**
+ * Above the deciding step's hand, only when earned cards were dealt — the hand is
+ * then larger than any other chapter can give (more than `DEAL_HAND_MAX`). No counts
+ * (UI Law 13): the tray shows the cards.
+ */
+export const APOTHEOSIS_ARRIVAL_LINE =
+  "A larger hand than any other chapter can give you. Some of it was earned in {first}'s earlier chapters.";
+
+/** In place of an empty tray, when the god can pay for no card on the step. */
+export const APOTHEOSIS_EMPTY_PURSE_LINE =
+  'Your purse is empty. {first} stands in this doorway on {their} own.';

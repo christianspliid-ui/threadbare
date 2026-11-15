@@ -225,6 +225,7 @@ import { phaseDetectionPressure } from './orchestrator/phaseDetectionPressure';
 import { phaseDriftDecay } from './orchestrator/phaseDriftDecay';
 import { evaluateEncounterSeeds } from './encounterSeeding';
 import { seedApotheosisEncounters } from './aspects';
+import { ensureClimaxFits, recordApotheosisResults } from './climaxFit';
 import { EncounterCacheManager, buildDangerMap } from './encounterCache';
 import { resolveLocationToHex } from './encounterAwareness';
 import { phaseNpcGraduation } from './npcGraduation';
@@ -3331,6 +3332,12 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     s = r.next;
     phaseEventCounts['unified_action_progress'] = r.eventDelta;
   }
+  // THR-2227 — a climax step entered this tick carries its fit before it is posted.
+  {
+    if (recordApotheosisResults(s) && runtime) touchWorld(runtime);
+    const fitted = ensureClimaxFits(s, UNIFIED_ACTION_TEMPLATES);
+    if (s.unifiedActions && fitted !== s.unifiedActions) s = { ...s, unifiedActions: [...fitted] };
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 2a.1: Thread-bind familiarity grant — when a bind_thread_* action resolves
@@ -3562,6 +3569,9 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     const r = runInlinePhase('encounter_seeding', s, () => evaluateEncounterSeeds(s, s.tick, seedRng, runtime));
     s = r.next;
     phaseEventCounts['encounter_seeding'] = r.eventDelta;
+    // THR-2227 — a seeded Apotheosis carries its fit before its opening step posts.
+    const fitted = ensureClimaxFits(s, UNIFIED_ACTION_TEMPLATES);
+    if (s.unifiedActions && fitted !== s.unifiedActions) s = { ...s, unifiedActions: [...fitted] };
     prevEventCount = s.tickEvents.length;
   }
 
