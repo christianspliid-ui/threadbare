@@ -26,8 +26,8 @@ import { isStageOpen } from './stageState';
 import { inMiddleBand } from '../../HexMapV2/camera/stageCamera';
 import { STAGE_CLOSE_CENTRE_BAND_FRACTION } from '../../../data/stage-content';
 import { getThreadsFrom } from '../../../engine/graphQueries';
-import type { ThreadEdgeProperties } from '../../../types/influence';
-import { buildStateSnapshot, buildVignetteData, selectTemplate } from '../../../engine/journeyEngine';
+import type { CampbellianPhase, ThreadEdgeProperties } from '../../../types/influence';
+import { buildStateSnapshot, composeJourneyVignette, readVisionScene, selectTemplate } from '../../../engine/journeyEngine';
 import { JOURNEY_BEAT_TEMPLATES } from '../../../data/journey-content';
 import type { PendingChoiceData } from '../../../engine/effectExecutors';
 
@@ -273,7 +273,7 @@ export function useStageDebugBridge(args: {
     });
 
     // THR-1897 — The First's journey moment: a real beat for her current phase, queued now.
-    const journeyVignette: Lever = () => new Promise(resolve => {
+    const journeyVignetteFor = (phaseOverride?: CampbellianPhase) => new Promise<DebugOpenHomedSurfaceResult>(resolve => {
       const { setGameState } = latest.current;
       setGameState(prev => {
         const first = getThreadsFrom(prev.graph, prev.ascendantId)
@@ -284,14 +284,18 @@ export function useStageDebugBridge(args: {
           return prev;
         }
         const props = first.properties as unknown as ThreadEdgeProperties;
-        const phase = props.storyPhase && props.storyPhase !== 'return' ? props.storyPhase : 'call';
+        const phase = phaseOverride && phaseOverride !== 'return'
+          ? phaseOverride
+          : props.storyPhase && props.storyPhase !== 'return' ? props.storyPhase : 'call';
         const snapshot = buildStateSnapshot(prev.graph, agent.id, props);
-        const picked = selectTemplate(JOURNEY_BEAT_TEMPLATES, phase, snapshot, prev.seed + prev.tick, props.beatHistory ?? []);
+        // THR-2226 — the same scene read and composition the tick phase uses.
+        const scene = readVisionScene(prev.graph, agent.id, prev.strategicState);
+        const picked = selectTemplate(JOURNEY_BEAT_TEMPLATES, phase, snapshot, prev.seed + prev.tick, props.beatHistory ?? [], scene);
         if (!picked) {
           resolve({ opened: false, reason: `no journey beat for the ${phase} phase` });
           return prev;
         }
-        const data = buildVignetteData(agent.id, agent.name, phase, 0, prev.doomClock.progress, picked.template, picked.variant, snapshot, prev.tick);
+        const data = composeJourneyVignette(prev.graph, agent.id, phase, 0, prev.doomClock.progress, picked.template, picked.variant, snapshot, prev.tick, scene);
         resolve({ opened: true });
         return {
           ...prev,
@@ -302,6 +306,7 @@ export function useStageDebugBridge(args: {
         };
       });
     });
+    const journeyVignette: Lever = () => journeyVignetteFor();
 
     // THR-1897 — a ruin's emergence dilemma: the nearest-to-hand elder ruin and the First
     // (or any mortal), with a transformed outcome so every card can be chosen.
@@ -430,6 +435,9 @@ export function useStageDebugBridge(args: {
 
     window.__DEBUG._registerStageProvider?.(getStage);
     window.__DEBUG._registerOpenHomedSurface?.(async (kind: string) => {
+      // THR-2226 — `'journey-vignette:<phase>'` opens a vision for that phase (e.g. `:ordeal`).
+      const [base, arg] = kind.split(':');
+      if (base === 'journey-vignette' && arg) return journeyVignetteFor(arg as CampbellianPhase);
       const lever = (levers as Record<string, Lever | undefined>)[kind];
       return lever ? lever() : { opened: false, reason: `unknown kind '${kind}' — see HOMED_SURFACES (src/data/homed-surfaces.ts)` };
     });

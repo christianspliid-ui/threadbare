@@ -160,7 +160,7 @@ export interface ThreadEdgeProperties {
   // ── Journey state (Phase 2+, only for The First) ───────────
   /** Current Campbellian journey phase. */
   storyPhase?: CampbellianPhase;
-  /** Ordeal beat outcome (Phase 3+). */
+  /** Ordeal beat outcome (Phase 3+). THR-2226: written from the Ordeal's roll. */
   ordealOutcome?: OrdealOutcome;
   /** Record of choices made during the meeting encounter (Phase 1+). */
   meetingChoiceRecord?: MeetingChoiceRecord;

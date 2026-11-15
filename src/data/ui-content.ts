@@ -132,6 +132,20 @@ export function anomalyHoverLine(discovered: boolean, name?: string): string {
 /** THR-1854 — the button that closes a journey moment once its answer has been read. */
 export const JOURNEY_CONTINUE_LABEL = 'Continue';
 
+/**
+ * THR-2226 — the Ordeal's commit button (Law 48: armed, then fired). Picking a lean
+ * arms it; this button pays the price and rolls the Ordeal.
+ */
+export const ORDEAL_COMMIT_LABEL = 'Let the Ordeal answer';
+
+/** THR-2226 — shown in place of the commit button until a lean is picked. */
+export const ORDEAL_PICK_PROMPT = 'Choose how you lean on the trial.';
+
+/** THR-2226 — the toast when Escape sets an unrolled Ordeal aside; it returns in `days` days. */
+export function ordealSetAsideLine(agentName: string, days: number): string {
+  return `${agentName}'s Ordeal waits. It returns in ${days} ${days === 1 ? 'day' : 'days'}.`;
+}
+
 /** THR-1854 — beside a journey choice's cost when the paying pool cannot cover it. */
 export const JOURNEY_CHOICE_UNAFFORDABLE = 'not enough essence';
 

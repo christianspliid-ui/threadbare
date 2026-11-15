@@ -238,6 +238,18 @@ export const DIFFICULTY_WORD_BANDS: readonly { readonly min: number; readonly wo
   { min: 0, word: 'gentle' },
 ];
 
+// ─── Climax fit (THR-2204 / THR-2226) ────────────────────────────────
+
+/**
+ * The bare (no-card, no-lean) chance the run's climaxes are fitted to — the Ordeal
+ * (THR-2226) and each Apotheosis step (THR-2227). "Uncertain": the climax is always
+ * in doubt, so the god's hand always matters. @range 0.40–0.59 (the uncertain tier)
+ */
+export const CLIMAX_BARE_FORECAST = 0.45;
+
+/** Bisection steps `fitDifficultyToForecast` takes over difficulty in [0, 1]. */
+export const FIT_ITERATIONS = 12;
+
 // ─── Rekindle the Thread ─────────────────────────────────────────────
 
 /** Essence price of `divine.rekindle_thread` — expensive by design. */

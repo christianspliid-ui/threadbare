@@ -27,6 +27,7 @@ import type {
 } from './traces/crossroads-traces';
 import type { ReachDomain } from './traits';
 import type { ValuePair } from './agent';
+import type { OrdealOutcome, SceneActivity } from './journeyEngine';
 import type { UiRefOpenedTrace, UiRefUnroutableTrace, ViewFallbackTrace, StageTrace, UiMapCameraJumpTrace, UiMapLensChangedTrace, UiCardArmTrace } from './traces/ui-traces';
 import type { FightClockTrace, FightEndTrace, FightEndingTrace, FightForkTrace, FightStepTrace, FightTriggerGrudgeTrace } from './traces/fight-traces';
 import type { WarReportedTrace } from './traces/war-traces';
@@ -136,6 +137,7 @@ export type TraceCategory =
   | 'settlement_tier_change' | 'target_action_filter'
   | 'founded_place_culture' // THR-1839
   | 'journey.choice_applied' // THR-1854: what a journey choice moved on the First
+  | 'journey.vision_scene' | 'journey.ordeal_roll' // THR-2226: the vision's scene; the Ordeal's roll
   | 'hex_state' | 'unrest_tick' | 'saturation_tick' | 'location_trait' | 'artifact_trait'
   // THR-1934 — unrest as pressure
   | 'unrest.target' | 'unrest.leave' | 'unrest.leave.none' | 'unrest.leave.skipped' | 'unrest.riot_seed'
@@ -817,6 +819,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'settlement_tier_change', 'target_action_filter',
   'founded_place_culture',
   'journey.choice_applied',
+  'journey.vision_scene', 'journey.ordeal_roll',
   'hex_state', 'unrest_tick', 'saturation_tick', 'location_trait', 'artifact_trait',
   'unrest.target', 'unrest.leave', 'unrest.leave.none', 'unrest.leave.skipped', 'unrest.riot_seed',
   'larder.seed',
@@ -2466,6 +2469,40 @@ export interface JourneyChoiceAppliedTrace extends TraceBase {
   choiceId: string;
   axiological: Partial<Record<ValuePair, number>>;
   reaches: Partial<Record<ReachDomain, number>>;
+}
+
+/**
+ * Trace: a journey vision read the First's scene (THR-2226) — one per vision fired.
+ * `fit` says how the picked variant's `scenes` tag read against the activity.
+ */
+export interface JourneyVisionSceneTrace extends TraceBase {
+  category: 'journey.vision_scene';
+  actorId: string;
+  activity: SceneActivity;
+  placeId?: string;
+  variantKey: string;
+  fit: 'fit' | 'mismatch' | 'untagged';
+}
+
+/**
+ * Trace: the Ordeal was rolled (THR-2226) — one per Ordeal. `chance` is what the roll
+ * used (the fitted bare chance plus the lean); `luckDrawIndex` is the First's bag count
+ * before the draw (absent when the bag did not deal), so a census can tell a lean that
+ * moved the band from a bag position that did.
+ */
+export interface JourneyOrdealRollTrace extends TraceBase {
+  category: 'journey.ordeal_roll';
+  actorId: string;
+  choiceId: string;
+  difficulty: number;
+  lean: number;
+  bareChance: number;
+  chance: number;
+  roll: number;
+  luckDrawIndex?: number;
+  band: StepOutcome;
+  outcome: OrdealOutcome;
+  godPaid: boolean;
 }
 
 /** Trace: settlement changes tier (hamlet↔town↔city) via sustained prosperity */
@@ -5665,6 +5702,8 @@ export type TraceEntry =
   | SettlementTierChangeTrace
   | FoundedPlaceCultureTrace
   | JourneyChoiceAppliedTrace
+  | JourneyVisionSceneTrace
+  | JourneyOrdealRollTrace
   | LocationTraitTrace
   | BattleRecordedTrace
   | FightRecordedTrace

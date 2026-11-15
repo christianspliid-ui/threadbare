@@ -2628,7 +2628,8 @@ export interface DebugBridge {
   /**
    * THR-1892 — open one homed surface by kind (`HomedSurfaceKind`, `src/data/homed-surfaces.ts`).
    * `'story-beat'` stages the pacing governor's beat on an unresolved chapter, so it plays on
-   * the Stage. THR-1897: `'journey-vignette'` queues The First's beat for her phase;
+   * the Stage. THR-1897: `'journey-vignette'` queues The First's beat for her phase
+   * (THR-2226: `'journey-vignette:ordeal'` — or any other phase after the colon — queues that phase's beat);
    * `'emergence-dilemma'` stages a transformed dilemma at an elder ruin; `'premonition'` queues a
    * whisper about The First, else `@hero` (a compulsion, with option rings: `forcePremonition('@hero', 'compulsion')`
    * then `tick(1)`); `'undertaking-moment'` arms `forceMoments(true)` and answers `opened: false`

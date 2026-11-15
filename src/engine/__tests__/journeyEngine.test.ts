@@ -526,8 +526,14 @@ describe('applyBeatChoice', () => {
       ],
     });
 
-    const { updatedProps } = applyBeatChoice(threadProps, vignette, 'triumph');
+    // THR-2226 — the roll decides; the choice's own `ordealOutcome` is ignored.
+    const { updatedProps } = applyBeatChoice(threadProps, vignette, 'break', { band: 'success', outcome: 'triumph', godPaid: false });
     expect(updatedProps.ordealOutcome).toBe('triumph');
+    expect(updatedProps).not.toHaveProperty('ordealBand');
+    expect(updatedProps).not.toHaveProperty('ordealGodPaid');
+
+    const { updatedProps: unrolled } = applyBeatChoice(threadProps, vignette, 'triumph');
+    expect(unrolled.ordealOutcome).toBeUndefined();
   });
 
   test('updates intervention tracking', () => {
@@ -605,12 +611,17 @@ describe('journey content', () => {
     }
   });
 
-  test('ordeal choices have ordealOutcome', () => {
+  test('ordeal choices lean on the roll and name no outcome (THR-2226, Law 10)', () => {
     const ordealTemplates = JOURNEY_BEAT_TEMPLATES.filter(t => t.validPhases.includes('ordeal'));
     for (const template of ordealTemplates) {
       for (const variant of template.variants) {
         for (const choice of variant.choices) {
-          expect(choice.effects.ordealOutcome).toBeDefined();
+          expect(choice.effects.ordealOutcome).toBeUndefined();
+          expect(typeof choice.effects.ordealLean).toBe('number');
+          expect(choice.text.toLowerCase()).not.toContain('guarantee');
+          for (const outcome of ['triumph', 'scraped_through', 'broken'] as const) {
+            expect(choice.effects.consequenceByOutcome?.[outcome]?.length ?? 0).toBeGreaterThan(10);
+          }
         }
       }
     }

@@ -10,6 +10,8 @@ import type { CampbellianPhase } from './influence';
 import type { ReachDomain } from './traits';
 import type { SphereName } from './index';
 import type { ValuePair } from './agent';
+import type { ActionScale, StepOutcome } from './unifiedAction';
+import type { ForecastTier } from './traces/encounter-traces';
 import {
   JOURNEY_CALL_PHASE_END,
   JOURNEY_TRIALS_PHASE_END,
@@ -35,16 +37,67 @@ export const CRISIS_BEAT_COUNT = 1;
 
 /** Capability threshold for "scraped_through" on middle Ordeal choice */
 export const ORDEAL_CAPABILITY_THRESHOLD = 0.5;
-/** Essence cost for guaranteed triumph (direct divine intervention) */
-export const ORDEAL_DIRECT_COST = 5;
-/** Essence cost for guided attempt (subtle divine nudge) */
-export const ORDEAL_SUBTLE_COST = 2;
+
+// ─── THR-2226: the Ordeal is rolled; the god leans on it ───────────
+
+/** Price of the largest lean ("pour everything in"), in the paying pool. Today's price, named. */
+export const ORDEAL_COST_POUR = 5;
+/** Price of the middle lean ("steady the thread"). Today's price, named. */
+export const ORDEAL_COST_STEADY = 2;
+/** Price of sharing the sacrifice's burden — the sacrifice Ordeal's middle lean, as authored. */
+export const ORDEAL_COST_SHARE = 3;
+/** @deprecated THR-2226 — the price no longer buys a triumph; read `ORDEAL_COST_POUR`. */
+export const ORDEAL_DIRECT_COST = ORDEAL_COST_POUR;
+/** @deprecated THR-2226 — read `ORDEAL_COST_STEADY`. */
+export const ORDEAL_SUBTLE_COST = ORDEAL_COST_STEADY;
+
+/** Odds bonus of "pour everything in" — added to the roll like a card's modifier. */
+export const ORDEAL_LEAN_POUR = 0.30;
+/** Odds bonus of "steady the thread" (and the sacrifice's shared burden). */
+export const ORDEAL_LEAN_STEADY = 0.12;
+/** Stepping back adds nothing: the bare roll. */
+export const ORDEAL_LEAN_WITHDRAW = 0;
+
+/** The reach the Ordeal tests (plan THR-2204 slice 1). */
+export const ORDEAL_REACH: ReachDomain = 'star';
+/**
+ * The scale the Ordeal is rolled at. `regional` carries no difficulty offset: at
+ * `personal` (−0.20) the fit could not reach "Uncertain" for a mortal above ~0.76
+ * capability, so a great First would walk through the climax.
+ */
+export const ORDEAL_SCALE: ActionScale = 'regional';
+/** Fallback difficulty when the fit cannot bracket the target (fail-soft). */
+export const ORDEAL_FALLBACK_DIFFICULTY = 0.5;
+
+/**
+ * The band the Ordeal's roll lands → the outcome the Return reads. Success or better
+ * is triumph, success at cost or near miss is scraped through, failure or worse broken.
+ */
+export const ORDEAL_BAND_TO_OUTCOME: Readonly<Record<StepOutcome, OrdealOutcome>> = {
+  critical_success: 'triumph',
+  success: 'triumph',
+  success_at_cost: 'scraped_through',
+  near_miss: 'scraped_through',
+  failure: 'broken',
+  critical_failure: 'broken',
+};
+
+/** Score a vision variant gains when its `scenes` include the First's activity. */
+export const VISION_SCENE_FIT_BONUS = 0.3;
+/** Score a tagged vision variant loses when its `scenes` do not include the activity. */
+export const VISION_SCENE_MISMATCH_PENALTY = 0.6;
 
 /** Ticks before a force-fired Ordeal if doom clock ends before it fires normally */
 export const ORDEAL_FORCE_FIRE_THRESHOLD = 0.90;
 
 /** Maximum number of pending vignettes in queue */
 export const MAX_PENDING_VIGNETTES = 5;
+
+/**
+ * THR-2226 — days an unrolled Ordeal waits after Escape sets it aside before it takes
+ * the screen again. Escape never rolls the climax (UI Law 48); the vision returns.
+ */
+export const ORDEAL_SET_ASIDE_TICKS = 3;
 
 /**
  * THR-1854: a beat choice declares `reachChanges` on the 0–1 scale the meeting's
@@ -58,6 +111,44 @@ export const JOURNEY_REACH_CHANGE_RAW_SCALE = 100;
 
 /** The three possible Ordeal outcomes — drives the Return (System 6). */
 export type OrdealOutcome = 'triumph' | 'scraped_through' | 'broken';
+
+/** THR-2226 — an Ordeal already paid and rolled: the lean the god picked and what it rolled. */
+export interface CommittedOrdeal {
+  choiceId: string;
+  outcome: OrdealOutcome;
+}
+
+// ─── Vision Scene (THR-2226) ────────────────────────────────────────
+
+/** What the First is doing when a vision arrives. */
+export type SceneActivity = 'travel' | 'labour' | 'worship' | 'conflict' | 'court' | 'rest';
+
+export const SCENE_ACTIVITIES: readonly SceneActivity[] = ['travel', 'labour', 'worship', 'conflict', 'court', 'rest'];
+
+/** Where the First is and what they are doing, read once when a vision is built. */
+export interface VisionScene {
+  placeId?: string;
+  placeName?: string;
+  placeKind?: string;
+  activity: SceneActivity;
+}
+
+/**
+ * THR-2226 — the Ordeal's roll, fitted once when the vision is built and stored, so the
+ * forecast each choice shows and the roll read one value (Law 18).
+ */
+export interface OrdealRollSpec {
+  reach: ReachDomain;
+  scale: ActionScale;
+  /** The First's capability in `reach` (post-sigmoid) when the vision was built. */
+  capability: number;
+  /** Difficulty fitted so the bare (stepped-back) chance is `CLIMAX_BARE_FORECAST`. */
+  difficulty: number;
+  /** The bare chance at that difficulty, no lean. */
+  bareChance: number;
+  /** False when the fit could not bracket the target and fell back. */
+  fitted: boolean;
+}
 
 // ─── State Snapshot ─────────────────────────────────────────────────
 
@@ -130,6 +221,11 @@ export interface BeatVariant {
   tensionProse: string;
   /** Available choices for the player */
   choices: BeatChoice[];
+  /**
+   * THR-2226 — the activities this moment fits. Untagged fits anywhere, with no
+   * penalty; a tagged variant gains when the First's scene matches and loses when not.
+   */
+  scenes?: SceneActivity[];
 }
 
 /** A choice the player can make during a journey beat. */
@@ -155,8 +251,15 @@ export interface BeatChoiceEffects {
   reachChanges?: Partial<Record<ReachDomain, number>>;
   /** Intervention type: did the god step in or step back? */
   interventionType: 'supportive' | 'coercive' | 'withdrawn';
-  /** Ordeal outcome (only for Ordeal phase beats) */
+  /**
+   * @deprecated THR-2226 — an Ordeal choice no longer sets the outcome (Law 10); the
+   * roll does. Ignored on Ordeal beats (an old save may still carry it).
+   */
   ordealOutcome?: OrdealOutcome;
+  /** THR-2226 — the odds bonus this Ordeal choice adds to the roll (a lean, never a result). */
+  ordealLean?: number;
+  /** THR-2226 — the reply line per rolled outcome; `consequenceProse` is the fallback. */
+  consequenceByOutcome?: Partial<Record<OrdealOutcome, string>>;
   /** Essence cost to the ascendant (0 for free choices) */
   essenceCost?: number;
   /** Founding gate tags accumulated */
@@ -221,6 +324,18 @@ export interface JourneyVignetteData {
   isOrdeal: boolean;
   /** Tick when this vignette was created */
   tick: number;
+  /** THR-2226 — where the First was and what they were doing when the vision came. */
+  scene?: VisionScene;
+  /** THR-2226 — the Ordeal's fitted roll (Ordeal only). */
+  ordealRoll?: OrdealRollSpec;
+  /** THR-2226 — the forecast each Ordeal choice leaves, from the same call the roll uses. */
+  forecastByChoice?: Record<string, ForecastTier>;
+  /** THR-2226 — the Ordeal's difficulty word (`DIFFICULTY_WORD_BANDS`) for the stakes line. */
+  difficultyWord?: string;
+  /** THR-2226 — the First's pronoun set key (`gender` property), for the Ordeal lines. */
+  agentGender?: string;
+  /** THR-2226 — the Ordeal's lines above its choices, filled for this mortal (Law 17). */
+  ordealLines?: { weight: string; stakes: string };
 }
 
 // ─── Phase Boundaries ───────────────────────────────────────────────

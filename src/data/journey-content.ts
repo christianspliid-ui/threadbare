@@ -11,6 +11,14 @@
  */
 
 import type { JourneyBeatTemplate, StateSnapshot } from '../types/journeyEngine';
+import {
+  ORDEAL_COST_POUR,
+  ORDEAL_COST_SHARE,
+  ORDEAL_COST_STEADY,
+  ORDEAL_LEAN_POUR,
+  ORDEAL_LEAN_STEADY,
+  ORDEAL_LEAN_WITHDRAW,
+} from '../types/journeyEngine';
 
 // ─── Scoring Helpers ────────────────────────────────────────────────
 
@@ -183,6 +191,7 @@ const TRIALS_RISING_STAR: JourneyBeatTemplate = {
   variants: [
     {
       key: 'rising_star',
+      scenes: ['conflict', 'court'],
       label: 'Rising Star',
       score: (s) => scorePowerHigh(s) * 0.5 + scoreInfluenceHigh(s) * 0.5,
       setupProse: 'Word spreads. The First\'s name carries weight now — earned through deeds and sealed by the thread that connects them to something greater. But rising stars attract attention, and not all of it welcome.',
@@ -222,6 +231,7 @@ const TRIALS_RISING_STAR: JourneyBeatTemplate = {
     },
     {
       key: 'lonely_climb',
+      scenes: ['travel', 'conflict'],
       label: 'The Lonely Climb',
       score: scoreLoneWolf,
       setupProse: 'Power comes, but at a cost. The First stands taller than those around them, and the distance between grows with each victory. Allies are few. The path is solitary.',
@@ -267,6 +277,7 @@ const TRIALS_TEMPTATION: JourneyBeatTemplate = {
   variants: [
     {
       key: 'power_temptation',
+      scenes: ['court', 'labour'],
       label: 'The Temptation of Power',
       score: (s) => scorePowerHigh(s) * 0.4 + scoreAmbitious(s) * 0.6,
       setupProse: 'A shortcut presents itself. Power, influence, safety — all within reach. The price is steep, but the First has paid steep prices before.',
@@ -345,6 +356,7 @@ const CRISIS_SHADOW: JourneyBeatTemplate = {
   variants: [
     {
       key: 'hubris_crisis',
+      scenes: ['court', 'conflict'],
       label: 'The Price of Hubris',
       score: (s) => scorePowerHigh(s) * 0.6 + scoreInfluenceHigh(s) * 0.4,
       setupProse: 'Success has bred certainty, and certainty has bred blindness. The First stands at the height of their power — exactly where the fall begins.',
@@ -385,6 +397,7 @@ const CRISIS_SHADOW: JourneyBeatTemplate = {
     },
     {
       key: 'survival_crisis',
+      scenes: ['conflict', 'travel', 'rest'],
       label: 'The Desperate Hour',
       score: scorePowerLow,
       setupProse: 'The journey has taken everything. Strength is spent, allies are scattered, and the darkness that has always been waiting finally closes in.',
@@ -461,80 +474,114 @@ const ORDEAL_PEAK: JourneyBeatTemplate = {
   variants: [
     {
       key: 'ordeal_mighty',
+      scenes: ['conflict', 'court'],
       label: 'The Ordeal of the Mighty',
       score: (s) => scorePowerHigh(s) * 0.5 + scoreInfluenceHigh(s) * 0.3 + scoreDivineBond(s) * 0.2,
       setupProse: 'Everything has led to this. The First stands at the culmination of their journey — powerful, tested, and facing the one challenge that all their strength may not be enough to overcome.',
       tensionProse: 'The ordeal demands everything. Not just strength but wisdom, not just courage but sacrifice. The thread between god and mortal strains under the weight of what must be decided.',
       choices: [
+        // THR-2226 — each choice is a lean on the roll, never a result (Law 10).
         {
           id: 'ordeal_direct',
-          text: 'Intervene directly — guarantee their triumph',
+          text: 'Pour everything into the thread',
           godVoice: 'This is MY champion. The world will know it.',
           effects: {
             interventionType: 'coercive',
-            essenceCost: 5,
-            ordealOutcome: 'triumph',
-            consequenceProse: 'Divine power surges through the thread. The First blazes with borrowed glory. The ordeal shatters before them.',
+            essenceCost: ORDEAL_COST_POUR,
+            ordealLean: ORDEAL_LEAN_POUR,
+            consequenceProse: 'You poured yourself into the thread. The First staggered through on borrowed strength, bloodied and still standing.',
+            consequenceByOutcome: {
+              triumph: 'Divine power surged through the thread. The First blazed with borrowed glory, and the ordeal broke before {them}.',
+              scraped_through: 'You poured yourself into the thread. The First staggered through on borrowed strength, bloodied and still standing.',
+              broken: 'You poured yourself into the thread, and still {they} broke.',
+            },
           },
         },
         {
           id: 'ordeal_guide',
-          text: 'Guide them subtly — give them a chance to succeed on their own',
+          text: 'Steady the thread',
           godVoice: 'You can do this. I believe in you.',
           effects: {
             interventionType: 'supportive',
-            essenceCost: 2,
-            ordealOutcome: 'scraped_through',
-            consequenceProse: 'A whisper of guidance at the crucial moment. The First stumbles, recovers, and pushes through — battered but victorious.',
+            essenceCost: ORDEAL_COST_STEADY,
+            ordealLean: ORDEAL_LEAN_STEADY,
+            consequenceProse: 'A whisper of guidance at the crucial moment. The First stumbled, recovered, and pushed through, battered but standing.',
+            consequenceByOutcome: {
+              triumph: 'A whisper of guidance at the crucial moment, and The First found the rest alone. {They} came through clean.',
+              scraped_through: 'A whisper of guidance at the crucial moment. The First stumbled, recovered, and pushed through, battered but standing.',
+              broken: 'You steadied the thread, and it was not enough. The First broke under the ordeal.',
+            },
           },
         },
         {
           id: 'ordeal_withdraw',
-          text: 'Step back entirely — this must be their moment',
+          text: 'Step back: this must be {theirs}',
           effects: {
             interventionType: 'withdrawn',
-            ordealOutcome: 'broken',
-            consequenceProse: 'The god withdraws. The First faces the ordeal with nothing but mortal will. What breaks can be reforged — but the scars will remain.',
+            ordealLean: ORDEAL_LEAN_WITHDRAW,
+            consequenceProse: 'You stepped back. The First scraped through on mortal will alone, and carries the scars.',
+            consequenceByOutcome: {
+              triumph: 'You stepped back. The First faced the ordeal with nothing but mortal will, and won.',
+              scraped_through: 'You stepped back. The First scraped through on mortal will alone, and carries the scars.',
+              broken: 'You stepped back. The First faced the ordeal alone and broke. What breaks can be reforged, but the scars remain.',
+            },
           },
         },
       ],
     },
     {
       key: 'ordeal_humble',
+      scenes: ['worship', 'labour', 'rest'],
       label: 'The Ordeal of the Humble',
       score: (s) => scorePowerLow(s) * 0.4 + scoreDistant(s) * 0.3 + scoreGeneric(s) * 0.3,
       setupProse: 'The ordeal comes not as a great battle but as a quiet reckoning. The First, who has never been mighty, faces something that requires not power but heart.',
       tensionProse: 'This is the moment that defines them. Not strength against strength, but will against despair. The thread is thin here — the god\'s reach barely extends this far.',
       choices: [
+        // THR-2226 — each choice is a lean on the roll, never a result (Law 10).
         {
           id: 'ordeal_pour_in',
-          text: 'Pour everything into the thread — save them at any cost',
+          text: 'Pour everything into the thread',
           godVoice: 'I will not lose you. Whatever it costs.',
           effects: {
             interventionType: 'supportive',
-            essenceCost: 5,
-            ordealOutcome: 'triumph',
-            consequenceProse: 'The thread blazes white-hot. The First feels the full weight of divine love crash through them like a wave. They stand, impossibly. They endure.',
+            essenceCost: ORDEAL_COST_POUR,
+            ordealLean: ORDEAL_LEAN_POUR,
+            consequenceProse: 'The thread blazed white-hot. The First held the line by the narrowest margin, and came out changed.',
+            consequenceByOutcome: {
+              triumph: 'The thread blazed white-hot. The First stood when no one expected {them} to, and endured.',
+              scraped_through: 'The thread blazed white-hot. The First held the line by the narrowest margin, and came out changed.',
+              broken: 'You poured yourself into the thread, and still {they} broke. What was shattered may yet be remade.',
+            },
           },
         },
         {
           id: 'ordeal_steady',
-          text: 'Steady the thread — let them feel they are not alone',
+          text: 'Steady the thread',
           godVoice: 'I am here. You are not alone in this.',
           effects: {
             interventionType: 'supportive',
-            essenceCost: 2,
-            ordealOutcome: 'scraped_through',
-            consequenceProse: 'Not enough to turn the tide, but enough to hold the line. The First scrapes through by the narrowest margin, forever changed.',
+            essenceCost: ORDEAL_COST_STEADY,
+            ordealLean: ORDEAL_LEAN_STEADY,
+            consequenceProse: 'Not enough to turn the tide, but enough to hold the line. The First scraped through by the narrowest margin.',
+            consequenceByOutcome: {
+              triumph: 'You steadied the thread, and The First turned the tide with {their} own hands.',
+              scraped_through: 'Not enough to turn the tide, but enough to hold the line. The First scraped through by the narrowest margin.',
+              broken: 'You steadied the thread, and it held, but The First did not. {They} broke.',
+            },
           },
         },
         {
           id: 'ordeal_trust',
-          text: 'Trust them — they have grown enough for this',
+          text: 'Step back: this must be {theirs}',
           effects: {
             interventionType: 'withdrawn',
-            ordealOutcome: 'broken',
-            consequenceProse: 'The god trusts. The mortal breaks. But breaking is not ending — and what was shattered may yet be remade.',
+            ordealLean: ORDEAL_LEAN_WITHDRAW,
+            consequenceProse: 'You stepped back. The First scraped through alone, by the narrowest margin.',
+            consequenceByOutcome: {
+              triumph: 'You stepped back, and The First had grown enough. {They} came through alone.',
+              scraped_through: 'You stepped back. The First scraped through alone, by the narrowest margin.',
+              broken: 'You stepped back. The First broke. Breaking is not ending, and what was shattered may yet be remade.',
+            },
           },
         },
       ],
@@ -613,6 +660,7 @@ const CALL_DIVINE_SPARK: JourneyBeatTemplate = {
   variants: [
     {
       key: 'spark_devoted',
+      scenes: ['worship', 'rest'],
       label: 'The Devoted Spark',
       score: scoreDivineBond,
       setupProse: 'It begins as warmth. Not physical — something deeper, as though the soul itself has been touched by a hand that spans the cosmos. The First looks up and, for a single heartbeat, sees the world as the divine sees it.',
@@ -651,6 +699,7 @@ const CALL_BURDEN: JourneyBeatTemplate = {
   variants: [
     {
       key: 'burden_influential',
+      scenes: ['court', 'labour'],
       label: 'The Weight of Expectations',
       score: scoreInfluenceHigh,
       setupProse: 'They already carry the hopes of others. Now comes another weight: the thread, pulling toward a destiny far grander and more terrible than any mortal obligation.',
@@ -696,6 +745,7 @@ const CALL_PROPHECY: JourneyBeatTemplate = {
   variants: [
     {
       key: 'prophecy_generic',
+      scenes: ['rest', 'worship'],
       label: 'The Omen',
       score: (s: StateSnapshot) => scoreGeneric(s) * 0.5 + scoreAmbitious(s) * 0.5,
       setupProse: 'A dead bird on the threshold. A mirror that shows a stranger\'s face. A dream of fire that leaves ash on the pillow. The omens arrive before the understanding does.',
@@ -743,6 +793,7 @@ const TRIALS_BOND_TEST: JourneyBeatTemplate = {
   variants: [
     {
       key: 'bond_divine',
+      scenes: ['travel', 'rest'],
       label: 'The Bond Tested',
       score: scoreDivineBond,
       setupProse: 'The journey has brought the First close to someone unexpected — a companion whose presence changes the calculus of every decision. Now circumstance conspires to tear them apart.',
@@ -789,6 +840,7 @@ const TRIALS_DISCOVERY: JourneyBeatTemplate = {
   variants: [
     {
       key: 'discovery_power',
+      scenes: ['conflict', 'labour'],
       label: 'The Hidden Talent',
       score: (s: StateSnapshot) => scorePowerHigh(s) * 0.3 + scoreAmbitious(s) * 0.7,
       setupProse: 'In the heat of a trial, something unexpected happens. A power stirs that the First did not know they possessed — raw, untrained, and dangerous.',
@@ -826,6 +878,7 @@ const TRIALS_DISCOVERY: JourneyBeatTemplate = {
     },
     {
       key: 'discovery_secret',
+      scenes: ['travel', 'worship', 'labour'],
       label: 'The World\'s Secret',
       score: (s: StateSnapshot) => scoreGeneric(s) * 0.5 + scoreLoneWolf(s) * 0.5,
       setupProse: 'A scroll found in ruins. A dying stranger\'s confession. A pattern in the stars that only the First can see. The world cracks open and reveals a truth that was never meant for mortal eyes.',
@@ -874,6 +927,7 @@ const CRISIS_BETRAYAL: JourneyBeatTemplate = {
   variants: [
     {
       key: 'betrayal_social',
+      scenes: ['court'],
       label: 'The Knife in the Back',
       score: (s: StateSnapshot) => scoreInfluenceHigh(s) * 0.6 + scoreDivineBond(s) * 0.4,
       setupProse: 'The betrayal comes from the last person the First expected. Someone they trusted — someone the thread itself seemed to sanction — reveals their true face.',
@@ -921,6 +975,7 @@ const CRISIS_FAITH: JourneyBeatTemplate = {
   variants: [
     {
       key: 'faith_distant',
+      scenes: ['worship', 'rest'],
       label: 'The Crisis of Faith',
       score: scoreDistant,
       setupProse: 'The question arrives like a cold wind: has the thread been a blessing or a leash? The First looks back at every choice made under divine influence and wonders how many were truly their own.',
@@ -966,6 +1021,7 @@ const CRISIS_ISOLATION: JourneyBeatTemplate = {
   variants: [
     {
       key: 'isolation_lone',
+      scenes: ['travel', 'rest'],
       label: 'Alone in the Dark',
       score: scoreLoneWolf,
       setupProse: 'One by one, the supports have fallen away. The last ally departed, the last safe haven burned. The First stands in darkness, utterly alone save for the thin, trembling line of the thread.',
@@ -1019,35 +1075,51 @@ const ORDEAL_SACRIFICE: JourneyBeatTemplate = {
       setupProse: 'The ordeal\'s shape becomes clear: there is no path through that does not demand something be left behind. A bond, a belief, a part of themselves they thought was essential.',
       tensionProse: 'The thread burns with the weight of the moment. This is the pivot on which the entire journey turns. What the First gives up here will define what they become.',
       choices: [
+        // THR-2226 — each choice is a lean on the roll, never a result (Law 10).
         {
           id: 'ordeal_bear_cost',
-          text: 'Bear the cost yourself — pour essence to shield them from the sacrifice',
+          text: 'Pour everything into the thread',
           godVoice: 'I will pay what you cannot. This is what gods are for.',
           effects: {
             interventionType: 'coercive',
-            essenceCost: 5,
-            ordealOutcome: 'triumph',
-            consequenceProse: 'Divine energy floods the thread. The sacrifice is paid in essence, not in mortal blood. The First emerges whole — but the god is diminished.',
+            essenceCost: ORDEAL_COST_POUR,
+            ordealLean: ORDEAL_LEAN_POUR,
+            consequenceProse: 'Divine energy flooded the thread and paid part of the price. The First came through, short of something {they} will not get back.',
+            consequenceByOutcome: {
+              triumph: 'Divine energy flooded the thread. The sacrifice was paid in essence, not in mortal blood, and The First came through whole.',
+              scraped_through: 'Divine energy flooded the thread and paid part of the price. The First came through, short of something {they} will not get back.',
+              broken: 'You poured yourself into the thread, and still {they} broke. The ordeal took its price from {them} all the same.',
+            },
           },
         },
         {
           id: 'ordeal_share_burden',
-          text: 'Share the burden — let both god and mortal sacrifice something',
+          text: 'Share the burden',
           godVoice: 'Together. We bear this together.',
           effects: {
             interventionType: 'supportive',
-            essenceCost: 3,
-            ordealOutcome: 'scraped_through',
-            consequenceProse: 'The sacrifice is split. Neither god nor mortal carries the full weight. Both are diminished — and both survive.',
+            essenceCost: ORDEAL_COST_SHARE,
+            ordealLean: ORDEAL_LEAN_STEADY,
+            consequenceProse: 'The sacrifice was split. Neither god nor mortal carried the full weight. Both are diminished, and both survived.',
+            consequenceByOutcome: {
+              triumph: 'The sacrifice was split, and it was enough. The First came through with {their} head high.',
+              scraped_through: 'The sacrifice was split. Neither god nor mortal carried the full weight. Both are diminished, and both survived.',
+              broken: 'You shared the burden, and The First broke under {their} half of it.',
+            },
           },
         },
         {
           id: 'ordeal_let_pay',
-          text: 'Let them make the sacrifice — it must be theirs to give',
+          text: 'Step back: this must be {theirs}',
           effects: {
             interventionType: 'withdrawn',
-            ordealOutcome: 'broken',
-            consequenceProse: 'The First gives up something they cannot get back. The ordeal is passed, but the cost is carved into their soul.',
+            ordealLean: ORDEAL_LEAN_WITHDRAW,
+            consequenceProse: 'You stepped back. The First gave up something {they} cannot get back, and passed the ordeal.',
+            consequenceByOutcome: {
+              triumph: 'You stepped back. The First paid the price alone, and passed the ordeal standing.',
+              scraped_through: 'You stepped back. The First gave up something {they} cannot get back, and passed the ordeal.',
+              broken: 'You stepped back. The First paid everything and broke. The cost is carved into {them}.',
+            },
           },
         },
       ],

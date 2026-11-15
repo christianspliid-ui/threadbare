@@ -91,7 +91,7 @@ import { useFirstScreenReveal } from './GameView/firstScreenReveal';
 import { useOpeningReveal } from './GameView/openingReveal';
 import { OpeningDirectionLine } from './OpeningDirectionLine';
 import { getPronouns } from '../../data/domain-prose';
-import { OPENING_REVEAL_TOAST_MS } from '../../data/ui-content';
+import { OPENING_REVEAL_TOAST_MS, ordealSetAsideLine } from '../../data/ui-content';
 import { MandateTracker } from './MandateTracker';
 import { DebugPanel } from './DebugPanel';
 import { getEncounterCacheManager } from '../../engine/orchestrator';
@@ -165,8 +165,9 @@ import {
   selectEncounterRuntimeForNotification,
 } from './encounterNotificationRuntime';
 import type { MeetingEncounterState, MeetingEncounterResult } from '../../types/meetingEncounter';
-import type { JourneyVignetteData, PendingVignette } from '../../types/journeyEngine';
-import { recordJourneyChoice } from '../../engine/journeyEngine';
+import type { CommittedOrdeal, JourneyVignetteData, PendingVignette } from '../../types/journeyEngine';
+import { ORDEAL_SET_ASIDE_TICKS } from '../../types/journeyEngine';
+import { readOrdealResult, recordJourneyChoice } from '../../engine/journeyEngine';
 import { recordStoryBeatDismissed } from '../../engine/phaseAttention';
 import { getThreadsFrom } from '../../engine/graphQueries';
 import type { ThreadEdgeProperties } from '../../types/influence';
@@ -3540,12 +3541,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [warmStart.running, getFirstThreadEdge, gameState.graph]);
 
   // ── Journey vignette (auto-interrupt for The First) ──
+  // THR-2226 — unrolled Ordeals Escape set aside, keyed by vision id → the tick it
+  // returns on. A set-aside vision stays queued (never rolled, never paid) and is
+  // skipped until its tick comes round.
+  const [asideVignettes, setAsideVignettes] = useState<ReadonlyMap<string, number>>(() => new Map());
   const activeVignette: PendingVignette | null = useMemo(() => {
     const pending = gameState.pendingVignettes;
     if (!pending || pending.length === 0) return null;
-    // Highest priority first (already sorted by engine)
-    return pending[0];
-  }, [gameState.pendingVignettes]);
+    // Highest priority first (already sorted by engine), skipping a set-aside Ordeal.
+    return pending.find(v => (asideVignettes.get(v.id) ?? 0) <= gameState.tick) ?? null;
+  }, [gameState.pendingVignettes, asideVignettes, gameState.tick]);
 
   // ── Story beat modal (pacing governor) ──
   const activeStoryBeatId: string | null = useMemo(() => {
@@ -4307,14 +4312,30 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [handleThreadDetailClose, handleHexDetailClose]);
   useEscapeLayer(!!selectedThreadNode || !!selectedHexCoord, closeDetailPanels, ESCAPE_LAYER_Z_PANEL);
 
-  const handleJourneyChoice = useCallback((choiceId: string) => {
-    if (!activeVignette) return;
+  // THR-2226 — Ordeal visions whose choice was already committed (rolled and paid) at
+  // the click, keyed by vision id. Its Continue only closes it, a second commit returns
+  // the stored roll, and a remounted vision (after an encounter took the screen) shows
+  // the result instead of the choices.
+  const committedOrdealsRef = useRef<Map<string, CommittedOrdeal>>(new Map());
+  const getCommittedOrdeal = useCallback(
+    (vignetteId: string): CommittedOrdeal | null => committedOrdealsRef.current.get(vignetteId) ?? null,
+    [],
+  );
+
+  /**
+   * Charge a journey choice's price and record it on the world. Returns false, doing
+   * nothing, when there is no thread or the pool cannot pay. `removeAfter` also drops
+   * the vision from the queue in the same update (every vision but a rolled Ordeal,
+   * which stays to show its result).
+   */
+  const commitJourneyChoice = useCallback((choiceId: string, removeAfter: boolean): boolean => {
+    if (!activeVignette) return false;
     const vignetteData = activeVignette.data;
 
     // Find the thread edge for this agent
     const threads = getThreadsFrom(gameState.graph, gameState.ascendantId);
     const threadEdge = threads.find(e => e.target === vignetteData.agentId);
-    if (!threadEdge) return;
+    if (!threadEdge) return false;
 
     // THR-1854 — a journey choice's essence cost is charged, all-or-nothing, against
     // the pool every encounter choice bills (THR-1720). The modal disables a choice the
@@ -4331,14 +4352,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         expiresAt: Date.now() + NUDGE_REJECT_TOAST_MS,
         sphere: payingSphere,
       });
-      return;
+      return false;
     }
 
     // THR-1822 § D15: the engine records the beat on the thread edge, applies what the
-    // choice does to the First herself (THR-1854), and bumps worldVersion.
-    recordJourneyChoice(gameState.graph, runtime, gameState.ascendantId, vignetteData, choiceId, gameState.tick);
+    // choice does to the First herself (THR-1854), and bumps worldVersion. THR-2226: on
+    // an Ordeal it also rolls, on the world seed.
+    recordJourneyChoice(gameState.graph, runtime, gameState.ascendantId, vignetteData, choiceId, gameState.tick, gameState.seed);
 
-    // Remove this vignette from the queue, paying its cost in the same update
+    // Pay the cost — and, unless the vision stays to show its roll, remove it from
+    // the queue in the same update.
     setGameState(prev => {
       const spend = essenceCost > 0
         ? spendAuthoredChoiceEssence(prev.essencePool, essenceCost, payingSphere)
@@ -4346,10 +4369,63 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       return {
         ...prev,
         ...(spend?.ok ? withEssenceSpend(prev, spend.pool, 'spend_nudge') : {}),
-        pendingVignettes: (prev.pendingVignettes ?? []).filter(v => v.id !== activeVignette.id),
+        ...(removeAfter
+          ? { pendingVignettes: (prev.pendingVignettes ?? []).filter(v => v.id !== activeVignette.id) }
+          : {}),
       };
     });
-  }, [activeVignette, gameState.graph, gameState.ascendantId, gameState.essencePool, gameState.tick, archetype.sphereAlignment.primary, handlePushToast, runtime, setGameState]);
+    return true;
+  }, [activeVignette, gameState.graph, gameState.ascendantId, gameState.essencePool, gameState.tick, gameState.seed, archetype.sphereAlignment.primary, handlePushToast, runtime, setGameState]);
+
+  const handleJourneyChoice = useCallback((choiceId: string) => {
+    if (!activeVignette) return;
+    // THR-2226 — a rolled Ordeal was paid and recorded at the click; this closes it.
+    if (committedOrdealsRef.current.has(activeVignette.id)) {
+      committedOrdealsRef.current.delete(activeVignette.id);
+      setGameState(prev => ({
+        ...prev,
+        pendingVignettes: (prev.pendingVignettes ?? []).filter(v => v.id !== activeVignette.id),
+      }));
+      return;
+    }
+    commitJourneyChoice(choiceId, true);
+  }, [activeVignette, commitJourneyChoice, setGameState]);
+
+  /**
+   * THR-2226 — the Ordeal commits at the click: pay, roll, record. The vision stays
+   * open and reads its result from the band written to the thread edge.
+   */
+  const handleOrdealCommit = useCallback((choiceId: string): CommittedOrdeal | null => {
+    if (!activeVignette) return null;
+    // Rolled once already: never charge or roll again — return the stored result.
+    const stored = committedOrdealsRef.current.get(activeVignette.id);
+    if (stored) return stored;
+    if (!commitJourneyChoice(choiceId, false)) return null;
+    const outcome = readOrdealResult(gameState.graph, gameState.ascendantId, activeVignette.data.agentId)?.outcome;
+    if (!outcome) return null;
+    const committed: CommittedOrdeal = { choiceId, outcome };
+    committedOrdealsRef.current.set(activeVignette.id, committed);
+    return committed;
+  }, [activeVignette, commitJourneyChoice, gameState.graph, gameState.ascendantId]);
+
+  /**
+   * THR-2226 (review cycle 4) — Escape on an unrolled Ordeal with nothing armed puts it
+   * aside: no roll, no charge (UI Law 48). It stays queued and takes the screen again
+   * after ORDEAL_SET_ASIDE_TICKS days; a toast says so (Law 23 still closes the layer).
+   */
+  const handleOrdealSetAside = useCallback(() => {
+    if (!activeVignette || committedOrdealsRef.current.has(activeVignette.id)) return;
+    const vignetteId = activeVignette.id;
+    const returnTick = gameState.tick + ORDEAL_SET_ASIDE_TICKS;
+    setAsideVignettes(prev => new Map(prev).set(vignetteId, returnTick));
+    handlePushToast({
+      id: `ordeal-aside-${vignetteId}-${gameState.tick}`,
+      message: ordealSetAsideLine(activeVignette.data.agentName, ORDEAL_SET_ASIDE_TICKS),
+      count: 1,
+      createdTick: gameState.tick,
+      expiresAt: Date.now() + NUDGE_REJECT_TOAST_MS,
+    });
+  }, [activeVignette, gameState.tick, handlePushToast]);
 
   // ── Debug levers (THR-1881) ──
   // Every `window.__DEBUG` registration and the `?spawn` / `?undertaking` / `?spell` /
@@ -4919,6 +4995,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         emergenceStageVM={emergenceStageVM}
         activeVignette={activeVignette}
         handleJourneyChoice={handleJourneyChoice}
+        handleOrdealCommit={handleOrdealCommit}
+        getCommittedOrdeal={getCommittedOrdeal}
+        handleOrdealSetAside={handleOrdealSetAside}
         activeStoryBeatId={activeStoryBeatId}
         activeStoryBeatTemplate={activeStoryBeatTemplate}
         activeStoryBeatAgentName={activeStoryBeatAgentName}
