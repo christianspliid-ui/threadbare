@@ -173,6 +173,18 @@ describe('THR-2229 — the harvest summary leads with the First', () => {
     expect(harvestSummary('bittersweet', 'Nesrin', null)).toBe('A bittersweet age. Nesrin left a lasting mark.');
   });
 
+  it('with two returned Firsts, the latest one is the story told', () => {
+    const state = newWorld();
+    const { id: oldId } = firstEdge(state);
+    setEdge(state, { returnEnding: 'vanishing', courtPosition: null, beatHistory: [{ tick: 100 }] as never });
+    const other = state.graph.getNodesByType('actor').find(n => n.id !== oldId && n.properties?.actorType === 'individual')!;
+    state.graph.addEdge({
+      id: 'thread_second_first', type: 'thread', source: state.ascendantId, target: other.id,
+      properties: { tier: 2, returnEnding: 'sacrifice', courtPosition: null, beatHistory: [{ tick: 300 }] },
+    } as never);
+    expect(readFirstStory(state)!.id).toBe(other.id);
+  });
+
   it('the Return ending names how the story ended', () => {
     const state = newWorld();
     setEdge(state, { returnEnding: 'vanishing' });

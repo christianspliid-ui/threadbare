@@ -108,8 +108,18 @@ export function readFirstStory(state: GameState): FirstStory | null {
   try {
     const graph = state.graph;
     const edges = graph.getOutgoingEdges(state.ascendantId, 'thread');
+    // A second First can bond and reach the Return too: take the latest returned
+    // thread (its last journey beat, then its bond tick), never the oldest.
+    const returnedAt = (p: Record<string, unknown> | undefined): number => {
+      const beats = (p?.beatHistory as Array<{ tick?: number }> | undefined) ?? [];
+      const last = beats.length ? beats[beats.length - 1]?.tick : undefined;
+      return typeof last === 'number' ? last : typeof p?.establishedTick === 'number' ? p.establishedTick : -1;
+    };
     const edge = edges.find(e => e.properties?.courtPosition === 'the_first')
-      ?? edges.find(e => typeof e.properties?.returnEnding === 'string');
+      ?? edges
+        .filter(e => typeof e.properties?.returnEnding === 'string')
+        .reduce<typeof edges[number] | undefined>(
+          (best, e) => (!best || returnedAt(e.properties) >= returnedAt(best.properties) ? e : best), undefined);
     let id: string | undefined = edge?.target;
     let name: string | undefined;
     if (!id) {
