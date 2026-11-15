@@ -91,7 +91,8 @@ export function agencyVerdict(none: AgencyArmResult, played: AgencyArmResult) {
   if (Math.abs(a.mandateProgress - b.mandateProgress) >= AGENCY_MANDATE_DELTA) diffs.push(`Mandate ${a.mandateProgress}→${b.mandateProgress}`);
   if (a.doomStage !== b.doomStage) diffs.push(`Doom stage ${a.doomStage}→${b.doomStage}`);
   // THR-2229 — H6 the Ordeal's outcome class, H7 the Apotheosis band, read at the end
-  // (each is written once, so the end holds it); and whether beat 2 reads differently.
+  // (each is written once; the census reads the thread, else the god's death note on
+  // its First, so a death does not read as "none"); and whether beat 2 reads differently.
   const ordealA = (none.end.ordealOutcome as string | null | undefined) ?? null;
   const ordealB = (played.end.ordealOutcome as string | null | undefined) ?? null;
   const apoA = (none.end.apotheosisBand as string | null | undefined) ?? null;

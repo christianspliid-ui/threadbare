@@ -296,6 +296,11 @@ function snapshot() {
   for (const c of chapters) { const b = String(c.outcome ?? 'none'); bands[b] = (bands[b] ?? 0) + 1; }
   const firstNode = firstId ? state.graph.getNode(firstId) : undefined;
   const thread = firstId ? state.graph.getOutgoingEdges(state.ascendantId, 'thread').find((e: any) => e.target === firstId) : undefined;
+  const facts = (): any => {
+    if (thread) return thread.properties;
+    const note: any = state.graph.getNode(state.ascendantId)?.properties?.firstRemembered;
+    return note && note.id === firstId ? note : undefined;
+  };
   return {
     tick: state.tick,
     phase: state.phase,
@@ -306,12 +311,13 @@ function snapshot() {
     mandateCompleted: !!state.mandateState?.completed,
     firstFate: (ff as any)?.fate ?? 'none',
     // THR-2229 — the climax facts on the First's thread, and the Twilight beat 2 they read as.
-    ordealOutcome: thread?.properties?.ordealOutcome ?? null,
-    ordealBand: thread?.properties?.ordealBand ?? null,
-    ordealLean: thread?.properties?.ordealLean ?? null,
-    apotheosisBand: thread?.properties?.apotheosisBand ?? null,
-    apotheosisGodPaid: thread?.properties?.apotheosisGodPaid ?? null,
-    returnEnding: thread?.properties?.returnEnding ?? null,
+    // A death sweeps the thread; the god's note on its First keeps the same facts.
+    ordealOutcome: facts()?.ordealOutcome ?? null,
+    ordealBand: facts()?.ordealBand ?? null,
+    ordealLean: facts()?.ordealLean ?? null,
+    apotheosisBand: facts()?.apotheosisBand ?? null,
+    apotheosisGodPaid: facts()?.apotheosisGodPaid ?? null,
+    returnEnding: facts()?.returnEnding ?? null,
     beat2: beat2(),
     firstAlive: !!firstNode && firstNode.properties?.deceased !== true,
     threadTier: thread?.properties?.tier ?? null,
