@@ -36,7 +36,7 @@ import {
 import type { EntityVisualDescriptor } from '../../engine/views/entityVisualResolver';
 import { RowPicture, rowDressingAttrs } from '../shared/RowPicture';
 import { ListHeadingIcon } from '../shared/ListHeadingIcon';
-import { listHeadingIcon, READ_THREADS_UNTOUCHED_LIVES_LABEL, READ_THREADS_WINDOW_LINES, type ListHeadingId } from '../../data/view-content';
+import { listHeadingIcon, READ_THREADS_UNTOUCHED_LIVES_LABEL, READ_THREADS_WINDOW_LINES, READ_THREADS_STRAINED_LINE, type ListHeadingId } from '../../data/view-content';
 import { pickStoryEntry } from '../../engine/threadDigest';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -342,6 +342,7 @@ function PreReadState({
   onSelect,
   onRead,
   cooldownTicksRemaining,
+  isOverwhelmed = false,
 }: {
   essenceAvailable: number;
   payingPoolsLine?: string;
@@ -349,6 +350,8 @@ function PreReadState({
   onSelect: (i: number) => void;
   onRead: () => void;
   cooldownTicksRemaining: number;
+  /** THR-2235 (review gate): the strained pool drops every chapter one step — say so before the spend. */
+  isOverwhelmed?: boolean;
 }) {
   const selected = LOOKBACK_OPTIONS[selectedIndex];
   const canAfford = essenceAvailable >= selected.cost;
@@ -419,6 +422,14 @@ function PreReadState({
             );
           })}
         </div>
+        {isOverwhelmed && (
+          <div
+            data-testid="read-threads-strained-line"
+            style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', marginTop: 'var(--space-2)', lineHeight: 1.4 }}
+          >
+            {READ_THREADS_STRAINED_LINE}
+          </div>
+        )}
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 'var(--space-1)' }}>
@@ -742,6 +753,7 @@ export function ReadTheThreadsPanel({
             onSelect={setSelectedIndex}
             onRead={handleRead}
             cooldownTicksRemaining={cooldownTicksRemaining}
+            isOverwhelmed={isOverwhelmed}
           />
         ) : (
           <PostReadState

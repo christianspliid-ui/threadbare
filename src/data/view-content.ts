@@ -603,3 +603,11 @@ export const READ_THREADS_WINDOW_LINES: Readonly<Record<string, string>> = {
   '2 days': 'The last day in full; the day before as who, what, and how it went.',
   '3 days': 'The last day in full, then names and outcomes; the oldest day fades to a story line each.',
 };
+
+/**
+ * THR-2235 (review gate) — shown under the windows while the attention pool is strained
+ * (below ATTENTION_POOL_STRAINED_THRESHOLD), because every chapter then reads one step
+ * fainter than its window line promises. Words only (Law 13).
+ */
+export const READ_THREADS_STRAINED_LINE =
+  'Your attention is strained: every chapter will read one step fainter than told above.';

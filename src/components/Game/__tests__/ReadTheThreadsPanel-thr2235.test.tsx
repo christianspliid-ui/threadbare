@@ -11,7 +11,7 @@ import { render, screen, fireEvent, cleanup, within } from '@testing-library/rea
 import { ReadTheThreadsPanel } from '../ReadTheThreadsPanel';
 import { WorldGraph } from '../../../engine/graph';
 import { tellDigestEntry } from '../../../engine/threadDigest';
-import { READ_THREADS_WINDOW_LINES } from '../../../data/view-content';
+import { READ_THREADS_WINDOW_LINES, READ_THREADS_STRAINED_LINE } from '../../../data/view-content';
 import type { DigestEntry } from '../../../types/attention';
 
 afterEach(cleanup);
@@ -147,5 +147,18 @@ describe('THR-2235 — Read the Threads fades each chapter by its age', () => {
     expect(lines).toEqual(Object.values(READ_THREADS_WINDOW_LINES));
     expect(lines).toHaveLength(4);
     for (const line of lines) expect(line).not.toMatch(/\d/);
+  });
+
+  it('a strained pool says, before the spend, that every chapter reads one step fainter', () => {
+    const { unmount } = render(
+      <ReadTheThreadsPanel open onClose={() => {}} digestBuffer={[]} currentTick={NOW} essenceAvailable={999} onSpendEssence={() => {}} attentionPool={1} attentionCapacity={100} />,
+    );
+    expect(screen.getByTestId('read-threads-strained-line').textContent).toBe(READ_THREADS_STRAINED_LINE);
+    expect(READ_THREADS_STRAINED_LINE).not.toMatch(/\d/);
+    unmount();
+    render(
+      <ReadTheThreadsPanel open onClose={() => {}} digestBuffer={[]} currentTick={NOW} essenceAvailable={999} onSpendEssence={() => {}} attentionPool={100} attentionCapacity={100} />,
+    );
+    expect(screen.queryByTestId('read-threads-strained-line')).toBeNull();
   });
 });
