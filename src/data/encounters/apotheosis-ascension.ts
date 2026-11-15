@@ -56,6 +56,10 @@ import {
   APOTHEOSIS_THRESHOLD_DIFFICULTY,
   APOTHEOSIS_VESSEL_DIFFICULTY,
   APOTHEOSIS_WITHDRAWAL_DIFFICULTY,
+  APOTHEOSIS_DEAL_COUNT,
+  APOTHEOSIS_HAND_MAX,
+  APOTHEOSIS_HAND_MAX_TOTAL_DELTA,
+  CLIMAX_BARE_FORECAST,
 } from '../nudge-constants';
 
 /**
@@ -128,9 +132,16 @@ const APOTHEOSIS_PAUSE_DURATION_TICKS = 480;
  *   • summed `forecastDelta` 0.49, under `NUDGE_HAND_MAX_TOTAL_DELTA` (0.70)
  *
  * No card carries `libraryCardId`. That field gates a card behind the god's
- * unlocked repertoire (`nudges.ts`), and an apex beat that can deal an empty
- * hand is worse than one whose cards are always available. The card *type* each
- * option instances is named in its comment, from the 21-type library.
+ * unlocked repertoire (`nudges.ts`), and an apex beat that withholds its own
+ * authored cards is worse than one whose cards are always *offered*. Offered is not
+ * payable: a card whose sphere holds no essence is still `sphere_locked` and the
+ * Stage hides it, so a spent god can arrive with nothing to play — THR-2227 gives
+ * that case a line (`APOTHEOSIS_EMPTY_PURSE_LINE`) instead of an empty tray. The
+ * card *type* each option instances is named in its comment, from the 21-type library.
+ *
+ * THR-2227 — the same seven ride both step-1 poles too, plus one card dealt from
+ * the god's repertoire and up to two earned by the First's paid chapters, so the
+ * step that grants or refuses Aspect is the biggest hand of the run.
  */
 const APOTHEOSIS_HAND: readonly StepNudge[] = [
   {
@@ -268,6 +279,9 @@ const step0TheThreshold: ActionStep = {
   onFailure: [],
   failBehavior: 'continue_weakened',
   nudges: APOTHEOSIS_HAND,
+  // THR-2227 — the bare chance is fitted to "Uncertain" for this mortal on entry;
+  // the authored difficulty above stays the fallback.
+  fitBareForecast: CLIMAX_BARE_FORECAST,
   narrativeTemplate:
     'There is a devotion that stops being a feeling and becomes a doorway, and the god found one ' +
     'standing open. The mortal had given what a mortal can give — years, certainty, the shape of an ' +
@@ -283,6 +297,32 @@ const step0TheThreshold: ActionStep = {
   successAtCostAfterimage: 'The doorway held, and holding it burned through more essence than the god had meant to spend.',
   criticalSuccessAfterimage: 'The threshold stood open and unshaking, wide enough to think inside.',
   criticalFailureAfterimage: 'The thin place tore at the edges and closed itself, with the answer half-spoken.',
+};
+
+/**
+ * THR-2227 (plan THR-2204 slice 2) — the deciding step's hand, on both poles.
+ *
+ * Until this, step 1 carried no `nudges`, so the step that grants or refuses Aspect
+ * dealt nothing and (THR-2203) never stopped the world. Now it holds the authored
+ * seven, one card dealt from the god's repertoire (7 + 1 = 8, the most any other
+ * chapter can hold), and up to two earned by the First's paid chapters. The earned
+ * cards are added at step entry (`climaxFit.earnedSlots` → `deal.count`), and this
+ * step is the only one that names its own hand ceiling, so it alone can exceed 8.
+ *
+ * The withdrawal pole takes the same seven: each card still reads true there (the
+ * leans argue for or against a fork already taken, and a Survivor closing a doorway
+ * gently is helped by the same steadying, time and order cards).
+ */
+const APOTHEOSIS_DECIDING_HAND: Pick<
+  ActionStep,
+  'nudges' | 'deal' | 'dealEarned' | 'handMax' | 'handMaxTotalDelta' | 'fitBareForecast'
+> = {
+  nudges: APOTHEOSIS_HAND,
+  deal: { count: APOTHEOSIS_DEAL_COUNT },
+  dealEarned: 'apotheosis',
+  handMax: APOTHEOSIS_HAND_MAX,
+  handMaxTotalDelta: APOTHEOSIS_HAND_MAX_TOTAL_DELTA,
+  fitBareForecast: CLIMAX_BARE_FORECAST,
 };
 
 /**
@@ -327,6 +367,7 @@ const step1Ascend: ActionStep = {
   onSuccess: [],
   onFailure: [],
   failBehavior: 'fail_action',
+  ...APOTHEOSIS_DECIDING_HAND,
   successMetadata: {
     effects: [
       {
@@ -364,6 +405,7 @@ const step1Withhold: ActionStep = {
   onSuccess: [],
   onFailure: [],
   failBehavior: 'fail_action',
+  ...APOTHEOSIS_DECIDING_HAND,
   narrativeTemplate:
     'The mortal looked through the open doorway at everything they could become, and chose to remain ' +
     'their own. The god does not argue. What is left is the closing, and a closing can be done well or ' +

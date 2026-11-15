@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 234 |
+| 🟢 LIVE | 235 |
 | 🟠 PARTIAL | 1 |
-| 🔴 LEAKED | 7 |
+| 🔴 LEAKED | 8 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 121 |
-| **Total** | **363** |
+| **Total** | **365** |
 
 ## Contracts by producing subsystem
 
@@ -172,6 +172,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `climax-fit-sizes-apotheosis-hand` | When an Apotheosis step is entered, its difficulty is fitted once so the no-card forecast reads "Uncertain" for this mortal, and the First's chapters the god paid into earn up to two extra cards on the deciding step; the Stage, the forecast and the roll all read that one stored value, and no other step's hand changes. | state-field: `climaxFit`, `ensureClimaxFits`, `apotheosisEarnedSlots` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `doom-floor-holds-unmaking` | No world ends before its First has had a life: however fast the clock is pushed, the Unmaking cannot begin until a floor of ticks has passed since the doom woke at the bond. | state-field: `wokeAtTick`, `doomFloorMetAtTick`, `DOOM_MIN_RUN_TICKS_AFTER_BOND` | Doom Clock & Journey | 🔵 UNVERIFIED-OK | — |
 | `doom-progress-paces-first-journey` | The First's hero's journey moves with the doom clock: its phases are fractions of doom progress, so a longer clock that starts at the bond stretches the whole call-to-return arc inside every run. | state-field: `doomClock` | Doom Clock & Journey | 🔵 UNVERIFIED-OK | — |
 | `ordeal-roll-writes-thread-outcome` | The First's Ordeal is decided by a roll on the First's marble bag at a difficulty fitted to "Uncertain", which the god's choice only leans on; the band the roll lands is written to the thread edge as the Ordeal outcome the Return reads, never the outcome a choice names. | edge-prop: `ordealOutcome`, `rollOrdeal` | Doom Clock & Journey | 🟢 LIVE | — |
@@ -194,6 +195,7 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `a-concealed-sale-ends-the-company-that-was-sold` | A member who took coin for what the company knew is why it ends — the sale is recorded as the dissolution reason, not laundered into the collapse it caused. | property: `hiddenMarks` | Companies & Group Travel | 🟢 LIVE | — |
+| `apotheosis-result-writes-thread-edge` | When an Apotheosis ends, how it ended and whether the god played a card in it are written to the mortal's thread edge once, for the ending and the agency census to read. | edge-prop: `apotheosisBand`, `apotheosisGodPaid`, `recordApotheosisResults` | Doom Clock & Journey | 🔴 LEAKED | THR-2229 |
 | `appointment-discount-reaches-board` | A mortal leaning toward an appointment discounts every encounter that would outlast the slack, and the discount reaches the unified decision board, where the choice is made: the regime stamps `appointmentDiscount` on the candidate and `scoreUnifiedBoard` multiplies it into the entry score beside the arrival commitment. `APPOINTMENT_DISCOUNT_ON_BOARD = false` restores the board exactly. | function: `appointmentDiscount`, `rerankForAppointmentRegime`, `APPOINTMENT_DISCOUNT_ON_BOARD` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `appointment-pulls-agent-movement` | An encounter ending can bind a mortal to a place by a time (THR-1479). The seed carries an `appointment` block — place, due tick, window, counterparty, missed branch — and the decision phase reads it every tick: slack (due − now − travel) is priced by the movement graph, the mortal *leans* toward the place through a second additive term on the relocation channel while the slack is inside the horizon, and *departs* through a journey candidate scored by `scoreMovementCandidate` and queued through the ordinary `initMovementState` writer once the slack falls under their leave margin (a formula over `courage_prudence` and `loyalty_ambition` that can go negative, so a Renegade chooses to miss). No second movement path; if the board outvotes the promise, `appointment_regime` traces it and nothing is forced. Registered LEAKED-with-ticket at filing: slice 1 lands the primitive and its first user; slice 2 (THR-1518) lands the census that proves a seeded run actually pulls a mortal — the reachability row, proven by a census hit rather than by a gate that reads the code (the THR-1497 lesson). | function: `plantAppointmentPromise`, `agentAppointmentSeeds`, `resolveAppointmentContext`, `computeAppointmentPull`, `appointmentRegime`, `computeAppointmentSlack` | Movement & Colocation | 🟢 LIVE | — |
 | `ascendant-affinity-cast-capability` | The ascendant's persisted reach affinities become its capability for a cast — the god's innate aptitude is not on the raw scale `computeRawScore` walks, so a literal read left every cast at capability 0.02 and one reachable outcome band. | node-prop: `domainAffinities`, `computeCapabilityWithRawBonus` | Encounters & Dilemmas | 🟢 LIVE | — |
@@ -705,6 +707,18 @@ remediation ticket or the build fails.
 - **Other hits:** `src/engine/battleAftermath.ts`, `src/engine/essenceEarned.ts`, `src/engine/lairEscalation.ts`, `src/engine/mandateLedger.ts`, `src/engine/notableAgendas.ts` +10 more
 - **Verdict:** Verified 2026-10-17: THR-1935. prayers.test.ts: Bless the Harvest on a praying town writes participated_in and pushes summing to 2 split mind 0.6 / spirit 0.4; a failed cast and an unflagged card do nothing; a hungry Foreign town pushes 1 once inside the cooldown.
 
+### `apotheosis-result-writes-thread-edge` — 🔴 LEAKED
+
+- **Intent:** When an Apotheosis ends, how it ended and whether the god played a card in it are written to the mortal's thread edge once, for the ending and the agency census to read.
+- **Producer → Consumer:** Encounters & Dilemmas → Doom Clock & Journey
+- **UL terms:** *The First*
+- **Module:** `src/engine/climaxFit.ts`
+- **Production hits:** 3 total — 1 write, 0 read, 2 unclassified
+- **Write sites:** `src/engine/climaxFit.ts`
+- **Read sites:** —
+- **Other hits:** `src/engine/orchestrator.ts`, `src/types/influence.ts`
+- **Verdict:** Tier 2: the registry declares no read sites and none were found — producer writes into nothing. — or the row under-declares its sites: confirm `apotheosisBand` is the symbol actually used at the real site, then register that site before treating this as a leak.
+
 ### `appointment-discount-reaches-board` — 🟢 LIVE
 
 - **Intent:** A mortal leaning toward an appointment discounts every encounter that would outlast the slack, and the discount reaches the unified decision board, where the choice is made: the regime stamps `appointmentDiscount` on the candidate and `scoreUnifiedBoard` multiplies it into the entry score beside the arrival commitment. `APPOINTMENT_DISCOUNT_ON_BOARD = false` restores the board exactly.
@@ -969,10 +983,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Domain Capability*, *UnifiedActionTemplate*
 - **Module:** `src/engine/unifiedActionResolution.ts`
-- **Production hits:** 260 total — 1 write, 3 read, 256 unclassified
+- **Production hits:** 262 total — 1 write, 3 read, 258 unclassified
 - **Write sites:** `src/data/unified-action-templates.ts`
 - **Read sites:** `src/engine/playerCastReadout.ts`, `src/engine/targetActions.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts` +251 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts` +253 more
 - **Verdict:** Verified 2026-09-10: THR-728: `unified-action-templates.ts` authors `steps[].difficulty`; `resolveUncontestedStep` reads it for `source === 'player'` (the auto-success early-return is now gated behind `PLAYER_CAST_VARIANCE_ENABLED`), and `targetActions.ts` reads the same field via `maxStepDifficulty` to render the focused card's risk line. Measured over 400 seeds: the outcome set for a positive-difficulty cast is >1 band. THR-1073 rerouted both read sites through `tierScaledDifficulty`: a step declaring `difficultyContext: 'target_tier_scaled'` treats its authored `difficulty` as a tier-1 baseline and resolves the real value from the target's tier. Both sites resolve through the same helper, so the card's risk line cannot drift from the roll; a step without the marker is returned unchanged. THR-1002 moved the card's read from a risk *sentence* to a forecast tier *word*: `castForecastProbability` (`playerCastReadout.ts`) is now the third read site, and the word is `classifyForecastTier` of the probability the roll uses. Re-verified 2026-09-10 by pinning it against `resolveUncontestedStep` driven for real rather than against `computeResolutionThreshold` — which found two live divergences the threshold-only pin had been green over: the below-floor lift is to the *scale* floor (a fresh god's local cast read `perilous` at 0.354 where the roll gives 0.65 → `favorable`), and a difficulty-0 step short-circuits to `probability: 1` above every scale adjustment, so it is `fated` at every scale.
 
 ### `authored-tier-ramp-target-scaled-price` — 🟢 LIVE
@@ -1187,10 +1201,10 @@ exit
 - **Intent:** While you were away (THR-2184). On a `?warm=<ticks>` arrival the warm-up card becomes a recap: `buildWarmRecap` (`engine/views/warmRecap.ts`) reads The First's non-routine `chapterArchive` records resolved inside the warm window and names the newest two in the Aftermath's own `outcomeSentence`, folding the rest into a count line, plus the live chapter The First is in the middle of. The newest one's `actionId` is where "Read it in the Ledger" opens. Read only; nothing is written.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Encounter*, *The First*
-- **Production hits:** 26 total — 1 write, 1 read, 24 unclassified
+- **Production hits:** 27 total — 1 write, 1 read, 25 unclassified
 - **Write sites:** `src/engine/chapterArchive.ts`
 - **Read sites:** `src/engine/views/warmRecap.ts`
-- **Other hits:** `src/components/Game/ChapterLedger.tsx`, `src/components/Game/encounterStakesRows.ts`, `src/components/Game/frame/LedgerRail.tsx`, `src/components/Game/GameView/openingReveal.ts`, `src/components/Game/GameView.tsx` +19 more
+- **Other hits:** `src/components/Game/ChapterLedger.tsx`, `src/components/Game/encounterStakesRows.ts`, `src/components/Game/frame/LedgerRail.tsx`, `src/components/Game/GameView/openingReveal.ts`, `src/components/Game/GameView.tsx` +20 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `chapter-growth-marks-reach-tile` — 🔵 UNVERIFIED-OK
@@ -1227,6 +1241,18 @@ exit
 - **Read sites:** `src/engine/phaseControlEffects.ts`
 - **Other hits:** `src/data/unified-action-templates.ts`, `src/engine/godsStake.ts`
 - **Verdict:** Verified 2026-10-24: THR-1969. godsStake.test.ts: spawnControlEffect on a grain hamlet binds grain; phaseControlEffects credits 0.75 Life on surplus, 0.5 on adequate, 0.25 on scarce; an unclassed good pays 0.5 Matter.
+
+### `climax-fit-sizes-apotheosis-hand` — 🟢 LIVE
+
+- **Intent:** When an Apotheosis step is entered, its difficulty is fitted once so the no-card forecast reads "Uncertain" for this mortal, and the First's chapters the god paid into earn up to two extra cards on the deciding step; the Stage, the forecast and the roll all read that one stored value, and no other step's hand changes.
+- **Producer → Consumer:** Doom Clock & Journey → Encounters & Dilemmas
+- **UL terms:** *The First*
+- **Module:** `src/engine/climaxFit.ts`
+- **Production hits:** 15 total — 3 write, 1 read, 11 unclassified
+- **Write sites:** `src/engine/chapterArchive.ts`, `src/engine/climaxFit.ts`, `src/engine/orchestrator.ts`
+- **Read sites:** `src/engine/unifiedActionLifecycle.ts`
+- **Other hits:** `src/data/encounters/apotheosis-ascension.ts`, `src/debug-bridge.ts`, `src/engine/encounterVisibility.ts`, `src/engine/orchestrator/phaseAscendantHandFilter.ts`, `src/engine/phases/phaseAutonomousAftermath.ts` +6 more
+- **Verdict:** Verified 2026-11-15: THR-2227. agency census, seeds 42 / 7 / 1234 to tick 470: every Apotheosis step 1 was held with 8 cards (hands-off) and its bare chance read uncertain (0.41-0.50); the played arm dealt 9 with the arrival line on seeds 7 and 1234. climaxFit.test.ts pins the earned slots, the stored fit and that no other library step changes its dealer ceiling.
 
 ### `colocated-grudge-spawns-duel` — 🟢 LIVE
 
@@ -2029,10 +2055,10 @@ exit
 
 - **Intent:** A spend visibly moves the pool it drew from (THR-1607, Law 47). `commitPlayerCast` deducts a cast's price from `GameState.essencePool[sphere]`; `selectEssenceRows` reads the pool in a fixed order (identity spheres, then canonical — never by level, so a spend never reorders the list) and `EssenceBlock` draws each row against `ESSENCE_BAR_CEILING` (the starting pool) with its whole-number balance and a delta-cluster flash after a spend. Before this the bar filled against `/10` while pools start at fifty, so no spend ever moved it.
 - **Producer → Consumer:** Encounters & Dilemmas → Essence & Divine Economy
-- **Production hits:** 56 total — 1 write, 1 read, 54 unclassified
+- **Production hits:** 57 total — 1 write, 1 read, 55 unclassified
 - **Write sites:** `src/engine/playerCastDispatch.ts`
 - **Read sites:** `src/engine/views/godRail.ts`
-- **Other hits:** `src/components/Game/ascendant-bar/EssenceBlock.tsx`, `src/components/Game/contexts/ScryContext.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useCrossroadsActs.ts` +49 more
+- **Other hits:** `src/components/Game/ascendant-bar/EssenceBlock.tsx`, `src/components/Game/contexts/ScryContext.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useCrossroadsActs.ts` +50 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `explored-hexes-draw-minimap` — 🔵 UNVERIFIED-OK
@@ -3339,10 +3365,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Domain Capability*, *UnifiedActionTemplate*, *Encounter*
 - **Module:** `src/engine/scaledForecast.ts`
-- **Production hits:** 12 total — 3 write, 2 read, 7 unclassified
+- **Production hits:** 13 total — 3 write, 2 read, 8 unclassified
 - **Write sites:** `src/engine/encounterCache.ts`, `src/engine/resolutionScaleAdjust.ts`, `src/engine/stepResolutionCore.ts`
 - **Read sites:** `src/engine/encounterScoring.ts`, `src/engine/plannerForecast.ts`
-- **Other hits:** `src/components/Game/encounter-stage/useNudgeHand.ts`, `src/engine/decisionBoard.ts`, `src/engine/journeyEngine.ts`, `src/engine/playerCastReadout.ts`, `src/engine/scaledForecast.ts` +2 more
+- **Other hits:** `src/components/Game/encounter-stage/useNudgeHand.ts`, `src/engine/climaxFit.ts`, `src/engine/decisionBoard.ts`, `src/engine/journeyEngine.ts`, `src/engine/playerCastReadout.ts` +3 more
 - **Verdict:** Verified 2026-09-24: THR-1579: `plannerForecastParity.test.ts` builds real cache entries (`EncounterCacheManager.buildFullCache` over ten location kinds) and, for a novice, a journeyman and a specialist, compares the planner's step probability against `previewStepProbability` — the roll's own derivation run dry — on 1,470 steps across local, regional and cosmic scale: equal to 9 decimal places on every step (the plan's KPI is mean ≤ `KPI_FORECAST_PARITY_MAX` 0.02), and the expected-utility path within one d100 point. Before the fix the plan's named case (capability 0.55, local, d 0.45) forecast 0.10 and rolled 0.65. The same file pins the engagement forecast `F` as the exact product of per-step survival (critical failure always ends; plain failure only on `fail_action`), carried on `ScoredCandidate` and the `encounter_scoring` trace. THR-1535 (2026-09-25): the same file re-runs all 1,470 steps with the mortal carrying a passive +0.05 charm on three reaches and standing on a mountain — the gear and ground move 149 of them, and planner equals resolver to 9 decimals on every one.
 
 ### `player-action-aftermath-read` — 🔵 UNVERIFIED-OK
@@ -3418,10 +3444,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Nudge*, *Encounter*, *UnifiedActionTemplate*
 - **Module:** `src/data/encounter-content.ts`
-- **Production hits:** 7 total — 1 write, 2 read, 4 unclassified
+- **Production hits:** 8 total — 1 write, 2 read, 5 unclassified
 - **Write sites:** `src/data/encounter-content.ts`
 - **Read sites:** `src/engine/encounters/dealHand.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/data/faction-encounter-content.ts`, `src/data/settingClasses.ts`, `src/engine/attentionCadence.ts`, `src/engine/phases/phaseAutonomousAftermath.ts`
+- **Other hits:** `src/data/faction-encounter-content.ts`, `src/data/settingClasses.ts`, `src/engine/attentionCadence.ts`, `src/engine/climaxFit.ts`, `src/engine/phases/phaseAutonomousAftermath.ts`
 - **Verdict:** Verified 2026-09-28: THR-1634 S1. `src/data/__tests__/firedTemplateCompletion.test.ts` reads the shipped `encounter.barter_supplies` through `getUnifiedTemplateById` and finds both declarations on its steps, and finds none on `encounter.mend_equipment`, which declares none. In a browser on local dev at 1920×1080, `?view=game&seeded&size=medium&spawn=encounter.barter_with_travelers` opened the stage with a four-card hand, every card marked "From your repertoire". Dealing is pure: `readers/reach.ts 42,99 200` printed byte-identical output with the passthrough on and off, and `readers/attended.ts 42,99 150` gave the same 1,542 firing rows, outcomes included.
 
 ### `realm-holdings-to-political-map` — 🟢 LIVE
@@ -3509,10 +3535,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Nudge*, *Encounter*, *UnifiedActionTemplate*
 - **Module:** `src/engine/encounters/dealHand.ts`
-- **Production hits:** 9 total — 3 write, 3 read, 3 unclassified
+- **Production hits:** 10 total — 3 write, 3 read, 4 unclassified
 - **Write sites:** `src/data/nudge-card-library.ts`, `src/data/nudge-constants.ts`, `src/types/unifiedAction.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/unifiedActionResolution.ts`, `src/engine/views/stage/buildNudgePhaseModel.ts`
-- **Other hits:** `src/engine/encounters/dealHand.ts`, `src/engine/nudgeCardRepertoire.ts`, `src/engine/phases/phaseAutonomousAftermath.ts`
+- **Other hits:** `src/engine/climaxFit.ts`, `src/engine/encounters/dealHand.ts`, `src/engine/nudgeCardRepertoire.ts`, `src/engine/phases/phaseAutonomousAftermath.ts`
 - **Verdict:** Verified 2026-08-26: THR-1254. The override this replaces named exactly one outstanding condition — "no shipped encounter declares `ActionStep.deal` yet, so the deal never runs in a real playthrough" — and `The Unfinished Rite` (`encounter.delve.the_unfinished_rite`) is that encounter: a registered, contract-clean template whose step 0 authors two specials and declares `deal: { count: 4, tags: ['insight','lore'] }`. Not a fixture and not the golden exemplar (which is registered in no pool and so can never prove Stage 4): it sits in both catalog arrays, and `npm run check:encounter-live -- encounter.delve.the_unfinished_rite` returns `proved`, having spawned it on the ascendant in a seeded world, committed a hand and ticked to resolution. Non-vacuous by `src/data/encounters/__tests__/the-unfinished-rite.test.ts` § *the composed hand*, which composes the SHIPPED template's step against a repertoire built by `buildRepertoire` from a real sphere identity — deliberately not a fixture holding the whole library, which would have asserted the fixture rather than the dealer — and pins that the dealer contributed on top of the specials (`report.dealt.length > 0`, composed > authored, both specials surviving, size inside DEAL_HAND_MIN..MAX) and that two composes of the same input agree, which is the zero-PRNG guarantee the resolution read site depends on. Measured across three sphere identities the same step composes three different six-card hands — darkness/order draws Follow The Book, Hide The Deed, Open The Ledger; light/life draws Show The Obvious, Ease The Suffering, Buy The Floor; force/matter draws Throw Full Weight, Find What Remains — with the two specials constant and at least one ungated common in each, which is the contract's intent line demonstrated rather than asserted. Both specials are things the dealer structurally cannot mint: `rite.loosen_their_nerve` binds `opposes: 'rival'` to a cast key only this scene declares, and `rite.kindle_heresy` grants `axiological_mark_apply` with `reach: 'veil'`, the reach-scoped case the authoring spec § 3b names. The compiler gap found on the way is part of this verification: `encounterPackageViolations` restated the whole-hand rules and was blind to `deal`, so the only sanctioned authoring path rejected every composed encounter while the shipped gate passed it; it now delegates to `checkComposedHand`.
 
 ### `reputation-with-unified-read` — 🟢 LIVE
@@ -4468,10 +4494,10 @@ exit
 - **Producer → Consumer:** Attachments, Items & Possessions → Ambitions & Undertakings
 - **UL terms:** *Undertaking*, *Condition*, *Companion*, *Standing*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 83 total — 3 write, 4 read, 76 unclassified
+- **Production hits:** 85 total — 3 write, 4 read, 78 unclassified
 - **Write sites:** `src/engine/reputation.ts`, `src/engine/tradeRouteOps.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/data/undertaking-objects.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/undertakingMotive.ts`, `src/engine/undertakingResolver.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/data/ambition-templates.ts`, `src/data/army-encounter-content.ts` +71 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/data/ambition-templates.ts`, `src/data/army-encounter-content.ts` +73 more
 - **Verdict:** Verified 2026-09-08: THR-1436. `resolveObjectOwners` answers in order — the type’s own `ownersOf`, an edge object’s source, the `ownedVia` walk — and a type declares one of the two, never both (pinned in `undertaking-objects.test.ts`). The Condition object is the borne edge: `cure_condition` on a definition with two bearers removes exactly one bearer’s edge, and the cure on an ally is not motive-gated while the cure on a stranger is (`undertakingOwnershipReaders.test.ts`). Standing enumerates both edge types deduplicated by ordered pair, the score winning; catalog templates are excluded from Items by id; `create × Route` reports the identity node. Counted on a generated world by `npm run census:ownership` (objects · owned · owned by a deciding mortal, per kind) and the CLI `objects` readout; the cells census on the closing PR shows `no_owned_object` gone for faction, condition and companion and `no_object_exists` gone for standing. THR-1438 extended the reader with a **living**-commander rule for Company and Army (a dead commander leaves a band unowned, which is what `claim × Company` waits for) and added the `eligibility` hook beside `gateExemption` — a precondition about the world rather than about who holds what, consulted after ownership and before the motive gate, refused on the board as `ineligible:<reason>:<target>` and failing closed on a throw.
 
 ### `undertaking-remote-anchor` — 🔵 UNVERIFIED-OK

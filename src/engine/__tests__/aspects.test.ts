@@ -263,6 +263,10 @@ describe('seedApotheosisEncounters', () => {
 
   it('seeds the apotheosis encounter onto an eligible tier-4 mortal', () => {
     const graph = makeGraph(4, ASPECT_ELIGIBILITY_TICKS);
+    // THR-2227 — the premonition fires first, on a tick of its own.
+    const warned = seedApotheosisEncounters(makeState(graph), 999);
+    expect(warned.pendingEncounterSeeds ?? []).toHaveLength(0);
+    expect(warned.tickEvents).toHaveLength(1);
     const patch = seedApotheosisEncounters(makeState(graph), 1000);
     expect(patch.pendingEncounterSeeds).toHaveLength(1);
     const seed = patch.pendingEncounterSeeds![0];
@@ -285,5 +289,6 @@ describe('seedApotheosisEncounters', () => {
     const graph = makeGraph(3, ASPECT_ELIGIBILITY_TICKS);
     const patch = seedApotheosisEncounters(makeState(graph), 1000);
     expect(patch.pendingEncounterSeeds ?? []).toHaveLength(0);
+    expect(patch.tickEvents ?? []).toHaveLength(0);
   });
 });

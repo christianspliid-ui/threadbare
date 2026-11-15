@@ -114,7 +114,9 @@ import { mandateDeedSpheres } from '../../mandateLedger';
 import { MANDATE_CARD_HINT } from '../../../data/ascendant-bar-content';
 import { SPHERE_NAMES } from '../../../types/index';
 import { getSpherePoints, rankSpherePoints } from '../../spherePoints';
-import { NUDGE_ESSENCE_COST_SCALE } from '../../../data/nudge-constants';
+import { DEAL_HAND_MAX, NUDGE_ESSENCE_COST_SCALE } from '../../../data/nudge-constants';
+import { APOTHEOSIS_ARRIVAL_LINE, APOTHEOSIS_EMPTY_PURSE_LINE } from '../../../data/aspect-content';
+import { fillApotheosisLine } from '../../apotheosisLines';
 import type {
   EncounterStageCostChannelModel,
   EncounterStageFactorLineModel,
@@ -594,6 +596,32 @@ function fightTermLine(name: string, delta: number, label: string | undefined): 
 }
 
 /**
+ * THR-2227 — the Apotheosis's line above the hand, or `undefined`. Pure.
+ *
+ * - `empty_purse` when the step is a climax step and no card can be paid for: a
+ *   line, never a silent tray (Law 22).
+ * - `arrival` when the step deals earned cards and the composed hand holds more
+ *   than `DEAL_HAND_MAX` — true by construction only of an earned hand, since no
+ *   other step may exceed the dealer's ceiling. No counts in the sentence (UI Law 13).
+ */
+export function apotheosisClimaxLine(
+  step: Pick<ActionStep, 'fitBareForecast' | 'dealEarned'>,
+  composedHandSize: number,
+  playableCount: number,
+  firstName: string | undefined,
+  firstGender: unknown,
+): EncounterStageNudgePhaseModel['climaxLine'] {
+  if (step.fitBareForecast === undefined && step.dealEarned === undefined) return undefined;
+  if (playableCount === 0) {
+    return { kind: 'empty_purse', text: fillApotheosisLine(APOTHEOSIS_EMPTY_PURSE_LINE, firstName, firstGender) };
+  }
+  if (step.dealEarned !== undefined && composedHandSize > DEAL_HAND_MAX) {
+    return { kind: 'arrival', text: fillApotheosisLine(APOTHEOSIS_ARRIVAL_LINE, firstName, firstGender) };
+  }
+  return undefined;
+}
+
+/**
  * Build the stage's nudge phase, or `undefined` when this step has no authored
  * hand and the caller has something else to render — the caller branches on that
  * to keep authored-choice templates on the choice screen (per-template rollout,
@@ -1017,10 +1045,21 @@ export function buildNudgePhaseModel(
     }
   }
 
+  // THR-2227 — the Apotheosis's line above its hand. Only a climax step (one that
+  // fits its bare forecast) carries one; every other step's model is unchanged.
+  const climaxLine = apotheosisClimaxLine(
+    step,
+    composedStep.nudges?.length ?? 0,
+    hand.playable.length,
+    graph.getNode(actorId)?.name,
+    graph.getNode(actorId)?.properties?.gender,
+  );
+
   return {
     actionId: activeAction.actionId,
     templateId: template.id,
     stepIndex: activeAction.currentStep,
+    ...(climaxLine ? { climaxLine } : {}),
     motive,
     testPanel: {
       reach: stepReach,

@@ -162,6 +162,16 @@ export interface ThreadEdgeProperties {
   storyPhase?: CampbellianPhase;
   /** Ordeal beat outcome (Phase 3+). THR-2226: written from the Ordeal's roll. */
   ordealOutcome?: OrdealOutcome;
+  /**
+   * THR-2227 — how the last Apotheosis this mortal faced ended (the action's final
+   * outcome), written on completion. Read by the Twilight ending (THR-2204 slice 4)
+   * and the agency census. Absent = never faced one.
+   */
+  apotheosisBand?: import('./unifiedAction').UnifiedActionOutcome;
+  /** THR-2227 — the god committed a card in that Apotheosis. */
+  apotheosisGodPaid?: boolean;
+  /** THR-2227 — the action the two fields above were written from (write-once per action). */
+  apotheosisResultActionId?: string;
   /** Record of choices made during the meeting encounter (Phase 1+). */
   meetingChoiceRecord?: MeetingChoiceRecord;
   /**

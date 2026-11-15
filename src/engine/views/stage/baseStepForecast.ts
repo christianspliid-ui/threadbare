@@ -192,7 +192,7 @@ export function baseStepForecastTier(
   stepIndex: number,
 ): ForecastTier | undefined {
   try {
-    const step = resolveStepDefinition(template, stepIndex, action.choiceHistory);
+    const step = resolveStepDefinition(template, stepIndex, action.choiceHistory, action.climaxFit);
     if (!step) return undefined;
     const atStep = action.currentStep === stepIndex ? action : { ...action, currentStep: stepIndex };
     const variants = resolveTraitVariants(template, collectHeldTraitIds(graph, action.actorId));

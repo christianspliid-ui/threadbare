@@ -282,6 +282,21 @@ function tagTermFor(profile: NudgeCardPlayProfile, context: DealContext): number
 }
 
 /**
+ * THR-2227 — the dealer's hand ceiling for a step: its own `handMax` when it names
+ * one (only the Apotheosis's deciding step does), else `DEAL_HAND_MAX`.
+ */
+export function dealHandMaxFor(step: Pick<ActionStep, 'handMax'>): number {
+  const own = step.handMax;
+  return typeof own === 'number' && Number.isFinite(own) && own > 0 ? Math.floor(own) : DEAL_HAND_MAX;
+}
+
+/** THR-2227 — the step's delta budget: its own `handMaxTotalDelta`, else `DEAL_HAND_MAX_TOTAL_DELTA`. */
+export function dealHandMaxTotalDeltaFor(step: Pick<ActionStep, 'handMaxTotalDelta'>): number {
+  const own = step.handMaxTotalDelta;
+  return typeof own === 'number' && Number.isFinite(own) && own > 0 ? own : DEAL_HAND_MAX_TOTAL_DELTA;
+}
+
+/**
  * Fill a step's hand from the god's repertoire.
  *
  * Pure, total, and zero-PRNG. Given the same repertoire, the same declaration
@@ -305,7 +320,7 @@ function tagTermFor(profile: NudgeCardPlayProfile, context: DealContext): number
  *    plan's "deal what exists".
  */
 export function dealHand(
-  step: Pick<ActionStep, 'nudges' | 'deal'> & { readonly difficulty?: number },
+  step: Pick<ActionStep, 'nudges' | 'deal' | 'handMax' | 'handMaxTotalDelta'> & { readonly difficulty?: number },
   repertoire: readonly RepertoireEntry[],
   context: DealContext,
 ): DealResult {
@@ -321,7 +336,10 @@ export function dealHand(
 
   // Room left in the hand after what the encounter authored. A step that
   // already authored a full hand gets no fill rather than an oversized one.
-  const room = Math.max(0, DEAL_HAND_MAX - authored.length);
+  // THR-2227 — a step may name its own ceiling (the Apotheosis's deciding step);
+  // every other step reads the constants, so its hand is unchanged.
+  const handMax = dealHandMaxFor(step);
+  const room = Math.max(0, handMax - authored.length);
   const asked = Math.max(
     0,
     Math.floor(
@@ -405,7 +423,7 @@ export function dealHand(
   let commonSoFar = authored.filter((n) => n.sphere === undefined).length;
 
   const wouldFit = (c: Scored): boolean =>
-    delta + c.profile.forecastDelta <= DEAL_HAND_MAX_TOTAL_DELTA + 1e-9;
+    delta + c.profile.forecastDelta <= dealHandMaxTotalDeltaFor(step) + 1e-9;
 
   const take = (c: Scored): void => {
     taken.push(c);

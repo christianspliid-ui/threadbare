@@ -2122,6 +2122,20 @@ export type DealContextTag =
   | 'labor'
   | 'journey';
 
+/** THR-2227 — a climax step's fit, stored on the action at step entry. */
+export interface ClimaxStepFit {
+  /** The step this fit belongs to; any other step ignores it. */
+  readonly stepIndex: number;
+  /** The difficulty every reader of the step uses (the authored one when `fitted` is false). */
+  readonly fittedDifficulty: number;
+  /** The bare (no-card) chance at that difficulty. */
+  readonly bareChance: number;
+  /** False when the target could not be bracketed and the authored difficulty stands. */
+  readonly fitted: boolean;
+  /** Earned cards added to the step's `deal.count` (0 when the step deals none). */
+  readonly earnedSlots: number;
+}
+
 /** THR-1247 — a step's request for cards from the god's Repertoire. */
 export interface StepDealDeclaration {
   /**
@@ -2237,6 +2251,28 @@ export interface ActionStep {
    * a save exactly as an authored one does.
    */
   readonly deal?: StepDealDeclaration;
+  /**
+   * THR-2227 (plan THR-2204 slice 2) — fit this step's bare (no-card) chance to the
+   * given target for the acting mortal. The fit is computed once on step entry and
+   * stored on the action (`UnifiedAction.climaxFit`); `resolveStepDefinition` then
+   * hands every reader the fitted difficulty, so the forecast and the roll read one
+   * value (Law 18). The authored `difficulty` stays the fallback. Absent ⇒ no fit.
+   */
+  readonly fitBareForecast?: number;
+  /**
+   * THR-2227 — a named exception to the dealer's hand ceiling (`DEAL_HAND_MAX`).
+   * Absent on every step but the Apotheosis's deciding step, so every other hand
+   * keeps the constant.
+   */
+  readonly handMax?: number;
+  /** THR-2227 — the matching exception to `DEAL_HAND_MAX_TOTAL_DELTA`. */
+  readonly handMaxTotalDelta?: number;
+  /**
+   * THR-2227 — earned cards on top of `deal.count`, counted from state at step entry
+   * (`apotheosisEarnedSlots`) and stored on `climaxFit.earnedSlots`. Only
+   * `'apotheosis'` exists.
+   */
+  readonly dealEarned?: 'apotheosis';
   /**
    * THR-820: ≤`REACH_PURPOSE_MAX_WORDS` (4) words, plain — what this step is
    * *testing*, rendered beside the reach in the test panel. "Read the lock",
@@ -3384,6 +3420,19 @@ export interface UnifiedAction {
    * there" survives to the ending. Absent on older records ⇒ unknown, read as not.
    */
   readonly emptyHandCommitted?: true;
+  /**
+   * THR-2227 — the god committed at least one card on a step of this chapter that
+   * has since advanced (set as the spent hand is cleared). Read through
+   * `actionGodPaid`. Absent on older records ⇒ unknown, read as not.
+   */
+  readonly cardsCommitted?: true;
+  /**
+   * THR-2227 — the fitted climax step: computed once when a step carrying
+   * `fitBareForecast` (or `dealEarned`) is entered, and read by every derivation
+   * of that step through `resolveStepDefinition`. Keyed by `stepIndex`, so a
+   * stale record from an earlier step is ignored. Absent ⇒ the authored step.
+   */
+  readonly climaxFit?: ClimaxStepFit;
   /** Rarity tier after Focus buff was applied at action creation (THR-416). Prefer this over template.rarityTier at read sites. */
   readonly effectiveRarityTier?: RarityTier;
   /** Reuse-first binding of encounter support cast/places resolved at action start. */
