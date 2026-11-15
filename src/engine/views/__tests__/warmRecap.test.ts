@@ -196,11 +196,50 @@ describe('buildWarmRecap (THR-2184)', () => {
     expect(lines[0]).toMatch(/Bridge Toll/);
   });
 
-  it('never names a rival behind a slipped place', () => {
+  it('names no rival when no rival landed on the slipped place (ledger ids are never shown)', () => {
     const state = world({ p1: 'held' });
     const before = snapshotWarmRecap(state, FIRST);
     state.graph.updateNode(ASC, { properties: { [DOMINION_LEDGER_KEY]: { bands: { p1: 'touched' }, rivals: { p1: 'rival-x' } } } });
     expect(texts(state, before).join(' ')).not.toMatch(/rival/i);
+  });
+
+  // THR-2237: the rival behind a slipped place is named when it pressed it in the window.
+  describe('the rival who pressed a slipped place (THR-2237)', () => {
+    const RIVAL_DEF = { id: 'rv1', name: 'The Hollow Warden' };
+    const withRival = (state: GameState, placeId: string, tick: number, absorbed = false) => {
+      (state as unknown as { rivalDefinitions: unknown[]; rivalStates: unknown[] }).rivalDefinitions = [RIVAL_DEF];
+      (state as unknown as { rivalStates: unknown[] }).rivalStates = [
+        { rivalId: 'rv1', active: true, lastPressed: { placeId, tick, ...(absorbed ? { absorbed: true } : {}) } },
+      ];
+    };
+
+    it('one slipped place a rival pressed: "{Rival} pressed it."', () => {
+      const state = world({ p2: 'held' });
+      const before = snapshotWarmRecap(state, FIRST);
+      setBands(state, { p2: 'touched' });
+      withRival(state, 'p2', START + 5);
+      expect(texts(state, before)).toEqual(['Iron Glade slipped from Held to Touched. The Hollow Warden pressed it.']);
+    });
+
+    it('a list names the pressed place: "{Rival} pressed {place}."', () => {
+      const state = world({ p1: 'held', p2: 'held' });
+      const before = snapshotWarmRecap(state, FIRST);
+      setBands(state, { p1: 'touched', p2: 'touched' });
+      withRival(state, 'p2', START + 5);
+      const vm = buildWarmRecap(state, before);
+      expect(vm.lines.map(warmRecapLineText)).toEqual(['Two of your places slipped: Ashford and Iron Glade. The Hollow Warden pressed Iron Glade.']);
+      expect(vm.lines[0].segments.filter(s => s.ref?.id === 'p2')).toHaveLength(2);
+    });
+
+    it('no rival line for a landing before the window, an absorbed one, or another place', () => {
+      for (const [placeId, tick, absorbed] of [['p2', START - 1, false], ['p2', START + 5, true], ['p3', START + 5, false]] as const) {
+        const state = world({ p2: 'held' });
+        const before = snapshotWarmRecap(state, FIRST);
+        setBands(state, { p2: 'touched' });
+        withRival(state, placeId, tick, absorbed);
+        expect(texts(state, before)).toEqual(['Iron Glade slipped from Held to Touched.']);
+      }
+    });
   });
 
   // Review gate, THR-2184: the ledger is only written inside a tick, so before a warm-up's

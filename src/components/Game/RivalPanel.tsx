@@ -11,7 +11,7 @@ import { Icon } from '../shared/Icon';
 import {
   rivalCauseSegments,
   rivalLastPressedSegments,
-  rivalWords,
+  rivalAnswerSegments,
   type PlaceNameLookup,
   type RivalLineSegment,
 } from '../../engine/views/rivalEntry';
@@ -47,9 +47,15 @@ interface RivalPanelProps {
   tick?: number;
   /** THR-2185: a place's name, undefined when it no longer resolves. */
   placeName?: PlaceNameLookup;
+  /**
+   * THR-2237: whether the god holds Rebuke, and the places a Rebuke can answer now. With
+   * both, a rival whose last landing is answerable reads "Rebuke it at {place}".
+   */
+  answer?: { holdsRebuke: boolean; rebukable: ReadonlySet<string> };
 }
 
 const NO_PLACE_NAME: PlaceNameLookup = () => undefined;
+const NO_ANSWER = { holdsRebuke: false, rebukable: new Set<string>() } as const;
 
 /** A line's runs: words as text, a place as a link through the one router (Laws 1, 21). */
 function renderSegments(segments: readonly RivalLineSegment[]): React.ReactNode {
@@ -63,7 +69,7 @@ function sphereWord(sphere: string): string {
   return sphere.charAt(0).toUpperCase() + sphere.slice(1);
 }
 
-export const RivalPanel = React.memo(function RivalPanel({ definitions, states, tick = 0, placeName = NO_PLACE_NAME }: RivalPanelProps) {
+export const RivalPanel = React.memo(function RivalPanel({ definitions, states, tick = 0, placeName = NO_PLACE_NAME, answer = NO_ANSWER }: RivalPanelProps) {
   // THR-1780: a rival god's name opens its entry in place. Rivals are run state, not graph
   // nodes, so there is no sheet for the ref router to open — the disclosure is the sheet.
   const [openRivalId, setOpenRivalId] = useState<string | null>(null);
@@ -157,7 +163,7 @@ export const RivalPanel = React.memo(function RivalPanel({ definitions, states, 
                         return last ? <p data-testid="rival-last-pressed">{renderSegments(last)}</p> : null;
                       })()}
                       <p data-testid="rival-answer" style={{ color: 'var(--text-tertiary)' }}>
-                        {rivalWords('ui.rival.answer')}
+                        {renderSegments(rivalAnswerSegments(rivalState, answer, placeName))}
                       </p>
                     </div>
                   )}

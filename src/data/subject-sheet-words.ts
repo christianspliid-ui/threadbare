@@ -34,6 +34,8 @@ export const SUBJECT_ROW_LABELS = {
   pilgrimWays: 'Pilgrim ways',
   // THR-1991 — the settlement's notable, restored from the retired LocationView.
   notable: 'Notable',
+  // THR-2237 — the rival whose landing on this place can still be answered.
+  rivalPressed: 'A rival’s hand',
   // Faction (§ D7.4)
   description: 'Who they are',
   venerates: 'Venerates',

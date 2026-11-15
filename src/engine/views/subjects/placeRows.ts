@@ -79,6 +79,7 @@ import { selectPilgrimWays } from '../../pilgrimWays';
 import { getSettlementNotable, type SettlementNotableClauseKind } from '../../settlementNotable';
 import { buildLairMonsterCardModel } from '../stage/buildLairMonsterCardModel';
 import { sizeLine, livelihoodParts } from '../../settlementEconomy/describe';
+import { godHoldsRebuke, rivalPressedNowLine, rivalPressedOn } from '../rivalEntry';
 
 // ─── Shared ──────────────────────────────────────────────────────────────────
 
@@ -574,6 +575,24 @@ const lairMonster: SectionResolver = (ctx) => {
   return section;
 };
 
+/**
+ * THR-2237 (rule R5): while a rival's landing on this place can still be rebuked, the
+ * page leads with it — "{Rival} pressed it {when}." as the highlight's headline, and
+ * under it how the god answers: Rebuke here (when held) or tend it. Null otherwise.
+ */
+const rivalPressed: SectionResolver = (ctx) => {
+  const p = placeOf(ctx);
+  if (!p) return null;
+  const view = rivalPressedOn(p.state, p.node.id);
+  if (!view) return null;
+  const line = rivalPressedNowLine(view, p.state.tick, godHoldsRebuke(p.state));
+  return sentenceSection('rival_pressed', SUBJECT_ROW_LABELS.rivalPressed, [[line.answer]], 'rivalEntry.rivalPressedOn', {
+    labelTooltipId: 'ui.rival.pressed_now',
+    icon: 'rivals',
+    highlight: { icon: 'rivals', headline: line.headline },
+  });
+};
+
 /** The place rows, by `typeId` (the registry's `placeRow` reads this). */
 export const PLACE_ROW_RESOLVERS = {
   place_prose: placeProse,
@@ -596,4 +615,5 @@ export const PLACE_ROW_RESOLVERS = {
   pilgrim_way: pilgrimWay,
   lair_monster: lairMonster,
   settlement_notable: settlementNotable,
+  rival_pressed: rivalPressed,
 } satisfies Record<string, SectionResolver>;

@@ -268,6 +268,33 @@ export const MILESTONE_BEAT_PRESENTATION: Readonly<Record<string, SpineBeatPrese
 };
 
 /**
+ * THR-2237 — the "A Rival's Hand" gift, named. When a rival's landing can still be
+ * rebuked, the gift says who pressed which place and its button takes the god there
+ * ("Go to {place}"). `{rival}` / `{place}` are names. With nothing left to rebuke the
+ * gift falls back to its authored copy and "Receive" (Law 43: never a raw token).
+ */
+export const FIRST_REBUKE_FILLED = {
+  prose:
+    '{rival} has pressed its will on {place}, and the place gave ground. It will come again where you are not watching. But a god can answer a god. Go there and rebuke it: the place will hold against it for a few days, and some of what it took comes back. The rival will remember that you did.',
+  cta: 'Go to {place}',
+} as const;
+
+/** The gift's title, prose and button for a named landing, or null to keep the authored copy. */
+export function firstRebukeGiftCopy(
+  landing: { rivalName: string; placeName: string } | null,
+): { title: string; prose: string; cta: string } | null {
+  const rival = landing?.rivalName?.trim();
+  const place = landing?.placeName?.trim();
+  if (!rival || !place) return null;
+  const authored = MILESTONE_BEAT_PRESENTATION[MILESTONE_FIRST_REBUKE_BEAT_ID];
+  return {
+    title: authored.title,
+    prose: FIRST_REBUKE_FILLED.prose.replace('{rival}', rival).replace('{place}', place),
+    cta: FIRST_REBUKE_FILLED.cta.replace('{place}', place),
+  };
+}
+
+/**
  * The chronicle line written when the essence-source milestone fires (plan §4.3).
  * One sentence, plain register. Consumed by `phaseAscendantProgression` at the enqueue
  * point, so chronicle ↔ milestone beat stay 1:1.
