@@ -7,6 +7,7 @@
 //      way, an end tick at least AGENCY_END_TICK_DELTA apart
 //   H2 the First's fate          H3 the Apotheosis
 //   H4 Mandate progress ± AGENCY_MANDATE_DELTA            H5 Doom stage
+//   H6 the Ordeal's outcome class   H7 the Apotheosis band (THR-2229, read at the end)
 // "The player mattered" on a seed when at least AGENCY_MIN_HEADLINE_DIFFS differ.
 // It tests DIFFERENT, never better (Law 32).
 //
@@ -53,6 +54,31 @@ function readAt(r: AgencyArmResult, t: number): AgencySnapshot {
 const endKind = (r: AgencyArmResult) =>
   (r.end.phase !== 'playing' ? (r.end.mandateCompleted ? 'mandate' : 'doom') : 'none');
 
+interface OrdealRollRecord { luckDrawIndex?: number | null; leanDecisive?: boolean; outcome?: string }
+
+const lastOrdeal = (r: AgencyArmResult): OrdealRollRecord | undefined => {
+  const rolls = (r.ordealRolls as OrdealRollRecord[] | undefined) ?? [];
+  return rolls[rolls.length - 1];
+};
+
+/**
+ * THR-2229 — what moved an Ordeal difference between the arms. The arms reach the
+ * Ordeal at different bag counts, so a different band is not by itself agency:
+ *   'lean'     the played roll would have landed the other side at the bare chance,
+ *              and both arms drew from the same bag position;
+ *   'bag'      the bag position differs and the lean was not decisive;
+ *   'lean+bag' both;
+ *   'neither'  only one arm reached the Ordeal, or neither cause shows.
+ */
+export function ordealAttribution(none: AgencyArmResult, played: AgencyArmResult): 'lean' | 'bag' | 'lean+bag' | 'neither' {
+  const a = lastOrdeal(none);
+  const b = lastOrdeal(played);
+  if (!a || !b) return 'neither';
+  const bag = (a.luckDrawIndex ?? null) !== (b.luckDrawIndex ?? null);
+  const lean = b.leanDecisive === true;
+  return lean && bag ? 'lean+bag' : lean ? 'lean' : bag ? 'bag' : 'neither';
+}
+
 export function agencyVerdict(none: AgencyArmResult, played: AgencyArmResult) {
   const a = readAt(none, AGENCY_COMPARE_TICK);
   const b = readAt(played, AGENCY_COMPARE_TICK);
@@ -64,6 +90,19 @@ export function agencyVerdict(none: AgencyArmResult, played: AgencyArmResult) {
   if (a.apotheosis !== b.apotheosis) diffs.push(`Apotheosis ${a.apotheosis}→${b.apotheosis}`);
   if (Math.abs(a.mandateProgress - b.mandateProgress) >= AGENCY_MANDATE_DELTA) diffs.push(`Mandate ${a.mandateProgress}→${b.mandateProgress}`);
   if (a.doomStage !== b.doomStage) diffs.push(`Doom stage ${a.doomStage}→${b.doomStage}`);
+  // THR-2229 — H6 the Ordeal's outcome class, H7 the Apotheosis band, read at the end
+  // (each is written once; the census reads the thread, else the god's death note on
+  // its First, so a death does not read as "none"); and whether beat 2 reads differently.
+  const ordealA = (none.end.ordealOutcome as string | null | undefined) ?? null;
+  const ordealB = (played.end.ordealOutcome as string | null | undefined) ?? null;
+  const apoA = (none.end.apotheosisBand as string | null | undefined) ?? null;
+  const apoB = (played.end.apotheosisBand as string | null | undefined) ?? null;
+  const h6 = ordealA !== ordealB;
+  const h7 = apoA !== apoB;
+  if (h6) diffs.push(`Ordeal ${ordealA ?? 'none'}→${ordealB ?? 'none'}`);
+  if (h7) diffs.push(`Apotheosis band ${apoA ?? 'none'}→${apoB ?? 'none'}`);
+  const beat2A = (none.end.beat2 as string | null | undefined) ?? null;
+  const beat2B = (played.end.beat2 as string | null | undefined) ?? null;
   const ids = (r: AgencyArmResult) => new Set<string>((r.end.firstChapterIds ?? []).map((x) => x.split(':')[0]));
   const ia = ids(none); const ib = ids(played);
   const inter = [...ia].filter((x) => ib.has(x)).length;
@@ -74,6 +113,12 @@ export function agencyVerdict(none: AgencyArmResult, played: AgencyArmResult) {
     headlineDiffs: diffs.length,
     diffs,
     mattered: diffs.length >= AGENCY_MIN_HEADLINE_DIFFS,
+    h6,
+    h7,
+    /** What moved an H6 difference: the lean, the bag position, both, or neither (null when H6 holds). */
+    h6MovedBy: h6 ? ordealAttribution(none, played) : null,
+    beat2Differs: beat2A !== beat2B,
+    beat2: { none: beat2A, played: beat2B },
     diagnostics: {
       chapterTemplateOverlap: uni ? Number((inter / uni).toFixed(2)) : 1,
       cardsPlayed: played.cardsPlayed,
@@ -85,6 +130,23 @@ export function agencyVerdict(none: AgencyArmResult, played: AgencyArmResult) {
 }
 
 export type AgencyVerdict = ReturnType<typeof agencyVerdict>;
+
+export const AGENCY_BEAT2_MIN_SEEDS = 2;   // seeds whose beat 2 must differ between arms
+export const AGENCY_OUTCOME_MIN_SEEDS = 1; // seeds whose H6 or H7 must differ
+
+/**
+ * THR-2229 — the played-vs-unplayed predicate: beat 2 differs on at least
+ * AGENCY_BEAT2_MIN_SEEDS seeds, and H6 or H7 on at least AGENCY_OUTCOME_MIN_SEEDS.
+ */
+export function agencyEndingPredicate(verdicts: AgencyVerdict[]) {
+  const beat2Differs = verdicts.filter((v) => v.beat2Differs).length;
+  const outcomeDiffers = verdicts.filter((v) => v.h6 || v.h7).length;
+  return {
+    beat2Differs,
+    outcomeDiffers,
+    holds: beat2Differs >= AGENCY_BEAT2_MIN_SEEDS && outcomeDiffers >= AGENCY_OUTCOME_MIN_SEEDS,
+  };
+}
 
 /** Why a pair cannot be compared, or null when it can (missing file, or an arm stopped on wall time). */
 export function agencyNotMeasured(none: AgencyArmResult | null, played: AgencyArmResult | null): string | null {
@@ -108,5 +170,14 @@ export function agencyReport(pairs: Array<{ seed: string | number; none: AgencyA
   }
   lines.push(`agency: the player mattered on ${measured.filter((r) => r.mattered).length}/${measured.length} measured seeds`
     + ` (${pairs.length - measured.length} not measured); headline differences ${measured.map((r) => r.headlineDiffs).join(',') || '-'}`);
+  // THR-2229 — the ending, per arm, and the played-vs-unplayed predicate (plan THR-2204 slice 4).
+  for (const v of measured) {
+    lines.push(`seed ${v.seed} beat 2, hands-off: ${v.beat2.none ?? '(no First)'}`);
+    lines.push(`seed ${v.seed} beat 2, played:    ${v.beat2.played ?? '(no First)'}`);
+  }
+  const p = agencyEndingPredicate(measured);
+  lines.push(`ending: beat 2 differs on ${p.beat2Differs}/${measured.length} seeds; H6 or H7 differs on ${p.outcomeDiffers}`
+    + ` (H6 moved by ${measured.filter((v) => v.h6).map((v) => `${v.seed}:${v.h6MovedBy}`).join(',') || '-'})`
+    + ` → predicate ${p.holds ? 'HOLDS' : 'NOT MET'}`);
   return lines;
 }

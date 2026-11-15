@@ -780,8 +780,29 @@ function CompactThreadRow({
             </div>
           )}
 
+          {/* THR-2229 — a First the Return took out of the god's hand reads the ending's
+              word ("Gone", "Transcended"), never "Aspect". */}
+          {node.category === 'agent' && node.endingWord && (
+            <div>
+              <span
+                data-testid="thread-ending-word"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                  padding: '1px 6px',
+                  border: '1px solid var(--border-subtle, var(--text-tertiary))',
+                  borderRadius: 'var(--radius-chip)',
+                  fontSize: 'var(--text-xs)', fontFamily: 'var(--font-body)',
+                  color: 'var(--text-secondary)',
+                  backgroundColor: 'transparent',
+                }}
+              >
+                {node.endingWord}
+              </span>
+            </div>
+          )}
+
           {/* THR-479 — Aspect badge on agent rows for living Aspects of the god */}
-          {node.category === 'agent' && node.isAspect && (
+          {node.category === 'agent' && node.isAspect && !node.endingWord && (
             <div>
               <Tooltip id="ui.aspect_badge">
                 <span

@@ -809,8 +809,11 @@ export function applyBeatChoice(
   // roll, nothing is written and the Return reads its default (`scraped_through`).
   if (vignetteData.isOrdeal && ordealResult) {
     updatedProps.ordealOutcome = ordealResult.outcome;
-    // The band and whether the god leaned ride on the `journey.ordeal_roll` trace
-    // (`band`, `godPaid`), not the edge: nothing reads them here until a reader exists.
+    // THR-2229 — the band, whether the god paid and how hard it leaned, for the
+    // Twilight's Ordeal line and the agency census (H6).
+    updatedProps.ordealBand = ordealResult.band;
+    updatedProps.ordealGodPaid = ordealResult.godPaid;
+    updatedProps.ordealLean = choice?.effects.ordealLean ?? 0;
   }
 
   // Update intervention tracking

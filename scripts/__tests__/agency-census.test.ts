@@ -5,7 +5,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import {
-  agencyVerdict, agencyNotMeasured, agencyReport,
+  agencyVerdict, agencyNotMeasured, agencyReport, agencyEndingPredicate,
   AGENCY_COMPARE_TICK, AGENCY_MANDATE_DELTA, AGENCY_END_TICK_DELTA,
   type AgencyArmResult, type AgencySnapshot,
 } from '../agency-verdict';
@@ -91,6 +91,58 @@ describe('agencyNotMeasured / agencyReport', () => {
       { seed: 99, none: null, played: arm('greedy') },
     ]);
     expect(lines[1]).toMatch(/^seed 99: not measured/);
-    expect(lines[lines.length - 1]).toMatch(/mattered on 1\/1 measured seeds \(1 not measured\)/);
+    expect(lines.find((l) => l.startsWith('agency:'))).toMatch(/mattered on 1\/1 measured seeds \(1 not measured\)/);
+  });
+});
+
+describe('THR-2229 — H6, H7 and the ending predicate', () => {
+  it('H6 — a different Ordeal outcome counts once', () => {
+    const v = agencyVerdict(arm('none', { ordealOutcome: 'broken' }), arm('greedy', { ordealOutcome: 'triumph' }));
+    expect(v.h6).toBe(true);
+    expect(v.h7).toBe(false);
+    expect(v.headlineDiffs).toBe(1);
+    expect(v.diffs[0]).toBe('Ordeal broken→triumph');
+  });
+
+  it('H7 — a different Apotheosis band counts once', () => {
+    const v = agencyVerdict(arm('none', { apotheosisBand: 'failure' }), arm('greedy', { apotheosisBand: 'success' }));
+    expect(v.h7).toBe(true);
+    expect(v.headlineDiffs).toBe(1);
+  });
+
+  it('beat 2 text is compared and quoted, but is not a headline', () => {
+    const v = agencyVerdict(arm('none', { beat2: 'A. B.' }), arm('greedy', { beat2: 'A. C.' }));
+    expect(v.beat2Differs).toBe(true);
+    expect(v.beat2).toEqual({ none: 'A. B.', played: 'A. C.' });
+    expect(v.headlineDiffs).toBe(0);
+  });
+
+  it('an H6 difference says what moved it: the lean, the bag, both or neither', () => {
+    const rolls = (luckDrawIndex: number, leanDecisive: boolean) => [{ luckDrawIndex, leanDecisive }];
+    const pair = (bagA: number, bagB: number, decisive: boolean) => {
+      const none = { ...arm('none', { ordealOutcome: 'broken' }), ordealRolls: rolls(bagA, false) };
+      const played = { ...arm('greedy', { ordealOutcome: 'triumph' }), ordealRolls: rolls(bagB, decisive) };
+      return agencyVerdict(none, played).h6MovedBy;
+    };
+    expect(pair(3, 3, true)).toBe('lean');
+    expect(pair(3, 4, false)).toBe('bag');
+    expect(pair(3, 4, true)).toBe('lean+bag');
+    expect(pair(3, 3, false)).toBe('neither');
+    expect(agencyVerdict(arm('none'), arm('greedy')).h6MovedBy).toBeNull();
+  });
+
+  it('the predicate: beat 2 differs on 2 of 3 seeds and H6 or H7 on at least 1', () => {
+    const diff = { beat2: 'x' }; const same = { beat2: 'y' };
+    const holds = agencyEndingPredicate([
+      agencyVerdict(arm('none', same), arm('greedy', { ...diff, ordealOutcome: 'triumph' })),
+      agencyVerdict(arm('none', same), arm('greedy', diff)),
+      agencyVerdict(arm('none', same), arm('greedy', same)),
+    ]);
+    expect(holds).toEqual({ beat2Differs: 2, outcomeDiffers: 1, holds: true });
+    const textOnly = agencyEndingPredicate([
+      agencyVerdict(arm('none', same), arm('greedy', diff)),
+      agencyVerdict(arm('none', same), arm('greedy', diff)),
+    ]);
+    expect(textOnly.holds).toBe(false);
   });
 });
