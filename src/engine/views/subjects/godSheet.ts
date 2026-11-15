@@ -420,7 +420,7 @@ export interface MandateRowView {
   flavorLine: string;
   /** Mortals bound to the god: the First plus every threaded mortal, avatars excluded (THR-2154). */
   boundCount: number;
-  /** "Filled by what you and the one mortal bound to you raise in Life and Spirit." (THR-2154) */
+  /** "Rises when you spend Life or Spirit essence on Aldric's chapters, or on places." (THR-2154, THR-2236) */
   fillLine: string;
   progress: number;           // 0–1
   stage: string;
@@ -455,9 +455,18 @@ export function sphereHasAscendantCard(
  * that throws counts nobody.
  */
 export function countBoundMortals(gameState: Pick<GameState, 'graph' | 'ascendantId'>): number {
+  return boundMortalNames(gameState).length;
+}
+
+/**
+ * THR-2236: the names of the living mortals bound to the god (same set `countBoundMortals`
+ * counts), so the Mandate's fill line can name the one mortal whose chapters raise it.
+ * A nameless node yields ''. Fail-soft: a graph read that throws names nobody.
+ */
+export function boundMortalNames(gameState: Pick<GameState, 'graph' | 'ascendantId'>): string[] {
   try {
     const { graph, ascendantId } = gameState;
-    if (!graph || !ascendantId) return 0;
+    if (!graph || !ascendantId) return [];
     const people = godsPeopleIds(gameState);
     for (const e of graph.getIncomingEdges(ascendantId, 'avatar_of')) people.delete(e.source);
     people.delete(ascendantId);
@@ -465,17 +474,17 @@ export function countBoundMortals(gameState: Pick<GameState, 'graph' | 'ascendan
     // ascendantBeatSeeding.ts) — only actor nodes are mortals bound to the god. The dead
     // keep their thread edge (markMortalDead 'retain', and an Aspect echo), but make no
     // more scenes, so they are not counted.
-    let count = 0;
+    const names: string[] = [];
     for (const id of people) {
       const node = graph.getNode(id);
       if (node?.type !== 'actor') continue;
       const p = node.properties;
       if (p.deceased === true || p.status === 'dead' || p.deceasedTick != null) continue;
-      count++;
+      names.push(typeof node.name === 'string' ? node.name : '');
     }
-    return count;
+    return names;
   } catch {
-    return 0;
+    return [];
   }
 }
 
@@ -496,7 +505,10 @@ export function selectMandateRow(gameState: GameState): MandateRowView | null {
 
   // THR-2154: the rail leads with the hunger's words; the stage description stays in the
   // Mandate detail's stage list. The fill line says whose deeds count (THR-2081 Decision 2).
-  const boundCount = countBoundMortals(gameState);
+  // THR-2236: the line names the act that raises it — spend in its spheres on a bound
+  // mortal's chapter, or on a place — and, with one mortal bound, names that mortal.
+  const boundNames = boundMortalNames(gameState);
+  const boundCount = boundNames.length;
   const sphereWords = [def.primarySphere, def.secondarySphere]
     .filter((s): s is SphereName => !!s)
     .map(sphereWord);
@@ -505,7 +517,7 @@ export function selectMandateRow(gameState: GameState): MandateRowView | null {
     name: def.name,
     flavorLine: def.description,
     boundCount,
-    fillLine: mandateFillLine(boundCount, countWord(boundCount), sphereWords),
+    fillLine: mandateFillLine(boundCount, countWord(boundCount), sphereWords, boundNames[0]),
     progress,
     stage: STAGE_LABELS[currentStageIdx] ?? 'I',
     trend,

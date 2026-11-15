@@ -170,33 +170,49 @@ export const MANDATE_TREND_ARROW: Record<string, string> = {
 // ─── Mandate fill line — what fills the goal (THR-2154) ──────────────────────
 
 /**
- * THR-2154: the Mandate already counts a threaded mortal's scenes (THR-2081
- * Decision 2), but nothing on screen said so. The rail's fill line names who
- * raises it: the god and the mortals bound to it, in the hunger's two spheres.
- * `countWord` is the caller's spelled-out count ("three"), never a numeral (Laws 13/14).
+ * THR-2154 named who raises the Mandate; THR-2236 names the act. The ledger credits
+ * essence spent in the Mandate's spheres on a bound mortal's chapter or on a place
+ * (THR-2208) — a chapter with no card on it credits nothing, so the line says "spend",
+ * not "deeds". `countWord` is the caller's spelled-out count ("three"), never a numeral
+ * (Laws 13/14). `{mortal}` is the one bound mortal's name.
  */
 export const MANDATE_FILL_LINE = {
-  none: 'Filled by what you raise in {spheres}.',
-  one: 'Filled by what you and the one mortal bound to you raise in {spheres}.',
-  many: 'Filled by what you and the {count} mortals bound to you raise in {spheres}.',
+  none: 'Rises when you spend {spheres} essence on places.',
+  one: "Rises when you spend {spheres} essence on {mortal}'s chapters, or on places.",
+  oneUnnamed: 'Rises when you spend {spheres} essence on the chapters of {mortal}, or on places.',
+  many: 'Rises when you spend {spheres} essence on the chapters of the {count} mortals bound to you, or on places.',
 } as const;
 
-/** The Mandate detail's line under a sphere bar the god's cards can raise (THR-2154). */
-export const MANDATE_RAISED_BY_LINE = 'Raised by your hand and the deeds of the mortals bound to you';
+/** The Mandate detail's line under a sphere bar the god's cards can raise (THR-2154, THR-2236). */
+export const MANDATE_RAISED_BY_LINE = "Raised when you spend this essence on a bound mortal's chapter, or on a place.";
 
-/** Join the hunger's sphere words: "Life and Spirit", "Life", or "your spheres". */
+/** Join the hunger's sphere words: "Life or Spirit", "Life", or "your spheres'". Either sphere counts. */
 function mandateSpherePhrase(words: readonly string[]): string {
-  if (words.length === 0) return 'your spheres';
+  if (words.length === 0) return "your spheres'";
   if (words.length === 1) return words[0];
-  return `${words[0]} and ${words[1]}`;
+  return `${words[0]} or ${words[1]}`;
 }
 
-export function mandateFillLine(boundCount: number, countWord: string, sphereWords: readonly string[]): string {
+export function mandateFillLine(
+  boundCount: number,
+  countWord: string,
+  sphereWords: readonly string[],
+  mortalName?: string,
+): string {
   const spheres = mandateSpherePhrase(sphereWords);
+  const named = !!(mortalName && mortalName.trim());
+  // A nameless mortal reads the deed line's fallback, mid-sentence and without the
+  // possessive ("on the chapters of a mortal bound to you") — PC-3.
+  const mortal = named
+    ? mortalName!.trim()
+    : MANDATE_DEED_MORTAL_FALLBACK.charAt(0).toLowerCase() + MANDATE_DEED_MORTAL_FALLBACK.slice(1);
   const template = boundCount <= 0 ? MANDATE_FILL_LINE.none
-    : boundCount === 1 ? MANDATE_FILL_LINE.one
+    : boundCount === 1 ? (named ? MANDATE_FILL_LINE.one : MANDATE_FILL_LINE.oneUnnamed)
     : MANDATE_FILL_LINE.many;
-  return template.replace('{count}', countWord).replace('{spheres}', spheres);
+  return template
+    .replace('{count}', () => countWord)
+    .replace('{spheres}', () => spheres)
+    .replace('{mortal}', () => mortal);
 }
 
 // ─── Reach copy — the two permanent domains (THR-613 §5.D) ────────────────────

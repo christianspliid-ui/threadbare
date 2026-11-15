@@ -4,8 +4,8 @@
  * - `mandateDeedCredit`: a base in a Mandate sphere, plus spend in the Mandate's spheres,
  *   scaled by band; a Doom-sphere-only spend credits 0.
  * - `mandateDeedForChapter`: only a threaded mortal's chapter credits, with one aftermath row.
- * - `phaseMandate` folds deed credits: the ledger rises, the one-day window reads Rising,
- *   and the Mandate block's last deeds list the line. The window empties a day later.
+ * - `phaseMandate` folds deed credits: the ledger rises, the trend window reads Rising,
+ *   and the Mandate block's last deeds list the line. The window empties `MANDATE_TREND_WINDOW_TICKS` later (three days since THR-2236).
  * - The commit's per-sphere split (`spendNudgeEssence.bySphere`) sums across commits.
  */
 
@@ -195,11 +195,11 @@ describe('THR-2208 — trend, window and lines', () => {
     }
   });
 
-  it('rollLedgerWindow keeps one day of moves and sums them', () => {
+  it('rollLedgerWindow keeps the trend window of moves and sums them', () => {
     let w = rollLedgerWindow(undefined, 10, 2);
     w = rollLedgerWindow(w.moves, 15, -0.5);
     expect(w.delta).toBeCloseTo(1.5, 9);
-    w = rollLedgerWindow(w.moves, 22, 0);
+    w = rollLedgerWindow(w.moves, 10 + MANDATE_TREND_WINDOW_TICKS, 0); // the +2 at tick 10 has left the window (THR-2236: 36 ticks)
     expect(w.delta).toBeCloseTo(-0.5, 9);
     expect(mandateTrendOf(w.delta)).toBe('ebbing');
     expect(mandateTrendOf(undefined)).toBe('steady');
