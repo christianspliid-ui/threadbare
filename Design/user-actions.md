@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-15 04:55 local (03:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-15 05:58 local (04:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
 
@@ -50,6 +50,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-15: the Return now closes on "Go on" and says how long the age has left. It is live** ([THR-2228](https://linear.app/threadbare/issue/THR-2228)). Merged via [#2839](https://github.com/christianspliid-ui/threadbare/pull/2839).
+- **2026-11-15: the Apotheosis's deciding step deals the run's biggest hand, opens at Uncertain, and is warned first. It is live** ([THR-2227](https://linear.app/threadbare/issue/THR-2227)). Merged via [#2837](https://github.com/christianspliid-ui/threadbare/pull/2837) and [#2838](https://github.com/christianspliid-ui/threadbare/pull/2838).
 - **2026-11-15: the Ordeal is now rolled, and journey visions read the scene the god leans on. It is live** ([THR-2226](https://linear.app/threadbare/issue/THR-2226)). Merged via [#2835](https://github.com/christianspliid-ui/threadbare/pull/2835) and [#2836](https://github.com/christianspliid-ui/threadbare/pull/2836).
 - **2026-11-14: second whole journey after the First's story ends? You answered A, no** ([THR-2204](https://linear.app/threadbare/issue/THR-2204)). Your words: *"A.. one run should try to aim for telling the firsts entire heroes journey and timing that makes sense"*. The pacing note went to the design lane.
 - **2026-11-14: a ruler's Story tab now folds repeat chapters into one counted chip, and it is live** ([THR-2223](https://linear.app/threadbare/issue/THR-2223)). Merged via [#2833](https://github.com/christianspliid-ui/threadbare/pull/2833).
@@ -58,8 +60,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-14: the purse is tuned (cards cost three times as much, pools hold 35, income 0.6), and it is live** ([THR-2216](https://linear.app/threadbare/issue/THR-2216)). Merged via [#2830](https://github.com/christianspliid-ui/threadbare/pull/2830).
 - **2026-11-14: a dream that found no hold no longer says "held" or "Heart grew", and it is live** ([THR-2220](https://linear.app/threadbare/issue/THR-2220)). Merged via [#2829](https://github.com/christianspliid-ui/threadbare/pull/2829).
 - **2026-11-14: new Doom stages now say what each card does, with no more "many weeks", and it is live** ([THR-2219](https://linear.app/threadbare/issue/THR-2219)). Merged via [#2828](https://github.com/christianspliid-ui/threadbare/pull/2828).
-- **2026-11-14: a won chapter now credits the cards you played, and each card in the hand says which step it plays into. It is live** ([THR-2218](https://linear.app/threadbare/issue/THR-2218)). Merged via [#2826](https://github.com/christianspliid-ui/threadbare/pull/2826).
-- **2026-11-14: the garbled dashes in the anomaly chapters and lab-report lines are fixed, and it is live** ([THR-2217](https://linear.app/threadbare/issue/THR-2217)). Merged via [#2825](https://github.com/christianspliid-ui/threadbare/pull/2825).
 
 ---
 
