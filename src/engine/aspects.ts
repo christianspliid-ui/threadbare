@@ -215,13 +215,19 @@ export function apotheosisPremonitionDue(threadEdge: GraphEdge, tick: number): b
 // ─── The First's journey gate (THR-2234) ─────────────────────────────
 
 /**
- * THR-2234 — a thread that carries (or carried) the First's hero's journey: it has a
- * `storyPhase`. The journey owns its Apotheosis timing — Call → Road of Trials →
- * Crisis → Ordeal → Apotheosis → Return — so the tier-4 hold and the re-offer
- * cooldown never apply to it, not even after the Return clears the court position.
+ * THR-2234 — a thread whose Apotheosis the First's hero's journey owns: the current
+ * First (`courtPosition 'the_first'` with a `storyPhase`), or a thread whose journey
+ * already closed it (offered, passed, or the Return ended the story — the Return
+ * clears the court position, so the closure stamps keep a former First off the old
+ * rule). Call → Road of Trials → Crisis → Ordeal → Apotheosis → Return; the tier-4
+ * hold and the re-offer cooldown never apply to it. A First moved out of the seat
+ * mid-journey by anything but the Return (made dormant, say) no longer has a journey
+ * to wait on, so it falls back to the ordinary rule like any threaded mortal.
  */
 export function isJourneyThread(props: ThreadEdgeProperties): boolean {
-  return props.storyPhase != null;
+  if (props.apotheosisOfferedForJourney === true || props.apotheosisPassedForJourney === true) return true;
+  if (props.returnEnding != null) return true;
+  return props.courtPosition === 'the_first' && props.storyPhase != null;
 }
 
 /** What the journey gate does this tick for the First's thread. */

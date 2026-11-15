@@ -168,6 +168,16 @@ describe("THR-2234 — the First's Apotheosis follows the Ordeal", () => {
     expect(returnFired(ret)).toBe(true);
   });
 
+  it('a First made dormant mid-journey (no Return) falls back to the ordinary hold-and-cooldown rule', () => {
+    const graph = makeWorld({ courtPosition: 'dormant', storyPhase: 'road_of_trials', beatHistory: [beat('call', 10)] });
+    const offers: number[] = [];
+    for (let tick = 0; tick <= ASPECT_ELIGIBILITY_TICKS; tick++) {
+      setFirst(graph, { ticksAtCurrentTier: tick });
+      if (seedTick(graph, tick).offers.includes(FIRST)) offers.push(tick);
+    }
+    expect(offers).toEqual([ASPECT_ELIGIBILITY_TICKS]);
+  });
+
   it('after the Return, a former First is not offered under the old rule', () => {
     const graph = makeWorld({ courtPosition: 'retinue', storyPhase: 'return', returnEnding: 'loyal_ascension', beatHistory: [beat('ordeal', 600)] });
     for (let tick = 700; tick < 1000; tick++) {
