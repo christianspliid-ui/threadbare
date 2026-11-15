@@ -198,7 +198,8 @@ describe('THR-2229 — the Return ending is kept on the thread', () => {
       const r = applyReturnOutcome(state.graph, id, 'X', state.ascendantId, outcome, edge.id, state.tick);
       expect(r.threadUpdate.returnEnding).toBe(outcome);
     }
-  });
+    // Six fresh worlds in one case: ~8.6 s on a CI shard, over vitest's 5 s default.
+  }, 60_000);
 });
 
 describe('THR-2229 — the Ordeal roll is kept on the thread', () => {
