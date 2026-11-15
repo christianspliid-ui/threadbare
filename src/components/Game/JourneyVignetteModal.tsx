@@ -403,6 +403,31 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
               {JOURNEY_CONTINUE_LABEL}
             </Button>
           </div>
+        ) : vignette.choices.length === 0 ? (
+          // THR-2228 — a choice-less vision (the Return) names what is left and closes
+          // on a button; before, only Escape closed it (Law 21: the default action is named).
+          <div data-testid="journey-choiceless" style={{ marginTop: 'var(--space-2)' }}>
+            {vignette.remainingLine && (
+              <div data-testid="return-remaining-line" style={{
+                color: 'var(--text-primary)',
+                fontSize: 'var(--text-xs)',
+                lineHeight: 1.7,
+                marginBottom: 'var(--space-3)',
+              }}>
+                {vignette.remainingLine}
+              </div>
+            )}
+            <Button
+              variant="primary"
+              size="md"
+              fullWidth
+              autoFocus
+              data-testid="journey-go-on"
+              onClick={onClose}
+            >
+              {vignette.closeLabel ?? JOURNEY_CONTINUE_LABEL}
+            </Button>
+          </div>
         ) : (
           <div style={{ marginTop: 'var(--space-2)' }}>
             {vignette.choices.map(choice => {

@@ -176,3 +176,21 @@ export const RIPPLE_CONSEQUENCE_PROSE: Record<string, string> = {
   vanishing_default:
     '{name}\'s absence touches {target} — a hole in the world where someone used to be.',
 };
+
+// ─── The Return's close (THR-2228, THR-2204 slice 3) ──────────────
+
+/** The Return vision's one button (UI Law 21: the default action is named). */
+export const RETURN_CLOSE_LABEL = 'Go on';
+
+/**
+ * The line under the Return: the story is told, and how long the age has left.
+ * `{first}` is the First's name; `{timeWord}` is the Doom's remaining time in the
+ * Doom panel's own words (`durationLabel`, THR-2219).
+ */
+export const RETURN_REMAINING_LINE = "{first}'s story is told. The age has {timeWord} left.";
+
+/** Appended only when another mortal can take the First's place before the age ends (UI Law 56). */
+export const RETURN_OPEN_THREAD_CLAUSE = ' Another mortal can carry your thread.';
+
+/** `{first}` when the First has no name on record (PC-3). */
+export const RETURN_FIRST_FALLBACK_NAME = 'Your First';
