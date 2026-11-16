@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-16 06:58 local (05:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-16 07:58 local (06:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -34,7 +34,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Starved: 0 tickets in Ready for Dev, on purpose.** All the agreed work is done. The next work needs your direction (the ask above). Nothing new merged in the last hour. The builder found nothing to claim, which is correct with an empty queue.
+**Starved: 0 tickets in Ready for Dev, on purpose.** All the agreed work is done. The next work needs your direction (the ask above). Nothing new merged in the last hour. The builder's last 10 runs found nothing to claim, which is correct with an empty queue, so no stall ticket.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (27 days). No pushed branch or local worktree holds work for it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
@@ -42,4 +42,4 @@ Items for agents, not you:
 ## Health
 
 - **Every lane was silent Sunday from about 09:57 to 21:48 local (11.8 hours).** All lanes came back together, so the computer or app was off. It was a Sunday, so per your weekend ruling this is not its own ask. It is one more case for the "open at login" setting.
-- Everything else is green. The live site serves the latest commit on main (2a898612). Checks on main and the 3 scheduled background jobs pass. No PRs are waiting. All 10 enabled scheduled tasks are on time. Engine speed is normal: 128 ms per tick, 20% under the 7-day median. The worktree reaper ran within the hour. Linear was read live this run. You have sent no Discord messages since the last brief. The home copy of the repo is current with main.
+- Everything else is green. The live site serves the latest commit on main (2a898612). Checks on main and the 3 scheduled background jobs pass. No PRs are waiting. All 10 enabled scheduled tasks are on time. Engine speed is normal: 131 ms per tick, 18% under the 7-day median. The worktree reaper ran within the hour. Linear was read live this run. You have sent no Discord messages since the last brief. The home copy of the repo is current with main.
