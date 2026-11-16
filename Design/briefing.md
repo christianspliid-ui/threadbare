@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-16 00:58 local (23:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-16 01:56 local (00:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -33,7 +33,7 @@ Say "veto <title>" to reverse any of these (here: "keep the spell names").
 
 ## Queue
 
-**Starved: 0 tickets in Ready for Dev — on purpose.** Agreed work is used up; the next work needs your direction (the ask above). Since the last brief four builds went live: [the answer to a rival is where the threat is](https://linear.app/threadbare/issue/THR-2237) ([#2847](https://github.com/christianspliid-ui/threadbare/pull/2847)), [the answer to Doom is where Doom is](https://linear.app/threadbare/issue/THR-2240) ([#2848](https://github.com/christianspliid-ui/threadbare/pull/2848)), [Play promises only what it keeps](https://linear.app/threadbare/issue/THR-2238) ([#2849](https://github.com/christianspliid-ui/threadbare/pull/2849)) and [each clock-answer card has one name](https://linear.app/threadbare/issue/THR-2241) ([#2850](https://github.com/christianspliid-ui/threadbare/pull/2850)).
+**Starved: 0 tickets in Ready for Dev — on purpose.** Agreed work is used up; the next work needs your direction (the ask above). Nothing new merged in the last hour. Tonight four builds went live: [the answer to a rival is where the threat is](https://linear.app/threadbare/issue/THR-2237) ([#2847](https://github.com/christianspliid-ui/threadbare/pull/2847)), [the answer to Doom is where Doom is](https://linear.app/threadbare/issue/THR-2240) ([#2848](https://github.com/christianspliid-ui/threadbare/pull/2848)), [Play promises only what it keeps](https://linear.app/threadbare/issue/THR-2238) ([#2849](https://github.com/christianspliid-ui/threadbare/pull/2849)) and [each clock-answer card has one name](https://linear.app/threadbare/issue/THR-2241) ([#2850](https://github.com/christianspliid-ui/threadbare/pull/2850)).
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (27 days). No pushed branch or local worktree holds work for it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
@@ -41,4 +41,4 @@ Items for agents, not you:
 ## Health
 
 - **Every lane was silent Sunday from about 09:57 to 21:42 local (11.8 hours).** All lanes came back in the same minute, so the computer or app was off. It was a Sunday, so per your weekend ruling this is not its own ask; it is one more case for the "open at login" setting.
-- Otherwise all green: the live site serves the latest commit on main (2a898612); checks on main and the 3 scheduled background jobs pass; no PRs are waiting; all 10 scheduled tasks are on time; engine speed is back to normal (133 ms/tick, 18% under the 7-day median). The worktree reaper ran within the hour. Linear read live this run. No Discord messages from you since the last brief. The home copy of the repo is current with main.
+- Otherwise all green: the live site serves the latest commit on main (2a898612); checks on main and the 3 scheduled background jobs pass; no PRs are waiting; all 10 scheduled tasks are on time; engine speed is normal (129 ms/tick, 20% under the 7-day median). The worktree reaper ran within the hour. Linear read live this run. No Discord messages from you since the last brief. The home copy of the repo is current with main.
