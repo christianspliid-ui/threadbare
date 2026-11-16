@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-11-16 05:58 local (04:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-16 06:58 local (05:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
 
 ### What should the design lane plan next? (new 16 Nov)
 
-The builders have nothing agreed left to build. The last pieces of "make the middle a game" shipped tonight: [answer a rival where it struck](https://linear.app/threadbare/issue/THR-2237), [slow Doom from its panel](https://linear.app/threadbare/issue/THR-2240), and [see what moves the Mandate](https://linear.app/threadbare/issue/THR-2236). **Reply with a system or a direction.** If you don't, the lanes wait for the next warm playtest round to check these fixes and turn up new problems. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-15c.md)*
+The builders have nothing agreed left to build. The last pieces of "make the middle a game" shipped tonight: [answer a rival where it struck](https://linear.app/threadbare/issue/THR-2237), [slow Doom from its panel](https://linear.app/threadbare/issue/THR-2240), and [see what moves the Mandate](https://linear.app/threadbare/issue/THR-2236). **Reply with a system or a direction.** If you don't, the lanes wait for the next warm playtest round to check these fixes and turn up new problems. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-16.md)*
 
 ### Should every one of The First's own chapters give you a hand? (new 15 Nov)
 
