@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-16 02:58 local (01:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-16 03:58 local (02:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -7,7 +7,7 @@
 
 ## Also waiting (11)
 
-- **Should every one of Kael's chapters give you a hand?** Say "every chapter asks" or "keep theirs alone" ([THR-2174](https://linear.app/threadbare/issue/THR-2174/the-player-cant-tell-which-chapters-wait-for-their-cards-the-gallows)). The design lane leans "every chapter asks". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-15e.md)*
+- **Should every one of Kael's chapters give you a hand?** Say "every chapter asks" or "keep theirs alone" ([THR-2174](https://linear.app/threadbare/issue/THR-2174/the-player-cant-tell-which-chapters-wait-for-their-cards-the-gallows)). The design lane leans "every chapter asks". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-16a.md)*
 - **Pick the carved icon shapes** for the five open icon classes ([THR-1908](https://linear.app/threadbare/issue/THR-1908/christian-picks-carved-shapes-for-the-five-open-icon-classes-doom), on [the review sheet](https://claude.ai/artifact/X9woLDsYia4iP3uQkk6QjN)) and the Inspector tabs with none yet ([THR-2104](https://linear.app/threadbare/issue/THR-2104/christian-picks-carved-shapes-for-the-inspectors-tabs-with-no-icon-yet)).
 - **Sunday 8 to Thursday 12 Nov:** silent for 103 hours, with no pause recorded. Computer off, app closed, or a pause?
 - **Set the Claude app to open when Windows starts** ([the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)).
@@ -23,9 +23,10 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-- [The two clock-answer cards have two names each](https://linear.app/threadbare/issue/THR-2241/the-two-clock-answer-cards-have-two-names-each-the-hand-says-hold-the) — the Doom card now shows **Stay the Unmaking** and the rival card shows **Rebuke**, everywhere (it was "Hold the Hour" and "The Turned Hand" in your hand). Already live.
+- [The two clock-answer cards have two names each](https://linear.app/threadbare/issue/THR-2241/the-two-clock-answer-cards-have-two-names-each-the-hand-says-hold-the) — the Doom card now shows **Stay the Unmaking** and the rival card shows **Rebuke**, everywhere (it was "Hold the Hour" and "The Turned Hand" in your hand). Already live. To reverse: "keep the spell names".
+- ["Fated" fails and nothing says why](https://linear.app/threadbare/issue/THR-2171/fated-fails-and-nothing-says-why-the-top-odds-word-reads-as-certain-a) — no more work on it. "Fated" keeps its name, and the game already tells the player "even Fated can miss", in the legend and at the moment a step misses. Round 4 testers learned that, and none read a won chapter as lost any more. Round 5 checks it again. To reverse: "rename Fated". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-16a.md)*
 
-Say "veto <title>" to reverse any of these (here: "keep the spell names").
+Say "veto <title>" to reverse any of these.
 
 ## This week's screens
 
@@ -33,7 +34,7 @@ Say "veto <title>" to reverse any of these (here: "keep the spell names").
 
 ## Queue
 
-**Starved: 0 tickets in Ready for Dev — on purpose.** Agreed work is used up; the next work needs your direction (the ask above). Nothing new merged in the last hour; the builder's last three runs each found nothing to claim, which is correct with an empty queue.
+**Starved: 0 tickets in Ready for Dev — on purpose.** Agreed work is used up; the next work needs your direction (the ask above). Nothing new merged in the last hour; the builder's last six runs each found nothing to claim, which is correct with an empty queue.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (27 days). No pushed branch or local worktree holds work for it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
@@ -41,4 +42,4 @@ Items for agents, not you:
 ## Health
 
 - **Every lane was silent Sunday from about 09:57 to 21:48 local (11.8 hours).** All lanes came back together, so the computer or app was off. It was a Sunday, so per your weekend ruling this is not its own ask; it is one more case for the "open at login" setting.
-- Otherwise all green: the live site serves the latest commit on main (2a898612); checks on main and the 3 scheduled background jobs pass; no PRs are waiting; all 10 scheduled tasks are on time; engine speed is normal (134 ms/tick, 17% under the 7-day median). The worktree reaper ran within the hour. Linear read live this run. No Discord messages from you since the last brief. The home copy of the repo is current with main.
+- Otherwise all green: the live site serves the latest commit on main (2a898612); checks on main and the 3 scheduled background jobs pass; no PRs are waiting; all 9 enabled scheduled tasks are on time; engine speed is normal (133 ms/tick, 17% under the 7-day median). The worktree reaper ran within the hour. Linear read live this run. No Discord messages from you since the last brief. The home copy of the repo is current with main.
