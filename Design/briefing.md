@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-16 23:58 local (22:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-17 00:57 local (23:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,10 +23,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-- [Give both clocks a verb](https://linear.app/threadbare/issue/THR-2202/give-both-clocks-a-verb-the-mortals-deeds-fill-the-mandate-and-doom) — Stay the Unmaking is weaker than its design says, and the fix is a number. The card should slow Doom to three quarters while you hold it, but a new god almost never casts it cleanly (all 12 casts in the measurement landed crooked), so it slows Doom only to nine tenths. The fix makes a clean hold the usual result ([THR-2244](https://linear.app/threadbare/issue/THR-2244/stay-the-unmaking-lands-crooked-every-time-a-fresh-god-cant-land-it), held until 06:50 local tomorrow for your veto). To reverse: "Doom should only be answered crookedly". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-16c.md)*
-- [Measure whether the player matters](https://linear.app/threadbare/issue/THR-2205/measure-whether-the-player-matters-a-run-nobody-plays-and-a-run-played) — closed: a played run now ends differently on 3 of 3 test worlds, counting changes to the First's story. To reverse: "the age's ending is what counts", and the measure counts only how the age ends, which reads 0 of 3 today. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-16b.md)*
-- [The pre-bonded First has no meeting record](https://linear.app/threadbare/issue/THR-2242/the-pre-bonded-first-has-no-meeting-record-so-every-seeded-and-warm) — filed, built and live ([#2851](https://github.com/christianspliid-ui/threadbare/pull/2851)). On the test route every warm tester plays, the First no longer always "vanishes" at the Return. Real players were never affected. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-16b.md)*
-- [The agency census answers the clocks](https://linear.app/threadbare/issue/THR-2243/the-agency-census-answers-the-clocks-a-third-arm-that-holds-stay-the) — filed, built and merged ([#2852](https://github.com/christianspliid-ui/threadbare/pull/2852)). Its answer is in the lead above: answering Doom barely slows it. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-16b.md)*
+- [Give both clocks a verb](https://linear.app/threadbare/issue/THR-2202/give-both-clocks-a-verb-the-mortals-deeds-fill-the-mandate-and-doom) — Stay the Unmaking is weaker than its design says, and the fix is a number. The card should slow Doom to three quarters while you hold it, but a new god almost never casts it cleanly (all 12 casts in the measurement landed crooked), so it slows Doom only to nine tenths. The fix makes a clean hold the usual result ([THR-2244](https://linear.app/threadbare/issue/THR-2244/stay-the-unmaking-lands-crooked-every-time-a-fresh-god-cant-land-it), held until 06:50 local this morning for your veto). To reverse: "Doom should only be answered crookedly". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-16c.md)*
 
 Say "veto <title>" to reverse any of these.
 
@@ -36,12 +33,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Starved: 1 ticket in Ready for Dev, and it is on hold.** [THR-2244](https://linear.app/threadbare/issue/THR-2244/stay-the-unmaking-lands-crooked-every-time-a-fresh-god-cant-land-it) (Stay the Unmaking lands crooked) waits out its veto window until 06:50 local tomorrow; the first pickup run after that builds it. The pickup runs at 23:12, 23:32 and 23:52 local each found nothing claimable, which is correct.
+**Starved: 1 ticket in Ready for Dev, and it is on hold.** [THR-2244](https://linear.app/threadbare/issue/THR-2244/stay-the-unmaking-lands-crooked-every-time-a-fresh-god-cant-land-it) (Stay the Unmaking lands crooked) waits out its veto window until 06:50 local this morning; the first pickup run after that builds it. The pickup runs at 00:12, 00:32 and 00:52 local each stood down because that ticket is on hold, which is correct.
 
 Items for agents, not you:
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (27 days; last touched 8 Nov). No local worktree or branch holds uncommitted work for it, so nothing is at risk. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (28 days; last touched 8 Nov). No local worktree holds uncommitted work for it, so nothing is at risk. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
 - **Every lane was silent Sunday from about 09:57 to 21:48 local (11.8 hours).** It was a Sunday, so per your weekend ruling this is not its own ask. It is one more case for the "open at login" setting.
-- Everything else is green. The live site serves the latest commit on main (b0f047b7). Checks on main and the 3 scheduled background jobs pass. No PRs are waiting. All 9 enabled Threadbare scheduled tasks are on time. Engine speed is normal (140 ms per tick, below the weekly median of 157). The worktree reaper ran within the hour. Linear was read live this run. You have sent no Discord messages since the last brief. The home copy of the repo is current with main.
+- Everything else is green. The live site serves the latest commit on main (b0f047b7). Checks on main and the 3 scheduled background jobs pass. No PRs are waiting. All 10 enabled scheduled tasks are on time. Engine speed is normal (142 ms per tick, 9% below the weekly median of 156). The worktree reaper ran within the hour. Linear was read live this run. You have sent no Discord messages since the last brief. The home copy of the repo is current with main.
