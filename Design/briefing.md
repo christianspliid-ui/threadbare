@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-16 22:57 local (21:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-16 23:58 local (22:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -36,7 +36,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Starved: 1 ticket in Ready for Dev, and it is on hold.** [THR-2244](https://linear.app/threadbare/issue/THR-2244/stay-the-unmaking-lands-crooked-every-time-a-fresh-god-cant-land-it) (Stay the Unmaking lands crooked) waits out its veto window until 06:50 local tomorrow; the first pickup run after that builds it. The pickup runs at 22:12, 22:32 and 22:52 local each found nothing claimable, which is correct.
+**Starved: 1 ticket in Ready for Dev, and it is on hold.** [THR-2244](https://linear.app/threadbare/issue/THR-2244/stay-the-unmaking-lands-crooked-every-time-a-fresh-god-cant-land-it) (Stay the Unmaking lands crooked) waits out its veto window until 06:50 local tomorrow; the first pickup run after that builds it. The pickup runs at 23:12, 23:32 and 23:52 local each found nothing claimable, which is correct.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (27 days; last touched 8 Nov). No local worktree or branch holds uncommitted work for it, so nothing is at risk. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
