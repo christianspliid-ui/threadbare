@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-16 14:59 local (13:59 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-16 15:56 local (14:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -26,7 +26,6 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 - [Measure whether the player matters](https://linear.app/threadbare/issue/THR-2205/measure-whether-the-player-matters-a-run-nobody-plays-and-a-run-played) — closed: a played run now ends differently on 3 of 3 test worlds, counting changes to the First's story. To reverse: "the age's ending is what counts", and the measure counts only how the age ends, which reads 0 of 3 today. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-16b.md)*
 - [The pre-bonded First has no meeting record](https://linear.app/threadbare/issue/THR-2242/the-pre-bonded-first-has-no-meeting-record-so-every-seeded-and-warm) — filed, built and live ([#2851](https://github.com/christianspliid-ui/threadbare/pull/2851)). On the test route every warm tester plays, the First no longer always "vanishes" at the Return. Real players were never affected. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-16b.md)*
 - [The agency census answers the clocks](https://linear.app/threadbare/issue/THR-2243/the-agency-census-answers-the-clocks-a-third-arm-that-holds-stay-the) — filed, built and merged ([#2852](https://github.com/christianspliid-ui/threadbare/pull/2852)). Its answer is in the lead above: answering Doom barely slows it. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-16b.md)*
-- ["Fated" fails and nothing says why](https://linear.app/threadbare/issue/THR-2171/fated-fails-and-nothing-says-why-the-top-odds-word-reads-as-certain-a) — no more work on it. "Fated" keeps its name, and the game already says "even Fated can miss". To reverse: "rename Fated". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-16a.md)*
 
 Say "veto <title>" to reverse any of these.
 
@@ -36,7 +35,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Starved: 0 tickets in Ready for Dev, nothing being built.** [THR-2243](https://linear.app/threadbare/issue/THR-2243/the-agency-census-answers-the-clocks-a-third-arm-that-holds-stay-the) merged at 14:46 local ([#2852](https://github.com/christianspliid-ui/threadbare/pull/2852)). The queue stays empty until you give a direction. With nothing ready, short pickup runs are correct and are not a stall.
+**Starved: 0 tickets in Ready for Dev, nothing being built.** The last three pickup runs (14:12, 14:32 and 14:52 local) each found nothing to claim, which is correct with an empty queue. The queue stays empty until you give a direction.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (27 days). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
@@ -44,4 +43,4 @@ Items for agents, not you:
 ## Health
 
 - **Every lane was silent Sunday from about 09:57 to 21:48 local (11.8 hours).** It was a Sunday, so per your weekend ruling this is not its own ask. It is one more case for the "open at login" setting.
-- Everything else is green. The live site serves the latest commit on main (b0f047b7). Checks on main and the 3 scheduled background jobs pass. No PRs are waiting. All 9 enabled Threadbare scheduled tasks are on time. Engine speed is normal (137 ms per tick, below the weekly median of 159). The worktree reaper ran within the hour. Linear was read live this run. You have sent no Discord messages since the last brief. The home copy of the repo is current with main.
+- Everything else is green. The live site serves the latest commit on main (b0f047b7). Checks on main and the 3 scheduled background jobs pass. No PRs are waiting. All 9 enabled Threadbare scheduled tasks are on time. Engine speed is normal (152 ms per tick, below the weekly median of 159). The worktree reaper ran within the hour. Linear was read live this run. You have sent no Discord messages since the last brief. The home copy of the repo is current with main.
