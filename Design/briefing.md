@@ -1,9 +1,9 @@
 # Briefing
-**Generated:** 2026-11-16 04:54 local (03:54 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-16 05:58 local (04:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**What should the design lane plan next?** The builders have run out of agreed work. Tonight the last pieces of "make the middle a game" went live: you can [answer a rival where it struck](https://linear.app/threadbare/issue/THR-2237), [slow Doom from its panel](https://linear.app/threadbare/issue/THR-2240), and [see what moves the Mandate](https://linear.app/threadbare/issue/THR-2236). Nothing is ready to build now. **Reply with a system or a direction.** If you don't, the lanes wait for the next warm playtest round to check these fixes and find new problems. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-15c.md)*
+**What should the design lane plan next?** The builders have run out of agreed work. Last night the last pieces of "make the middle a game" went live: you can [answer a rival where it struck](https://linear.app/threadbare/issue/THR-2237), [slow Doom from its panel](https://linear.app/threadbare/issue/THR-2240), and [see what moves the Mandate](https://linear.app/threadbare/issue/THR-2236). Nothing is ready to build now. **Reply with a system or a direction.** If you don't, the lanes wait for the next warm playtest round to check these fixes and find new problems. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-15c.md)*
 
 ## Also waiting (11)
 
@@ -23,7 +23,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-- [The two clock-answer cards have two names each](https://linear.app/threadbare/issue/THR-2241/the-two-clock-answer-cards-have-two-names-each-the-hand-says-hold-the) — the Doom card now shows **Stay the Unmaking** and the rival card shows **Rebuke**, everywhere (it was "Hold the Hour" and "The Turned Hand" in your hand). Already live. To reverse: "keep the spell names".
+- [The two clock-answer cards have two names each](https://linear.app/threadbare/issue/THR-2241/the-two-clock-answer-cards-have-two-names-each-the-hand-says-hold-the) — the Doom card now shows **Stay the Unmaking** and the rival card shows **Rebuke**, everywhere (it was "Hold the Hour" and "The Turned Hand" in your hand). Already live. To reverse: "keep the spell names". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-15e.md)*
 - ["Fated" fails and nothing says why](https://linear.app/threadbare/issue/THR-2171/fated-fails-and-nothing-says-why-the-top-odds-word-reads-as-certain-a) — no more work on it. "Fated" keeps its name, and the game already tells the player "even Fated can miss", in the legend and at the moment a step misses. Round 4 testers learned that, and none read a won chapter as lost any more. Round 5 checks it again. To reverse: "rename Fated". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-16a.md)*
 
 Say "veto <title>" to reverse any of these.
@@ -34,7 +34,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Starved: 0 tickets in Ready for Dev — on purpose.** Agreed work is used up; the next work needs your direction (the ask above). Nothing new merged in the last hour; the builder's last six runs each found nothing to claim, which is correct with an empty queue.
+**Starved: 0 tickets in Ready for Dev — on purpose.** Agreed work is used up; the next work needs your direction (the ask above). Nothing new merged in the last hour; the builder's last ten runs each found nothing to claim, which is correct with an empty queue.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (27 days). No pushed branch or local worktree holds work for it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
@@ -42,4 +42,4 @@ Items for agents, not you:
 ## Health
 
 - **Every lane was silent Sunday from about 09:57 to 21:48 local (11.8 hours).** All lanes came back together, so the computer or app was off. It was a Sunday, so per your weekend ruling this is not its own ask; it is one more case for the "open at login" setting.
-- Otherwise all green: the live site serves the latest commit on main (2a898612); checks on main and the 3 scheduled background jobs pass; no PRs are waiting; all 10 enabled scheduled tasks are on time; engine speed is normal (134 ms/tick, 17% under the 7-day median). The worktree reaper ran within the hour. Linear read live this run. No Discord messages from you since the last brief. The home copy of the repo is current with main.
+- Otherwise all green: the live site serves the latest commit on main (2a898612); checks on main and the 3 scheduled background jobs pass; no PRs are waiting; all 10 enabled scheduled tasks are on time; engine speed is normal (130 ms/tick, 19% under the 7-day median). The worktree reaper ran within the hour. Linear read live this run. No Discord messages from you since the last brief. The home copy of the repo is current with main.
