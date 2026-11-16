@@ -91,7 +91,50 @@ describe('agencyNotMeasured / agencyReport', () => {
       { seed: 99, none: null, played: arm('greedy') },
     ]);
     expect(lines[1]).toMatch(/^seed 99: not measured/);
-    expect(lines.find((l) => l.startsWith('agency:'))).toMatch(/mattered on 1\/1 measured seeds \(1 not measured\)/);
+    expect(lines.find((l) => l.startsWith('agency (hands-off vs played):'))).toMatch(/mattered on 1\/1 measured seeds \(1 not measured\)/);
+    // No answer key → no answer comparison (a two-arm --compare stays two-arm).
+    expect(lines.some((l) => l.includes('vs answer'))).toBe(false);
+  });
+});
+
+describe('THR-2243 — the answer arm', () => {
+  function answerArm(over: Partial<AgencySnapshot> = {}, ranTo = AGENCY_COMPARE_TICK, extra: Record<string, unknown> = {}): AgencyArmResult {
+    return { ...arm('greedy', over, ranTo), arm: 'answer', ...extra };
+  }
+
+  it('H1 — an answer arm whose only difference is the ending reports it', () => {
+    const v = agencyVerdict(arm('none', { phase: 'ended' }, 700), answerArm({}, AGENCY_COMPARE_TICK));
+    expect(v.headlineDiffs).toBe(1);
+    expect(v.diffs).toEqual(['ending doom→none']);
+    expect(v.mattered).toBe(true);
+  });
+
+  it('H5 — an answer arm whose only difference is the Doom stage reports it', () => {
+    const v = agencyVerdict(arm('none', { doomStage: 5 }), answerArm({ doomStage: 4 }));
+    expect(v.headlineDiffs).toBe(1);
+    expect(v.diffs).toEqual(['Doom stage 5→4']);
+  });
+
+  it('the report compares hands-off vs played and hands-off vs answer, with a KPI line each', () => {
+    const lines = agencyReport([{
+      seed: 42, none: arm('none', { doomStage: 5, doomProgress: 0.95 }), played: arm('greedy', { doomStage: 5 }),
+      answer: answerArm({ doomStage: 4, doomProgress: 0.81 }, AGENCY_COMPARE_TICK,
+        { stayHeld: true, rebukeHeld: false, stayCasts: 2, rebukeCasts: 0, stayHeldTicks: 310, rebukeGiftLostAt: 'never enqueued' }),
+    }]);
+    expect(JSON.parse(lines[0])).toMatchObject({ vs: 'played', headlineDiffs: 0 });
+    expect(JSON.parse(lines[1])).toMatchObject({ vs: 'answer', headlineDiffs: 1 });
+    expect(lines.find((l) => l.startsWith('agency (hands-off vs played):'))).toMatch(/mattered on 0\/1/);
+    expect(lines.find((l) => l.startsWith('agency (hands-off vs answer):'))).toMatch(/mattered on 1\/1/);
+    expect(lines.find((l) => l.startsWith('seed 42 answer arm:'))).toBe(
+      'seed 42 answer arm: stayHeld:true rebukeHeld:false Stay casts 2, Rebukes cast 0, ticks Stay held 310,'
+      + ` Doom progress at t${AGENCY_COMPARE_TICK} 0.81 (hands-off 0.95); Rebuke gift lost: never enqueued`,
+    );
+  });
+
+  it('a missing answer arm is not measured for that comparison only', () => {
+    const lines = agencyReport([{ seed: 7, none: arm('none'), played: arm('greedy'), answer: null }]);
+    expect(lines).toContain('seed 7 vs answer: not measured (answer arm missing)');
+    expect(lines.find((l) => l.startsWith('agency (hands-off vs answer):'))).toMatch(/0\/0 measured seeds \(1 not measured\)/);
   });
 });
 

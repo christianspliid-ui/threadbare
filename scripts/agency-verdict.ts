@@ -1,6 +1,9 @@
 // Agency verdict — the pure half of the agency census (THR-2213; plan
 // Docs/plans/2026-11-13-thr-2205-measure-whether-the-player-matters.md).
 //
+// THR-2243: the census also runs an `answer` arm (played, plus Stay the Unmaking and Rebuke);
+// the report compares hands-off vs played and hands-off vs answer with the same verdict.
+//
 // Compares a hands-off arm with a played arm of the same seed on five headline
 // outcomes, read at AGENCY_COMPARE_TICK (or the age's end, if sooner):
 //   H1 which clock ended the age (Mandate / Doom / none) — or, both ended the same
@@ -36,7 +39,8 @@ export interface AgencySnapshot {
 
 export interface AgencyArmResult {
   seed: number;
-  arm: 'none' | 'greedy';
+  /** THR-2243 — `answer` is the played arm that also holds Stay the Unmaking and Rebukes. */
+  arm: 'none' | 'greedy' | 'answer';
   ranTo: number;
   stopReason: string;
   heldSteps?: number;
@@ -157,27 +161,72 @@ export function agencyNotMeasured(none: AgencyArmResult | null, played: AgencyAr
   return null;
 }
 
-/** One printable report over seed pairs; `null` arms are "not measured". */
-export function agencyReport(pairs: Array<{ seed: string | number; none: AgencyArmResult | null; played: AgencyArmResult | null }>): string[] {
+/**
+ * THR-2243 — what the answer arm did with the two clock verbs: whether each card was ever
+ * held (received through its milestone gift), how often each was cast, how many ticks
+ * Stay was held, and Doom progress at the compare tick beside the hands-off arm's.
+ * Missing counters (an arm written before THR-2243) read as 0 / false.
+ */
+export function answerArmLine(seed: string | number, none: AgencyArmResult, answer: AgencyArmResult): string {
+  const num = (k: string) => (typeof answer[k] === 'number' ? (answer[k] as number) : 0);
+  const doom = (r: AgencyArmResult) => (readAt(r, AGENCY_COMPARE_TICK).doomProgress as number | undefined) ?? null;
+  return `seed ${seed} answer arm: stayHeld:${answer.stayHeld === true} rebukeHeld:${answer.rebukeHeld === true}`
+    + ` Stay casts ${num('stayCasts')}, Rebukes cast ${num('rebukeCasts')}, ticks Stay held ${num('stayHeldTicks')},`
+    + ` Doom progress at t${AGENCY_COMPARE_TICK} ${doom(answer) ?? '?'} (hands-off ${doom(none) ?? '?'})`
+    + (answer.stayGiftLostAt ? `; Stay gift lost: ${String(answer.stayGiftLostAt)}` : '')
+    + (answer.rebukeGiftLostAt ? `; Rebuke gift lost: ${String(answer.rebukeGiftLostAt)}` : '');
+}
+
+/** The KPI and ending lines for one comparison (hands-off vs `label`). */
+function comparisonSummary(label: string, measured: AgencyVerdict[], notMeasured: number): string[] {
   const lines: string[] = [];
-  const measured: AgencyVerdict[] = [];
-  for (const p of pairs) {
-    const why = agencyNotMeasured(p.none, p.played);
-    if (why) { lines.push(`seed ${p.seed}: not measured (${why})`); continue; }
-    const v = agencyVerdict(p.none!, p.played!);
-    measured.push(v);
-    lines.push(JSON.stringify(v));
-  }
-  lines.push(`agency: the player mattered on ${measured.filter((r) => r.mattered).length}/${measured.length} measured seeds`
-    + ` (${pairs.length - measured.length} not measured); headline differences ${measured.map((r) => r.headlineDiffs).join(',') || '-'}`);
+  lines.push(`agency (hands-off vs ${label}): the player mattered on ${measured.filter((r) => r.mattered).length}/${measured.length} measured seeds`
+    + ` (${notMeasured} not measured); headline differences ${measured.map((r) => r.headlineDiffs).join(',') || '-'}`);
   // THR-2229 — the ending, per arm, and the played-vs-unplayed predicate (plan THR-2204 slice 4).
   for (const v of measured) {
     lines.push(`seed ${v.seed} beat 2, hands-off: ${v.beat2.none ?? '(no First)'}`);
-    lines.push(`seed ${v.seed} beat 2, played:    ${v.beat2.played ?? '(no First)'}`);
+    lines.push(`seed ${v.seed} beat 2, ${label}: ${v.beat2.played ?? '(no First)'}`);
   }
   const p = agencyEndingPredicate(measured);
-  lines.push(`ending: beat 2 differs on ${p.beat2Differs}/${measured.length} seeds; H6 or H7 differs on ${p.outcomeDiffers}`
+  lines.push(`ending (hands-off vs ${label}): beat 2 differs on ${p.beat2Differs}/${measured.length} seeds; H6 or H7 differs on ${p.outcomeDiffers}`
     + ` (H6 moved by ${measured.filter((v) => v.h6).map((v) => `${v.seed}:${v.h6MovedBy}`).join(',') || '-'})`
     + ` → predicate ${p.holds ? 'HOLDS' : 'NOT MET'}`);
+  return lines;
+}
+
+/**
+ * One printable report over seed pairs; `null` arms are "not measured". A pair that
+ * carries an `answer` key (THR-2243, even `null`) is also compared hands-off vs answer,
+ * with its own KPI and ending lines and one answer-arm line per seed.
+ */
+export function agencyReport(pairs: Array<{
+  seed: string | number; none: AgencyArmResult | null; played: AgencyArmResult | null; answer?: AgencyArmResult | null;
+}>): string[] {
+  const lines: string[] = [];
+  const measured: AgencyVerdict[] = [];
+  const answered: AgencyVerdict[] = [];
+  const withAnswer = pairs.filter((p) => p.answer !== undefined);
+  const answerLines: string[] = [];
+  for (const p of pairs) {
+    const why = agencyNotMeasured(p.none, p.played);
+    if (why) lines.push(`seed ${p.seed}: not measured (${why})`);
+    else {
+      const v = agencyVerdict(p.none!, p.played!);
+      measured.push(v);
+      lines.push(JSON.stringify({ vs: 'played', ...v }));
+    }
+    if (p.answer === undefined) continue;
+    const whyAnswer = agencyNotMeasured(p.none, p.answer);
+    if (whyAnswer) { lines.push(`seed ${p.seed} vs answer: not measured (${whyAnswer.replace('played arm', 'answer arm')})`); continue; }
+    const va = agencyVerdict(p.none!, p.answer!);
+    answered.push(va);
+    lines.push(JSON.stringify({ vs: 'answer', ...va }));
+    answerLines.push(answerArmLine(p.seed, p.none!, p.answer!));
+  }
+  lines.push(...comparisonSummary('played', measured, pairs.length - measured.length));
+  if (withAnswer.length) {
+    lines.push(...comparisonSummary('answer', answered, withAnswer.length - answered.length));
+    lines.push(...answerLines);
+  }
   return lines;
 }
