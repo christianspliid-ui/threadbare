@@ -449,6 +449,13 @@ for (let i = 0; i < TICKS; i++) {
     restored = true;
   }
   state = runTick(state, [], runtime);
+  { // PROTO thr-2202 stay-strength: how much clock did Stay actually save?
+    const dc: any = state.doomClock;
+    const own = dc.tickModifier ?? 1; const step = dc.lastStep ?? own;
+    if (!warming) { (globalThis as any).__doomOwn = ((globalThis as any).__doomOwn ?? 0) + own; (globalThis as any).__doomStep = ((globalThis as any).__doomStep ?? 0) + step; }
+    if (state.tick === WARM) (globalThis as any).__doomAtWarm = { tick: dc.currentTick, mod: own, progress: dc.progress, stage: dc.currentStage };
+    if (dc.currentStage === 5 && (globalThis as any).__stage5At == null) (globalThis as any).__stage5At = state.tick;
+  }
   if (warming) state = unattended(state);
   else handleHeldSteps();
   answerVisions(PLAYS && !warming);
@@ -469,5 +476,7 @@ const clockVerbs = {
 const result = { seed: SEED, arm: ARM, warm: WARM, ranTo: state.tick, seconds: Math.round(ms / 1000), stopReason, heldSteps, heldWithCards, cardsPlayed, essenceSpent: Math.round(essenceSpent), apotheosisSteps, visionsAnswered, visionChoices, ordealRolls, ...clockVerbs, end, snaps };
 const { firstChapterIds, ...endShort } = end;
 console.log(JSON.stringify({ ...result, end: endShort, snaps: undefined }));
+{ const g: any = globalThis; const dc: any = state.doomClock;
+  console.log(`PROTO-DOOM seed=${SEED} arm=${ARM} atWarm=${JSON.stringify(g.__doomAtWarm)} stage5At=t${g.__stage5At} postWarmOwn=${(g.__doomOwn ?? 0).toFixed(1)} postWarmStep=${(g.__doomStep ?? 0).toFixed(1)} saved=${((g.__doomOwn ?? 0) - (g.__doomStep ?? 0)).toFixed(1)} clockTicks savedProgress=${(((g.__doomOwn ?? 0) - (g.__doomStep ?? 0)) / dc.totalTicks).toFixed(3)} endMod=${dc.tickModifier} endCurrentTick=${dc.currentTick.toFixed(1)}/${dc.totalTicks} stayHeldTicks=${stayHeldTicks} stayCasts=${stayCasts}`); }
 console.log(`  first chapters: ${firstChapterIds.join(' · ')}`);
 if (OUT) { fs.mkdirSync(path.dirname(OUT), { recursive: true }); fs.writeFileSync(OUT, JSON.stringify(result, null, 1)); }
