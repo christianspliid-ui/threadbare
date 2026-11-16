@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-11-16 13:58 local (12:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-16 14:59 local (13:59 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
 
 ### What should the design lane plan next? (new 16 Nov)
 
-The builders have nothing agreed left to build. The last pieces of "make the middle a game" shipped tonight: [answer a rival where it struck](https://linear.app/threadbare/issue/THR-2237), [slow Doom from its panel](https://linear.app/threadbare/issue/THR-2240), and [see what moves the Mandate](https://linear.app/threadbare/issue/THR-2236). **New fact (16 Nov):** [the measurement](https://linear.app/threadbare/issue/THR-2205/measure-whether-the-player-matters-a-run-nobody-plays-and-a-run-played) shows your play now changes the First's story on 3 of 3 test worlds, but not how the age ends: Doom ends every age at its last stage and the Mandate stays near empty. A census that tries the Doom and rival answers is being built now ([THR-2243](https://linear.app/threadbare/issue/THR-2243)). **Reply with a system or a direction.** If you don't, the lanes finish that census and wait for the next warm playtest round. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-16.md) and [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-16b.md)*
+The builders have nothing agreed left to build. The last pieces of "make the middle a game" shipped tonight: [answer a rival where it struck](https://linear.app/threadbare/issue/THR-2237), [slow Doom from its panel](https://linear.app/threadbare/issue/THR-2240), and [see what moves the Mandate](https://linear.app/threadbare/issue/THR-2236). **New fact (16 Nov):** [the measurement](https://linear.app/threadbare/issue/THR-2205/measure-whether-the-player-matters-a-run-nobody-plays-and-a-run-played) shows your play now changes the First's story on 3 of 3 test worlds, but not how the age ends: Doom ends every age at its last stage and the Mandate stays near empty. **Newer fact (16 Nov, afternoon):** [the census that plays the Doom and rival answers](https://linear.app/threadbare/issue/THR-2243) finished. Casting Stay the Unmaking whenever possible held Doom back by only 1 to 3 hundredths, and every age still ended at Doom's last stage. **Reply with a system or a direction.** If you don't, the builders stay idle until the next warm playtest round. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-16.md) and [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-16b.md)*
 
 ### Should every one of The First's own chapters give you a hand? (new 15 Nov)
 
@@ -62,6 +62,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-16: the agency census now plays the Doom and rival answers; answering Doom barely slows it** ([THR-2243](https://linear.app/threadbare/issue/THR-2243)). Merged via [#2852](https://github.com/christianspliid-ui/threadbare/pull/2852).
 - **2026-11-16: on the test route, the pre-bonded First now has a real meeting record, so the Return no longer always "vanishes". It is live** ([THR-2242](https://linear.app/threadbare/issue/THR-2242)). Merged via [#2851](https://github.com/christianspliid-ui/threadbare/pull/2851).
 - **2026-11-16: each clock-answer card now has one name everywhere: Stay the Unmaking and Rebuke. It is live** ([THR-2241](https://linear.app/threadbare/issue/THR-2241)). Merged via [#2850](https://github.com/christianspliid-ui/threadbare/pull/2850).
 - **2026-11-15: the Play button now promises only what it keeps. It is live** ([THR-2238](https://linear.app/threadbare/issue/THR-2238)). Merged via [#2849](https://github.com/christianspliid-ui/threadbare/pull/2849).
@@ -71,7 +72,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-15: Read the Threads now fades each chapter by its age. It is live** ([THR-2235](https://linear.app/threadbare/issue/THR-2235)). Merged via [#2845](https://github.com/christianspliid-ui/threadbare/pull/2845).
 - **2026-11-15: The First's Apotheosis now follows the Ordeal, once, and the Return waits for it. It is live** ([THR-2234](https://linear.app/threadbare/issue/THR-2234)). Merged via [#2844](https://github.com/christianspliid-ui/threadbare/pull/2844).
 - **2026-11-15: no journey vision is lost when its moment passes. It is live** ([THR-2233](https://linear.app/threadbare/issue/THR-2233)). Merged via [#2843](https://github.com/christianspliid-ui/threadbare/pull/2843).
-- **2026-11-15: the end of the age now tells what the god did with its First. It is live** ([THR-2229](https://linear.app/threadbare/issue/THR-2229)). Merged via [#2842](https://github.com/christianspliid-ui/threadbare/pull/2842).
 
 ---
 
