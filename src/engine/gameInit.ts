@@ -74,6 +74,11 @@ import { computeReachShares } from './domainCapability';
 import { placeSeededCarriedNotices } from './spellGenerator/notice';
 import { grantFirstMark } from './firstMark';
 import { godBoughtScoreSum } from './dominion';
+import { ENRICHED_DILEMMA_LIBRARY } from '../data/meeting-dilemma-library';
+import { ARCHETYPE_NAME_MAP } from '../data/meeting-content';
+import type { DilemmaChoiceRecord, MeetingChoiceRecord } from '../types/meetingEncounter';
+import type { ReachDomain } from '../types/traits';
+import type { SphereName } from '../types';
 import { recordSeededScores } from './phaseDominion';
 import { getSpherePoints } from './spherePoints';
 import { ensureDeciderMeans, giveBirthMeans } from './mortalMeans';
@@ -814,6 +819,78 @@ export function devPlaceAvatarAtSettlement(state: GameState): string | null {
   return settlement.id;
 }
 
+/**
+ * THR-2242 — the two meeting choices the dev First is recorded as having made.
+ * Both are real library choices a heart-primary meeting offers (slot 1 is the
+ * heart value pair's axiological trial, slot 2 a heart reach trial), and both
+ * fit the seeded First's profile: loyal (loyalty_ambition 0.7) and merciful
+ * (mercy_ruthlessness 0.6). Tags: devotion_seed, duty_over_desire, mercy_shown.
+ */
+export const DEV_FIRST_MEETING_CHOICES: ReadonlyArray<{ dilemmaId: string; choiceId: string }> = [
+  { dilemmaId: 'AX-HEART-01', choiceId: 'ax-heart-01-a' },
+  { dilemmaId: 'RC-HEART-02', choiceId: 'rc-heart-02-a' },
+];
+
+/** The dev First's reaches — the same pair the seeded node carries. */
+const DEV_FIRST_PRIMARY_REACH: ReachDomain = 'heart';
+const DEV_FIRST_SECONDARY_REACH: ReachDomain = 'shadow';
+
+/** Fallback when the ascendant node carries no sphere alignment. */
+const DEV_FIRST_FALLBACK_SPHERE: SphereName = 'spirit';
+
+function readAscendantPrimarySphere(graph: WorldGraph, ascendantId: string): SphereName {
+  const alignment = graph.getNode(ascendantId)?.properties.sphereAlignment as
+    | { primary?: SphereName }
+    | undefined;
+  return alignment?.primary ?? DEV_FIRST_FALLBACK_SPHERE;
+}
+
+/**
+ * THR-2242 — the dev First's meeting record. Without one, `passesFoundingGate`
+ * lets only gateless outcomes through, so every seeded or warm Return ended in
+ * Vanishing whatever the Ordeal did. Each choice is read from the dilemma
+ * library and copied field for field the way `applyDilemmaChoice` copies a
+ * live choice; a missing template is skipped (fail-soft), never thrown.
+ *
+ * `sparkVisionId` stays empty, as `buildMeetingResult` writes it when no vision
+ * was chosen: a vision would give the seeded First a path (`firstPath.ts`),
+ * which is a separate change from this one.
+ */
+export function buildDevFirstMeetingRecord(
+  locationId: string,
+  tick: number,
+  ascendantSphere: SphereName,
+): MeetingChoiceRecord {
+  const dilemmaChoices: DilemmaChoiceRecord[] = [];
+  for (const pick of DEV_FIRST_MEETING_CHOICES) {
+    const template = ENRICHED_DILEMMA_LIBRARY.find(t => t.id === pick.dilemmaId);
+    const choice = template?.choices.find(c => c.id === pick.choiceId);
+    if (!template || !choice) continue;
+    dilemmaChoices.push({
+      dilemmaId: template.id,
+      category: template.category,
+      choiceId: choice.id,
+      gateTags: [...choice.gateTags],
+      axiologicalShifts: { ...choice.axiologicalShifts },
+      reachChanges: choice.reachChanges ? { ...choice.reachChanges } : undefined,
+      traitSeeds: choice.traitSeeds ? [...choice.traitSeeds] : undefined,
+    });
+  }
+  const archetypeKey = `${DEV_FIRST_PRIMARY_REACH}_${DEV_FIRST_SECONDARY_REACH}`;
+  return {
+    encounterTick: tick,
+    locationId,
+    candidateIndex: 0,
+    archetypeId: ARCHETYPE_NAME_MAP[archetypeKey] ?? archetypeKey,
+    dilemmaChoices,
+    sparkVisionId: '',
+    ascendantSphere,
+    foundingGateTags: dilemmaChoices.flatMap(c => c.gateTags),
+    primaryReach: DEV_FIRST_PRIMARY_REACH,
+    secondaryReach: DEV_FIRST_SECONDARY_REACH,
+  };
+}
+
 /** The dev First's trade (THR-1982). */
 export const DEV_FIRST_TRADE: FirstTrade = { role: 'priest', word: 'Shrine-keeper' };
 
@@ -895,7 +972,13 @@ export function devSeedTheFirst(state: GameState): string {
       // the dev route matches the player's path.
       attentionMode: 'pause',
       storyPhase: 'call',
-      meetingChoiceRecord: null,
+      // THR-2242: a record a real meeting could have written, so the founding
+      // gates read something and the Ordeal can change the Return.
+      meetingChoiceRecord: buildDevFirstMeetingRecord(
+        locationId,
+        tick,
+        readAscendantPrimarySphere(graph, ascendantId),
+      ),
       beatHistory: [],
     },
   });
