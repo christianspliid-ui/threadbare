@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-11-16 12:00 local (11:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-16 12:58 local (11:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
 
 ### What should the design lane plan next? (new 16 Nov)
 
-The builders have nothing agreed left to build. The last pieces of "make the middle a game" shipped tonight: [answer a rival where it struck](https://linear.app/threadbare/issue/THR-2237), [slow Doom from its panel](https://linear.app/threadbare/issue/THR-2240), and [see what moves the Mandate](https://linear.app/threadbare/issue/THR-2236). **Reply with a system or a direction.** If you don't, the lanes wait for the next warm playtest round to check these fixes and turn up new problems. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-16.md)*
+The builders have nothing agreed left to build. The last pieces of "make the middle a game" shipped tonight: [answer a rival where it struck](https://linear.app/threadbare/issue/THR-2237), [slow Doom from its panel](https://linear.app/threadbare/issue/THR-2240), and [see what moves the Mandate](https://linear.app/threadbare/issue/THR-2236). **New fact (16 Nov):** [the measurement](https://linear.app/threadbare/issue/THR-2205/measure-whether-the-player-matters-a-run-nobody-plays-and-a-run-played) shows your play now changes the First's story on 3 of 3 test worlds, but not how the age ends: Doom ends every age at its last stage and the Mandate stays near empty. A census that tries the Doom and rival answers is queued ([THR-2243](https://linear.app/threadbare/issue/THR-2243)). **Reply with a system or a direction.** If you don't, the lanes finish that census and wait for the next warm playtest round. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-16.md) and [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-16b.md)*
 
 ### Should every one of The First's own chapters give you a hand? (new 15 Nov)
 
