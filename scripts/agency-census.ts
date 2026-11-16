@@ -378,7 +378,11 @@ function giftLostAt(cardId: string, beatId: string): string | null {
   const fired: string[] = state.graph.getNode(state.ascendantId)?.properties?.milestoneBeatsFired ?? [];
   const pending = state.ascendantBeats?.pending?.beatId ?? null;
   if (!fired.includes(beatId)) {
-    return `${beatId} never enqueued (phaseAscendantProgression's trigger did not hold; the slot held ${pending ?? 'nothing'} at the end)`;
+    // A milestone enqueues only into an empty beat slot (BEAT_MAX_PENDING = 1): a beat nobody
+    // receives keeps the slot, and every later gift waits behind it.
+    return pending
+      ? `${beatId} never enqueued: the one beat slot held ${pending}, which nothing received`
+      : `${beatId} never enqueued: its trigger never held on this route`;
   }
   if (pending === beatId) return `${beatId} enqueued but still pending at t${state.tick}: nothing received it`;
   return `${beatId} enqueued and resolved without granting the card`;
