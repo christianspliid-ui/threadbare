@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-17 17:58 local (16:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-17 18:57 local (17:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -25,6 +25,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 ## Decided for you
 
 - [Stay the Unmaking lands crooked every time](https://linear.app/threadbare/issue/THR-2244/stay-the-unmaking-lands-crooked-every-time-a-fresh-god-cant-land-it): **Stay gets easier to cast, and its card says "uncertain" instead of "favorable".** Today a god with no star affinity never holds the hour cleanly (0 clean casts in 400). The seeded Witness is such a god, and so are two of the three census gods. After the change that god lands clean about a third of the time, and a star god about 60%. Doom slows about half again as much per held day for the off-star god. The other landings stay crooked, as the card's design wants. Say "Stay should be equally easy for every god" and it gets its own plan to roll in the god's best reach instead of star. Say "Doom should only be answered crookedly" and the change is dropped. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-17a.md)*
+- [A sheet's Story list never says whether the mortal did the deed or had it done to them](https://linear.app/threadbare/issue/THR-2191/a-sheets-story-list-never-says-whether-the-mortal-did-the-deed-or-had): **a Story row now says when the deed was done to the mortal, and stays quiet when it was their own.** After the chapter name comes one short word: "done to them", "set upon" (a fight started against them), "defending" (their side was attacked) or "fell in it" (died in a past war). On a live world, 96% of a mortal's Story rows are their own deeds, so only the other 4% get a word. A chapter they ran and the same chapter run on them become two rows, so "twice" never mixes the two. Say "mark every row" and own deeds also get "by them". Say "put the word first" and it moves in front of the name. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-17b.md)*
 
 Say "veto <title>" to reverse any of these.
 
@@ -34,7 +35,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Starved: one ticket in Ready for Dev, held until 21:20 local today.** [THR-2244](https://linear.app/threadbare/issue/THR-2244/stay-the-unmaking-lands-crooked-every-time-a-fresh-god-cant-land-it) (make Stay the Unmaking easier, card says "uncertain") sits in its veto window until 20:20 UTC, and the first builder run after that takes it. The builder's runs through 17:52 local stood down for exactly that reason, which is correct. Two more design tickets wait in Todo for the design lane: [give both clocks a verb](https://linear.app/threadbare/issue/THR-2202/give-both-clocks-a-verb-the-mortals-deeds-fill-the-mandate-and-doom) and [put the god in the climax](https://linear.app/threadbare/issue/THR-2204/put-the-god-in-the-climax-the-journey-visions-read-from-the-scene-the).
+**Thin: two tickets in Ready for Dev, both on veto holds.** [THR-2244](https://linear.app/threadbare/issue/THR-2244/stay-the-unmaking-lands-crooked-every-time-a-fresh-god-cant-land-it) (make Stay the Unmaking easier, card says "uncertain") can be built from 21:20 local today. [THR-2191](https://linear.app/threadbare/issue/THR-2191/a-sheets-story-list-never-says-whether-the-mortal-did-the-deed-or-had) (Story rows say whose deed it was) can be built from 06:45 local tomorrow. The builder's runs through 18:52 local stood down because both are held, which is correct. Two more design tickets wait in Todo for the design lane: [give both clocks a verb](https://linear.app/threadbare/issue/THR-2202/give-both-clocks-a-verb-the-mortals-deeds-fill-the-mandate-and-doom) and [put the god in the climax](https://linear.app/threadbare/issue/THR-2204/put-the-god-in-the-climax-the-journey-visions-read-from-the-scene-the).
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (28 days; last touched 8 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching. Checked again this run: no branch and no local worktree holds work for it, so nothing is stranded.
@@ -42,4 +43,4 @@ Items for agents, not you:
 ## Health
 
 - **Every lane was silent Sunday from about 09:57 to 21:48 local (11.8 hours).** It was a Sunday, so per your weekend ruling this is not its own ask. It is one more case for the "open at login" setting.
-- Everything else is green. The live site is current: commits since its last build (b0f047b7) only touched notes and docs. Checks on main and the 3 scheduled background jobs pass. No PRs are waiting. All 10 enabled scheduled tasks are on time. Engine speed is normal (158 ms per tick, 4% above the weekly median of 152). The worktree reaper ran at 17:40. Linear was read live this run. You have sent no Discord messages since the last brief. The home copy of the repo is current with main.
+- Everything else is green. The live site is current: commits since its last build (b0f047b7) only touched notes and docs. Checks on main and the 3 scheduled background jobs pass. No PRs are waiting. All 10 enabled scheduled tasks are on time. Engine speed is normal (131 ms per tick, 14% below the weekly median of 153). The worktree reaper ran at 18:40. Linear was read live this run. You have sent no Discord messages since the last brief. The home copy of the repo is current with main.
