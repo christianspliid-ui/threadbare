@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-17 18:57 local (17:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-17 19:58 local (18:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -35,12 +35,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Thin: two tickets in Ready for Dev, both on veto holds.** [THR-2244](https://linear.app/threadbare/issue/THR-2244/stay-the-unmaking-lands-crooked-every-time-a-fresh-god-cant-land-it) (make Stay the Unmaking easier, card says "uncertain") can be built from 21:20 local today. [THR-2191](https://linear.app/threadbare/issue/THR-2191/a-sheets-story-list-never-says-whether-the-mortal-did-the-deed-or-had) (Story rows say whose deed it was) can be built from 06:45 local tomorrow. The builder's runs through 18:52 local stood down because both are held, which is correct. Two more design tickets wait in Todo for the design lane: [give both clocks a verb](https://linear.app/threadbare/issue/THR-2202/give-both-clocks-a-verb-the-mortals-deeds-fill-the-mandate-and-doom) and [put the god in the climax](https://linear.app/threadbare/issue/THR-2204/put-the-god-in-the-climax-the-journey-visions-read-from-the-scene-the).
+**Thin: two tickets in Ready for Dev, both on veto holds.** [THR-2244](https://linear.app/threadbare/issue/THR-2244/stay-the-unmaking-lands-crooked-every-time-a-fresh-god-cant-land-it) (make Stay the Unmaking easier, card says "uncertain") can be built from 21:20 local today. [THR-2191](https://linear.app/threadbare/issue/THR-2191/a-sheets-story-list-never-says-whether-the-mortal-did-the-deed-or-had) (Story rows say whose deed it was) can be built from 06:45 local tomorrow. The builder's runs through 19:52 local stood down because both are held, which is correct. Two more design tickets wait in Todo for the design lane: [give both clocks a verb](https://linear.app/threadbare/issue/THR-2202/give-both-clocks-a-verb-the-mortals-deeds-fill-the-mandate-and-doom) and [put the god in the climax](https://linear.app/threadbare/issue/THR-2204/put-the-god-in-the-climax-the-journey-visions-read-from-the-scene-the).
 
 Items for agents, not you:
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (28 days; last touched 8 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching. Checked again this run: no branch and no local worktree holds work for it, so nothing is stranded.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (28 days; last touched 8 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching. Checked again this run: no branch and no local worktree holds work for it.
 
 ## Health
 
 - **Every lane was silent Sunday from about 09:57 to 21:48 local (11.8 hours).** It was a Sunday, so per your weekend ruling this is not its own ask. It is one more case for the "open at login" setting.
-- Everything else is green. The live site is current: commits since its last build (b0f047b7) only touched notes and docs. Checks on main and the 3 scheduled background jobs pass. No PRs are waiting. All 10 enabled scheduled tasks are on time. Engine speed is normal (131 ms per tick, 14% below the weekly median of 153). The worktree reaper ran at 18:40. Linear was read live this run. You have sent no Discord messages since the last brief. The home copy of the repo is current with main.
+- Everything else is green. The live site is current: commits since its last build (b0f047b7) only touched notes and docs. Checks on main and the 3 scheduled background jobs pass. No PRs are waiting. All 10 enabled scheduled tasks are on time. Engine speed is normal (169 ms per tick, 11% above the weekly median of 152, inside the 25% band). The worktree reaper ran at 19:40. Linear was read live this run. You have sent no Discord messages since the last brief. The home copy of the repo is current with main.
