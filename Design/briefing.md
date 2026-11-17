@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-17 09:58 local (08:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-17 10:58 local (09:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -42,4 +42,4 @@ Items for agents, not you:
 ## Health
 
 - **Every lane was silent Sunday from about 09:57 to 21:48 local (11.8 hours).** It was a Sunday, so per your weekend ruling this is not its own ask. It is one more case for the "open at login" setting.
-- Everything else is green. The live site is current: commits since its last build (b0f047b7) only touched notes and docs. Checks on main, the heavy tests and the 3 scheduled background jobs pass. No PRs are waiting. All 10 enabled scheduled tasks are on time. Engine speed is normal (125 ms per tick, 18% below the weekly median of 152). The worktree reaper ran at 09:52. Linear was read live this run. You have sent no Discord messages since the last brief. The home copy of the repo is current with main.
+- Everything else is green. The live site is current: commits since its last build (b0f047b7) only touched notes and docs. Checks on main, the heavy tests and the 3 scheduled background jobs pass. No PRs are waiting. All 10 enabled scheduled tasks are on time. Engine speed is normal (125 ms per tick, 18% below the weekly median of 152). The worktree reaper ran at 10:40. Linear was read live this run. You have sent no Discord messages since the last brief. The home copy of the repo is current with main.
