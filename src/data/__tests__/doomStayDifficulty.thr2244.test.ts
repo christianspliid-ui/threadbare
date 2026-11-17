@@ -11,14 +11,14 @@
  * seeded harness shape as `playerCastBalance.test.ts`.
  */
 import { describe, it, expect, beforeEach } from 'vitest';
-import { resolveUncontestedStep } from '../unifiedActionResolution';
-import { createUnifiedAction, resetUnifiedActionCounter } from '../unifiedActionLifecycle';
-import { getUnifiedTemplateById } from '../../data/unified-action-templates';
-import { DOOM_STAY_TEMPLATE_ID } from '../../data/doom-stay-content';
-import { DOOM_STAY_DIFFICULTY } from '../../data/game-config';
-import { castForecastProbability } from '../playerCastReadout';
-import { classifyForecastTier } from '../encounters/outcomeForecast';
-import { WorldGraph } from '../graph';
+import { resolveUncontestedStep } from '../../engine/unifiedActionResolution';
+import { createUnifiedAction, resetUnifiedActionCounter } from '../../engine/unifiedActionLifecycle';
+import { getUnifiedTemplateById } from '../unified-action-templates';
+import { DOOM_STAY_TEMPLATE_ID } from '../doom-stay-content';
+import { DOOM_STAY_DIFFICULTY } from '../game-config';
+import { castForecastProbability } from '../../engine/playerCastReadout';
+import { classifyForecastTier } from '../../engine/encounters/outcomeForecast';
+import { WorldGraph } from '../../engine/graph';
 import type { GameState } from '../../types/gameState';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 

@@ -165,7 +165,8 @@ export function agencyNotMeasured(none: AgencyArmResult | null, played: AgencyAr
  * THR-2243 — what the answer arm did with the two clock verbs: whether each card was ever
  * held (received through its milestone gift), how often each was cast, how many ticks
  * Stay was held, and Doom progress at the compare tick beside the hands-off arm's.
- * Missing counters (an arm written before THR-2243) read as 0 / false.
+ * Missing counters (an arm written before THR-2243) read as 0 / false. THR-2244 adds the
+ * clean/crooked Stay landing split when the arm recorded it.
  */
 export function answerArmLine(seed: string | number, none: AgencyArmResult, answer: AgencyArmResult): string {
   const num = (k: string) => (typeof answer[k] === 'number' ? (answer[k] as number) : 0);
@@ -173,6 +174,10 @@ export function answerArmLine(seed: string | number, none: AgencyArmResult, answ
   return `seed ${seed} answer arm: stayHeld:${answer.stayHeld === true} rebukeHeld:${answer.rebukeHeld === true}`
     + ` Stay casts ${num('stayCasts')}, Rebukes cast ${num('rebukeCasts')}, ticks Stay held ${num('stayHeldTicks')},`
     + ` Doom progress at t${AGENCY_COMPARE_TICK} ${doom(answer) ?? '?'} (hands-off ${doom(none) ?? '?'})`
+    // THR-2244: clean vs crooked Stay landings, only for arms that recorded them.
+    + (typeof answer.stayCleanLandings === 'number'
+      ? `; Stay landed clean ${num('stayCleanLandings')} / crooked ${num('stayCrookedLandings')} (held ticks clean ${num('stayCleanTicks')} / crooked ${num('stayCrookedTicks')})`
+      : '')
     + (answer.stayGiftLostAt ? `; Stay gift lost: ${String(answer.stayGiftLostAt)}` : '')
     + (answer.rebukeGiftLostAt ? `; Rebuke gift lost: ${String(answer.rebukeGiftLostAt)}` : '');
 }
