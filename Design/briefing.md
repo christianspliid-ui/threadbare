@@ -1,9 +1,9 @@
 # Briefing
-**Generated:** 2026-11-17 05:57 local (04:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-17 06:58 local (05:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**What should the design lane plan next?** Everything agreed is now built, and the last measurement is in. **Your play changes the First's story, but nothing you can do yet changes how the age ends.** A played run ends differently from one nobody plays on all 3 test worlds, but only in the First's story: the Ordeal, the Apotheosis, and whether the First becomes your Aspect ([the measurement](https://linear.app/threadbare/issue/THR-2205/measure-whether-the-player-matters-a-run-nobody-plays-and-a-run-played)). The census that plays the new Doom and rival answers ([THR-2243](https://linear.app/threadbare/issue/THR-2243/the-agency-census-answers-the-clocks-a-third-arm-that-holds-stay-the)) found that Stay the Unmaking barely slows Doom. **Newest fact (this evening):** that census never reached the end of an age. Every run stopped at tick 800 with Doom at 91–99% of its clock, already inside Doom's last stage (which starts at 80%). Even a perfect hold of Stay the Unmaking could delay the end by only about an eighth of the clock, so it can never lift a run out of that stage. **Reply with a system or a direction.** "Make the god able to change how the age ends" is one natural answer. If you say nothing, the builders stay mostly idle until the next warm playtest round. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-16.md) and [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-16c.md)*
+**What should the design lane plan next?** Everything agreed is now built. **Your play changes the First's story, but nothing you can do yet changes how the age ends.** A played run ends differently from one nobody plays on all 3 test worlds, but only in the First's story: the Ordeal, the Apotheosis, and whether the First becomes your Aspect ([the measurement](https://linear.app/threadbare/issue/THR-2205/measure-whether-the-player-matters-a-run-nobody-plays-and-a-run-played)). The census that plays the new Doom and rival answers ([THR-2243](https://linear.app/threadbare/issue/THR-2243/the-agency-census-answers-the-clocks-a-third-arm-that-holds-stay-the)) found that Stay the Unmaking barely slows Doom, and that every run was already inside Doom's last stage before its census ended. **Reply with a system or a direction.** "Make the god able to change how the age ends" is one natural answer. If you say nothing, the builders stay mostly idle until the next warm playtest round. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-16.md) and [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-16c.md)*
 
 ## Also waiting (11)
 
@@ -21,24 +21,18 @@
 
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
-## Decided for you
-
-- [Give both clocks a verb](https://linear.app/threadbare/issue/THR-2202/give-both-clocks-a-verb-the-mortals-deeds-fill-the-mandate-and-doom) — Stay the Unmaking is weaker than its design says, and the fix is a number. The card should slow Doom to three quarters while you hold it, but a new god almost never casts it cleanly (all 12 casts in the measurement landed crooked), so it slows Doom only to nine tenths. The fix makes a clean hold the usual result ([THR-2244](https://linear.app/threadbare/issue/THR-2244/stay-the-unmaking-lands-crooked-every-time-a-fresh-god-cant-land-it), held until 06:50 local this morning for your veto). To reverse: "Doom should only be answered crookedly". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-16c.md)*
-
-Say "veto <title>" to reverse any of these.
-
 ## This week's screens
 
 [Contact sheet — this week next to last week](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/ux-review/2026-11-12/contact-sheet.jpg) — better: The First's name fits, the essence and Doom readouts speak in words, and returning to the mid-game now opens on a "While you were away" summary, but arrival toasts still pile up and his thread row cuts his story short.
 
 ## Queue
 
-**Starved: 1 ticket in Ready for Dev, and it is on hold.** [THR-2244](https://linear.app/threadbare/issue/THR-2244/stay-the-unmaking-lands-crooked-every-time-a-fresh-god-cant-land-it) (Stay the Unmaking lands crooked) waits out its veto window until 06:50 local this morning; the first pickup run after that builds it. Pickup runs stand down until then because that ticket is on hold, which is correct (latest run 05:52 local).
+**Starved: nothing in Ready for Dev.** The one held ticket, [THR-2244](https://linear.app/threadbare/issue/THR-2244/stay-the-unmaking-lands-crooked-every-time-a-fresh-god-cant-land-it) (Stay the Unmaking lands crooked), cleared its veto window and was picked up at 06:52 local. The builder found the fix the ticket asked for can't work as written: a god with no skill in the card's reach lands it clean 0 times in 400, and no difficulty number short of "certain" lifts the card above "uncertain". It moved the ticket back to Todo for the design lane, recommending "accept *uncertain*, set the difficulty to about 0.05" (a god then lands it clean about 35% of the time). That is a calibration call, so it is the design lane's to make, not yours. Nothing was lost: no code had been written.
 
 Items for agents, not you:
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (28 days; last touched 8 Nov). No local worktree holds uncommitted work for it, so nothing is at risk. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (28 days; last touched 8 Nov). No branch or local worktree holds work for it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
 - **Every lane was silent Sunday from about 09:57 to 21:48 local (11.8 hours).** It was a Sunday, so per your weekend ruling this is not its own ask. It is one more case for the "open at login" setting.
-- Everything else is green. The live site serves the latest commit on main (b0f047b7). Checks on main and the 3 scheduled background jobs pass. No PRs are waiting. All 10 enabled scheduled tasks are on time. Engine speed is normal (140 ms per tick, 10% below the weekly median of 155). The worktree reaper ran within the hour. Linear was read live this run. You have sent no Discord messages since the last brief. The home copy of the repo is current with main.
+- Everything else is green. The live site serves the latest commit on main (b0f047b7). Checks on main and the 3 scheduled background jobs pass. No PRs are waiting. All 10 enabled scheduled tasks are on time. Engine speed is normal (127 ms per tick, 17% below the weekly median of 154). The worktree reaper is running. Linear was read live this run. You have sent no Discord messages since the last brief. The home copy of the repo is current with main.
