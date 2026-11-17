@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-17 00:57 local (23:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-17 01:58 local (00:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -33,7 +33,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Starved: 1 ticket in Ready for Dev, and it is on hold.** [THR-2244](https://linear.app/threadbare/issue/THR-2244/stay-the-unmaking-lands-crooked-every-time-a-fresh-god-cant-land-it) (Stay the Unmaking lands crooked) waits out its veto window until 06:50 local this morning; the first pickup run after that builds it. The pickup runs at 00:12, 00:32 and 00:52 local each stood down because that ticket is on hold, which is correct.
+**Starved: 1 ticket in Ready for Dev, and it is on hold.** [THR-2244](https://linear.app/threadbare/issue/THR-2244/stay-the-unmaking-lands-crooked-every-time-a-fresh-god-cant-land-it) (Stay the Unmaking lands crooked) waits out its veto window until 06:50 local this morning; the first pickup run after that builds it. The pickup runs at 01:12, 01:32 and 01:52 local each stood down because that ticket is on hold, which is correct.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (28 days; last touched 8 Nov). No local worktree holds uncommitted work for it, so nothing is at risk. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
@@ -41,4 +41,4 @@ Items for agents, not you:
 ## Health
 
 - **Every lane was silent Sunday from about 09:57 to 21:48 local (11.8 hours).** It was a Sunday, so per your weekend ruling this is not its own ask. It is one more case for the "open at login" setting.
-- Everything else is green. The live site serves the latest commit on main (b0f047b7). Checks on main and the 3 scheduled background jobs pass. No PRs are waiting. All 10 enabled scheduled tasks are on time. Engine speed is normal (142 ms per tick, 9% below the weekly median of 156). The worktree reaper ran within the hour. Linear was read live this run. You have sent no Discord messages since the last brief. The home copy of the repo is current with main.
+- Everything else is green. The live site serves the latest commit on main (b0f047b7). Checks on main and the 3 scheduled background jobs pass. No PRs are waiting. All 10 enabled scheduled tasks are on time. Engine speed is normal (139 ms per tick, 11% below the weekly median of 155). The worktree reaper ran within the hour. Linear was read live this run. You have sent no Discord messages since the last brief. The home copy of the repo is current with main.
