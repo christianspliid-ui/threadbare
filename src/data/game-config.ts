@@ -52,12 +52,21 @@ export const DOOM_RATE_FLOOR = 0.1;
  * `doom_rate_multiplier` override; a crooked landing (`success_at_cost`) holds it
  * at `DOOM_STAY_RATE_CROOKED`. Starting points — THR-2201's purse tuning may move
  * the prices.
+ *
+ * `DOOM_STAY_DIFFICULTY` (THR-2244, plan THR-2202 § Amendments 2026-11-17): 0.05,
+ * was 0.35. Stay rolls in `star` at `cosmic` scale (+0.10), and most gods have no
+ * star affinity (fresh off-domain capability 0.168, THR-1775). At 0.35 that god
+ * forecast "doomed" and landed clean 0 times in 400, so every hold was crooked and
+ * Doom ran at 0.9×. At 0.05 the card promises "uncertain" (clean ≈ 141/400) for an
+ * off-star god and "favorable" for a star-primary one (≈ 238/400). Not 0: the
+ * resolver treats an unpriced step as certain, which would remove the crooked
+ * landing (Law 26).
  */
 export const DOOM_STAY_COST = 4;
 export const DOOM_STAY_UPKEEP_PER_TICK = 0.15;
 export const DOOM_STAY_RATE = 0.75;
 export const DOOM_STAY_RATE_CROOKED = 0.9;
-export const DOOM_STAY_DIFFICULTY = 0.35;
+export const DOOM_STAY_DIFFICULTY = 0.05;
 
 /**
  * THR-1646 — the floor under the Unmaking. `phaseDoomExpiry` will not move the

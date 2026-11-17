@@ -312,6 +312,9 @@ function answerVisions(played: boolean): void {
 // ─── THR-2243 — the answer arm: receive the gifts, hold Stay, Rebuke ─
 let stayCasts = 0; let rebukeCasts = 0; let stayHeldTicks = 0; let castAttempts = 0; let castsRefused = 0;
 let stayHeldFrom: number | null = null; let rebukeHeldFrom: number | null = null;
+// THR-2244 — how each Stay landed: clean (DOOM_STAY_RATE) or crooked (success_at_cost), by landing and by held tick.
+let stayCleanLandings = 0; let stayCrookedLandings = 0; let stayCleanTicks = 0; let stayCrookedTicks = 0;
+const stayEffectsSeen = new Set<string>();
 const beatsReceived: string[] = [];
 const rebuked = new Set<string>(); // `${rivalId}|${placeId}|${pressedAt}`: each pressing is answered once
 const holds = (id: string) => (state.unlockedActionIds ?? []).includes(id);
@@ -354,7 +357,16 @@ function answerClocks(): void {
     if (stayHeldFrom === null) stayHeldFrom = state.tick;
     const active = findHeldNonStackingEffect(state.controlEffects, DOOM_STAY_TEMPLATE_ID, asc, asc)
       ?? findPendingNonStackingCast(state.unifiedActions, DOOM_STAY_TEMPLATE_ID, asc, asc);
-    if (active) stayHeldTicks++;
+    if (active) {
+      stayHeldTicks++;
+      const held: any = findHeldNonStackingEffect(state.controlEffects, DOOM_STAY_TEMPLATE_ID, asc, asc);
+      if (held) {
+        const crookedValue = (getUnifiedTemplateById(DOOM_STAY_TEMPLATE_ID) as any)?.controlSpec?.ownerRuleOverride?.crookedValue;
+        const crooked = held.ownerRuleOverride?.value === crookedValue;
+        if (crooked) stayCrookedTicks++; else stayCleanTicks++;
+        if (!stayEffectsSeen.has(held.effectId)) { stayEffectsSeen.add(held.effectId); if (crooked) stayCrookedLandings++; else stayCleanLandings++; }
+      }
+    }
     else if (tryCast(DOOM_STAY_TEMPLATE_ID, asc)) stayCasts++;
   }
   if (holds(RIVAL_REBUKE_TEMPLATE_ID)) {
@@ -463,6 +475,7 @@ const ms = Date.now() - t0;
 const clockVerbs = {
   stayHeld: holds(DOOM_STAY_TEMPLATE_ID), rebukeHeld: holds(RIVAL_REBUKE_TEMPLATE_ID),
   stayHeldFrom, rebukeHeldFrom, stayCasts, rebukeCasts, stayHeldTicks, castsRefused, beatsReceived,
+  stayCleanLandings, stayCrookedLandings, stayCleanTicks, stayCrookedTicks,
   stayGiftLostAt: giftLostAt(DOOM_STAY_TEMPLATE_ID, MILESTONE_FIRST_STAGE_BEAT_ID),
   rebukeGiftLostAt: giftLostAt(RIVAL_REBUKE_TEMPLATE_ID, MILESTONE_FIRST_REBUKE_BEAT_ID),
 };

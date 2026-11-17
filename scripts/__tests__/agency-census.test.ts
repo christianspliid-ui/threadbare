@@ -131,6 +131,18 @@ describe('THR-2243 — the answer arm', () => {
     );
   });
 
+  it('THR-2244 — the answer line splits Stay landings clean / crooked when the arm recorded them', () => {
+    const lines = agencyReport([{
+      seed: 7, none: arm('none', { doomStage: 5, doomProgress: 0.98 }), played: arm('greedy'),
+      answer: answerArm({ doomStage: 5, doomProgress: 0.9 }, AGENCY_COMPARE_TICK,
+        { stayHeld: true, rebukeHeld: true, stayCasts: 3, rebukeCasts: 1, stayHeldTicks: 266,
+          stayCleanLandings: 2, stayCrookedLandings: 1, stayCleanTicks: 180, stayCrookedTicks: 86 }),
+    }]);
+    expect(lines.find((l) => l.startsWith('seed 7 answer arm:'))).toMatch(
+      /; Stay landed clean 2 \/ crooked 1 \(held ticks clean 180 \/ crooked 86\)$/,
+    );
+  });
+
   it('a missing answer arm is not measured for that comparison only', () => {
     const lines = agencyReport([{ seed: 7, none: arm('none'), played: arm('greedy'), answer: null }]);
     expect(lines).toContain('seed 7 vs answer: not measured (answer arm missing)');
