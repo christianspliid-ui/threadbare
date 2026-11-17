@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-17 07:58 local (06:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-17 08:58 local (07:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,12 +27,12 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Queue
 
-**Starved: nothing in Ready for Dev.** [THR-2244](https://linear.app/threadbare/issue/THR-2244/stay-the-unmaking-lands-crooked-every-time-a-fresh-god-cant-land-it) (Stay the Unmaking lands crooked) is back in design: the planned fix can't lift the card above "uncertain" odds, so the design lane picks among the builder's three options, probably "accept uncertain, make the cast much easier". That is a calibration call for the design lane, not you; step in only if you want Doom to stay hard to answer. Two more design tickets wait in Todo for the design lane: [give both clocks a verb](https://linear.app/threadbare/issue/THR-2202/give-both-clocks-a-verb-the-mortals-deeds-fill-the-mandate-and-doom) and [put the god in the climax](https://linear.app/threadbare/issue/THR-2204/put-the-god-in-the-climax-the-journey-visions-read-from-the-scene-the).
+**Starved: nothing in Ready for Dev.** The builder's last 10 runs (since 05:51) each found nothing to claim, which is correct with an empty queue. [THR-2244](https://linear.app/threadbare/issue/THR-2244/stay-the-unmaking-lands-crooked-every-time-a-fresh-god-cant-land-it) (Stay the Unmaking lands crooked) is back with the design lane, which picks among the builder's three options, probably "accept uncertain, make the cast much easier". That is a calibration call for the design lane, not you; step in only if you want Doom to stay hard to answer. The design lane's next run is due about 09:17. Two more design tickets wait in Todo for it: [give both clocks a verb](https://linear.app/threadbare/issue/THR-2202/give-both-clocks-a-verb-the-mortals-deeds-fill-the-mandate-and-doom) and [put the god in the climax](https://linear.app/threadbare/issue/THR-2204/put-the-god-in-the-climax-the-journey-visions-read-from-the-scene-the).
 
 Items for agents, not you:
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (28 days; last touched 8 Nov). No branch or local worktree holds work for it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (28 days; last touched 8 Nov). No local worktree holds work for it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
 - **Every lane was silent Sunday from about 09:57 to 21:48 local (11.8 hours).** It was a Sunday, so per your weekend ruling this is not its own ask. It is one more case for the "open at login" setting.
-- Everything else is green. The live site serves the latest commit on main (b0f047b7). Checks on main and the 3 scheduled background jobs pass. No PRs are waiting. All 10 enabled scheduled tasks are on time. Engine speed is normal (126 ms per tick, 18% below the weekly median of 153). The worktree reaper ran at 07:40. Linear was read live this run. You have sent no Discord messages since the last brief. The home copy of the repo is current with main.
+- Everything else is green. The live site serves the latest commit on main (b0f047b7). Checks on main and the 3 scheduled background jobs pass. No PRs are waiting. All 10 enabled scheduled tasks are on time. Engine speed is normal (125 ms per tick, 18% below the weekly median of 153). The worktree reaper ran at 08:40. Linear was read live this run. You have sent no Discord messages since the last brief. The home copy of the repo is current with main.
