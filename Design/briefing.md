@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-17 16:00 local (15:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-17 17:00 local (16:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -34,12 +34,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Starved: one ticket in Ready for Dev, held until 21:20 local today.** [THR-2244](https://linear.app/threadbare/issue/THR-2244/stay-the-unmaking-lands-crooked-every-time-a-fresh-god-cant-land-it) (make Stay the Unmaking easier, card says "uncertain") sits in its veto window until 20:20 UTC, and the first builder run after that takes it. The builder's runs through 15:52 local stood down for exactly that reason, which is correct. Two more design tickets wait in Todo for the design lane: [give both clocks a verb](https://linear.app/threadbare/issue/THR-2202/give-both-clocks-a-verb-the-mortals-deeds-fill-the-mandate-and-doom) and [put the god in the climax](https://linear.app/threadbare/issue/THR-2204/put-the-god-in-the-climax-the-journey-visions-read-from-the-scene-the).
+**Starved: one ticket in Ready for Dev, held until 21:20 local today.** [THR-2244](https://linear.app/threadbare/issue/THR-2244/stay-the-unmaking-lands-crooked-every-time-a-fresh-god-cant-land-it) (make Stay the Unmaking easier, card says "uncertain") sits in its veto window until 20:20 UTC, and the first builder run after that takes it. The builder's runs through 16:52 local stood down for exactly that reason, which is correct. Two more design tickets wait in Todo for the design lane: [give both clocks a verb](https://linear.app/threadbare/issue/THR-2202/give-both-clocks-a-verb-the-mortals-deeds-fill-the-mandate-and-doom) and [put the god in the climax](https://linear.app/threadbare/issue/THR-2204/put-the-god-in-the-climax-the-journey-visions-read-from-the-scene-the).
 
 Items for agents, not you:
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (28 days; last touched 8 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching. Local work for it was checked last hour and none was found; not re-checked this run.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (28 days; last touched 8 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching. Checked again this run: no branch and no local worktree holds work for it, so nothing is stranded.
 
 ## Health
 
 - **Every lane was silent Sunday from about 09:57 to 21:48 local (11.8 hours).** It was a Sunday, so per your weekend ruling this is not its own ask. It is one more case for the "open at login" setting.
-- Everything else is green. The live site is current: commits since its last build (b0f047b7) only touched notes and docs. Checks on main and the 3 scheduled background jobs pass. No PRs are waiting. All 10 enabled scheduled tasks are on time. Engine speed is normal (164 ms per tick, 7% above the weekly median of 152). The worktree reaper ran at 15:54. Linear was read live this run. You have sent no Discord messages since the last brief. The home copy of the repo is current with main.
+- Everything else is green. The live site is current: commits since its last build (b0f047b7) only touched notes and docs. Checks on main and the 3 scheduled background jobs pass. No PRs are waiting. All 10 enabled scheduled tasks are on time. Engine speed is normal (160 ms per tick, 5% above the weekly median of 152). The worktree reaper ran at 16:40. Linear was read live this run. You have sent no Discord messages since the last brief. The home copy of the repo is current with main.
