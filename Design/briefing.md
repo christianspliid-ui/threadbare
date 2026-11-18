@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-18 17:55 local (16:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-18 18:58 local (17:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -28,11 +28,12 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Queue
 
-**Starved: nothing in Ready for Dev.** [THR-2191](https://linear.app/threadbare/issue/THR-2191/a-sheets-story-list-never-says-whether-the-mortal-did-the-deed-or-had) (Story rows say whose deed it was) merged at 11:09 local via [PR #2856](https://github.com/christianspliid-ui/threadbare/pull/2856), after CI stopped downloading the onnxruntime GPU binary ([PR #2857](https://github.com/christianspliid-ui/threadbare/pull/2857)); it is live. No pull requests are open. The design lane's 15:17 run found nothing agreed left to design; its next run is about 18:17. Two more design tickets wait in Todo for the design lane: [give both clocks a verb](https://linear.app/threadbare/issue/THR-2202/give-both-clocks-a-verb-the-mortals-deeds-fill-the-mandate-and-doom) and [put the god in the climax](https://linear.app/threadbare/issue/THR-2204/put-the-god-in-the-climax-the-journey-visions-read-from-the-scene-the).
+**Starved: nothing in Ready for Dev.** [THR-2191](https://linear.app/threadbare/issue/THR-2191/a-sheets-story-list-never-says-whether-the-mortal-did-the-deed-or-had) (Story rows say whose deed it was) merged at 11:09 local via [PR #2856](https://github.com/christianspliid-ui/threadbare/pull/2856), after CI stopped downloading the onnxruntime GPU binary ([PR #2857](https://github.com/christianspliid-ui/threadbare/pull/2857)); it is live. No pull requests are open. The design lane's 18:18 local run published no report, so it still finds nothing agreed left to design; its next run is about 21:17. Two more design tickets wait in Todo for the design lane: [give both clocks a verb](https://linear.app/threadbare/issue/THR-2202/give-both-clocks-a-verb-the-mortals-deeds-fill-the-mandate-and-doom) and [put the god in the climax](https://linear.app/threadbare/issue/THR-2204/put-the-god-in-the-climax-the-journey-visions-read-from-the-scene-the).
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (29 days; last touched 8 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+
 ## Health
 
-- All probes green: main is live on 826a5208, CI and heavy tests green on main, no PRs waiting, every lane on schedule, the worktree reaper is running. Engine speed is normal (169 ms/tick, +10% vs the 7-day median, inside the 25% band). The builder's runs since 13:51 local (latest 17:51) found nothing to build, which is correct with an empty queue.
+- All probes green: main is live on 826a5208, CI and heavy tests green on main, no PRs waiting, all 10 lanes on schedule, the worktree reaper last ran at 18:40 local. Engine speed is normal (180 ms/tick, +17% vs the 7-day median of 154, inside the 25% band). The builder's last ten runs (15:51–18:51 local) found nothing to build, which is correct with an empty queue.
 - Lane silence: Sunday 15 Nov 09:57–21:48 local (11.8 hours) is a weekend gap, so per your rulings it is not its own ask.
