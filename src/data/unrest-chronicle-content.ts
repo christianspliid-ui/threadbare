@@ -33,6 +33,17 @@ export const UNREST_CHRONICLE_TEMPLATES = {
   ],
 } as const;
 
+/**
+ * THR-2033 — the sack. Appended to the `town_rises` line when the rising lost the town's
+ * costliest building. `{building}` is the building's card name, lower-cased ("storehouse",
+ * "town walls").
+ */
+export const TOWN_RISES_SACK_LINES: readonly string[] = [
+  'In the rising they burned its {building}.',
+  'The {building} did not survive the rising.',
+  'Its {building} was sacked and left in ashes.',
+];
+
 export const UNREST_CHRONICLE_SIGNIFICANCE = {
   town_on_the_edge: 0.6,
   town_defects: 0.8,

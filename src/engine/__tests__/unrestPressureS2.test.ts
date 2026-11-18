@@ -16,7 +16,9 @@ import {
   LAST_TURN_TICK_PROP,
   SIEGED_BY_PROP,
 } from '../unrestPressure/defection';
-import { applyRising, pickFounder, townResidents } from '../unrestPressure/rising';
+import { applyRising, costliestBuilding, pickFounder, townResidents } from '../unrestPressure/rising';
+import { raiseBuilding, readBuildings } from '../settlementEconomy/building';
+import { getSettlementBuilding } from '../../data/settlement-buildings';
 import { godWatchesTown, WAS_ON_THE_EDGE_PROP } from '../unrestPressure/turns';
 import { describeTownView } from '../unrestPressure/describe';
 import { buildCrownWorld } from '../crown/eligibility';
@@ -301,6 +303,57 @@ describe('rising (plan § Engine 10)', () => {
     expect(graph.getIncomingEdges('ferris', 'controls')[0].source).not.toBe('ashfold');
     expect(out.chronicleEntries?.some(e => e.title === 'A Town Rises')).toBe(true);
     expect(getTraces().some(t => t.category === 'unrest.rising')).toBe(true);
+  });
+
+  // THR-2033 — the sack.
+  function build(graph: WorldGraph, town: GraphNode, buildingId: string): string {
+    const def = getSettlementBuilding(buildingId)!;
+    return raiseBuilding(graph, town, def, 0)!.placeId;
+  }
+
+  it('a held town with two buildings rises and loses the costlier one, named on the trace and chronicle', () => {
+    const { graph, ferris } = risingWorld();
+    addMortal(graph, 'kael', 'ferris', 10, 'ashfold');
+    const storehouse = build(graph, ferris, 'storehouse'); // cost 15
+    const walls = build(graph, ferris, 'walls'); // cost 30
+    const out = phaseUnrest(state(graph, DAY), { pressure: true });
+    expect(graph.getNode(walls)).toBeUndefined();
+    expect(graph.getNode(storehouse)).toBeDefined();
+    expect(readBuildings(graph, 'ferris').map(b => b.def.id)).toEqual(['storehouse']);
+    const trace = getTraces().find(t => t.category === 'unrest.rising') as unknown as Record<string, unknown>;
+    expect(trace.sackedBuildingId).toBe('walls');
+    expect(trace.sackedBuildingName).toBe(getSettlementBuilding('walls')!.cardName);
+    expect(String(trace.summary)).toContain('sacked');
+    const rises = out.chronicleEntries?.find(e => e.title === 'A Town Rises');
+    expect(rises?.prose).toContain(getSettlementBuilding('walls')!.cardName.toLowerCase());
+  });
+
+  it('ties on cost go to building-table order', () => {
+    const { graph, ferris } = risingWorld();
+    addMortal(graph, 'kael', 'ferris', 10, 'ashfold');
+    build(graph, ferris, 'workshop'); // cost 24, later in the table
+    build(graph, ferris, 'market'); // cost 24, earlier in the table
+    expect(costliestBuilding(graph, 'ferris')?.def.id).toBe('market');
+    const r = applyRising(state(graph, DAY), ferris, 'ashfold');
+    expect(r.sackedBuildingId).toBe('market');
+    expect(readBuildings(graph, 'ferris').map(b => b.def.id)).toEqual(['workshop']);
+  });
+
+  it('a town with no buildings rises exactly as before (sackedBuildingId: null)', () => {
+    const { graph, ferris } = risingWorld();
+    addMortal(graph, 'kael', 'ferris', 10, 'ashfold');
+    const r = applyRising(state(graph, DAY), ferris, 'ashfold');
+    expect(r.path).toBe('split');
+    expect(r.sackedBuildingId).toBeNull();
+  });
+
+  it('no one to rise: nothing is sacked', () => {
+    const { graph, ferris } = risingWorld();
+    const walls = build(graph, ferris, 'walls');
+    const r = applyRising(state(graph, DAY), ferris, 'ashfold');
+    expect(r.path).toBe('none');
+    expect(r.sackedBuildingId).toBeNull();
+    expect(graph.getNode(walls)).toBeDefined();
   });
 });
 

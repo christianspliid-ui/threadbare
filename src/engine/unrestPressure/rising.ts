@@ -18,9 +18,10 @@
  * `takenFrom: holder`) and `hostile_to` is written both ways (`reason: 'rising'`), which
  * war aims' enemy rule reads. The town takes `RISING_RELIEF` and the cooldown stamp.
  *
- * The sack (the costliest building lost) needs the settlement economy's buildings,
- * which THR-1923 shipped; the rising still records `sackedBuildingId: null`.
- * TODO(THR-2033): lose the costliest standing building through `loseBuilding`.
+ * The sack (THR-2033): on a rising that took the town, the costliest standing building
+ * (highest `cost` in the settlement-building table, ties by table order) is lost through
+ * the settlement economy's `loseBuilding`. A town with no buildings is not sacked
+ * (`sackedBuildingId: null`). A loss that throws leaves the building standing.
  *
  * Unheld towns empty instead (people leave faster) — that cadence lives with the
  * Restless leaving in `unrestPressure.ts`.
@@ -43,6 +44,7 @@ import {
   FREE_TOWN_FOUNDER_RANK,
 } from '../../data/unrest-pressure-constants';
 import { moveControls, LAST_TURN_TICK_PROP } from './defection';
+import { readBuildings, loseBuilding, type BuildingInstance } from '../settlementEconomy/building';
 
 export type RisingPath = 'split' | 'founded' | 'none';
 
@@ -50,7 +52,10 @@ export interface RisingResult {
   readonly path: RisingPath;
   readonly newFactionId: string | null;
   readonly residentsMoved: number;
+  /** The settlement-building id (e.g. `walls`) the rising sacked, or null. */
   readonly sackedBuildingId: string | null;
+  /** The sacked building's card name (e.g. `Town walls`), or null — what the trace and chronicle name. */
+  readonly sackedBuildingName?: string | null;
   readonly failReason?: string;
 }
 
@@ -98,6 +103,27 @@ export function pickFounder(graph: WorldGraph, residents: readonly GraphNode[]):
     if (better) best = { node: r, rank, arrived };
   }
   return best?.node ?? null;
+}
+
+/** The costliest standing building: highest `cost`, ties by building-table order. */
+export function costliestBuilding(graph: WorldGraph, townId: string): BuildingInstance | null {
+  let best: BuildingInstance | null = null;
+  for (const b of readBuildings(graph, townId)) {
+    if (!best || b.def.cost > best.def.cost) best = b;
+  }
+  return best;
+}
+
+/** Sack the town: lose its costliest building. Fail-soft — a throw leaves it standing. */
+function sack(graph: WorldGraph, townId: string, tick: number): BuildingInstance | null {
+  try {
+    const b = costliestBuilding(graph, townId);
+    if (!b) return null;
+    loseBuilding(graph, townId, b, tick);
+    return b;
+  } catch {
+    return null;
+  }
 }
 
 function hostileBothWays(graph: WorldGraph, a: string, b: string, tick: number): void {
@@ -190,5 +216,12 @@ export function applyRising(state: GameState, town: GraphNode, holderId: string)
   const unrest = num(town.properties.unrest) ?? 0;
   town.properties.unrest = Math.max(0, Math.min(100, unrest + RISING_RELIEF));
   town.properties[LAST_TURN_TICK_PROP] = tick;
-  return { path, newFactionId, residentsMoved, sackedBuildingId: null };
+  const sacked = sack(graph, town.id, tick);
+  return {
+    path,
+    newFactionId,
+    residentsMoved,
+    sackedBuildingId: sacked?.def.id ?? null,
+    sackedBuildingName: sacked?.def.cardName ?? null,
+  };
 }
