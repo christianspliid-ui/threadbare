@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-18 16:57 local (15:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-18 17:55 local (16:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -32,8 +32,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (29 days; last touched 8 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
-
 ## Health
 
-- All probes green: main is live on 826a5208, CI and heavy tests green on main, no PRs waiting, every lane on schedule, the worktree reaper is running. Engine speed is normal (159 ms/tick, +4% vs the 7-day median). The builder's runs since 13:51 local (latest 16:51) found nothing to build, which is correct with an empty queue.
+- All probes green: main is live on 826a5208, CI and heavy tests green on main, no PRs waiting, every lane on schedule, the worktree reaper is running. Engine speed is normal (169 ms/tick, +10% vs the 7-day median, inside the 25% band). The builder's runs since 13:51 local (latest 17:51) found nothing to build, which is correct with an empty queue.
 - Lane silence: Sunday 15 Nov 09:57–21:48 local (11.8 hours) is a weekend gap, so per your rulings it is not its own ask.
