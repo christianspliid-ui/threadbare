@@ -1,12 +1,8 @@
 # User Action Required
 
-**Last updated:** 2026-11-18 22:55 local (21:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-18 23:56 local (22:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
-
-### What should the design lane plan next? (new 16 Nov)
-
-The builders have nothing agreed left to build. The last pieces of "make the middle a game" shipped tonight: [answer a rival where it struck](https://linear.app/threadbare/issue/THR-2237), [slow Doom from its panel](https://linear.app/threadbare/issue/THR-2240), and [see what moves the Mandate](https://linear.app/threadbare/issue/THR-2236). **New fact (16 Nov):** [the measurement](https://linear.app/threadbare/issue/THR-2205/measure-whether-the-player-matters-a-run-nobody-plays-and-a-run-played) shows your play now changes the First's story on 3 of 3 test worlds, but not how the age ends: Doom ends every age at its last stage and the Mandate stays near empty. **Newer fact (16 Nov, afternoon):** [the census that plays the Doom and rival answers](https://linear.app/threadbare/issue/THR-2243) finished. Casting Stay the Unmaking whenever possible held Doom back by only 1 to 3 hundredths, and every age still ended at Doom's last stage. **Newest fact (16 Nov, evening):** that census never reached an age's end. Every run stopped at tick 800 with Doom at 91–99%, already in its last stage (from 80%), so even a perfect hold of Stay the Unmaking could delay the end by only about an eighth of the clock. **Reply with a system or a direction.** If you don't, the builders stay mostly idle until the next warm playtest round. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-16.md) and [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-16c.md)*
 
 ### Should every one of The First's own chapters give you a hand? (new 15 Nov)
 
@@ -62,6 +58,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-18: "What should the design lane plan next?" answered in chat: make the ending a game. The first of three tickets, [a well-played age can be won](https://linear.app/threadbare/issue/THR-2245), is with the design lane.**
+- **2026-11-18: hovering a card in the god rail's hand now shows the full card beside the rail. It is live** ([THR-1975](https://linear.app/threadbare/issue/THR-1975)). Merged via [#2858](https://github.com/christianspliid-ui/threadbare/pull/2858).
 - **2026-11-18: a sheet's Story rows now say when the deed was done to the mortal ("done to them", "set upon", "defending", "fell in it"). It is live** ([THR-2191](https://linear.app/threadbare/issue/THR-2191)). Merged via [#2856](https://github.com/christianspliid-ui/threadbare/pull/2856).
 - **2026-11-17: Stay the Unmaking can now land clean for a god with no star affinity; its card reads "uncertain". It is live** ([THR-2244](https://linear.app/threadbare/issue/THR-2244)). Merged via [#2855](https://github.com/christianspliid-ui/threadbare/pull/2855).
 - **2026-11-16: the agency census now plays the Doom and rival answers; answering Doom barely slows it** ([THR-2243](https://linear.app/threadbare/issue/THR-2243)). Merged via [#2852](https://github.com/christianspliid-ui/threadbare/pull/2852).
@@ -70,8 +68,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-15: the Play button now promises only what it keeps. It is live** ([THR-2238](https://linear.app/threadbare/issue/THR-2238)). Merged via [#2849](https://github.com/christianspliid-ui/threadbare/pull/2849).
 - **2026-11-15: the Doom panel and bar now say how to slow Doom, with a Stay it button. It is live** ([THR-2240](https://linear.app/threadbare/issue/THR-2240)). Merged via [#2848](https://github.com/christianspliid-ui/threadbare/pull/2848).
 - **2026-11-15: the rival panel now says where the threat is and how to answer it. It is live** ([THR-2237](https://linear.app/threadbare/issue/THR-2237)). Merged via [#2847](https://github.com/christianspliid-ui/threadbare/pull/2847).
-- **2026-11-15: the Mandate now says what fills it, and "Rising" lasts three days. It is live** ([THR-2236](https://linear.app/threadbare/issue/THR-2236)). Merged via [#2846](https://github.com/christianspliid-ui/threadbare/pull/2846).
-- **2026-11-15: Read the Threads now fades each chapter by its age. It is live** ([THR-2235](https://linear.app/threadbare/issue/THR-2235)). Merged via [#2845](https://github.com/christianspliid-ui/threadbare/pull/2845).
 
 ---
 
