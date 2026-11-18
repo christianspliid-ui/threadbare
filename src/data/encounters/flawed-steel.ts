@@ -2,7 +2,7 @@
  * Flawed Steel — branching encounter using ActionStepBranch
  * and BranchAwareAftermathConfig primitives.
  *
- * A forge-master discovers her apprentice has been secretly selling
+ * A forge-master discovers the apprentice has been secretly selling
  * flawed weapons to a mercenary company. The mercenaries camp outside
  * the settlement demanding replacements or blood-price. The god
  * chooses whether to forge the truth or temper the narrative.
@@ -17,15 +17,15 @@
  * aftermath keys, so the click picked the ending. Christian's 2026-07-26 ruling
  * ("the player must never pick an ending") names this exact pair. Now the fork
  * is a three-way route decision (`decidedBy.routes`, THR-898): the forge-master
- * takes the course she is good at and inclined to, and the god argues with a
+ * takes the course the mortal is good at and inclined to, and the god argues with a
  * composed hand on step 0.
  *
  * - Fork: route mode, three courses toward one door (the captain is answered).
  *   - `forge_the_truth` — Heart, `honesty_cunning` +: the whole account, in public.
  *   - `temper_the_narrative` — Shadow, `honesty_cunning` −: a smaller, true-in-
  *     every-number story.
- *   - `keep_your_hand_folded` — Stone, `courage_prudence` −: she waits, then
- *     stumbles through it on her own.
+ *   - `keep_your_hand_folded` — Stone, `courage_prudence` −: the forge-master waits, then
+ *     stumbles through it alone.
  * - Route keys are the old variant keys, so aftermath and `stakes.arms` keep
  *   their keys; only the choosing moved.
  * - `aftermathConfig.branchOnStep` stays 0, the deciding step (THR-979).
@@ -123,20 +123,20 @@ const step0TheReckoning: ActionStep = {
   failBehavior: 'continue_weakened',
   narrativeTemplate:
     '{cast:maren_ironhewn}\'s forge stands cold this morning, for the first time in years.\n\n' +
-    'Her apprentice, {cast:dalla}, has been selling flawed blades under {cast:maren_ironhewn}\'s stamp. ' +
+    'The apprentice, {cast:dalla}, has been selling flawed blades under {cast:maren_ironhewn}\'s stamp. ' +
     'One broke in a fight. Now the Greycloaks, a mercenary company, are camped at the gate. Their captain, ' +
     '{cast:torve_ashgrip}, wants new blades or blood-price.\n\n' +
-    '{cast:maren_ironhewn} has locked {cast:dalla} in the coal shed. She must go out and answer the captain. ' +
+    '{cast:maren_ironhewn} has locked {cast:dalla} in the coal shed. Now the forge-master must go out and answer the captain. ' +
     'No one yet knows how many bad blades went out.',
-  successAfterimage: '{cast:maren_ironhewn} put down her tools and turned toward the gate.',
-  failureAfterimage: '{cast:maren_ironhewn} stood at the cold anvil and could not make herself move.',
+  successAfterimage: '{cast:maren_ironhewn} put down the hammer and turned toward the gate.',
+  failureAfterimage: '{cast:maren_ironhewn} stood at the cold anvil and could not take a step.',
   // THR-1634 S1: the rest of the ladder.
   successAtCostAfterimage:
     '{cast:maren_ironhewn} went to the gate an hour late, and {cast:torve_ashgrip} was angrier for the wait.',
   criticalSuccessAfterimage:
-    '{cast:maren_ironhewn} counted the bad blades in her ledger before she went. She knows the whole number now.',
+    '{cast:maren_ironhewn} counted the bad blades in the forge ledger before going out. The whole number is known now.',
   criticalFailureAfterimage:
-    '{cast:maren_ironhewn} shouted at the shed door, and {cast:dalla} stopped answering her.',
+    '{cast:maren_ironhewn} shouted at the shed door, and {cast:dalla} stopped answering.',
   purposeLine: 'Face the gate',
   // THR-2157 — the fork's argument. Two specials naming two of the three
   // routes; the waiting route is argued by its axis (`courage_prudence`)
@@ -144,14 +144,14 @@ const step0TheReckoning: ActionStep = {
   nudges: [
     {
       id: 'flawed_steel.her_own_stamp',
-      name: 'Her Own Stamp',
+      name: 'The Maker\'s Stamp',
       essenceCost: 1,
       forecastDelta: 0.06,
       poleLean: { route: 'forge_the_truth' },
-      effectLine: 'Put her maker\'s stamp in front of her, the one on every bad blade. Her own name argues for the whole account.',
+      effectLine: 'Set the maker\'s stamp on the anvil, the same mark that is on every bad blade. The smith\'s own name argues for the whole account.',
       bandProse: {
-        success: '{cast:maren_ironhewn} looked at her stamp, and unbolted the coal shed.',
-        failure: '{cast:maren_ironhewn} looked at her stamp, and could not make herself say the number.',
+        success: '{cast:maren_ironhewn} looked at the stamp, and unbolted the coal shed.',
+        failure: '{cast:maren_ironhewn} looked at the stamp, and could not bring out the number.',
       },
     },
     {
@@ -161,10 +161,10 @@ const step0TheReckoning: ActionStep = {
       essenceCost: 1,
       forecastDelta: 0.06,
       poleLean: { route: 'temper_the_narrative' },
-      effectLine: 'Show her which pages of the ledger are true on their own. A story with no false number argues for telling less.',
+      effectLine: 'Show the forge-master which pages of the ledger are true on their own. A story with no false number argues for telling less.',
       bandProse: {
         success: '{cast:maren_ironhewn} tore out the later pages, and every line left was true.',
-        failure: '{cast:maren_ironhewn} chose her pages, and the gaps between them showed.',
+        failure: '{cast:maren_ironhewn} chose which pages to keep, and the gaps between them showed.',
       },
     },
   ],
@@ -199,20 +199,20 @@ const step1ForgeTheTruth: ActionStep = {
   ],
   failBehavior: 'fail_action',
   narrativeTemplate:
-    '{cast:maren_ironhewn} steadies her nerve. She unbolts the coal shed and walks her apprentice ' +
-    'out to the Greycloak camp. There she tells {cast:torve_ashgrip} the whole truth. The flaw came from ' +
-    'her forge, under her name, and the apprentice beside her sold it. Then she asks for the captain\'s terms.',
+    '{cast:maren_ironhewn} steadies, unbolts the coal shed, and walks {cast:dalla} out to the Greycloak ' +
+    'camp. There {cast:maren_ironhewn} tells {cast:torve_ashgrip} the whole truth. The flaw came from this forge, ' +
+    'under this stamp, and the apprentice standing here sold it. Then {cast:maren_ironhewn} asks for the captain\'s terms.',
   successMetadata: {
     reputationDelta: -0.05,
   },
   failureMetadata: {
     reputationDelta: -0.20,
   },
-  successAfterimage: '{cast:torve_ashgrip} heard the whole account and accepted it. She respects a smith who owns her fault.',
+  successAfterimage: '{cast:torve_ashgrip} heard the whole account and accepted it. The captain respects a smith who owns up to a fault.',
   failureAfterimage: 'The talks broke down. {cast:torve_ashgrip} would not trust a forge that had sold bad steel for months.',
   // THR-1634 S1.
   successAtCostAfterimage: '{cast:torve_ashgrip} accepted the account on hard terms: free replacements, and a month of work without pay.',
-  criticalSuccessAfterimage: '{cast:torve_ashgrip} offered her hand first. The Greycloaks will speak well of the forge in other towns.',
+  criticalSuccessAfterimage: '{cast:torve_ashgrip} offered a hand first. The Greycloaks will speak well of the forge in other towns.',
   criticalFailureAfterimage: 'The full count of bad blades was worse than anyone expected. {cast:torve_ashgrip} tore up the contract on the spot.',
   purposeLine: 'Give the whole account',
   deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'presence'] },
@@ -246,8 +246,8 @@ const step1TemperTheNarrative: ActionStep = {
   ],
   failBehavior: 'fail_action',
   narrativeTemplate:
-    '{cast:maren_ironhewn} settles on a smaller story. She leaves her apprentice in the shed and ' +
-    'goes to the gate alone, with a ledger and a new blade. She tells {cast:torve_ashgrip} that one bad ' +
+    '{cast:maren_ironhewn} settles on a smaller story, leaves {cast:dalla} in the shed, and goes to the ' +
+    'gate alone with a ledger and a new blade. {cast:maren_ironhewn} tells {cast:torve_ashgrip} that one bad ' +
     'load of ore caused the flaw. Every number in the ledger is true. It leaves out months of sales.',
   successMetadata: {
     reputationDelta: 0.05,
@@ -256,7 +256,7 @@ const step1TemperTheNarrative: ActionStep = {
     reputationDelta: -0.25,
   },
   successAfterimage: '{cast:torve_ashgrip} tested the new blade, believed the story, and agreed to a schedule for replacements.',
-  failureAfterimage: '{cast:torve_ashgrip} saw through the story. Being lied to angered her more than the bad steel had.',
+  failureAfterimage: '{cast:torve_ashgrip} saw through the story. Being lied to angered the captain more than the bad steel had.',
   // THR-1634 S1.
   successAtCostAfterimage: '{cast:torve_ashgrip} believed the story, but asked a lower price on every future contract.',
   criticalSuccessAfterimage: '{cast:torve_ashgrip} thanked the forge for catching the flaw, and promised it more orders.',
@@ -288,8 +288,8 @@ const step1KeepYourHandFolded: ActionStep = {
   ],
   failBehavior: 'fail_action',
   narrativeTemplate:
-    '{cast:maren_ironhewn} waits. After an hour, she walks to the gate on her own. She has not ' +
-    'planned what to say, and she stumbles through it. A town guard brings {cast:dalla} out of the shed ' +
+    '{cast:maren_ironhewn} waits an hour, then walks to the gate alone. Nothing is planned, and ' +
+    'the words come out badly. A town guard brings {cast:dalla} out of the shed ' +
     'without being asked. The settlement watches from the walls.',
   successMetadata: {
     reputationDelta: 0,
@@ -300,8 +300,8 @@ const step1KeepYourHandFolded: ActionStep = {
   successAfterimage: '{cast:maren_ironhewn} gave part of the account, and {cast:torve_ashgrip} took it. The settlement got through with no god\'s help.',
   failureAfterimage: '{cast:maren_ironhewn} and {cast:torve_ashgrip} traded accusations, and the Greycloaks reached for their weapons.',
   // THR-1634 S1.
-  successAtCostAfterimage: 'The settlement got through, but the quarrel at the gate cost {cast:maren_ironhewn} her seat among the guild elders.',
-  criticalSuccessAfterimage: '{cast:maren_ironhewn} found the right words on her own. {cast:torve_ashgrip} accepted a rough but honest account.',
+  successAtCostAfterimage: 'The settlement got through, but the quarrel at the gate cost {cast:maren_ironhewn} a seat among the guild elders.',
+  criticalSuccessAfterimage: '{cast:maren_ironhewn} found the right words alone. {cast:torve_ashgrip} accepted a rough but honest account.',
   criticalFailureAfterimage: 'The quarrel at the gate spread to the guild and the townsfolk. By nightfall, the settlement had split into two sides.',
   purposeLine: 'Find the words',
   deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'peril'] },
@@ -330,29 +330,29 @@ const step1Branch: ActionStepBranch = {
 const FORGE_TRUTH_AFTERMATH = {
   overview:
     'The Greycloaks have a schedule for new blades, and the work will take three weeks. {cast:dalla} ' +
-    'has left with them under guard, to work off her debt. The guild elders have ordered an audit of ' +
+    'has left with them under guard, to work off the debt. The guild elders have ordered an audit of ' +
     'every apprentice in the district. {cast:maren_ironhewn}\'s name took a public blow, but people ' +
-    'trust her word.',
+    'trust the forge-master\'s word.',
   changes: [
     {
       id: 'truth_maren_reputation',
       kind: 'reputation' as const,
       title: '{cast:maren_ironhewn}',
-      detail: 'Her name took a blow in public, and is mending. She told the truth.',
+      detail: 'The name took a blow in public, and is mending. The truth was told.',
       polarity: 'mixed' as const,
     },
     {
       id: 'truth_dalla_exiled',
       kind: 'reputation' as const,
       title: '{cast:dalla}',
-      detail: 'Gone from the settlement. She works for the Greycloaks to pay what she owes.',
+      detail: 'Gone from the settlement, working for the Greycloaks to pay off the debt.',
       polarity: 'loss' as const,
     },
     {
       id: 'truth_torve_positive',
       kind: 'reputation' as const,
       title: '{cast:torve_ashgrip}',
-      detail: 'Warmer toward the settlement. She respects the honest account.',
+      detail: 'Warmer toward the settlement. The captain respects the honest account.',
       polarity: 'gain' as const,
     },
     {
@@ -393,7 +393,7 @@ const FORGE_TRUTH_AFTERMATH = {
     {
       id: 'truth_react_keep_maren_close',
       label: 'Keep the forge-master close.',
-      intent: 'Stay near {cast:maren_ironhewn} while she rebuilds. She grows more skilled, and leans on the god more.',
+      intent: 'Stay near {cast:maren_ironhewn} through the rebuilding. The forge-master grows more skilled, and leans on the god more.',
       effects: [
         {
           kind: 'reputation_score' as const,
@@ -433,21 +433,21 @@ const TEMPER_NARRATIVE_AFTERMATH = {
       id: 'temper_maren_reputation',
       kind: 'reputation' as const,
       title: '{cast:maren_ironhewn}',
-      detail: 'Her name is safe in public. She keeps the full story to herself.',
+      detail: 'The name is safe in public. The full story stays untold.',
       polarity: 'mixed' as const,
     },
     {
       id: 'temper_dalla_disappeared',
       kind: 'reputation' as const,
       title: '{cast:dalla}',
-      detail: 'Gone quietly. No record says why she left.',
+      detail: 'Gone quietly. No record says why.',
       polarity: 'mixed' as const,
     },
     {
       id: 'temper_torve_neutral',
       kind: 'reputation' as const,
       title: '{cast:torve_ashgrip}',
-      detail: 'Satisfied with the deal, and loyal to no one. She buys here while the price is right.',
+      detail: 'Satisfied with the deal, and loyal to no one. The captain buys here while the price is right.',
       polarity: 'mixed' as const,
     },
     {
@@ -488,7 +488,7 @@ const TEMPER_NARRATIVE_AFTERMATH = {
     {
       id: 'temper_react_prepare_reckoning',
       label: 'Prepare for the reckoning.',
-      intent: 'Ready {cast:maren_ironhewn} for the day the truth comes out. She starts setting money aside and training a new apprentice with care.',
+      intent: 'Ready {cast:maren_ironhewn} for the day the truth comes out. The forge-master starts setting money aside and training a new apprentice with care.',
       effects: [
         {
           kind: 'reputation_tally' as const,
@@ -498,7 +498,7 @@ const TEMPER_NARRATIVE_AFTERMATH = {
         {
           kind: 'recent_event' as const,
           eventType: 'narrative' as const,
-          message: 'The god readies {cast:maren_ironhewn} for the day the secret comes out. She sets money aside and watches her new apprentice closely.',
+          message: 'The god readies {cast:maren_ironhewn} for the day the secret comes out. The forge sets money aside and watches its new apprentice closely.',
           significance: 0.7,
         },
         {
@@ -522,7 +522,7 @@ const TEMPER_NARRATIVE_AFTERMATH = {
 
 const WITHDRAWN_AFTERMATH = {
   overview:
-    'The settlement handled the crisis with no god\'s help. {cast:torve_ashgrip} took what she could get. ' +
+    'The settlement handled the crisis with no god\'s help. {cast:torve_ashgrip} took what the forge could give. ' +
     'The Greycloaks left with a replacement schedule nobody liked. The guild elders expelled {cast:dalla} ' +
     'in a closed session, and the news was out within the hour. The forge is lit again, but people doubt ' +
     'its steel.',
@@ -531,14 +531,14 @@ const WITHDRAWN_AFTERMATH = {
       id: 'withdrawn_maren_reputation',
       kind: 'reputation' as const,
       title: '{cast:maren_ironhewn}',
-      detail: 'She handled it alone. Her name is hurt, and still standing.',
+      detail: 'Handled the crisis alone. The name is hurt, and still standing.',
       polarity: 'mixed' as const,
     },
     {
       id: 'withdrawn_dalla_expelled',
       kind: 'reputation' as const,
       title: '{cast:dalla}',
-      detail: 'Expelled by the guild elders. She left with no farewell.',
+      detail: 'Expelled by the guild elders. Gone with no farewell.',
       polarity: 'loss' as const,
     },
     {
@@ -622,7 +622,7 @@ const FORGE_TRUTH_ENDINGS: AftermathVariant = {
     failure: {
       overview:
         'The Greycloaks have taken the forge\'s finished stock as payment and gone. {cast:dalla} went with ' +
-        'them under guard, to work off her debt. {cast:maren_ironhewn}\'s racks stand empty. The guild elders ' +
+        'them under guard, to work off the debt. {cast:maren_ironhewn}\'s racks stand empty. The guild elders ' +
         'have begun an audit of every apprentice in the district.',
       changes: keepChanges(FORGE_TRUTH_AFTERMATH, ['truth_dalla_exiled', 'truth_guild_audit']),
     },
@@ -654,7 +654,7 @@ const TEMPER_NARRATIVE_ENDINGS: AftermathVariant = {
       overview:
         'The whole settlement now knows the forge lied. The Greycloaks took every blade on the racks. In each ' +
         'town on their road they say {cast:maren_ironhewn}\'s stamp cannot be trusted. {cast:dalla} ran before ' +
-        'the guild could send for her. Fewer customers come to the forge now.',
+        'the guild could send for the apprentice. Fewer customers come to the forge now.',
       changes: [],
       reactions: [],
     },
@@ -673,7 +673,7 @@ const WITHDRAWN_ENDINGS: AftermathVariant = {
     critical_failure: {
       overview:
         'The quarrel spread from the gate to the guild hall. The elders argued in public about who trained ' +
-        '{cast:dalla} and who vouched for her. {cast:torve_ashgrip} left with part of an account and no new ' +
+        '{cast:dalla} and who vouched for the apprentice. {cast:torve_ashgrip} left with part of an account and no new ' +
         'blades. The guild expelled {cast:dalla}. Half the settlement no longer buys from the forge.',
     },
   },
@@ -842,7 +842,7 @@ export const FLAWED_STEEL_TEMPLATE: UnifiedActionTemplate = withEncounterContrac
   supportBundle: SUPPORT_BUNDLE,
 
   illustrationUrl: '/concept-art/encounters/flawed-steel.jpg',
-  illustrationAlt: 'The interior of a cold forge at dawn — racks of finished blades, an anvil with a demand letter, and the forge-master standing with her back to a bolted coal shed door.',
+  illustrationAlt: 'The interior of a cold forge at dawn — racks of finished blades, an anvil with a demand letter, and the forge-master standing with back turned to a bolted coal shed door.',
 
 
   aftermathConfig: {
