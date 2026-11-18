@@ -30,6 +30,7 @@ import { getReputationWord } from '../../../data/domain-words';
 import { getWealthTier } from '../../wealth';
 import { readMeansBand, readPurseDay } from '../../factionPurse';
 import { factionPurseView } from '../../factionPurse/purseSentences';
+import { openCommissionsOf } from '../../factionCommissions';
 import { fealtyPurseSentence, wagesPurseSentence, fealtyView } from '../../crown/fealtySentences';
 import { composeCultureMores } from '../../cultureMores';
 import { durationLabel, elapsedLabel, humanizeKeySegment, reachDisplayName } from '../../aftermathWords';
@@ -154,12 +155,31 @@ const means: SectionResolver = (ctx) => {
   return sentenceSection('means', SUBJECT_ROW_LABELS.means, [[clause.lead, term, '.']], band ? 'readMeansBand' : 'getWealthTier');
 };
 
-/** The purse's day in sentences (THR-1931): income, fealty paid, spending. Names link. */
+/**
+ * THR-2043 — "It has posted a commission …" while the faction holds an open posting; null
+ * once it is taken or lapses (Law 56: the sentence is the state). Fail-soft: a throw reads
+ * as no commission.
+ */
+function openCommissionSentence(f: FactionRead): string | null {
+  try {
+    return openCommissionsOf(f.graph, f.node.id, f.tick).length > 0 ? FACTION_LINES.openCommission : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The purse's day in sentences (THR-1931): income, fealty paid, spending. Names link.
+ * An open commission (THR-2043) closes the row, and carries it alone when no purse view exists.
+ */
 const purse: SectionResolver = (ctx) => {
   const f = factionOf(ctx);
   if (!f) return null;
+  const commission = openCommissionSentence(f);
   const view = factionPurseView(f.graph, f.node.id, { band: readMeansBand, day: readPurseDay });
-  if (!view) return null;
+  if (!view) {
+    return commission ? linkedProseSection('purse', SUBJECT_ROW_LABELS.purse, [commission], 'openCommissionsOf') : null;
+  }
   const parts: ProsePart[] = [];
   if (view.income.length > 0) parts.push(...view.income, ' ');
   const fealty = fealtyPurseSentence(f.graph, readPurseDay(f.node));
@@ -168,6 +188,7 @@ const purse: SectionResolver = (ctx) => {
   const wages = wagesPurseSentence(f.graph, f.node.id);
   if (wages) parts.push(...wages, ' ');
   parts.push(view.spending);
+  if (commission) parts.push(' ', commission);
   return linkedProseSection('purse', SUBJECT_ROW_LABELS.purse, parts, 'factionPurseView');
 };
 
