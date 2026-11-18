@@ -33,6 +33,24 @@ export const UNREST_CHRONICLE_TEMPLATES = {
   ],
 } as const;
 
+/**
+ * THR-2033 — the sack. Appended to the `town_rises` line when the rising lost the town's
+ * costliest building. `{building}` is the building's card name, lower-cased ("storehouse",
+ * "town walls"). The burned lines are for a building the town raised itself (its Place is
+ * removed); the plundered lines for one that adopted an older Place or that a mortal raised —
+ * the Place still stands, stripped, and is no longer one of the town's buildings.
+ */
+export const TOWN_RISES_SACK_LINES: readonly string[] = [
+  'In the rising they burned its {building}.',
+  'The {building} did not survive the rising.',
+  'Its {building} was sacked and left in ashes.',
+];
+export const TOWN_RISES_PLUNDER_LINES: readonly string[] = [
+  'In the rising they stripped its {building} bare.',
+  'Its {building} was plundered in the rising and stands empty.',
+  'The rising looted its {building}; nobody works there now.',
+];
+
 export const UNREST_CHRONICLE_SIGNIFICANCE = {
   town_on_the_edge: 0.6,
   town_defects: 0.8,

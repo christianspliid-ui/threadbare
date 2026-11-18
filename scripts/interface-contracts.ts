@@ -8164,11 +8164,11 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: ECONOMY,
     consumerSystem: WORLDGEN,
     intent:
-      'The settlement economy raises buildings as Places (isBuilding, buildingId, a contains edge) from spare timber and stone, adopting a standing Place of the type rather than duplicating it, and loses them after IDLE_DAYS_TO_LOSE idle days. The Inspector Connections fact and the tooltip router read the flag.',
+      'The settlement economy raises buildings as Places (isBuilding, buildingId, a contains edge) from spare timber and stone, adopting a standing Place of the type rather than duplicating it, and loses them after IDLE_DAYS_TO_LOSE idle days. The Inspector Connections fact and the tooltip router read the flag. A held town that rises loses its costliest building (THR-2033): rising.ts reads the buildings through readBuildings and sacks one through loseBuilding.',
     ulTerms: ['Settlement', 'Location'],
     mechanism: { kind: 'node-prop', symbols: ['IS_BUILDING_PROP', 'buildingFact'] },
     writeSites: ['src/engine/settlementEconomy/building.ts'],
-    readSites: ['src/engine/settlementEconomy/describe.ts', 'src/engine/views/connections.ts'],
+    readSites: ['src/engine/settlementEconomy/describe.ts', 'src/engine/views/connections.ts', 'src/engine/unrestPressure/rising.ts'],
     verifiedLive: {
       date: '2026-10-25',
       evidence:
