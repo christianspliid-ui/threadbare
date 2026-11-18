@@ -155,6 +155,7 @@ const [
   { MILESTONE_FIRST_STAGE_BEAT_ID, MILESTONE_FIRST_REBUKE_BEAT_ID },
   { UNIFIED_ACTION_TEMPLATES },
   { getPlaceNodes, getLocationNodes },
+  { addMandateSphereSpend },
 ] = await Promise.all([
   import('../src/engine/gameInit'),
   import('../src/engine/orchestrator'),
@@ -188,6 +189,7 @@ const [
   import('../src/data/player-progression'),
   import('../src/data/unified-action-templates'),
   import('../src/engine/sublocationShape'),
+  import('../src/engine/mandateLedger'),
 ]);
 
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
@@ -223,6 +225,7 @@ function handleHeldSteps(): void {
     if (!live || live.resolved || !isPlayerHoldLive(live, state.graph, state.tick)) continue;
     heldSteps++;
     const played: string[] = [];
+    const bySphere: Record<string, number> = {}; // PROTO THR-2245 — as GameView records it (THR-2208)
     let pool = state.essencePool;
     const template: any = getUnifiedTemplateById(live.templateId) ?? getAnyEncounterById(live.templateId);
     if (template) {
@@ -245,7 +248,7 @@ function handleHeldSteps(): void {
         const budget = phase?.budgetSphere ?? primary;
         for (const c of cards) {
           const r: any = spendNudgeEssence(pool, [{ sphere: c.sphere ?? undefined, cost: Math.max(0, c.essenceCost ?? 0) }] as any, budget as any);
-          if (r.ok) { pool = r.pool; played.push(c.id); essenceSpent += r.spent; }
+          if (r.ok) { pool = r.pool; played.push(c.id); essenceSpent += r.spent; for (const [k, v] of Object.entries(r.bySphere ?? {})) bySphere[k] = (bySphere[k] ?? 0) + (v as number); }
         }
       }
     }
@@ -254,7 +257,7 @@ function handleHeldSteps(): void {
     state = {
       ...state, ...spendPatch,
       unifiedActions: (state.unifiedActions ?? []).map((x: any) =>
-        x.actionId === live.actionId ? { ...releasePlayerHold(x), activeNudges: [...played] } : x),
+        x.actionId === live.actionId ? (() => { const m = addMandateSphereSpend(x.mandateSphereSpend, bySphere as any); return { ...releasePlayerHold(x), activeNudges: [...played], ...(m ? { mandateSphereSpend: m } : {}) }; })() : x),
     };
   }
 }
