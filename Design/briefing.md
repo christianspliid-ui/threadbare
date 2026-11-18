@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-18 08:57 local (07:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-18 09:57 local (08:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -35,5 +35,4 @@ Items for agents, not you:
 
 ## Health
 
-- **[PR #2856](https://github.com/christianspliid-ui/threadbare/pull/2856) (THR-2191) still cannot pass CI, and the cause is outside the code.** Every CI job fails at `npm ci`: the `onnxruntime-node` 1.21.0 install script downloads its Linux GPU binary from GitHub releases and gets **404 Not Found** ([run 44248308256](https://github.com/christianspliid-ui/threadbare/actions/runs/44248308256), the only run on the branch; no re-run since 07:01 local). The package is already on main, so any new PR or merge will hit the same wall until CI installs with `--onnxruntime-node-install-cuda=skip` (or the download comes back). Main itself is still green on 882e2ce5 and live. Six builder runs since (07:03 to 08:51 local) stood down on the empty queue without taking the unstick duty for #2856 (pull-work Step 0.8). Builder's job, not yours.
-- Lane silence: Sunday 15 Nov 09:57–21:48 local (11.8 hours) is a weekend gap, so per your rulings it is not its own ask.
+- **[PR #2856](https://github.com/christianspliid-ui/threadbare/pull/2856) (THR-2191) still cannot pass CI, and the cause is outside the code.** Every CI job fails at `npm ci`: the `onnxruntime-node` 1.21.0 install script downloads its Linux GPU binary from GitHub releases and gets **404 Not Found** ([run 44248308256](https://github.com/christianspliid-ui/threadbare/actions/runs/44248308256), the only run on the branch; no re-run since 07:01 local, now about 3 hours stuck). The package is already on main, so any new PR or merge will hit the same wall until CI installs with `--onnxruntime-node-install-cuda=skip` (or the download comes back). Main itself is still green on 882e2ce5 and live. Every builder run since has stood down on the empty queue (the last six, 08:11 to 09:51 local, checked) without taking the unstick duty for #2856 (pull-work Step 0.8). That is not a stalled builder by the incident rule, since nothing is ready to build, so no ticket was filed. Builder's job, not yours.- Lane silence: Sunday 15 Nov 09:57–21:48 local (11.8 hours) is a weekend gap, so per your rulings it is not its own ask.
