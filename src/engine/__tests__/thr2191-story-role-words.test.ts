@@ -127,7 +127,7 @@ describe('THR-2191 — 2: own runs and runs done to the subject fold apart', () 
 describe('THR-2191 — 3: factions and relics, and no raw keys anywhere', () => {
   it('a faction target on an undertaking outcome reads "done to them"', () => {
     const graph = new WorldGraph();
-    graph.addNode({ id: 'faction.red', type: 'faction', name: 'The Red Hand', properties: {} });
+    graph.addNode({ id: 'faction.red', type: 'actor', name: 'The Red Hand', properties: { actorType: 'faction' } });
     addRoleEvent(graph, 'faction.red', 'evt.uo', 'Seize a place', 'target', 10, 'undertaking_outcome');
     const rows = storyRows(graph, { cls: 'faction', id: 'faction.red' });
     expect(rows.map(r => r.fact)).toEqual(['done to them']);
