@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-18 03:58 local (02:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-18 04:56 local (03:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -34,7 +34,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Starved: one ticket in Ready for Dev, nothing being built.** [THR-2244](https://linear.app/threadbare/issue/THR-2244/stay-the-unmaking-lands-crooked-every-time-a-fresh-god-cant-land-it) (make Stay the Unmaking easier) shipped at 22:19 local and the live site already runs it. [THR-2191](https://linear.app/threadbare/issue/THR-2191/a-sheets-story-list-never-says-whether-the-mortal-did-the-deed-or-had) (Story rows say whose deed it was) can be built from 06:45 local this morning, when its veto window closes. The short builder runs since 23:11 local (thirteen so far, the latest at 03:51) stood down because that one ticket is still held, which is correct. Two more design tickets wait in Todo for the design lane: [give both clocks a verb](https://linear.app/threadbare/issue/THR-2202/give-both-clocks-a-verb-the-mortals-deeds-fill-the-mandate-and-doom) and [put the god in the climax](https://linear.app/threadbare/issue/THR-2204/put-the-god-in-the-climax-the-journey-visions-read-from-the-scene-the).
+**Starved: one ticket in Ready for Dev, nothing being built.** [THR-2244](https://linear.app/threadbare/issue/THR-2244/stay-the-unmaking-lands-crooked-every-time-a-fresh-god-cant-land-it) (make Stay the Unmaking easier) shipped at 22:19 local and the live site already runs it. [THR-2191](https://linear.app/threadbare/issue/THR-2191/a-sheets-story-list-never-says-whether-the-mortal-did-the-deed-or-had) (Story rows say whose deed it was) can be built from 06:45 local this morning, when its veto window closes. The short builder runs since 23:11 local (the latest at 04:51) stood down because that one ticket is still held, which is correct. Two more design tickets wait in Todo for the design lane: [give both clocks a verb](https://linear.app/threadbare/issue/THR-2202/give-both-clocks-a-verb-the-mortals-deeds-fill-the-mandate-and-doom) and [put the god in the climax](https://linear.app/threadbare/issue/THR-2204/put-the-god-in-the-climax-the-journey-visions-read-from-the-scene-the).
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (29 days; last touched 8 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching. Checked again this run: no branch and no local worktree holds work for it.
@@ -42,4 +42,4 @@ Items for agents, not you:
 ## Health
 
 - **Every lane was silent Sunday from about 09:57 to 21:48 local (11.8 hours).** It was a Sunday, so per your weekend ruling this is not its own ask. It is one more case for the "open at login" setting.
-- All green otherwise. Engine speed: 157 ms per tick, level with the 7-day median (152). The live site serves the latest commit on main (882e2ce5, the Stay fix). Checks on main and the 3 scheduled background jobs pass. No PRs are waiting. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 03:53. Linear was read live this run. You have sent no Discord messages since the last brief. The home copy of the repo is current with main.
+- All green otherwise. Engine speed: 153 ms per tick, level with the 7-day median (153). The live site serves the latest commit on main (882e2ce5, the Stay fix). Checks on main and the 3 scheduled background jobs pass. No PRs are waiting. All 10 enabled scheduled tasks are on time. The worktree reaper ran at 04:40. Linear was read live this run. You have sent no Discord messages since the last brief. The home copy of the repo is current with main.
