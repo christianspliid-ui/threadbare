@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-18 10:58 local (09:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-18 11:57 local (10:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -28,13 +28,12 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Queue
 
-**Starved: nothing in Ready for Dev.** The builder finished [THR-2191](https://linear.app/threadbare/issue/THR-2191/a-sheets-story-list-never-says-whether-the-mortal-did-the-deed-or-had) (Story rows say whose deed it was) at 07:02 local and armed [PR #2856](https://github.com/christianspliid-ui/threadbare/pull/2856) to merge itself, but it is stuck on CI (see Health). The work is pushed and nothing is lost. Two more design tickets wait in Todo for the design lane: [give both clocks a verb](https://linear.app/threadbare/issue/THR-2202/give-both-clocks-a-verb-the-mortals-deeds-fill-the-mandate-and-doom) and [put the god in the climax](https://linear.app/threadbare/issue/THR-2204/put-the-god-in-the-climax-the-journey-visions-read-from-the-scene-the).
+**Starved: nothing in Ready for Dev.** [THR-2191](https://linear.app/threadbare/issue/THR-2191/a-sheets-story-list-never-says-whether-the-mortal-did-the-deed-or-had) (Story rows say whose deed it was) merged at 11:09 local via [PR #2856](https://github.com/christianspliid-ui/threadbare/pull/2856), after CI stopped downloading the onnxruntime GPU binary ([PR #2857](https://github.com/christianspliid-ui/threadbare/pull/2857)); it is live. No pull requests are open. Two more design tickets wait in Todo for the design lane: [give both clocks a verb](https://linear.app/threadbare/issue/THR-2202/give-both-clocks-a-verb-the-mortals-deeds-fill-the-mandate-and-doom) and [put the god in the climax](https://linear.app/threadbare/issue/THR-2204/put-the-god-in-the-climax-the-journey-visions-read-from-the-scene-the).
 
 Items for agents, not you:
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (29 days; last touched 8 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching. No local worktree holds uncommitted work for it.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (29 days; last touched 8 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- **[PR #2856](https://github.com/christianspliid-ui/threadbare/pull/2856) (THR-2191) still cannot pass CI, and the cause is outside the code.** Every CI job fails at `npm ci`: the `onnxruntime-node` 1.21.0 install script downloads its Linux GPU binary from GitHub releases and gets **404 Not Found** ([run 44248308256](https://github.com/christianspliid-ui/threadbare/actions/runs/44248308256), the only run on the branch; no re-run since 07:01 local, now about 4 hours stuck). The package is already on main, so any new PR or merge will hit the same wall until CI installs with `--onnxruntime-node-install-cuda=skip` (or the download comes back). Main itself is still green on 882e2ce5 and live. Every finished builder run since has stood down on the empty queue (08:11 to 10:31 local, checked) without taking the unstick duty for #2856 (pull-work Step 0.8); one run is working now (since 10:51 local). That is not a stalled builder by the incident rule, since nothing is ready to build, so no ticket was filed. Builder's job, not yours.
-- **The engine got slower.** tick cost 197 ms/tick steady, 29% above the 7-day median (153, 116 rows since 0a999d5b); top phase agent_decision, 638 agents. Name the merges between 0a999d5b and 882e2ce5: `git log --oneline --merges 0a999d5b..882e2ce5`. Builder's job, not yours.
+- All probes green: main is live on 826a5208, CI and heavy tests green on main, no PRs waiting, every lane on schedule, the worktree reaper ran at 11:40 local. Engine speed is back to normal (165 ms/tick, +8% vs the 7-day median).
 - Lane silence: Sunday 15 Nov 09:57–21:48 local (11.8 hours) is a weekend gap, so per your rulings it is not its own ask.

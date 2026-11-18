@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-18 09:57 local (08:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-18 11:57 local (10:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
 
@@ -62,6 +62,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-18: a sheet's Story rows now say when the deed was done to the mortal ("done to them", "set upon", "defending", "fell in it"). It is live** ([THR-2191](https://linear.app/threadbare/issue/THR-2191)). Merged via [#2856](https://github.com/christianspliid-ui/threadbare/pull/2856).
 - **2026-11-17: Stay the Unmaking can now land clean for a god with no star affinity; its card reads "uncertain". It is live** ([THR-2244](https://linear.app/threadbare/issue/THR-2244)). Merged via [#2855](https://github.com/christianspliid-ui/threadbare/pull/2855).
 - **2026-11-16: the agency census now plays the Doom and rival answers; answering Doom barely slows it** ([THR-2243](https://linear.app/threadbare/issue/THR-2243)). Merged via [#2852](https://github.com/christianspliid-ui/threadbare/pull/2852).
 - **2026-11-16: on the test route, the pre-bonded First now has a real meeting record, so the Return no longer always "vanishes". It is live** ([THR-2242](https://linear.app/threadbare/issue/THR-2242)). Merged via [#2851](https://github.com/christianspliid-ui/threadbare/pull/2851).
@@ -71,7 +72,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-15: the rival panel now says where the threat is and how to answer it. It is live** ([THR-2237](https://linear.app/threadbare/issue/THR-2237)). Merged via [#2847](https://github.com/christianspliid-ui/threadbare/pull/2847).
 - **2026-11-15: the Mandate now says what fills it, and "Rising" lasts three days. It is live** ([THR-2236](https://linear.app/threadbare/issue/THR-2236)). Merged via [#2846](https://github.com/christianspliid-ui/threadbare/pull/2846).
 - **2026-11-15: Read the Threads now fades each chapter by its age. It is live** ([THR-2235](https://linear.app/threadbare/issue/THR-2235)). Merged via [#2845](https://github.com/christianspliid-ui/threadbare/pull/2845).
-- **2026-11-15: The First's Apotheosis now follows the Ordeal, once, and the Return waits for it. It is live** ([THR-2234](https://linear.app/threadbare/issue/THR-2234)). Merged via [#2844](https://github.com/christianspliid-ui/threadbare/pull/2844).
 
 ---
 
