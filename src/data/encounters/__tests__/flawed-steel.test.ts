@@ -325,3 +325,42 @@ describe('Flawed Steel — support bundle', () => {
     }
   });
 });
+
+// ─── No gendered pronoun (THR-2150) ───────────────────────────────
+//
+// Maren, Dalla and Torve all set `reuseNpcRoles`, so each slot can bind an
+// existing NPC of any gender. No per-cast pronoun token exists, so the prose
+// names the cast or avoids pronouns. Walks every string in the template —
+// steps, nudges, aftermath, band endings, the encoded contract — so a new
+// field cannot slip a pronoun past the check.
+
+function collectStrings(value: unknown, out: string[]): void {
+  if (typeof value === 'string') {
+    out.push(value);
+  } else if (Array.isArray(value)) {
+    for (const item of value) collectStrings(item, out);
+  } else if (value && typeof value === 'object') {
+    for (const item of Object.values(value)) collectStrings(item, out);
+  }
+}
+
+describe('Flawed Steel — no gendered pronoun (THR-2150)', () => {
+  it('every reuse-bound cast slot can bind any gender', () => {
+    const keys = (template.supportBundle ?? [])
+      .filter((spec) => spec.kind === 'actor')
+      .filter((spec) => (spec.reuseNpcRoles ?? []).length > 0)
+      .map((spec) => spec.key)
+      .sort();
+    expect(keys).toEqual(['dalla', 'maren_ironhewn', 'torve_ashgrip']);
+  });
+
+  it('never genders anyone in any authored string', () => {
+    const pronounPattern = /\b(he|him|his|himself|she|her|hers|herself)\b/i;
+    const strings: string[] = [];
+    collectStrings(template, strings);
+    expect(strings.length).toBeGreaterThan(50);
+    for (const s of strings) {
+      expect(pronounPattern.test(s), `found a gendered pronoun in: "${s}"`).toBe(false);
+    }
+  });
+});
