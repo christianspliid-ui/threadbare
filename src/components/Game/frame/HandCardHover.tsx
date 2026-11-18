@@ -14,7 +14,11 @@
 import { useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { CardFace, CARD_WIDTH_PX, type CardFaceModel } from '../../shared/CardFace';
+import { Z_BAND } from '../../shared/zBands';
 import { isNudgeDesignerViewEnabled, subscribeNudgeDesignerView } from '../encounter-stage/designerView';
+
+/** The escape layer's name (the debug bridge lists open layers by it). */
+export const HAND_CARD_HOVER_ESCAPE_LABEL = 'hand card face';
 
 /** Gap between the rail's edge and the face, px. */
 export const HAND_CARD_HOVER_GAP_PX = 8;
@@ -84,9 +88,9 @@ export function HandCardHover({ model, anchorEl }: { model: CardFaceModel; ancho
         width: CARD_WIDTH_PX,
         maxHeight: `calc(100dvh - ${2 * HAND_CARD_HOVER_MARGIN_PX}px)`,
         display: 'flex',
-        // Above the drawers and panels, below the modal band — `HoverCard`'s layer.
-        zIndex: 60,
-        boxShadow: '0 6px 28px rgba(0, 0, 0, 0.6)',
+        // The tooltip band: a hover answer over the rail, as the row's old tooltip was.
+        zIndex: Z_BAND.tooltip,
+        boxShadow: 'var(--shadow-page)',
         borderRadius: 'var(--radius-control)',
         overflow: 'hidden',
         pointerEvents: 'none',

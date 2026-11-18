@@ -15,9 +15,11 @@
  * A press calls `useHandPress()` (the frame's seam); the armed row's look comes from
  * `useArmedCard()`. Both are THR-1876's to fill; the default opens the Codex entry.
  */
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { getUnifiedTemplateById } from '../../../data/unified-action-templates';
-import { HandCardHover } from './HandCardHover';
+import { HandCardHover, HAND_CARD_HOVER_ESCAPE_LABEL } from './HandCardHover';
+import { TRANSIENT_ESCAPE_LAYER, useEscapeLayer } from '../../shared/useEscapeLayer';
+import { Z_BAND } from '../../shared/zBands';
 import { handCardFaceModel } from './handCardFace';
 import type { GodRailHand, HandCardVM } from '../../../engine/views/godRail';
 import type { SphereName } from '../../../types';
@@ -102,19 +104,13 @@ function CardRow({ card, rest, armed }: { card: HandCardVM; rest: HandRest; arme
   // THR-1975 — the full card face on hover, closing on leave and Esc. Over the price the
   // price's own hover answers instead, so one surface shows at a time (Law 3).
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
-  const hovered = anchor !== null;
   const [overPrice, setOverPrice] = useState(false);
   const template = useMemo(() => getUnifiedTemplateById(card.id), [card.id]);
   const faceModel = useMemo(() => (template ? handCardFaceModel(card, template) : null), [card, template]);
-  const faceOpen = hovered && !overPrice && !!faceModel;
-  useEffect(() => {
-    if (!hovered) return undefined;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setAnchor(null);
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [hovered]);
+  const faceOpen = anchor !== null && !overPrice && !!faceModel;
+  // A pointer-born popup: Escape closes it, and only it (Law 23, the transient band).
+  const closeFace = useCallback(() => setAnchor(null), []);
+  useEscapeLayer(faceOpen, closeFace, Z_BAND.tooltip, HAND_CARD_HOVER_ESCAPE_LABEL, TRANSIENT_ESCAPE_LAYER);
   return (
     <>
     <button
