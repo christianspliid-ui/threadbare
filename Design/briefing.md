@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-18 19:57 local (18:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-18 20:58 local (19:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -35,5 +35,5 @@ Items for agents, not you:
 
 ## Health
 
-- All probes green: main is live on 826a5208, CI and heavy tests green on main, no PRs waiting, all 10 lanes on schedule, the worktree reaper last ran at 19:40 local. Engine speed is normal (133 ms/tick, 14% faster than the 7-day median of 154). The builder's recent runs (through 19:51 local) found nothing to build, which is correct with an empty queue.
+- All probes green: main is live on 826a5208, CI and heavy tests green on main, no PRs waiting, all 10 lanes on schedule, the worktree reaper last ran at 20:40 local. Engine speed is normal (169 ms/tick, 9% slower than the 7-day median of 154, inside the 25% band). The builder's recent runs (through 20:51 local) found nothing to build, which is correct with an empty queue.
 - Lane silence: Sunday 15 Nov 09:57–21:48 local (11.8 hours) is a weekend gap, so per your rulings it is not its own ask.
