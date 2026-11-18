@@ -45,7 +45,7 @@ import { agencyReport, AGENCY_COMPARE_TICK, type AgencyArmResult } from './agenc
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 const AGENCY_SEEDS = [42, 99, 7];
-const AGENCY_ARMS = ['none', 'greedy', 'answer'] as const;
+const AGENCY_ARMS_ALL = ['none', 'greedy', 'answer', 'full'] as const;
 const AGENCY_CAST_SEED_BASE = 2243; // seeds the answer arm's casts (census:mandate's godloc uses 2081)
 const AGENCY_MAX_PARALLEL = 4;
 const AGENCY_DEFAULT_WARM = 300;
@@ -58,8 +58,11 @@ const argv = process.argv.slice(2);
 const has = (k: string) => argv.includes(k);
 const arg = (k: string, d: string) => { const i = argv.indexOf(k); return i >= 0 && i + 1 < argv.length ? argv[i + 1] : d; };
 const SEED = Number(arg('--seed', '42'));
-const ARM = arg('--arm', 'none') as 'none' | 'greedy' | 'answer';
-const PLAYS = ARM === 'greedy' || ARM === 'answer'; // the answer arm is the greedy arm plus the clock verbs
+const ARM = arg('--arm', 'none') as 'none' | 'greedy' | 'answer' | 'full';
+// PROTO THR-2245 — `full`: the answer arm plus the godloc place casts (cheapest place card in each
+// Mandate sphere, every tick the purse can pay, after Stay's upkeep). --arms picks the driver's arms.
+const AGENCY_ARMS = arg('--arms', 'none,greedy,answer').split(',').filter((a) => (AGENCY_ARMS_ALL as readonly string[]).includes(a));
+const PLAYS = ARM === 'greedy' || ARM === 'answer' || ARM === 'full'; // the answer arm is the greedy arm plus the clock verbs
 const WARM = Number(arg('--warm', String(AGENCY_DEFAULT_WARM)));
 const TICKS = Number(arg('--ticks', String(AGENCY_DEFAULT_TICKS)));
 const BUDGET_S = has('--budget-s') ? Number(arg('--budget-s', '0')) : 0; // 0 = no wall-clock budget
@@ -150,6 +153,8 @@ const [
   { DOOM_STAY_TEMPLATE_ID },
   { RIVAL_REBUKE_TEMPLATE_ID },
   { MILESTONE_FIRST_STAGE_BEAT_ID, MILESTONE_FIRST_REBUKE_BEAT_ID },
+  { UNIFIED_ACTION_TEMPLATES },
+  { getPlaceNodes, getLocationNodes },
 ] = await Promise.all([
   import('../src/engine/gameInit'),
   import('../src/engine/orchestrator'),
@@ -181,6 +186,8 @@ const [
   import('../src/data/doom-stay-content'),
   import('../src/data/rival-rebuke-content'),
   import('../src/data/player-progression'),
+  import('../src/data/unified-action-templates'),
+  import('../src/engine/sublocationShape'),
 ]);
 
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
@@ -381,6 +388,37 @@ function answerClocks(): void {
   }
 }
 
+// PROTO THR-2245 — the full player's place casts (census:mandate godloc, on the agency route).
+let placeCasts = 0; let placeEssence = 0;
+function cheapestPlaceCard(sphere: string): any | undefined {
+  const pick = (cats: string[]) => (UNIFIED_ACTION_TEMPLATES as any[])
+    .filter((t) => t.sphereAffinity === sphere && (t.essenceCost ?? 0) > 0 && (t.actorAffinities ?? []).includes('ascendant'))
+    .filter((t) => (t.targetCategories ?? ['actor']).some((c: string) => cats.includes(c)))
+    .sort((a, b) => a.essenceCost - b.essenceCost)[0];
+  return pick(['location', 'sublocation']) ?? pick(['actor']);
+}
+function castPlaces(): void {
+  const d = state.mandateDefinition; if (!d) return;
+  for (const sp of [d.primarySphere, d.secondarySphere]) {
+    const t = cheapestPlaceCard(sp); if (!t) continue;
+    if ((state.essencePool?.[sp] ?? 0) < t.essenceCost) continue;
+    const cats: string[] = t.targetCategories ?? ['actor'];
+    const pool = cats.includes('location') ? getPlaceNodes(state.graph)
+      : cats.includes('sublocation') ? state.graph.getNodesByType('location').filter((n: any) => typeof n.properties?.parentLocationId === 'string')
+      : state.graph.getNodesByType('actor').filter((n: any) => n.properties?.actorType === 'individual' && n.properties?.alive !== false);
+    const subs: string[] = t.targetSubtypes ?? [];
+    const req = Object.entries(t.requiredNodeProperties ?? {});
+    const legal = (subs.length > 0 ? getLocationNodes(state.graph).filter((n: any) => subs.includes(n.properties?.locationSubtype ?? n.properties?.locationType)) : pool)
+      .filter((n: any) => req.every(([k, v]) => (v === undefined ? n.properties?.[k] != null : n.properties?.[k] === v)));
+    if (!legal.length) continue;
+    const target = legal[(state.tick * 7919 + placeCasts) % legal.length];
+    try {
+      const cast: any = preparePlayerCast({ graph: state.graph, ascendantId: state.ascendantId, template: t, templateId: t.id, targetId: target.id, tick: state.tick, seed: 2245 + placeCasts * 13, sphere: sp, runtime });
+      state = commitPlayerCast(state, { cast }); placeCasts++; placeEssence += cast.essenceCost ?? 0;
+    } catch { /* a refused cast costs this tick's attempt only */ }
+  }
+}
+
 /**
  * Where a gift that never reached the hand was lost: never enqueued (its trigger never held
  * on this route), or enqueued and left pending (no Receive). Null when the card is held.
@@ -428,6 +466,8 @@ function snapshot() {
     mandateStage: state.mandateState?.currentStage ?? null,
     mandateProgress: Number((state.mandateState?.progress ?? 0).toFixed(3)),
     mandateCompleted: !!state.mandateState?.completed,
+    ledgerP: Number((state.mandateState?.godLedger?.primary ?? 0).toFixed(1)),
+    ledgerS: Number((state.mandateState?.godLedger?.secondary ?? 0).toFixed(1)),
     firstFate: (ff as any)?.fate ?? 'none',
     // THR-2229 — the climax facts on the First's thread, and the Twilight beat 2 they read as.
     // A death sweeps the thread; the god's note on its First keeps the same facts.
@@ -464,7 +504,8 @@ for (let i = 0; i < TICKS; i++) {
   if (warming) state = unattended(state);
   else handleHeldSteps();
   answerVisions(PLAYS && !warming);
-  if (ARM === 'answer' && !warming) answerClocks();
+  if ((ARM === 'answer' || ARM === 'full') && !warming) answerClocks();
+  if (ARM === 'full' && !warming) castPlaces();
   if (state.tick % AGENCY_SNAP_EVERY === 0) snaps.push(snapshot());
   if (state.tick % AGENCY_PROGRESS_EVERY === 0) console.error(`[agency] t${state.tick} ${((Date.now() - t0) / 1000).toFixed(0)}s held=${heldSteps} played=${cardsPlayed}`);
   if (state.phase && state.phase !== 'playing') { stopReason = `phase=${state.phase}`; break; }
@@ -479,7 +520,7 @@ const clockVerbs = {
   stayGiftLostAt: giftLostAt(DOOM_STAY_TEMPLATE_ID, MILESTONE_FIRST_STAGE_BEAT_ID),
   rebukeGiftLostAt: giftLostAt(RIVAL_REBUKE_TEMPLATE_ID, MILESTONE_FIRST_REBUKE_BEAT_ID),
 };
-const result = { seed: SEED, arm: ARM, warm: WARM, ranTo: state.tick, seconds: Math.round(ms / 1000), stopReason, heldSteps, heldWithCards, cardsPlayed, essenceSpent: Math.round(essenceSpent), apotheosisSteps, visionsAnswered, visionChoices, ordealRolls, ...clockVerbs, end, snaps };
+const result = { placeCasts, placeEssence: Math.round(placeEssence), seed: SEED, arm: ARM, warm: WARM, ranTo: state.tick, seconds: Math.round(ms / 1000), stopReason, heldSteps, heldWithCards, cardsPlayed, essenceSpent: Math.round(essenceSpent), apotheosisSteps, visionsAnswered, visionChoices, ordealRolls, ...clockVerbs, end, snaps };
 const { firstChapterIds, ...endShort } = end;
 console.log(JSON.stringify({ ...result, end: endShort, snaps: undefined }));
 console.log(`  first chapters: ${firstChapterIds.join(' · ')}`);
