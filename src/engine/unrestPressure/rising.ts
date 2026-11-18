@@ -56,6 +56,8 @@ export interface RisingResult {
   readonly sackedBuildingId: string | null;
   /** The sacked building's card name (e.g. `Town walls`), or null — what the trace and chronicle name. */
   readonly sackedBuildingName?: string | null;
+  /** True when the sacked building's Place was removed (the town raised it); false when it stands, stripped. */
+  readonly sackedPlaceRemoved?: boolean;
   readonly failReason?: string;
 }
 
@@ -114,13 +116,17 @@ export function costliestBuilding(graph: WorldGraph, townId: string): BuildingIn
   return best;
 }
 
-/** Sack the town: lose its costliest building. Fail-soft — a throw leaves it standing. */
-function sack(graph: WorldGraph, townId: string, tick: number): BuildingInstance | null {
+/**
+ * Sack the town: lose its costliest building. `removed` is loseBuilding's answer — an
+ * adopted or mortal-raised Place stays standing and only stops being a building. Fail-soft:
+ * a throw leaves it standing.
+ */
+function sack(graph: WorldGraph, townId: string, tick: number): { b: BuildingInstance; removed: boolean } | null {
   try {
     const b = costliestBuilding(graph, townId);
     if (!b) return null;
-    loseBuilding(graph, townId, b, tick);
-    return b;
+    const removed = loseBuilding(graph, townId, b, tick);
+    return { b, removed };
   } catch {
     return null;
   }
@@ -221,7 +227,8 @@ export function applyRising(state: GameState, town: GraphNode, holderId: string)
     path,
     newFactionId,
     residentsMoved,
-    sackedBuildingId: sacked?.def.id ?? null,
-    sackedBuildingName: sacked?.def.cardName ?? null,
+    sackedBuildingId: sacked?.b.def.id ?? null,
+    sackedBuildingName: sacked?.b.def.cardName ?? null,
+    sackedPlaceRemoved: sacked?.removed ?? false,
   };
 }

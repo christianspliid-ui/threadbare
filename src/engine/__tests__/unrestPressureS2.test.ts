@@ -17,7 +17,8 @@ import {
   SIEGED_BY_PROP,
 } from '../unrestPressure/defection';
 import { applyRising, costliestBuilding, pickFounder, townResidents } from '../unrestPressure/rising';
-import { raiseBuilding, readBuildings } from '../settlementEconomy/building';
+import { raiseBuilding, readBuildings, BUILT_BY_PROP } from '../settlementEconomy/building';
+import { TOWN_RISES_PLUNDER_LINES } from '../../data/unrest-chronicle-content';
 import { getSettlementBuilding } from '../../data/settlement-buildings';
 import { godWatchesTown, WAS_ON_THE_EDGE_PROP } from '../unrestPressure/turns';
 import { describeTownView } from '../unrestPressure/describe';
@@ -323,6 +324,7 @@ describe('rising (plan § Engine 10)', () => {
     const trace = getTraces().find(t => t.category === 'unrest.rising') as unknown as Record<string, unknown>;
     expect(trace.sackedBuildingId).toBe('walls');
     expect(trace.sackedBuildingName).toBe(getSettlementBuilding('walls')!.cardName);
+    expect(trace.sackedPlaceRemoved).toBe(true);
     expect(String(trace.summary)).toContain('sacked');
     const rises = out.chronicleEntries?.find(e => e.title === 'A Town Rises');
     expect(rises?.prose).toContain(getSettlementBuilding('walls')!.cardName.toLowerCase());
@@ -345,6 +347,25 @@ describe('rising (plan § Engine 10)', () => {
     const r = applyRising(state(graph, DAY), ferris, 'ashfold');
     expect(r.path).toBe('split');
     expect(r.sackedBuildingId).toBeNull();
+  });
+
+  it('an adopted Place is plundered, not burned: it stays standing and stops being a building', () => {
+    const { graph, ferris } = risingWorld();
+    addMortal(graph, 'kael', 'ferris', 10, 'ashfold');
+    const placeId = build(graph, ferris, 'walls');
+    // Make it read as adopted / mortal-raised: no economy stamp.
+    delete graph.getNode(placeId)!.properties[BUILT_BY_PROP];
+    const out = phaseUnrest(state(graph, DAY), { pressure: true });
+    const place = graph.getNode(placeId);
+    expect(place).toBeDefined();
+    expect(place!.properties.isBuilding).toBeUndefined();
+    const trace = getTraces().find(t => t.category === 'unrest.rising') as unknown as Record<string, unknown>;
+    expect(trace.sackedBuildingId).toBe('walls');
+    expect(trace.sackedPlaceRemoved).toBe(false);
+    const prose = out.chronicleEntries?.find(e => e.title === 'A Town Rises')?.prose ?? '';
+    const walls = getSettlementBuilding('walls')!.cardName.toLowerCase();
+    expect(TOWN_RISES_PLUNDER_LINES.some(l => prose.includes(l.replace('{building}', walls)))).toBe(true);
+    expect(prose).not.toMatch(/burned|ashes|did not survive/);
   });
 
   it('no one to rise: nothing is sacked', () => {

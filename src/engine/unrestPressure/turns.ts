@@ -41,6 +41,7 @@ import {
   ON_THE_EDGE_HELD_LINES,
   ON_THE_EDGE_UNHELD_LINES,
   TOWN_RISES_SACK_LINES,
+  TOWN_RISES_PLUNDER_LINES,
   type OnTheEdgeCause,
 } from '../../data/unrest-chronicle-content';
 import { placeHasTrait } from './bands';
@@ -249,7 +250,7 @@ export function runTownTurns(
           category: r.path === 'none' ? 'unrest.rising.no_one' : 'unrest.rising',
           summary: r.path === 'none'
             ? `${town.name} is ready to rise against ${nameOf(graph, holderId)}, but no one there leads it (${r.failReason ?? 'no_one'})`
-            : `${town.name} rises against ${nameOf(graph, holderId)}: ${r.path === 'split' ? `${r.residentsMoved} members break away` : 'a resident founds a free town'} as ${nameOf(graph, r.newFactionId)}${r.sackedBuildingName ? `; its ${r.sackedBuildingName.toLowerCase()} (${r.sackedBuildingId}) is sacked` : ''}`,
+            : `${town.name} rises against ${nameOf(graph, holderId)}: ${r.path === 'split' ? `${r.residentsMoved} members break away` : 'a resident founds a free town'} as ${nameOf(graph, r.newFactionId)}${r.sackedBuildingName ? `; its ${r.sackedBuildingName.toLowerCase()} (${r.sackedBuildingId}) is sacked${r.sackedPlaceRemoved ? ' and burned' : ', the Place left standing'}` : ''}`,
           locationId: town.id,
           holderId,
           path: r.path,
@@ -257,6 +258,7 @@ export function runTownTurns(
           residentsMoved: r.residentsMoved,
           sackedBuildingId: r.sackedBuildingId,
           sackedBuildingName: r.sackedBuildingName ?? null,
+          sackedPlaceRemoved: r.sackedPlaceRemoved ?? false,
         });
         if (r.path !== 'none' && r.newFactionId) {
           hooks.onStructure?.();
@@ -266,7 +268,7 @@ export function runTownTurns(
           const c = chronicle(state, 'town_rises', town, r.newFactionId, holderId);
           if (c && r.sackedBuildingName) {
             // THR-2033 — the chronicle names the sacked building.
-            const sackLine = pick(TOWN_RISES_SACK_LINES, chronicleSeed(state.seed, `${town.id}|sack|${tick}`))
+            const sackLine = pick(r.sackedPlaceRemoved ? TOWN_RISES_SACK_LINES : TOWN_RISES_PLUNDER_LINES, chronicleSeed(state.seed, `${town.id}|sack|${tick}`))
               .replace(/{building}/g, r.sackedBuildingName.toLowerCase());
             c.entry.prose = `${c.entry.prose} ${sackLine}`;
             c.event.message = `${c.event.message} ${sackLine}`;
