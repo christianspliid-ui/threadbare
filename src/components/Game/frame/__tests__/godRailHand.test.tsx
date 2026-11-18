@@ -23,7 +23,7 @@ import { GOD_RAIL_HAND_GROUP_KEY } from '../../../../data/frame-registry';
 
 function card(id: string, paySphere: HandCardVM['paySphere'], name = id): HandCardVM {
   return {
-    id, name, description: '', paySphere, paySphereWord: paySphere, parPriceLabel: '2 essence',
+    id, name, description: '', paySphere, paySphereWord: paySphere, parPriceLabel: '2 essence', parCost: 2,
     line2: `${paySphere} · 2 essence`, priceTooltip: 'par', payable: true, reason: null, codexEntryId: id,
   };
 }

@@ -9,10 +9,18 @@
  * swallowed — under one line that says why. The hand keeps a floor of
  * `GOD_RAIL_HAND_MIN_ROWS` rows (`data-hand-floor`): the folded rows give way first.
  *
+ * Hovering a row lays the card's full face beside the rail (`HandCardHover`, THR-1975);
+ * the price keeps its own `ui.hand_price` hover, and the face stands down while it shows.
+ *
  * A press calls `useHandPress()` (the frame's seam); the armed row's look comes from
  * `useArmedCard()`. Both are THR-1876's to fill; the default opens the Codex entry.
  */
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { getUnifiedTemplateById } from '../../../data/unified-action-templates';
+import { HandCardHover, HAND_CARD_HOVER_ESCAPE_LABEL } from './HandCardHover';
+import { TRANSIENT_ESCAPE_LAYER, useEscapeLayer } from '../../shared/useEscapeLayer';
+import { Z_BAND } from '../../shared/zBands';
+import { handCardFaceModel } from './handCardFace';
 import type { GodRailHand, HandCardVM } from '../../../engine/views/godRail';
 import type { SphereName } from '../../../types';
 import { Tooltip } from '../../shared/Tooltip';
@@ -93,7 +101,18 @@ function CardRow({ card, rest, armed }: { card: HandCardVM; rest: HandRest; arme
   const dragStart = useHandDragStart();
   const draggable = !!dragStart && !rest;
   const tint = getSphereColor(card.paySphere);
+  // THR-1975 — the full card face on hover, closing on leave and Esc. Over the price the
+  // price's own hover answers instead, so one surface shows at a time (Law 3).
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  const [overPrice, setOverPrice] = useState(false);
+  const template = useMemo(() => getUnifiedTemplateById(card.id), [card.id]);
+  const faceModel = useMemo(() => (template ? handCardFaceModel(card, template) : null), [card, template]);
+  const faceOpen = anchor !== null && !overPrice && !!faceModel;
+  // A pointer-born popup: Escape closes it, and only it (Law 23, the transient band).
+  const closeFace = useCallback(() => setAnchor(null), []);
+  useEscapeLayer(faceOpen, closeFace, Z_BAND.tooltip, HAND_CARD_HOVER_ESCAPE_LABEL, TRANSIENT_ESCAPE_LAYER);
   return (
+    <>
     <button
       type="button"
       data-testid="hand-card"
@@ -102,10 +121,14 @@ function CardRow({ card, rest, armed }: { card: HandCardVM; rest: HandRest; arme
       data-payable={card.payable ? 'true' : 'false'}
       data-armed={armed ? 'true' : undefined}
       data-row-layout="line"
+      data-hover-open={faceOpen ? 'true' : undefined}
       aria-pressed={dragStart ? armed : undefined}
       aria-disabled={rest ? true : undefined}
       draggable={draggable || undefined}
+      onMouseEnter={(e) => setAnchor(e.currentTarget)}
+      onMouseLeave={() => { setAnchor(null); setOverPrice(false); }}
       onDragStart={draggable ? (e) => {
+        setAnchor(null);
         e.dataTransfer.setData(CARD_DRAG_MIME, card.id);
         e.dataTransfer.effectAllowed = 'link';
         dragStart!(card.id);
@@ -140,9 +163,7 @@ function CardRow({ card, rest, armed }: { card: HandCardVM; rest: HandRest; arme
         opacity: card.payable ? 1 : 0.6,
       }}
     >
-      {/* TODO(THR-1975): the full card face on hover (HoverCard + CardFace); the description tooltip is the interim. */}
       <span data-testid="hand-card-name" style={{ flex: '1 1 auto', minWidth: 0 }}>
-      <Tooltip label={card.name} desc={card.description} block focusable={false}>
         <span
           style={{
             display: 'block',
@@ -157,9 +178,12 @@ function CardRow({ card, rest, armed }: { card: HandCardVM; rest: HandRest; arme
         >
           {card.name}
         </span>
-      </Tooltip>
       </span>
-      <span data-testid="hand-card-price" style={{ flexShrink: 0, marginLeft: 'auto', textAlign: 'right', whiteSpace: 'nowrap' }}>
+      <span
+        data-testid="hand-card-price"
+        onMouseEnter={card.priceTooltip ? () => setOverPrice(true) : undefined}
+        onMouseLeave={card.priceTooltip ? () => setOverPrice(false) : undefined}
+        style={{ flexShrink: 0, marginLeft: 'auto', textAlign: 'right', whiteSpace: 'nowrap' }}>
       {card.priceTooltip ? (
         <Tooltip id="ui.hand_price" desc={card.priceTooltip} focusable={false}>
           <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }}>
@@ -176,6 +200,8 @@ function CardRow({ card, rest, armed }: { card: HandCardVM; rest: HandRest; arme
         </span>
       )}
     </button>
+    {faceOpen && anchor && <HandCardHover model={faceModel!} anchorEl={anchor} />}
+    </>
   );
 }
 

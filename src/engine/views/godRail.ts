@@ -127,6 +127,8 @@ export interface HandCardVM {
   paySphereWord: string;
   /** The par price through `essencePriceLabel` — "Free" for 0. */
   parPriceLabel: string;
+  /** THR-1975 — the par price as a number, for the hover card face's framed pips (never printed). */
+  parCost: number;
   /** "Life · 2 essence", or "Free" alone when no pool pays. */
   line2: string;
   /** `ui.hand_price`'s description, built from the par band's line and the cast clause; null when free. */
@@ -221,6 +223,7 @@ export function buildHandCard(
     paySphere,
     paySphereWord,
     parPriceLabel,
+    parCost: par.cost,
     line2: free ? parPriceLabel : `${paySphereWord} · ${parPriceLabel}`,
     priceTooltip: free ? null : handPriceTooltipDesc(template.essenceCostContext === 'target_tier_scaled'),
     payable,
