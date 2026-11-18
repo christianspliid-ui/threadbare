@@ -3517,10 +3517,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 490 total — 1 write, 1 read, 488 unclassified
+- **Production hits:** 492 total — 1 write, 1 read, 490 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +483 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +485 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `recovered-town-keeps-faith` — 🟢 LIVE
@@ -4634,10 +4634,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Essence & Divine Economy
 - **UL terms:** *UnifiedActionTemplate*
 - **Module:** `src/components/Game/actionCardModel.ts`
-- **Production hits:** 6 total — 1 write, 3 read, 2 unclassified
+- **Production hits:** 8 total — 1 write, 3 read, 4 unclassified
 - **Write sites:** `src/components/Game/actionCardModel.ts`
 - **Read sites:** `src/components/Game/ActionCard.tsx`, `src/components/shared/CardFace.tsx`, `src/components/StyleGuide/StyleGuide.tsx`
-- **Other hits:** `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/shared/index.ts`
+- **Other hits:** `src/components/Game/frame/handCardFace.ts`, `src/components/Game/frame/HandCardHover.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/shared/index.ts`
 - **Verdict:** Verified 2026-09-10: THR-1002: `getTargetActionSlots` populates `templateId`, `crudType` and the hardest step's `reach` alongside the three THR-1002 readout fields; `ActionCard` renders `CardFace` through `actionCardModel` and has no layout of its own. `ActionCard.test.tsx` asserts no digit appears anywhere on a fully-populated card and no `[A-Z]{3,} · [A-Z]{3,}` type line survives; `ActionDrawer.test.tsx` asserts the same over the whole drawer plus no `\p{Extended_Pictographic}`. `NudgeCard.snapshot.test.tsx` (written before the extraction) still passes unchanged, which is the proof the nudge face was not moved to accommodate the action face.
 
 ### `world-events-mint-ambitions` — 🟢 LIVE
