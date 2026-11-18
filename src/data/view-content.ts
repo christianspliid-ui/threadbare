@@ -124,6 +124,12 @@ export const INSPECTOR_WORDS = {
   rowCardsNoun: { one: 'card', many: 'cards' },
   /** THR-2223 — a Story row that stands for several runs of one chapter: "twice", "five times". */
   storyRepeat: { twice: 'twice', many: '{n} times', moreThan: 'more than {n} times' },
+  /**
+   * THR-2191 — a Story row's role word, only when the deed was not the subject's own.
+   * Keys are `participated_in.role`; a role missing here (the doer's roles, winner / loser,
+   * any future role until it is added) renders no word.
+   */
+  storyRole: { target: 'done to them', opponent: 'set upon', defender: 'defending', fallen: 'fell in it' } as Readonly<Record<string, string>>,
   /** THR-1913 — the row tray's name: "Your cards for Temple Quarter". */
   rowTray: 'Your cards for {name}',
   /** The armed card, said to a screen reader. */

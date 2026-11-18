@@ -78,7 +78,7 @@ export const CONNECTION_RECIPES: Readonly<Record<ConnectionSubjectClass, Partial
       { edge: 'bonded_to', dir: 'out', fact: 'factBonded', only: 'artifact' },
       { edge: 'owns', dir: 'out', fact: 'kind' },
     ],
-    story: [{ edge: 'participated_in', dir: 'out', only: 'event' }],
+    story: [{ edge: 'participated_in', dir: 'out', fact: 'storyRole', only: 'event' }],
   },
   location: {
     where: [{ helper: 'placeWhere' }],
@@ -114,7 +114,7 @@ export const CONNECTION_RECIPES: Readonly<Record<ConnectionSubjectClass, Partial
       { edge: 'controls', dir: 'out', fact: 'factControls', only: 'place' },
       { edge: 'possesses', dir: 'out', fact: 'kind', only: 'artifact' },
     ],
-    story: [{ edge: 'participated_in', dir: 'out', only: 'event' }],
+    story: [{ edge: 'participated_in', dir: 'out', fact: 'storyRole', only: 'event' }],
   },
   army: {
     where: [{ edge: 'located_at', dir: 'out', fact: 'factHere', only: 'place' }],
@@ -129,7 +129,7 @@ export const CONNECTION_RECIPES: Readonly<Record<ConnectionSubjectClass, Partial
       { edge: 'bonded_to', dir: 'in', fact: 'factBonded', only: 'person' },
     ],
     belongsTo: [{ edge: 'constructed_by', dir: 'out', fact: 'factMaker' }],
-    story: [{ edge: 'participated_in', dir: 'out', only: 'event' }],
+    story: [{ edge: 'participated_in', dir: 'out', fact: 'storyRole', only: 'event' }],
   },
   god: {
     where: [{ edge: 'avatar_of', dir: 'in', fact: 'factAvatar', only: 'person' }],
@@ -234,6 +234,16 @@ function kindFact(n: GraphNode): string {
   return raw ? raw.replace(/[-_]+/g, ' ').trim().toLowerCase() : '';
 }
 
+/**
+ * THR-2191 — the Story row's role word: said only when the deed was not the subject's own
+ * ("done to them", "set upon"). An own deed, an unknown role or a non-string role says nothing.
+ */
+export function storyRoleWord(edge: GraphEdge): string {
+  const role = edge.properties?.role;
+  if (typeof role !== 'string') return '';
+  return Object.prototype.hasOwnProperty.call(INSPECTOR_WORDS.storyRole, role) ? INSPECTOR_WORDS.storyRole[role] : '';
+}
+
 function factFor(graph: WorldGraph, rule: FactRule | undefined, n: GraphNode, edge: GraphEdge): string {
   if (!rule) return '';
   switch (rule) {
@@ -242,6 +252,7 @@ function factFor(graph: WorldGraph, rule: FactRule | undefined, n: GraphNode, ed
     case 'role': return wordedRole(n);
     case 'occupancy': return occupancyFact(graph, n);
     case 'kind': return kindFact(n);
+    case 'storyRole': return storyRoleWord(edge);
     default: return INSPECTOR_WORDS[rule] as string;
   }
 }
@@ -254,6 +265,8 @@ interface Collected {
   templateKey?: string;
   /** THR-2223 — true when this row starts a run (an action instance, or a legacy step 0). */
   startsRun?: boolean;
+  /** THR-2191 — Story rows only: the role word ("done to them"), kept apart from the repeat word. */
+  roleWord?: string;
 }
 
 /** THR-2223 — the one event type whose rows fold by template: an encounter chapter's steps. */
@@ -299,7 +312,9 @@ function foldStoryRepeats(items: Collected[]): Collected[] {
     // chapter whose step 0 was never recorded still counts as one run.
     if (runs < 2) continue;
     const item = out[index];
-    out[index] = { ...item, row: { ...item.row, fact: storyRepeatWord(runs) } };
+    // THR-2191 — the role word comes first, the repeat word second: "done to them · twice".
+    const fact = [item.roleWord ?? '', storyRepeatWord(runs)].filter(Boolean).join(' · ');
+    out[index] = { ...item, row: { ...item.row, fact } };
   }
   return out;
 }
@@ -453,19 +468,19 @@ export function buildConnections(graph: WorldGraph, state: GameState | null, sub
     // THR-2139 — one Story row per action instance: a two-step chapter mints one event
     // node per step, so its steps share an `actionId`, and the latest step's row stands.
     const byInstance = new Map<string, number>();
-    const push = (row: LinkRowVM, sortKey: [number, string], tick: number, instanceKey?: string, templateKey?: string, startsRun?: boolean) => {
+    const push = (row: LinkRowVM, sortKey: [number, string], tick: number, instanceKey?: string, templateKey?: string, startsRun?: boolean, roleWord?: string) => {
       const key = `${row.ref.kind}:${row.ref.id}`;
       if (seen.has(key) || row.ref.id === subjectId) return;
       seen.add(key);
       if (instanceKey) {
         const at = byInstance.get(instanceKey);
         if (at !== undefined) {
-          if (tick >= items[at].tick) items[at] = { row, sortKey, tick, templateKey, startsRun: true };
+          if (tick >= items[at].tick) items[at] = { row, sortKey, tick, templateKey, startsRun: true, roleWord };
           return;
         }
         byInstance.set(instanceKey, items.length);
       }
-      items.push({ row, sortKey, tick, templateKey, startsRun });
+      items.push({ row, sortKey, tick, templateKey, startsRun, roleWord });
     };
     for (const step of steps) {
       if ('helper' in step) {
@@ -494,12 +509,16 @@ export function buildConnections(graph: WorldGraph, state: GameState | null, sub
         // Only encounter-chapter rows fold: a fight record or an undertaking outcome can carry
         // the same `templateId` and must stay its own row.
         const foldable = n.type === 'event' && n.properties.eventType === STORY_FOLD_EVENT_TYPE;
-        const templateKey = foldable
+        const baseTemplateKey = foldable
           ? (typeof n.properties.templateId === 'string' ? `template:${n.properties.templateId as string}` : typeof n.properties.templateName === 'string' ? `name:${n.properties.templateName as string}` : undefined)
           : undefined;
+        // THR-2191 — own runs and runs done to the subject fold separately, so the repeat
+        // count never mixes the two.
+        const roleWord = step.fact === 'storyRole' ? row.fact : '';
+        const templateKey = baseTemplateKey && roleWord ? `${baseTemplateKey}|${roleWord}` : baseTemplateKey;
         // A run starts at an action instance; a legacy step node (no `actionId`) starts one at step 0.
         const startsRun = instanceKey !== undefined || typeof n.properties.stepIndex !== 'number' || n.properties.stepIndex === 0;
-        push(row, sortKey, typeof n.properties.tick === 'number' ? (n.properties.tick as number) : 0, instanceKey, templateKey, startsRun);
+        push(row, sortKey, typeof n.properties.tick === 'number' ? (n.properties.tick as number) : 0, instanceKey, templateKey, startsRun, roleWord);
       }
     }
     if (items.length === 0) continue; // Law 25: no heading over nothing
