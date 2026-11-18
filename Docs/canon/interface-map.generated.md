@@ -386,7 +386,7 @@ remediation ticket or the build fails.
 | `route-event-seed-carries-lane` | The route-event phase plants each lane event with the lane it is about (`PendingEncounterSeed.laneEdgeId`); seed evaluation re-checks the lane is still a live trades_with edge and puts it on the spawned action (`UnifiedAction.laneEdgeId`), which the outcome table writes. | state-field: `laneEdgeId`, `resolveSeedLane` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `scarcity-arc-seeds-granary-riot` | A hungry town's anger becomes the granary riot (THR-1934 S1). Under UNREST_PRESSURE_ENABLED the scarcity arc's unrest phase seeds encounter.town.granary_riot (was cg.quest) and adds no unrest jump (hunger carries it); the unrest phase seeds the same template the day a hungry town turns Lawless, at most once per RIOT_SEED_COOLDOWN_DAYS 10. | function: `GRANARY_RIOT_TEMPLATE_ID`, `encounter.town.granary_riot` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `settlement-economy-drives-tier` | The settlement economy writes targetTier (population plus seat: a city needs a seat that pulls, a capital a realm's seat). With SETTLEMENT_ECONOMY_DRIVES_TIER, phaseSettlementPromotion moves the subtype one step toward it after SETTLEMENT_PROMOTION_SUSTAIN_TICKS, a capital included; the prosperity trigger is the fallback. | node-prop: `targetTier` | Mortal Economy & Prosperity | 🟢 LIVE | — |
-| `settlement-economy-raises-buildings` | The settlement economy raises buildings as Places (isBuilding, buildingId, a contains edge) from spare timber and stone, adopting a standing Place of the type rather than duplicating it, and loses them after IDLE_DAYS_TO_LOSE idle days. The Inspector Connections fact and the tooltip router read the flag. | node-prop: `IS_BUILDING_PROP`, `buildingFact` | World Generation, Terrain & Places | 🟢 LIVE | — |
+| `settlement-economy-raises-buildings` | The settlement economy raises buildings as Places (isBuilding, buildingId, a contains edge) from spare timber and stone, adopting a standing Place of the type rather than duplicating it, and loses them after IDLE_DAYS_TO_LOSE idle days. The Inspector Connections fact and the tooltip router read the flag. A held town that rises loses its costliest building (THR-2033): rising.ts reads the buildings through readBuildings and sacks one through loseBuilding. | node-prop: `IS_BUILDING_PROP`, `buildingFact` | World Generation, Terrain & Places | 🟢 LIVE | — |
 | `settlement-economy-writes-resource-balance` | The settlement economy (THR-1923) writes each settlement's resourceBalance once a day from its own foodBalance and buildBalance (food weighted twice), instead of the stock-tier phase deriving it from deposit quantity. phaseProsperity reads it unchanged, so prosperity stays the one scalar downstream systems read. | node-prop: `resourceBalance` | Mortal Economy & Prosperity | 🟢 LIVE | — |
 | `surplus-route-carries` | A surplus with nowhere to go opens a trades_with edge stamped establishedBy 'surplus' with carries and carriedPerDay; carrying sets lastTraded. The route ends after ROUTE_DIE_DAYS dry days. The undertakings trade run (THR-1967) and the purse read carriedPerDay. | edge-prop: `carriedPerDay` | Mortal Economy & Prosperity | 🟢 LIVE | — |
 | `town-defection-moves-controls` | A held town On the edge turns to a better lord (THR-1957 S2). Once a day the unrest phase weighs every faction that holds a settlement within DEFECTION_RADIUS_HEXES 8 (protection from the crown's offer term over this town, standing, fed, solvent); when the best beats the holder by DEFECTION_MARGIN 0.4 the holder's controls edges are retargeted to it with via defection and takenFrom, the old holder's relates_to toward it drops past the enemy line (DEFECTION_GRUDGE_SENTIMENT −0.35, defectionTick) and it adopts a revenge ambition whose grievanceSourceId / targetNodeId name the lord and the town. The crown's holding_lost reads takenFrom; war aims' isEnemyFaction reads the grudge. | edge: `controls`, `relates_to`, `pursues` | Factions & Succession | 🟢 LIVE | — |
@@ -1135,10 +1135,10 @@ exit
 - **Intent:** A standing building gives its settlement a location trait (Iron Town, Walled …), and the land and market give Breadbasket and Market Town: fourteen rules in phaseLocationTraits read the buildings and the economy props. Each trait carries a small step term and a pool row.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Effects & Conditions
 - **UL terms:** *Settlement*, *Trait*
-- **Production hits:** 7 total — 1 write, 2 read, 4 unclassified
+- **Production hits:** 8 total — 1 write, 2 read, 5 unclassified
 - **Write sites:** `src/engine/settlementEconomy/building.ts`
 - **Read sites:** `src/engine/phaseLocationTraits.ts`, `src/engine/settlementEconomy/measures.ts`
-- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/encounterAftermath.ts`, `src/engine/phases/settlementEconomy.ts`, `src/engine/undertakingEconomy.ts`
+- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/encounterAftermath.ts`, `src/engine/phases/settlementEconomy.ts`, `src/engine/undertakingEconomy.ts`, `src/engine/unrestPressure/rising.ts`
 - **Verdict:** Verified 2026-10-25: THR-1923. phaseLocationTraits.test.ts › every minted id is a location condition with a reader (the fourteen included); settlementEconomy.test.ts › every economic trait is a seeded location condition.
 
 ### `calling-derivation` — 🟢 LIVE
@@ -1920,10 +1920,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Mortal Economy & Prosperity
 - **UL terms:** *Place*, *Prosperity*
 - **Module:** `src/engine/settlementEconomy/building.ts`
-- **Production hits:** 7 total — 1 write, 2 read, 4 unclassified
+- **Production hits:** 8 total — 1 write, 2 read, 5 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`
 - **Read sites:** `src/engine/phases/settlementEconomy.ts`, `src/engine/settlementEconomy/building.ts`
-- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/phaseLocationTraits.ts`, `src/engine/settlementEconomy/measures.ts`, `src/engine/undertakingEconomy.ts`
+- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/phaseLocationTraits.ts`, `src/engine/settlementEconomy/measures.ts`, `src/engine/undertakingEconomy.ts`, `src/engine/unrestPressure/rising.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `encounter-outcomes-fill-faction-purse` — 🔵 UNVERIFIED-OK
@@ -4001,7 +4001,7 @@ exit
 
 ### `settlement-economy-raises-buildings` — 🟢 LIVE
 
-- **Intent:** The settlement economy raises buildings as Places (isBuilding, buildingId, a contains edge) from spare timber and stone, adopting a standing Place of the type rather than duplicating it, and loses them after IDLE_DAYS_TO_LOSE idle days. The Inspector Connections fact and the tooltip router read the flag.
+- **Intent:** The settlement economy raises buildings as Places (isBuilding, buildingId, a contains edge) from spare timber and stone, adopting a standing Place of the type rather than duplicating it, and loses them after IDLE_DAYS_TO_LOSE idle days. The Inspector Connections fact and the tooltip router read the flag. A held town that rises loses its costliest building (THR-2033): rising.ts reads the buildings through readBuildings and sacks one through loseBuilding.
 - **Producer → Consumer:** Mortal Economy & Prosperity → World Generation, Terrain & Places
 - **UL terms:** *Settlement*, *Location*
 - **Production hits:** 5 total — 1 write, 2 read, 2 unclassified
