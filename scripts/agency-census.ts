@@ -107,7 +107,7 @@ if (has('--all')) {
   const jobs = AGENCY_SEEDS.flatMap((seed) => AGENCY_ARMS.map((arm) => ({ seed, arm })));
   const runChild = (job: { seed: number; arm: string }) => new Promise<void>((resolve) => {
     const out = armFile(OUT_DIR, job.seed, job.arm);
-    const args = [self, '--seed', String(job.seed), '--arm', job.arm, '--warm', String(WARM), '--ticks', String(TICKS), '--out', out];
+    const args = [self, '--seed', String(job.seed), '--arm', job.arm, '--warm', String(WARM), '--ticks', String(TICKS), '--out', out, '--snap-every', arg('--snap-every', '100')];
     const child = spawn(process.execPath, args, { stdio: ['ignore', 'ignore', 'pipe'] });
     child.stderr.on('data', (d) => {
       for (const l of String(d).split('\n')) if (l.startsWith('[agency]')) console.error(`[seed ${job.seed} ${job.arm}] ${l}`);
@@ -392,7 +392,7 @@ function answerClocks(): void {
 }
 
 // PROTO THR-2245 — the full player's place casts (census:mandate godloc, on the agency route).
-let placeCasts = 0; let placeEssence = 0;
+let placeCasts = 0; let placeEssence = 0; let placeEssP = 0; let placeEssS = 0;
 function cheapestPlaceCard(sphere: string): any | undefined {
   const pick = (cats: string[]) => (UNIFIED_ACTION_TEMPLATES as any[])
     .filter((t) => t.sphereAffinity === sphere && (t.essenceCost ?? 0) > 0 && (t.actorAffinities ?? []).includes('ascendant'))
@@ -424,6 +424,7 @@ function castPlaces(): void {
     try {
       const cast: any = preparePlayerCast({ graph: state.graph, ascendantId: state.ascendantId, template: t, templateId: t.id, targetId: target.id, tick: state.tick, seed: 2245 + placeCasts * 13, sphere: sp, runtime });
       state = commitPlayerCast(state, { cast }); placeCasts++; placeEssence += cast.essenceCost ?? 0;
+      if (sp === d.primarySphere) placeEssP += cast.essenceCost ?? 0; else placeEssS += cast.essenceCost ?? 0; // PROTO run c
     } catch { /* a refused cast costs this tick's attempt only */ }
   }
 }
@@ -477,6 +478,7 @@ function snapshot() {
     mandateCompleted: !!state.mandateState?.completed,
     ledgerP: Number((state.mandateState?.godLedger?.primary ?? 0).toFixed(1)),
     ledgerS: Number((state.mandateState?.godLedger?.secondary ?? 0).toFixed(1)),
+    placeEssP: Math.round(placeEssP), placeEssS: Math.round(placeEssS), // PROTO run c — projection input
     firstFate: (ff as any)?.fate ?? 'none',
     // THR-2229 — the climax facts on the First's thread, and the Twilight beat 2 they read as.
     // A death sweeps the thread; the god's note on its First keeps the same facts.
@@ -515,7 +517,7 @@ for (let i = 0; i < TICKS; i++) {
   answerVisions(PLAYS && !warming);
   if ((ARM === 'answer' || ARM === 'full') && !warming) answerClocks();
   if (ARM === 'full' && !warming) castPlaces();
-  if (state.tick % AGENCY_SNAP_EVERY === 0) snaps.push(snapshot());
+  if (state.tick % Number(arg("--snap-every", String(AGENCY_SNAP_EVERY))) === 0) snaps.push(snapshot());
   if (state.tick % AGENCY_PROGRESS_EVERY === 0) console.error(`[agency] t${state.tick} ${((Date.now() - t0) / 1000).toFixed(0)}s held=${heldSteps} played=${cardsPlayed}`);
   if (state.phase && state.phase !== 'playing') { stopReason = `phase=${state.phase}`; break; }
 }
