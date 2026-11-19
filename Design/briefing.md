@@ -1,9 +1,9 @@
 # Briefing
-**Generated:** 2026-11-19 10:56 local (09:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-19 11:56 local (10:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Should every one of Kael's chapters give you a hand?** About 1 in 4 of The First's chapters is "Theirs alone": it plays out without you. Two of three warm testers asked for cards in every one. Say **"every chapter asks"** or **"keep theirs alone"** ([THR-2174](https://linear.app/threadbare/issue/THR-2174/the-player-cant-tell-which-chapters-wait-for-their-cards-the-gallows)). The design lane leans "every chapter asks". If you say nothing, it stays as it is. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-18.md)*
+**Should every one of Kael's chapters give you a hand?** About 1 in 4 of The First's chapters is "Theirs alone": it plays out without you. Two of three warm testers asked for cards in every one. Say **"every chapter asks"** or **"keep theirs alone"** ([THR-2174](https://linear.app/threadbare/issue/THR-2174/the-player-cant-tell-which-chapters-wait-for-their-cards-the-gallows)). The design lane leans "every chapter asks". If you say nothing, it stays as it is. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-15b.md)*
 
 ## Also waiting (11)
 
@@ -23,10 +23,11 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-- [A well-played age can be won](https://linear.app/threadbare/issue/THR-2245) — a god's spell cast on a place in one of the Mandate's spheres now fills the Mandate by what it cost, at the same rate as essence spent on a mortal's chapter. Measured, a god who plays everything then finishes the Mandate before Doom's last stage on 2 of 3 worlds; today it does on none. A god who only plays chapters comes close (82–96%) but never finishes, and a hands-off god never gets past 12%. The Mandate's targets stay as they are.
-- Same ticket — when an age ends, the closing screen adds one line: where your hand raised the Mandate if you fulfilled it, or how near it stood ("within reach", "half-raised", "had barely begun") if Doom ended the age. Words, never numbers; it never grades you.
+- [A well-played age can be won](https://linear.app/threadbare/issue/THR-2245) — a god's spell cast on a place in one of the Mandate's spheres now fills the Mandate by what it cost, at the same rate as essence spent on a mortal's chapter. Measured, a god who plays everything then finishes the Mandate before Doom's last stage on 2 of 3 worlds; today it does on none. A god who only plays chapters comes close (82–96%) but never finishes, and a hands-off god never gets past 12%. The Mandate's targets stay as they are. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-19a.md)*
+- Same ticket — when an age ends, the closing screen adds one line: where your hand raised the Mandate if you fulfilled it, or how near it stood ("within reach", "half-raised", "had barely begun") if Doom ended the age. Words, never numbers; it never grades you. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-19a.md)*
+- [The player can read the race](https://linear.app/threadbare/issue/THR-2246/the-player-can-read-the-race-at-any-moment-the-screen-says-which-clock) — from Doom's Signs stage onward, the Mandate row says which clock lands first at the last fifteen days' pace ("Goal · Doom lands first"). The Mandate block says it in one sentence ("At this pace, Doom ends the age before your Mandate is fulfilled."). The Mandate and Doom dialogs name the one move ("Spend Order essence on Kael Thornweaver's chapters to raise your Mandate.", or Stay the Unmaking when no mortal is bound). A shift is a non-pausing alert plus a "While you were away" line. No numbers, and nothing new in the top bar. [Plan doc](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-19-thr-2246-the-player-can-read-the-race.md). *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-19b.md)*
 
-Say "veto <title>" to reverse any of these. The build tickets cannot start before 22:30 local today. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-19a.md)*
+Say "veto <title>" to reverse any of these. The build tickets cannot start before 22:30 local (well-played age) and 23:00 local (read the race) today.
 
 ## This week's screens
 
@@ -34,7 +35,7 @@ Say "veto <title>" to reverse any of these. The build tickets cannot start befor
 
 ## Queue
 
-**Healthy but thin: 2 in Ready for Dev, nothing being built yet.** The design lane's plan for [a well-played age can be won](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-19-thr-2245-a-well-played-age-can-be-won.md) merged ([#2862](https://github.com/christianspliid-ui/threadbare/pull/2862)) and filed [the census that plays the whole game](https://linear.app/threadbare/issue/THR-2248/the-agency-census-plays-the-whole-game-chapter-spend-credits-the) and [the Twilight line on what the Mandate came to](https://linear.app/threadbare/issue/THR-2250/the-twilight-says-what-the-mandate-came-to-where-your-hand-raised-it). Both sit in their veto window until 22:30 local; the first pickup run after that takes the census ticket. A third, [a place you tend fills the Mandate](https://linear.app/threadbare/issue/THR-2249), waits on the census. The builder standing down until then is correct, not a stall.
+**Healthy but thin: 3 in Ready for Dev, nothing being built yet.** All three sit in their veto windows: [the census that plays the whole game](https://linear.app/threadbare/issue/THR-2248/the-agency-census-plays-the-whole-game-chapter-spend-credits-the) and [the Twilight line on what the Mandate came to](https://linear.app/threadbare/issue/THR-2250/the-twilight-says-what-the-mandate-came-to-where-your-hand-raised-it) until 22:30 local, and the new [engine reads the race](https://linear.app/threadbare/issue/THR-2251/the-engine-reads-the-race-a-daily-pace-sample-a-forecast-of-which) until 23:00 local. The builder's last runs each stood down for exactly that reason, which is correct, not a stall.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (30 days; last touched 8 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
@@ -42,4 +43,4 @@ Items for agents, not you:
 ## Health
 
 - Lane silence: the newest unrecorded gap is Sunday 15 Nov, 09:57 to 21:48 local (12 hours on a weekend). Per your ruling weekend quiet is normal, so it is not an ask.
-- Everything else green: engine speed is back near normal (173 ms/tick, 12% above the 7-day median, down from 43% last hour), main is live on 6ba8d579 (later commits are docs only), CI and scheduled jobs green, no PRs waiting, every enabled lane on schedule, the worktree reaper last ran at 10:40 local.
+- Everything else green: engine speed 156 ms/tick, level with the 7-day median; main is live on 6ba8d579 (later commits are docs only); CI and scheduled jobs green; no PRs waiting; every enabled lane on schedule; the worktree reaper last ran at 11:40 local.
