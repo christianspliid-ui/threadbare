@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-19 11:56 local (10:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-19 12:56 local (11:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -43,4 +43,4 @@ Items for agents, not you:
 ## Health
 
 - Lane silence: the newest unrecorded gap is Sunday 15 Nov, 09:57 to 21:48 local (12 hours on a weekend). Per your ruling weekend quiet is normal, so it is not an ask.
-- Everything else green: engine speed 156 ms/tick, level with the 7-day median; main is live on 6ba8d579 (later commits are docs only); CI and scheduled jobs green; no PRs waiting; every enabled lane on schedule; the worktree reaper last ran at 11:40 local.
+- Everything else green: engine speed 171 ms/tick, 10% above the 7-day median of 155 (inside the normal range); main is live on 6ba8d579 (later commits are docs only); CI and scheduled jobs green; no PRs waiting; every enabled lane on schedule; the worktree reaper last ran at 12:40 local.
