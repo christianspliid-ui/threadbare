@@ -84,9 +84,9 @@ Four findings:
    age slows Doom by at most about 0.12 of the clock (the 2026-11-16 decision) and pays for it in Mandate
    pace. The predicate checks that the purse still turns the full player away.
 6. **What a win is called and shown.** The Mandate ending keeps its words and adds where the god's hand
-   raised the most (the entity holding the largest `godHeld` share): *"Most of it was raised at
-   {name}."* A Doom ending adds how far the Mandate came, in words, never a number (Law 13):
-   *"{Mandate name} stood {within reach / half-raised / barely begun}."* Both say what happened (Law 32).
+   raised the most (the entity holding the largest `godHeld` share, a place or a mortal; exact words in
+   § Player-facing text). A Doom ending adds how far the Mandate came, in a word, never a number (Law 13).
+   Both say what happened (Law 32).
 
 ## The fit (projection from run c)
 
@@ -158,17 +158,58 @@ makes the projection conservative, and the kill criteria say what happens if the
 
 ## Content pillar
 
-`twilight-content.ts`: `mandateWhere(name)` and `doomMandateReckon(mandateName, word)`, plus the three
-words. `mandate-content` (or wherever `mandateDeedLine` lives): one place-cast deed line,
-*"Your hand on {place} raised {sphere}."* All under the 15-word sentence rule.
+`twilight-content.ts`: `mandateWherePlace(place)`, `mandateWhereMortal(mortal)` and
+`doomMandateReckon(mandateName, progress)`, plus the two thresholds. `ascendant-bar-content.ts`:
+`MANDATE_CAST_DEED_LINE` and its place fallback. Exact words are in § Player-facing text. Every line stays
+under 15 words.
 
 ## UI pillar
 
 `AgeTwilightScreen.tsx` renders `ending.reckon` under `ending.line`, same type step, the named entity as an
 `EntityLink` (Law 21) with its tooltip (Law 17). No new surface, no layout change (Law 33). Laws engaged:
-1, 13, 14, 17, 21, 32, 33, 56. Browser-verify: one 1920×1080 screenshot of each ending via
-`?view=game&seeded&size=medium&outcome=<band>` plus `await window.__DEBUG.getOutcomePinVerdict()`; Playwright
-DOM is enough (no WebGL).
+1, 13, 14, 17, 21, 32, 33, 56.
+
+### Player-facing text
+
+The word thresholds `TWILIGHT_MANDATE_WITHIN_REACH` and `TWILIGHT_MANDATE_HALF_RAISED` live in
+`src/data/twilight-content.ts` beside the words. The place-cast deed line lives in `src/data/ascendant-bar-content.ts`
+beside `MANDATE_DEED_LINE`.
+
+| Surface | Template | Rendered sample | Empty slot |
+|---|---|---|---|
+| Mandate ending, top `godHeld` key is a **place** | `Most of it was raised at {place}.` | "Most of it was raised at the Shrine of Ash." | Node gone → line dropped |
+| Mandate ending, top key is a **mortal** (a chapter deed's key is the actor) | `Most of it was raised through {mortal}'s chapters.` | "Most of it was raised through Kael Thornweaver's chapters." | Node gone → the deed fallback "a mortal bound to you" |
+| Doom ending, progress ≥ 0.75 | `{Mandate} stood within reach.` | "The Hunger for Order stood within reach." | No Mandate name → `MANDATE_FALLBACK_NAME` ("the Mandate") |
+| Doom ending, 0.40 ≤ progress < 0.75 | `{Mandate} stood half-raised.` | "The Hunger for Order stood half-raised." | same |
+| Doom ending, progress < 0.40 | `{Mandate} had barely begun.` | "The Hunger for Order had barely begun." | same |
+| Mandate "last deeds" row and the cast's aftermath, title `MANDATE_DEED_TITLE` | `Your hand on {place} raised your Mandate in {Sphere}.` | "Your hand on the Shrine of Ash raised your Mandate in Order." | No place name → "a place you hold" |
+
+Complaint classes (`Docs/ops/player-complaint-classes.md`):
+- **PC-6 (one fact, one telling):** the only other surface showing Mandate progress is the Mandate bar's
+  fill in `MandateBlock.tsx` (`mandate.progress`) plus its trend word (Rising / Holding / Slipping). The
+  Twilight word reads the same `mandateState.progress`, so a bar three-quarters full is "within reach" by
+  construction. The deed line copies `MANDATE_DEED_LINE`'s shape ("…raised your Mandate in {Sphere}"), and
+  the fill line already names "or on places".
+- **PC-1 (where the explanation lives):** the three phrases are plain English that need no gloss. The Mandate
+  name carries its existing `ui.mandate` tooltip (Law 17).
+- **PC-3 (rendered samples, no broken slots):** see the table; every slot has a fallback, and a mortal key
+  gets the person form, never "at {name}".
+
+### Playtest signal
+
+Predicate for the warm round after tickets 2 and 3 ship: a tester whose run reaches a Mandate ending names,
+in their log, a place or a mortal they spent on as the reason it was fulfilled. A tester who reaches a Doom
+ending says how close the Mandate came in the Twilight's own word, or a synonym. Refuted if a winner says
+"I don't know why it ended".
+
+### Browser-verify
+
+No lever forces an age ending today: `__DEBUG.beginTwilight()` / `getTwilightBeats()`
+(`src/debug-bridge.d.ts:3165`) start the Twilight, but neither picks which ending fires. Ticket 3 adds a
+debug-only `__DEBUG.setMandateProgress(fraction)` that writes `godLedger` to that share of both targets
+(1 completes the Mandate), then calls `beginTwilight()`. Evidence is one 1920×1080 screenshot each at 1.0,
+0.8 and 0.2 on `?view=game&seeded&size=medium`, plus `await window.__DEBUG.getTwilightBeats()` showing the
+`reckon` string. Playwright DOM is enough (no WebGL).
 
 ## Interface impact
 
@@ -179,6 +220,10 @@ DOM is enough (no WebGL).
 
 Update `Docs/canon/interface-map.md` and `scripts/interface-contracts.ts` for the new writer.
 
+**Blast radius:** none required. The widest file touched, `unifiedActionResolution.ts`, has 72 importers
+(grep of `from '…unifiedActionResolution'` across `src/` and `scripts/`), under the 100 bar; `graph.ts`
+and `gameState.ts` are not touched.
+
 ## Wiring
 
 > See checklist: Docs/plans/wiring-checklist.md — one new writer into an existing fold, one optional Twilight line, one offline census arm.
@@ -186,7 +231,7 @@ Update `Docs/canon/interface-map.md` and `scripts/interface-contracts.ts` for th
 | Module | Phase | UI | GameState | Traces | Debug | Prose | Controls |
 |---|---|---|---|---|---|---|---|
 | `mandateCastCredit` | action resolution → `phaseMandate` fold | Mandate "last deeds" | `mandateState.godLedger`, `godHeld` | the existing `mandate.deed_credit` trace | `getMandateDeeds` | deed line | place cards (existing) |
-| Twilight `reckon` | end of age | `AgeTwilightScreen` | reads only | none | `__DEBUG` twilight beats | two lines | none |
+| Twilight `reckon` | end of age | `AgeTwilightScreen` | reads only | none | `setMandateProgress` (new, debug-only) + `getTwilightBeats` | two lines | none |
 | Census `full` arm + predicate | offline | none | script copy | none | console + JSON | none | none |
 
 ## Constants table
@@ -230,7 +275,8 @@ The census prints one win-predicate line naming each clause.
    `--snap-every`; win predicate. Scripts only. Promote from the proto branch.
 2. **Engine + content:** a place cast in a Mandate sphere credits the Mandate by what it cost. Blocked by
    ticket 1, because its Done-when reads ticket 1's predicate.
-3. **Content + UI:** the Twilight says where the Mandate was raised, or how far it came. Independent.
+3. **Content + UI:** the Twilight says where the Mandate was raised, or how far it came, plus a debug-only
+   `__DEBUG.setMandateProgress(fraction)` to force each ending for evidence. Independent.
 
 ## Done when
 
@@ -238,6 +284,8 @@ The census prints one win-predicate line naming each clause.
   predicate line.
 - [ ] Ticket 2 merged, and that line reads **HOLDS** on main.
 - [ ] Ticket 3 merged with its screenshots.
+- [ ] Each ticket: `npm run gate` green on the code track; ticket 2 passes the review-gate; each PR body
+  carries its own `Fixes` line (never this plan ticket's).
 - [ ] **Fixed when:** the census reads a different H1 (which clock ended the age) between hands-off and the
   full player on at least two of three seeds.
 
@@ -261,7 +309,7 @@ constants, touches HUD files, not these.
 **Files to touch:** ticket 1 — `scripts/agency-census.ts`, `scripts/agency-verdict.ts`, their tests. Ticket 2 —
 `src/engine/mandateLedger.ts`, `src/engine/unifiedActionResolution.ts`, `src/data/game-config.ts`, the deed-line
 content file, tests, `Docs/canon/interface-map.md`, `scripts/interface-contracts.ts`, `Docs/canon/rulebook.md`
-§8. Ticket 3 — `src/engine/twilight.ts`, `src/data/twilight-content.ts`, `src/components/Game/AgeTwilightScreen.tsx`, tests.
+§8. Ticket 3 — `src/engine/twilight.ts`, `src/data/twilight-content.ts`, `src/components/Game/AgeTwilightScreen.tsx`, `src/debug-bridge.ts`, `src/debug-bridge.d.ts`, tests. The place-cast deed line has no strong form: a place cast is one fixed-cost act, and the strong form marks a large chapter.
 
 ## Notes for the executor
 
@@ -286,16 +334,36 @@ content file, tests, `Docs/canon/interface-map.md`, `scripts/interface-contracts
 
 - [x] Two clocks, one purse (Law 30) is made *more* true: the purse now forces the build-or-hold choice.
 - [x] Law 32: endings stay "different, never better"; the new lines describe, never rank.
+- [x] Vision `00-north-star.md`: the two clocks and one purse are confirmed. "Not a game about winning" holds,
+  because the Mandate was already a named ending, and this plan makes it reachable without adding a score or
+  a victory word. `02-non-negotiables.md` #3 (prose, never numbers) is confirmed by the Twilight's band words.
+  `03-design-tensions.md` #4: the census arms are measurement policies, not advice shown to the player.
 - [x] Not decided here: a second journey after the Return (reserved for Christian, THR-2204 plan). The fit
   holds with today's answer.
 
 ## Intent-judge verdict
 
-Pending.
+**Allow** on run 2, 2026-11-19, with impact class Reversible confirmed. Run 1 returned **Revise**: dimension 12 (player legibility) had no player-facing text table or playtest signal and no mortal form for the "where" line, and dimension 3 (wiring) pointed browser-verify at `?outcome`, which does not pick an age ending. Both were fixed in § UI pillar. Run 2 found one small GAP: the debug lever was missing from ticket 3's scope and file list. Fixed above.
 
 ## Forked-audit verdicts
 
-Pending.
+*Generated by design-audit-pipeline — 2026-11-19. Condensed; all three ran on the draft before the
+player-text revision.*
+
+**NFP audit: PASS-with-notes.** 1, 2, 4, 5, 6, 7 PASS. 3 PASS-with-note: no PRNG added and the census seeds
+are fixed, but the fit is a projection from measured runs, not a shipped measurement. Ticket 2's kill
+criterion re-measures it.
+
+**Three-pillar audit: PASS-with-notes.** Engine and Content are present and substantive. The substrate
+inventory extends the Mandate ledger and Twilight, with no green-field duplication. UI was thin: it lacked
+the player-facing text table, the playtest signal and the standard gate lines in Done-when. Fixed: § UI
+pillar now has its three subsections, and Done-when has the gate line.
+
+**Vision audit: PASS-with-notes.** No contradictions. Two clocks and one purse are confirmed; prose, never
+numbers, is confirmed. Notes: "a well-played age can be won" sits near "endgame is reflection, not victory".
+This is soft, since the Mandate was already a named ending. The fitted "careful" arm could invite
+optimal-strategy talk (tension 4). Fixed: § Vision audit now cites the Vision files and says the arms are
+measurement policies, not advice to the player.
 
 > Brainstorm companion: `Docs/plans/2026-11-19-thr-2245-a-well-played-age-can-be-won-brainstorm.md`.
 
