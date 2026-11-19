@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-19 12:56 local (11:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-19 14:00 local (13:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -26,8 +26,9 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 - [A well-played age can be won](https://linear.app/threadbare/issue/THR-2245) — a god's spell cast on a place in one of the Mandate's spheres now fills the Mandate by what it cost, at the same rate as essence spent on a mortal's chapter. Measured, a god who plays everything then finishes the Mandate before Doom's last stage on 2 of 3 worlds; today it does on none. A god who only plays chapters comes close (82–96%) but never finishes, and a hands-off god never gets past 12%. The Mandate's targets stay as they are. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-19a.md)*
 - Same ticket — when an age ends, the closing screen adds one line: where your hand raised the Mandate if you fulfilled it, or how near it stood ("within reach", "half-raised", "had barely begun") if Doom ended the age. Words, never numbers; it never grades you. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-19a.md)*
 - [The player can read the race](https://linear.app/threadbare/issue/THR-2246/the-player-can-read-the-race-at-any-moment-the-screen-says-which-clock) — from Doom's Signs stage onward, the Mandate row says which clock lands first at the last fifteen days' pace ("Goal · Doom lands first"). The Mandate block says it in one sentence ("At this pace, Doom ends the age before your Mandate is fulfilled."). The Mandate and Doom dialogs name the one move ("Spend Order essence on Kael Thornweaver's chapters to raise your Mandate.", or Stay the Unmaking when no mortal is bound). A shift is a non-pausing alert plus a "While you were away" line. No numbers, and nothing new in the top bar. [Plan doc](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-19-thr-2246-the-player-can-read-the-race.md). *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-19b.md)*
+- [Doom's last stage is a stand](https://linear.app/threadbare/issue/THR-2247/dooms-last-stage-is-a-stand-not-a-wait-what-pushes-the-clock-besides) — when a mortal fails and feeds the Doom, the game now remembers where. Ground your god tends starves the Doom, so a failure there feeds it nothing. Rebuke can be played on a place where the Doom fed, and it holds that place for a few days. In the last stage, the stage notice says "From here a failure can feed the doom. Ground you tend starves it.", a daily alert that does not pause names one place to Rebuke, and the Doom panel lists where it fed. There is no new card, and Doom's speed, Stay and the end of the age are unchanged. [Plan doc](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-19-thr-2247-dooms-last-stage-is-a-stand.md). Veto in chat. The build tickets wait until 00:00Z (01:00 local) for that. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-19c.md)*
 
-Say "veto <title>" to reverse any of these. The build tickets cannot start before 22:30 local (well-played age) and 23:00 local (read the race) today.
+Say "veto <title>" to reverse any of these. The build tickets cannot start before 22:30 local (well-played age), 23:00 local (read the race) today, and 01:00 local tonight (last stage is a stand).
 
 ## This week's screens
 
@@ -35,7 +36,7 @@ Say "veto <title>" to reverse any of these. The build tickets cannot start befor
 
 ## Queue
 
-**Healthy but thin: 3 in Ready for Dev, nothing being built yet.** All three sit in their veto windows: [the census that plays the whole game](https://linear.app/threadbare/issue/THR-2248/the-agency-census-plays-the-whole-game-chapter-spend-credits-the) and [the Twilight line on what the Mandate came to](https://linear.app/threadbare/issue/THR-2250/the-twilight-says-what-the-mandate-came-to-where-your-hand-raised-it) until 22:30 local, and the new [engine reads the race](https://linear.app/threadbare/issue/THR-2251/the-engine-reads-the-race-a-daily-pace-sample-a-forecast-of-which) until 23:00 local. The builder's last runs each stood down for exactly that reason, which is correct, not a stall.
+**Healthy: 4 in Ready for Dev, nothing being built yet.** All four sit in their veto windows: [the census that plays the whole game](https://linear.app/threadbare/issue/THR-2248/the-agency-census-plays-the-whole-game-chapter-spend-credits-the) and [the Twilight line on what the Mandate came to](https://linear.app/threadbare/issue/THR-2250/the-twilight-says-what-the-mandate-came-to-where-your-hand-raised-it) until 22:30 local, [engine reads the race](https://linear.app/threadbare/issue/THR-2251/the-engine-reads-the-race-a-daily-pace-sample-a-forecast-of-which) until 23:00 local, and the new [Doom feeds at a place](https://linear.app/threadbare/issue/THR-2255/the-doom-feeds-at-a-place-ground-you-tend-starves-it-rebuke-answers-it) until 01:00 local. The builder's last runs each stood down for exactly that reason, which is correct, not a stall.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (30 days; last touched 8 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
@@ -43,4 +44,4 @@ Items for agents, not you:
 ## Health
 
 - Lane silence: the newest unrecorded gap is Sunday 15 Nov, 09:57 to 21:48 local (12 hours on a weekend). Per your ruling weekend quiet is normal, so it is not an ask.
-- Everything else green: engine speed 171 ms/tick, 10% above the 7-day median of 155 (inside the normal range); main is live on 6ba8d579 (later commits are docs only); CI and scheduled jobs green; no PRs waiting; every enabled lane on schedule; the worktree reaper last ran at 12:40 local.
+- Everything else green: engine speed 150 ms/tick, 4% below the 7-day median of 155; main is live on 6ba8d579 (later commits are docs only); CI and scheduled jobs green; no PRs waiting; every enabled lane on schedule; the worktree reaper last ran at 13:40 local.
