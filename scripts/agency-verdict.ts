@@ -14,9 +14,15 @@
 // "The player mattered" on a seed when at least AGENCY_MIN_HEADLINE_DIFFS differ.
 // It tests DIFFERENT, never better (Law 32).
 //
-// Kept free of engine imports so the unit test loads it without the world graph.
+// Kept free of engine imports so the unit test loads it without the world graph
+// (game-config is plain data with type-only imports).
+//
+// THR-2248 — agencyWinPredicate: a well-played age can be won (plan
+// Docs/plans/2026-11-19-thr-2245-a-well-played-age-can-be-won.md § The predicate).
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { DOOM_CLIMAX_START } from '../src/data/game-config';
 
 export const AGENCY_COMPARE_TICK = 800;     // the headline is read here (or at the age's end, if sooner)
 export const AGENCY_MANDATE_DELTA = 0.10;   // Mandate progress gap that counts as different
@@ -39,8 +45,9 @@ export interface AgencySnapshot {
 
 export interface AgencyArmResult {
   seed: number;
-  /** THR-2243 — `answer` is the played arm that also holds Stay the Unmaking and Rebukes. */
-  arm: 'none' | 'greedy' | 'answer';
+  /** THR-2243 — `answer` is the played arm that also holds Stay the Unmaking and Rebukes.
+   *  THR-2248 — `full` is the answer arm that also casts on places in the Mandate's short spheres. */
+  arm: 'none' | 'greedy' | 'answer' | 'full';
   ranTo: number;
   stopReason: string;
   heldSteps?: number;
@@ -234,4 +241,67 @@ export function agencyReport(pairs: Array<{
     lines.push(...answerLines);
   }
   return lines;
+}
+
+// ─── THR-2248 — the win predicate (plan THR-2245 § The predicate) ────────────
+export const AGENCY_HANDSOFF_MAX_WINS = 0;          // seeds on which hands-off may finish the Mandate
+export const AGENCY_FULL_MIN_WINS = 2;              // seeds on which the full player must finish before Doom's last stage
+export const AGENCY_CHAPTERS_MAX_EARLY_WINS = 0;    // seeds on which chapters-only may finish before Doom's last stage
+export const AGENCY_CHAPTERS_MIN_DELTA_SEEDS = 2;   // seeds on which chapters-only must end AGENCY_MANDATE_DELTA above hands-off
+export const AGENCY_PURSE_BITE_MIN_SHARE = 0.25;    // share of the full player's place-cast attempts the purse must refuse
+export const AGENCY_WIN_TICKS = 900;                // run length for the win predicate (past every age's end)
+
+/** The Mandate was fulfilled by the age's end. */
+const finished = (r: AgencyArmResult) => r.end?.mandateCompleted === true;
+/** Fulfilled with Doom still short of its last stage. */
+const finishedEarly = (r: AgencyArmResult) =>
+  finished(r) && typeof r.end.doomProgress === 'number' && (r.end.doomProgress as number) < DOOM_CLIMAX_START;
+
+/**
+ * Whether a well-played age can be won, over seeds holding the three arms (`null` = not
+ * measured: a missing file or an arm stopped on --budget-s). Read at the age's end. Each clause
+ * counts measured seeds only (fail-soft table); a clause with no measured seed does not hold.
+ */
+export function agencyWinPredicate(seeds: Array<{
+  seed: string | number; none: AgencyArmResult | null; greedy: AgencyArmResult | null; full: AgencyArmResult | null;
+}>) {
+  const ok = (r: AgencyArmResult | null): r is AgencyArmResult => !!r && r.stopReason !== 'budget' && !!r.end;
+  const none = seeds.filter((s) => ok(s.none));
+  const full = seeds.filter((s) => ok(s.full));
+  const greedy = seeds.filter((s) => ok(s.greedy));
+  const paired = seeds.filter((s) => ok(s.none) && ok(s.greedy));
+
+  const handsOffWins = none.filter((s) => finished(s.none!)).length;
+  const fullEarlyWins = full.filter((s) => finishedEarly(s.full!)).length;
+  const chaptersEarlyWins = greedy.filter((s) => finishedEarly(s.greedy!)).length;
+  const chaptersAbove = paired.filter((s) =>
+    s.greedy!.end.mandateProgress - s.none!.end.mandateProgress >= AGENCY_MANDATE_DELTA).length;
+  const num = (r: AgencyArmResult, k: string) => (typeof r[k] === 'number' ? (r[k] as number) : 0);
+  const attempts = full.reduce((a, s) => a + num(s.full!, 'placeAttempts'), 0);
+  const refused = full.reduce((a, s) => a + num(s.full!, 'placeRefused'), 0);
+  const purseShare = attempts > 0 ? refused / attempts : null;
+
+  const clauses = {
+    handsOff: { wins: handsOffWins, measured: none.length, holds: none.length > 0 && handsOffWins <= AGENCY_HANDSOFF_MAX_WINS },
+    full: { earlyWins: fullEarlyWins, measured: full.length, holds: fullEarlyWins >= AGENCY_FULL_MIN_WINS },
+    chaptersEarly: { earlyWins: chaptersEarlyWins, measured: greedy.length, holds: greedy.length > 0 && chaptersEarlyWins <= AGENCY_CHAPTERS_MAX_EARLY_WINS },
+    chaptersAbove: { seeds: chaptersAbove, measured: paired.length, holds: chaptersAbove >= AGENCY_CHAPTERS_MIN_DELTA_SEEDS },
+    purseBite: { attempts, refused, share: purseShare, holds: purseShare !== null && purseShare >= AGENCY_PURSE_BITE_MIN_SHARE },
+  };
+  return { clauses, holds: Object.values(clauses).every((c) => c.holds) };
+}
+
+export type AgencyWinVerdict = ReturnType<typeof agencyWinPredicate>;
+
+/** The one printed line, naming each clause. */
+export function agencyWinLine(v: AgencyWinVerdict): string {
+  const c = v.clauses;
+  const mark = (h: boolean) => (h ? '✓' : '✗');
+  return `win predicate: hands-off finishes ${c.handsOff.wins}/${c.handsOff.measured} (max ${AGENCY_HANDSOFF_MAX_WINS}) ${mark(c.handsOff.holds)}`
+    + ` · full finishes before Doom ${DOOM_CLIMAX_START} ${c.full.earlyWins}/${c.full.measured} (min ${AGENCY_FULL_MIN_WINS}) ${mark(c.full.holds)}`
+    + ` · chapters-only finishes before Doom ${DOOM_CLIMAX_START} ${c.chaptersEarly.earlyWins}/${c.chaptersEarly.measured} (max ${AGENCY_CHAPTERS_MAX_EARLY_WINS}) ${mark(c.chaptersEarly.holds)}`
+    + ` · chapters-only ≥${AGENCY_MANDATE_DELTA} above hands-off ${c.chaptersAbove.seeds}/${c.chaptersAbove.measured} (min ${AGENCY_CHAPTERS_MIN_DELTA_SEEDS}) ${mark(c.chaptersAbove.holds)}`
+    + ` · purse refused ${c.purseBite.refused}/${c.purseBite.attempts} place casts`
+    + ` (${c.purseBite.share === null ? 'none attempted' : c.purseBite.share.toFixed(2)}, min ${AGENCY_PURSE_BITE_MIN_SHARE}) ${mark(c.purseBite.holds)}`
+    + ` → ${v.holds ? 'HOLDS' : 'NOT MET'}`;
 }
