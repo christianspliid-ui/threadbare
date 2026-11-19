@@ -95,10 +95,12 @@ export function mandateWherePlace(place: string): string {
 /**
  * A mortal (a chapter deed's key is its actor). A nameless mortal reads the deed
  * line's fallback without the possessive, so no slot renders "a mortal bound to
- * you's" (PC-3).
+ * you's" (PC-3). `byChapters` false — a mortal the god raised by casts on them, never
+ * through a chapter — drops "chapters": "Most of it was raised through Kael."
  */
-export function mandateWhereMortal(mortal: string | null | undefined, fallback: string): string {
+export function mandateWhereMortal(mortal: string | null | undefined, fallback: string, byChapters = true): string {
   const name = mortal?.trim();
+  if (!byChapters && name) return `Most of it was raised through ${name}.`;
   if (name) return `Most of it was raised through ${name}'s chapters.`;
   return `Most of it was raised through the chapters of ${fallback.charAt(0).toLowerCase()}${fallback.slice(1)}.`;
 }

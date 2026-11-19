@@ -137,7 +137,15 @@ function mandateName(state: GameState): { name: string; missing: boolean } {
  * never depends on insertion order (NFP 3). Null when nothing positive is held.
  */
 export function topGodHeldEntity(held: Record<string, number> | undefined): string | null {
-  if (!held) return null;
+  return rankGodHeldEntities(held)[0] ?? null;
+}
+
+/**
+ * THR-2250 — every entity id with a positive `godHeld` share, largest first (summed over
+ * both Mandate spheres), ties on the id (NFP 3).
+ */
+export function rankGodHeldEntities(held: Record<string, number> | undefined): string[] {
+  if (!held) return [];
   const totals = new Map<string, number>();
   for (const [key, points] of Object.entries(held)) {
     if (!Number.isFinite(points) || points <= 0) continue;
@@ -145,56 +153,65 @@ export function topGodHeldEntity(held: Record<string, number> | undefined): stri
     const id = bar > 0 ? key.slice(0, bar) : key;
     totals.set(id, (totals.get(id) ?? 0) + points);
   }
-  let best: string | null = null;
-  let bestPoints = 0;
-  for (const [id, points] of totals) {
-    if (points > bestPoints || (points === bestPoints && best !== null && id < best)) {
-      best = id;
-      bestPoints = points;
-    }
-  }
-  return best;
+  return [...totals.entries()]
+    .sort((a, b) => (b[1] - a[1]) || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
+    .map(([id]) => id);
 }
 
 /**
- * THR-2250 — a Mandate ending's "where" line (plan § Player-facing text). A place gets
- * "at {place}"; a mortal (a chapter deed's key is its actor) gets "through {mortal}'s
- * chapters". A node that is gone: a place drops the line; a mortal known from the
- * deed records keeps its captured name, else the deed fallback.
+ * THR-2250 — a Mandate ending's "where" line (plan § Player-facing text). The largest
+ * holder that can be named wins: a place gets "at {place}"; a mortal gets "through
+ * {mortal}'s chapters" when its share came by chapters (the god threads it, or a deed
+ * record names it), else "through {mortal}". Holders that cannot be named — an artifact,
+ * a faction or culture, a place whose node is gone — are passed over (one fallback row
+ * each). A mortal whose node is gone, known from the deed records, keeps its captured
+ * name, else the deed fallback.
  */
 export function mandateWhere(
   state: GameState,
   fallbacks: string[] = [],
 ): { reckon: string; entity: MandateReckonEntity } | null {
-  const id = topGodHeldEntity(state.mandateState?.godHeld);
-  if (!id) return null;
-  const node = state.graph.getNode(id);
-  if (node) {
-    const name = node.name?.trim();
-    if (node.type === 'location' || isPlaceNode(node)) {
-      if (!name) { fallbacks.push('mandate_where_place_unnamed'); return null; }
-      return { reckon: mandateWherePlace(name), entity: { id, name, kind: 'place', present: true } };
+  const deeds = state.mandateState?.recentDeeds ?? [];
+  for (const id of rankGodHeldEntities(state.mandateState?.godHeld)) {
+    const node = state.graph.getNode(id);
+    if (node) {
+      const name = node.name?.trim();
+      if (node.type === 'location' || isPlaceNode(node)) {
+        if (!name) { fallbacks.push('mandate_where_place_unnamed'); continue; }
+        return { reckon: mandateWherePlace(name), entity: { id, name, kind: 'place', present: true } };
+      }
+      // A mortal is an actor carrying `actorType: 'individual'` (`isMortalAgentNode`).
+      if (node.type === 'actor' && node.properties?.actorType === 'individual') {
+        if (!name) fallbacks.push('mandate_where_mortal_unnamed');
+        const byChapters = deeds.some(d => d.actorId === id) || isThreadedByGod(state, id);
+        return {
+          reckon: mandateWhereMortal(name, MANDATE_DEED_MORTAL_FALLBACK, byChapters),
+          entity: { id, name: name || MANDATE_DEED_MORTAL_FALLBACK, kind: 'mortal', present: !!name },
+        };
+      }
+      fallbacks.push('mandate_where_unknown_kind');
+      continue;
     }
-    // A mortal is an actor carrying `actorType: 'individual'` (`isMortalAgentNode`).
-    if (node.type === 'actor' && node.properties?.actorType === 'individual') {
-      if (!name) fallbacks.push('mandate_where_mortal_unnamed');
-      return {
-        reckon: mandateWhereMortal(name, MANDATE_DEED_MORTAL_FALLBACK),
-        entity: { id, name: name || MANDATE_DEED_MORTAL_FALLBACK, kind: 'mortal', present: !!name },
-      };
-    }
-    fallbacks.push('mandate_where_unknown_kind');
-    return null;
+    // The node is gone. Only a deed record says it was a mortal; a place is passed over.
+    const deed = deeds.find(d => d.actorId === id);
+    if (!deed) { fallbacks.push('mandate_where_node_gone'); continue; }
+    const captured = deed.actorName?.trim();
+    if (!captured) fallbacks.push('mandate_where_mortal_unnamed');
+    return {
+      reckon: mandateWhereMortal(captured, MANDATE_DEED_MORTAL_FALLBACK),
+      entity: { id, name: captured || MANDATE_DEED_MORTAL_FALLBACK, kind: 'mortal', present: false },
+    };
   }
-  // The node is gone. Only a deed record says it was a mortal; a place drops the line.
-  const deed = state.mandateState?.recentDeeds?.find(d => d.actorId === id);
-  if (!deed) { fallbacks.push('mandate_where_node_gone'); return null; }
-  const captured = deed.actorName?.trim();
-  if (!captured) fallbacks.push('mandate_where_mortal_unnamed');
-  return {
-    reckon: mandateWhereMortal(captured, MANDATE_DEED_MORTAL_FALLBACK),
-    entity: { id, name: captured || MANDATE_DEED_MORTAL_FALLBACK, kind: 'mortal', present: false },
-  };
+  return null;
+}
+
+/** True when the god holds a `thread` edge to this mortal (its chapters can credit the Mandate). */
+function isThreadedByGod(state: GameState, id: string): boolean {
+  try {
+    return state.graph.getOutgoingEdges(state.ascendantId, 'thread').some(e => e.target === id);
+  } catch {
+    return false;
+  }
 }
 
 /** Which clock ended the age (Decided 1, 3). Mandate completed → 'mandate'; otherwise the doom kind. */

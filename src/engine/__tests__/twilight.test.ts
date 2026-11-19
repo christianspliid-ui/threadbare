@@ -19,7 +19,7 @@ import { phaseDoomExpiry, phaseMandate, resetDecisionCache, resetEventCounter } 
 import { getFirstId } from '../meetingEncounter';
 import { markMortalDead } from '../agentLifecycle';
 import { clearTraces, enableTracing, getTraces } from '../traceBuffer';
-import { ageEnding, buildTwilightBeats, captureAgeMemories, openTwilight, topGodHeldEntity } from '../twilight';
+import { ageEnding, buildTwilightBeats, captureAgeMemories, openTwilight, rankGodHeldEntities, topGodHeldEntity } from '../twilight';
 import { ARCHETYPE_STAGE_NAMES } from '../../data/doom-content';
 import {
   DOOM_ENDING_LINES,
@@ -378,6 +378,29 @@ describe('THR-2250 — a Mandate ending names where the god raised it most', () 
       recentDeeds: [{ tick: 3, actorId: 'agent_gone', sphere: 'order', points: 4 }],
     });
     expect(ageEnding(state).reckon).toBe('Most of it was raised through the chapters of a mortal bound to you.');
+  });
+
+  it('a holder that cannot be named (gone, an artifact, a faction) is passed over for the next', () => {
+    const base = withMandate(newWorld());
+    const place = aPlace(base);
+    const faction = base.graph.getNodesByType('actor').find(n => n.properties?.actorType === 'faction');
+    const held: Record<string, number> = { 'loc_gone|order': 9, [`${place.id}|order`]: 2 };
+    if (faction) held[`${faction.id}|order`] = 8;
+    const fallbacks: string[] = [];
+    const ending = ageEnding(withHeld(base, held), fallbacks);
+    expect(ending.reckon).toBe(`Most of it was raised at ${place.name}.`);
+    expect(fallbacks).toContain('mandate_where_node_gone');
+    if (faction) expect(fallbacks).toContain('mandate_where_unknown_kind');
+    expect(rankGodHeldEntities(held)[0]).toBe('loc_gone');
+  });
+
+  it('a mortal the god never threaded and who left no deed reads without "chapters"', () => {
+    const base = withMandate(newWorld());
+    const threaded = new Set(base.graph.getOutgoingEdges(base.ascendantId, 'thread').map(e => e.target));
+    const mortal = base.graph.getNodesByType('actor')
+      .find(n => n.properties?.actorType === 'individual' && n.name?.trim() && !threaded.has(n.id))!;
+    const ending = ageEnding(withHeld(base, { [`${mortal.id}|order`]: 5 }));
+    expect(ending.reckon).toBe(`Most of it was raised through ${mortal.name}.`);
   });
 
   it('the content functions render their samples', () => {
