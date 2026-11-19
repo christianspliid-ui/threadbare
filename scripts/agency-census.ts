@@ -26,6 +26,13 @@
 //                 The cards are never granted by hand: an arm that never receives the gift reports
 //                 stayHeld:false / rebukeHeld:false and where the gift was lost.
 //
+// THR-2248 (plan Docs/plans/2026-11-19-thr-2245-a-well-played-age-can-be-won.md) — a fourth arm
+// plays the whole game, and held-step card spend now credits the Mandate as GameView does (THR-2208):
+//   --arm full    the answer arm, plus, every tick after Stay's turn, the cheapest place card in each
+//                 Mandate sphere still short of its target, when the purse can pay (placeAttempts /
+//                 placeRefused count the purse's refusals). `--arms none,greedy,full --ticks 900`
+//                 runs the win predicate (agencyWinPredicate), printed as one line naming each clause.
+//
 // Usage (repo root):
 //   npm run census:agency -- --all --out-dir .cache/agency
 //        nine arms (AGENCY_SEEDS × none/greedy/answer), at most AGENCY_MAX_PARALLEL at once, no
@@ -40,12 +47,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { spawn } from 'child_process';
-import { agencyReport, AGENCY_COMPARE_TICK, type AgencyArmResult } from './agency-verdict';
+import { agencyReport, agencyWinPredicate, agencyWinLine, AGENCY_COMPARE_TICK, AGENCY_WIN_TICKS, type AgencyArmResult } from './agency-verdict';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 const AGENCY_SEEDS = [42, 99, 7];
-const AGENCY_ARMS = ['none', 'greedy', 'answer'] as const;
+const AGENCY_ARMS_ALL = ['none', 'greedy', 'answer', 'full'] as const;
+const AGENCY_DEFAULT_ARMS = 'none,greedy,answer'; // the THR-2243 report; the win predicate wants none,greedy,full
 const AGENCY_CAST_SEED_BASE = 2243; // seeds the answer arm's casts (census:mandate's godloc uses 2081)
 const AGENCY_MAX_PARALLEL = 4;
 const AGENCY_DEFAULT_WARM = 300;
@@ -58,10 +66,17 @@ const argv = process.argv.slice(2);
 const has = (k: string) => argv.includes(k);
 const arg = (k: string, d: string) => { const i = argv.indexOf(k); return i >= 0 && i + 1 < argv.length ? argv[i + 1] : d; };
 const SEED = Number(arg('--seed', '42'));
-const ARM = arg('--arm', 'none') as 'none' | 'greedy' | 'answer';
-const PLAYS = ARM === 'greedy' || ARM === 'answer'; // the answer arm is the greedy arm plus the clock verbs
+const ARM = arg('--arm', 'none') as 'none' | 'greedy' | 'answer' | 'full';
+// THR-2248 — `full`: the answer arm plus the godloc place casts (cheapest place card in each
+// Mandate sphere still short of its target, every tick the purse can pay, after Stay's turn).
+// --arms picks the driver's arms; --snap-every sets the snapshot cadence (passed to child arms).
+const AGENCY_ARMS = arg('--arms', AGENCY_DEFAULT_ARMS).split(',').filter((a) => (AGENCY_ARMS_ALL as readonly string[]).includes(a));
+const SNAP_EVERY = Math.max(1, Number(arg('--snap-every', String(AGENCY_SNAP_EVERY))) || AGENCY_SNAP_EVERY);
+const PLAYS = ARM === 'greedy' || ARM === 'answer' || ARM === 'full'; // answer and full are the greedy arm plus more
 const WARM = Number(arg('--warm', String(AGENCY_DEFAULT_WARM)));
-const TICKS = Number(arg('--ticks', String(AGENCY_DEFAULT_TICKS)));
+// THR-2248 — a run that includes the full arm reads the win predicate at the age's end.
+const WANTS_WIN = ARM === 'full' || (has('--all') && AGENCY_ARMS.includes('full'));
+const TICKS = Number(arg('--ticks', String(WANTS_WIN ? AGENCY_WIN_TICKS : AGENCY_DEFAULT_TICKS)));
 const BUDGET_S = has('--budget-s') ? Number(arg('--budget-s', '0')) : 0; // 0 = no wall-clock budget
 const OUT = arg('--out', '');
 const OUT_DIR = arg('--out-dir', '.cache/agency');
@@ -72,10 +87,20 @@ const readArm = (f: string): AgencyArmResult | null => {
 };
 
 function compareFromDir(dir: string): string[] {
-  return agencyReport(AGENCY_SEEDS.map((seed) => ({
+  // An arm whose file was never written (not in this run's --arms) is left out of the report;
+  // one that was written but cannot be read is "not measured".
+  const opt = (seed: number, arm: string) => (fs.existsSync(armFile(dir, seed, arm)) ? readArm(armFile(dir, seed, arm)) : undefined);
+  const lines = agencyReport(AGENCY_SEEDS.map((seed) => ({
     seed, none: readArm(armFile(dir, seed, 'none')), played: readArm(armFile(dir, seed, 'greedy')),
-    answer: readArm(armFile(dir, seed, 'answer')),
+    ...(opt(seed, 'answer') !== undefined ? { answer: opt(seed, 'answer') } : {}),
   })));
+  // THR-2248 — the win predicate, when the full arm ran.
+  if (AGENCY_SEEDS.some((seed) => fs.existsSync(armFile(dir, seed, 'full')))) {
+    lines.push(agencyWinLine(agencyWinPredicate(AGENCY_SEEDS.map((seed) => ({
+      seed, none: readArm(armFile(dir, seed, 'none')), greedy: readArm(armFile(dir, seed, 'greedy')), full: readArm(armFile(dir, seed, 'full')),
+    })))));
+  }
+  return lines;
 }
 
 // ─── Compare mode ────────────────────────────────────────────────────
@@ -104,7 +129,7 @@ if (has('--all')) {
   const jobs = AGENCY_SEEDS.flatMap((seed) => AGENCY_ARMS.map((arm) => ({ seed, arm })));
   const runChild = (job: { seed: number; arm: string }) => new Promise<void>((resolve) => {
     const out = armFile(OUT_DIR, job.seed, job.arm);
-    const args = [self, '--seed', String(job.seed), '--arm', job.arm, '--warm', String(WARM), '--ticks', String(TICKS), '--out', out];
+    const args = [self, '--seed', String(job.seed), '--arm', job.arm, '--warm', String(WARM), '--ticks', String(TICKS), '--out', out, '--snap-every', String(SNAP_EVERY)];
     const child = spawn(process.execPath, args, { stdio: ['ignore', 'ignore', 'pipe'] });
     child.stderr.on('data', (d) => {
       for (const l of String(d).split('\n')) if (l.startsWith('[agency]')) console.error(`[seed ${job.seed} ${job.arm}] ${l}`);
@@ -150,6 +175,9 @@ const [
   { DOOM_STAY_TEMPLATE_ID },
   { RIVAL_REBUKE_TEMPLATE_ID },
   { MILESTONE_FIRST_STAGE_BEAT_ID, MILESTONE_FIRST_REBUKE_BEAT_ID },
+  { UNIFIED_ACTION_TEMPLATES },
+  { getPlaceNodes, getLocationNodes },
+  { addMandateSphereSpend },
 ] = await Promise.all([
   import('../src/engine/gameInit'),
   import('../src/engine/orchestrator'),
@@ -181,6 +209,9 @@ const [
   import('../src/data/doom-stay-content'),
   import('../src/data/rival-rebuke-content'),
   import('../src/data/player-progression'),
+  import('../src/data/unified-action-templates'),
+  import('../src/engine/sublocationShape'),
+  import('../src/engine/mandateLedger'),
 ]);
 
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
@@ -216,6 +247,7 @@ function handleHeldSteps(): void {
     if (!live || live.resolved || !isPlayerHoldLive(live, state.graph, state.tick)) continue;
     heldSteps++;
     const played: string[] = [];
+    const bySphere: Record<string, number> = {}; // THR-2248 — credited to the Mandate as GameView records it (THR-2208)
     let pool = state.essencePool;
     const template: any = getUnifiedTemplateById(live.templateId) ?? getAnyEncounterById(live.templateId);
     if (template) {
@@ -238,7 +270,7 @@ function handleHeldSteps(): void {
         const budget = phase?.budgetSphere ?? primary;
         for (const c of cards) {
           const r: any = spendNudgeEssence(pool, [{ sphere: c.sphere ?? undefined, cost: Math.max(0, c.essenceCost ?? 0) }] as any, budget as any);
-          if (r.ok) { pool = r.pool; played.push(c.id); essenceSpent += r.spent; }
+          if (r.ok) { pool = r.pool; played.push(c.id); essenceSpent += r.spent; for (const [k, v] of Object.entries(r.bySphere ?? {})) bySphere[k] = (bySphere[k] ?? 0) + (v as number); }
         }
       }
     }
@@ -247,7 +279,7 @@ function handleHeldSteps(): void {
     state = {
       ...state, ...spendPatch,
       unifiedActions: (state.unifiedActions ?? []).map((x: any) =>
-        x.actionId === live.actionId ? { ...releasePlayerHold(x), activeNudges: [...played] } : x),
+        x.actionId === live.actionId ? (() => { const m = addMandateSphereSpend(x.mandateSphereSpend, bySphere as any); return { ...releasePlayerHold(x), activeNudges: [...played], ...(m ? { mandateSphereSpend: m } : {}) }; })() : x),
     };
   }
 }
@@ -381,6 +413,49 @@ function answerClocks(): void {
   }
 }
 
+// THR-2248 — the full player's place casts (census:mandate's godloc arm, on the agency route).
+// placeAttempts counts each tick × short sphere with a place card; placeRefused counts the ones the
+// purse could not pay — the predicate's purse-bite clause (plan THR-2245 Decision 5).
+let placeCasts = 0; let placeEssence = 0; let placeEssP = 0; let placeEssS = 0;
+let placeAttempts = 0; let placeRefused = 0;
+const AGENCY_PLACE_CAST_SEED_BASE = 2245; // seeds the full arm's place casts
+function cheapestPlaceCard(sphere: string): any | undefined {
+  const pick = (cats: string[]) => (UNIFIED_ACTION_TEMPLATES as any[])
+    .filter((t) => t.sphereAffinity === sphere && (t.essenceCost ?? 0) > 0 && (t.actorAffinities ?? []).includes('ascendant'))
+    .filter((t) => (t.targetCategories ?? ['actor']).some((c: string) => cats.includes(c)))
+    .sort((a, b) => a.essenceCost - b.essenceCost)[0];
+  return pick(['location', 'sublocation']) ?? pick(['actor']);
+}
+function castPlaces(): void {
+  const d = state.mandateDefinition; if (!d) return;
+  // A careful player casts only in a sphere still short of its target (the Mandate's fill line
+  // names the short sphere, THR-2236).
+  const led = state.mandateState?.godLedger ?? { primary: 0, secondary: 0 };
+  const short = (sp: string) => (sp === d.primarySphere
+    ? led.primary < ((d as any).primaryTargetPoints ?? Infinity)
+    : led.secondary < ((d as any).secondaryTargetPoints ?? Infinity));
+  for (const sp of [d.primarySphere, d.secondarySphere].filter(short)) {
+    const t = cheapestPlaceCard(sp); if (!t) continue;
+    placeAttempts++;
+    if ((state.essencePool?.[sp] ?? 0) < t.essenceCost) { placeRefused++; continue; }
+    const cats: string[] = t.targetCategories ?? ['actor'];
+    const pool = cats.includes('location') ? getPlaceNodes(state.graph)
+      : cats.includes('sublocation') ? state.graph.getNodesByType('location').filter((n: any) => typeof n.properties?.parentLocationId === 'string')
+      : state.graph.getNodesByType('actor').filter((n: any) => n.properties?.actorType === 'individual' && n.properties?.alive !== false);
+    const subs: string[] = t.targetSubtypes ?? [];
+    const req = Object.entries(t.requiredNodeProperties ?? {});
+    const legal = (subs.length > 0 ? getLocationNodes(state.graph).filter((n: any) => subs.includes(n.properties?.locationSubtype ?? n.properties?.locationType)) : pool)
+      .filter((n: any) => req.every(([k, v]) => (v === undefined ? n.properties?.[k] != null : n.properties?.[k] === v)));
+    if (!legal.length) continue;
+    const target = legal[(state.tick * 7919 + placeCasts) % legal.length];
+    try {
+      const cast: any = preparePlayerCast({ graph: state.graph, ascendantId: state.ascendantId, template: t, templateId: t.id, targetId: target.id, tick: state.tick, seed: AGENCY_PLACE_CAST_SEED_BASE + placeCasts * 13, sphere: sp, runtime });
+      state = commitPlayerCast(state, { cast }); placeCasts++; placeEssence += cast.essenceCost ?? 0;
+      if (sp === d.primarySphere) placeEssP += cast.essenceCost ?? 0; else placeEssS += cast.essenceCost ?? 0;
+    } catch { /* a refused cast costs this tick's attempt only */ }
+  }
+}
+
 /**
  * Where a gift that never reached the hand was lost: never enqueued (its trigger never held
  * on this route), or enqueued and left pending (no Receive). Null when the card is held.
@@ -428,6 +503,9 @@ function snapshot() {
     mandateStage: state.mandateState?.currentStage ?? null,
     mandateProgress: Number((state.mandateState?.progress ?? 0).toFixed(3)),
     mandateCompleted: !!state.mandateState?.completed,
+    ledgerP: Number((state.mandateState?.godLedger?.primary ?? 0).toFixed(1)),
+    ledgerS: Number((state.mandateState?.godLedger?.secondary ?? 0).toFixed(1)),
+    placeEssP: Math.round(placeEssP), placeEssS: Math.round(placeEssS), // THR-2248 — the full arm's place essence per sphere (fit projection input)
     firstFate: (ff as any)?.fate ?? 'none',
     // THR-2229 — the climax facts on the First's thread, and the Twilight beat 2 they read as.
     // A death sweeps the thread; the god's note on its First keeps the same facts.
@@ -464,8 +542,9 @@ for (let i = 0; i < TICKS; i++) {
   if (warming) state = unattended(state);
   else handleHeldSteps();
   answerVisions(PLAYS && !warming);
-  if (ARM === 'answer' && !warming) answerClocks();
-  if (state.tick % AGENCY_SNAP_EVERY === 0) snaps.push(snapshot());
+  if ((ARM === 'answer' || ARM === 'full') && !warming) answerClocks();
+  if (ARM === 'full' && !warming) castPlaces();
+  if (state.tick % SNAP_EVERY === 0) snaps.push(snapshot());
   if (state.tick % AGENCY_PROGRESS_EVERY === 0) console.error(`[agency] t${state.tick} ${((Date.now() - t0) / 1000).toFixed(0)}s held=${heldSteps} played=${cardsPlayed}`);
   if (state.phase && state.phase !== 'playing') { stopReason = `phase=${state.phase}`; break; }
 }
@@ -479,7 +558,7 @@ const clockVerbs = {
   stayGiftLostAt: giftLostAt(DOOM_STAY_TEMPLATE_ID, MILESTONE_FIRST_STAGE_BEAT_ID),
   rebukeGiftLostAt: giftLostAt(RIVAL_REBUKE_TEMPLATE_ID, MILESTONE_FIRST_REBUKE_BEAT_ID),
 };
-const result = { seed: SEED, arm: ARM, warm: WARM, ranTo: state.tick, seconds: Math.round(ms / 1000), stopReason, heldSteps, heldWithCards, cardsPlayed, essenceSpent: Math.round(essenceSpent), apotheosisSteps, visionsAnswered, visionChoices, ordealRolls, ...clockVerbs, end, snaps };
+const result = { placeCasts, placeEssence: Math.round(placeEssence), placeAttempts, placeRefused, seed: SEED, arm: ARM, warm: WARM, ranTo: state.tick, seconds: Math.round(ms / 1000), stopReason, heldSteps, heldWithCards, cardsPlayed, essenceSpent: Math.round(essenceSpent), apotheosisSteps, visionsAnswered, visionChoices, ordealRolls, ...clockVerbs, end, snaps };
 const { firstChapterIds, ...endShort } = end;
 console.log(JSON.stringify({ ...result, end: endShort, snaps: undefined }));
 console.log(`  first chapters: ${firstChapterIds.join(' · ')}`);
