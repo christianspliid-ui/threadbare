@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-19 08:43 local (07:43 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-19 08:55 local (07:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,14 +27,14 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Queue
 
-**Starved: 0 in Ready for Dev.** Two things shipped overnight and are live: [a town that rises sacks its costliest building](https://linear.app/threadbare/issue/THR-2033) ([PR #2860](https://github.com/christianspliid-ui/threadbare/pull/2860)) and [Flawed Steel no longer genders its cast](https://linear.app/threadbare/issue/THR-2150) ([PR #2859](https://github.com/christianspliid-ui/threadbare/pull/2859)). The last ready ticket, [the faction sheet names its open commission](https://linear.app/threadbare/issue/THR-2043/the-faction-sheet-names-its-open-commission-the-player-can-see-before), is in progress: its work is saved on [its branch](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-2043-faction-sheet-commission) (checkpoint before verify, 00:32 local), nothing uncommitted, and a builder run started 08:35 local. New work comes from [THR-2245, a well-played age can be won](https://linear.app/threadbare/issue/THR-2245/a-well-played-age-can-be-won-a-god-who-plays-the-whole-game-finishes), which is with the design lane; its next run is due about 09:17 local.
+**Starved: 0 in Ready for Dev.** The one ticket in progress, [the faction sheet names its open commission](https://linear.app/threadbare/issue/THR-2043/the-faction-sheet-names-its-open-commission-the-player-can-see-before), has its work saved on [its branch](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-2043-faction-sheet-commission) (checkpoint before verify, 00:32 local), nothing uncommitted in its worktree, and a builder run is underway. New work comes from [THR-2245, a well-played age can be won](https://linear.app/threadbare/issue/THR-2245/a-well-played-age-can-be-won-a-god-who-plays-the-whole-game-finishes), which is with the design lane; its next run is due about 09:17 local.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (30 days; last touched 8 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- **A broken git branch pointer on this machine.** The local pointer for `proto/thr-2245-full-player-census` was written as blank bytes at 00:36 local (a write cut off mid-way). Every `git fetch` here now ends with "bad object", and the session precheck reports freshness as unknown; the remote copies of main and ops still update. Repair: point it back at the remote's commit (`91e703c9`). This run's repair was refused by the permission check, so an agent in a watched session should do it. The home copy of main is 3 commits behind because of it.
-- Engine speed: tick cost 228 ms/tick steady, 47% above the 7-day median (155, 129 rows since 0a999d5b); top phase agent_decision, 638 agents. Name the merges between 0a999d5b and 210bdbec: `git log --oneline --merges 0a999d5b..210bdbec`. A builder run was active on this machine during the measurement (last hour's 347 had the same caveat), so this may be a busy CPU. The executor's to chase if it holds.
-- Lane silence: no lane ran from 00:33 to 08:35 local (8 hours overnight; the computer was most likely asleep). Per your ruling overnight quiet is normal, so this is not an ask; lanes are running again.
-- Everything else green: main is live on 210bdbec, CI and heavy tests green on main, no PRs waiting, the worktree reaper last ran at 08:27 local.
+- Engine speed: tick cost 213 ms/tick steady, 38% above the 7-day median (155, 130 rows since 0a999d5b); top phase agent_decision, 638 agents. Name the merges between 0a999d5b and 210bdbec: `git log --oneline --merges 0a999d5b..210bdbec`. A builder run was active on this machine during the measurement, so this may be a busy CPU. The executor's to chase if it holds.
+- Lane silence: the newest unrecorded gap is Sunday 15 Nov, 09:57 to 21:48 local (12 hours on a weekend). Per your ruling weekend quiet is normal, so this is not an ask.
+- The broken branch pointer from last hour is gone: `git fetch` runs clean again and the home copy of main is current.
+- Everything else green: main is live on 210bdbec, CI and heavy tests green on main, no PRs waiting, every enabled lane on schedule, the worktree reaper last ran at 08:27 local.
