@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-19 14:00 local (13:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-19 14:57 local (13:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
 
