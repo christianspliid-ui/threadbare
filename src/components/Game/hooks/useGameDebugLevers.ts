@@ -471,6 +471,36 @@ export function useGameDebugLevers(ctx: GameDebugLeverContext): void {
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Debug bridge: setMandateProgress (THR-2250) ───────────────────────────
+  // Writes the god ledger to `fraction` of both targets and the progress the bar and the
+  // Twilight read; 1 completes the Mandate. With `heldAt`, that entity holds the whole
+  // ledger, so the Mandate ending's reckon line has a place or mortal to name.
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerSetMandateProgress((fraction: number, heldAt?: string) => {
+      const live = _gameStateRef.current;
+      const def = live?.mandateDefinition;
+      const ms = live?.mandateState;
+      if (!def || !ms) return { error: 'This world has no Mandate' };
+      const godLedger = {
+        primary: (def.primaryTargetPoints ?? 0) * fraction,
+        secondary: (def.secondaryTargetPoints ?? 0) * fraction,
+      };
+      const godHeld = heldAt
+        ? {
+            ...(def.primarySphere ? { [`${heldAt}|${def.primarySphere}`]: godLedger.primary } : {}),
+            ...(def.secondarySphere ? { [`${heldAt}|${def.secondarySphere}`]: godLedger.secondary } : {}),
+          }
+        : ms.godHeld;
+      const completed = fraction >= 1;
+      const next = { ...live, mandateState: { ...ms, godLedger, godHeld, progress: fraction, completed } };
+      // The ref first, so a `beginTwilight()` in the same turn reads the written Mandate.
+      _gameStateRef.current = next;
+      setGameState(next);
+      return { progress: fraction, completed, godLedger };
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Debug bridge: forcePremonition (THR-1414) ─────────────────────────────
   // The whisper arm queues a real premonition visible immediately; the compulsion
   // arm arms the decision phase, because a compulsion is composed from candidates

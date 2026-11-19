@@ -24,6 +24,9 @@ import {
   DOOM_ENDING_LINES,
   FIRST_ENDING_WORDS,
   MANDATE_FALLBACK_NAME,
+  doomMandateReckon,
+  mandateWhereMortal,
+  mandateWherePlace,
   type ApotheosisResultClass,
   type OrdealHand,
   type OrdealOutcomeWord,
@@ -31,6 +34,8 @@ import {
   TWILIGHT_WORDS,
 } from '../data/twilight-content';
 import { echoDisplayName } from '../data/account-content';
+import { MANDATE_DEED_MORTAL_FALLBACK } from '../data/ascendant-bar-content';
+import { isPlaceNode } from './sublocationShape';
 import {
   RESONANCE_SIGNIFICANCE_DIVINE,
   RESONANCE_SIGNIFICANCE_DOMINANCE,
@@ -43,9 +48,30 @@ import { isAspect } from './aspects';
 import { readStoredCalling } from './calling';
 import { getSpherePoints, rankSpherePoints } from './spherePoints';
 
+/**
+ * THR-2250 — the entity a Mandate ending's `reckon` names: the one holding the largest
+ * `godHeld` share. `present` is false when its node is gone (name it, link nothing).
+ */
+export interface MandateReckonEntity {
+  id: string;
+  name: string;
+  kind: 'place' | 'mortal';
+  present: boolean;
+}
+
+/**
+ * THR-2250 — `reckon` is the line under `line`: where the god's hand raised the Mandate
+ * most (a Mandate ending), or how far it came (a Doom ending). Absent when there is
+ * nothing true to say (no held share, a place whose node is gone, no Mandate at all).
+ */
 export type AgeEnding =
-  | { kind: 'mandate'; mandateName: string; title: string; line: string; close: string }
-  | { kind: 'doom'; archetype: DoomClockArchetype | null; finalStageName: string; title: string; line?: string; close: string };
+  | { kind: 'mandate'; mandateName: string; title: string; line: string; close: string; reckon?: string; reckonEntity?: MandateReckonEntity }
+  | {
+      kind: 'doom'; archetype: DoomClockArchetype | null; finalStageName: string; title: string; line?: string; close: string;
+      reckon?: string;
+      /** The Mandate's name as `reckon` opens with it, so the screen can give it its tooltip. */
+      reckonMandateName?: string;
+    };
 
 export type FirstFate = 'aspect' | 'lived' | 'died';
 
@@ -105,20 +131,94 @@ function mandateName(state: GameState): { name: string; missing: boolean } {
   return name ? { name, missing: false } : { name: MANDATE_FALLBACK_NAME, missing: true };
 }
 
+/**
+ * THR-2250 — the entity id holding the largest `godHeld` share, summed over both
+ * Mandate spheres (keys are `entityId|sphere`). Ties break on the id, so the answer
+ * never depends on insertion order (NFP 3). Null when nothing positive is held.
+ */
+export function topGodHeldEntity(held: Record<string, number> | undefined): string | null {
+  if (!held) return null;
+  const totals = new Map<string, number>();
+  for (const [key, points] of Object.entries(held)) {
+    if (!Number.isFinite(points) || points <= 0) continue;
+    const bar = key.lastIndexOf('|');
+    const id = bar > 0 ? key.slice(0, bar) : key;
+    totals.set(id, (totals.get(id) ?? 0) + points);
+  }
+  let best: string | null = null;
+  let bestPoints = 0;
+  for (const [id, points] of totals) {
+    if (points > bestPoints || (points === bestPoints && best !== null && id < best)) {
+      best = id;
+      bestPoints = points;
+    }
+  }
+  return best;
+}
+
+/**
+ * THR-2250 — a Mandate ending's "where" line (plan § Player-facing text). A place gets
+ * "at {place}"; a mortal (a chapter deed's key is its actor) gets "through {mortal}'s
+ * chapters". A node that is gone: a place drops the line; a mortal known from the
+ * deed records keeps its captured name, else the deed fallback.
+ */
+export function mandateWhere(
+  state: GameState,
+  fallbacks: string[] = [],
+): { reckon: string; entity: MandateReckonEntity } | null {
+  const id = topGodHeldEntity(state.mandateState?.godHeld);
+  if (!id) return null;
+  const node = state.graph.getNode(id);
+  if (node) {
+    const name = node.name?.trim();
+    if (node.type === 'location' || isPlaceNode(node)) {
+      if (!name) { fallbacks.push('mandate_where_place_unnamed'); return null; }
+      return { reckon: mandateWherePlace(name), entity: { id, name, kind: 'place', present: true } };
+    }
+    // A mortal is an actor carrying `actorType: 'individual'` (`isMortalAgentNode`).
+    if (node.type === 'actor' && node.properties?.actorType === 'individual') {
+      if (!name) fallbacks.push('mandate_where_mortal_unnamed');
+      return {
+        reckon: mandateWhereMortal(name, MANDATE_DEED_MORTAL_FALLBACK),
+        entity: { id, name: name || MANDATE_DEED_MORTAL_FALLBACK, kind: 'mortal', present: !!name },
+      };
+    }
+    fallbacks.push('mandate_where_unknown_kind');
+    return null;
+  }
+  // The node is gone. Only a deed record says it was a mortal; a place drops the line.
+  const deed = state.mandateState?.recentDeeds?.find(d => d.actorId === id);
+  if (!deed) { fallbacks.push('mandate_where_node_gone'); return null; }
+  const captured = deed.actorName?.trim();
+  if (!captured) fallbacks.push('mandate_where_mortal_unnamed');
+  return {
+    reckon: mandateWhereMortal(captured, MANDATE_DEED_MORTAL_FALLBACK),
+    entity: { id, name: captured || MANDATE_DEED_MORTAL_FALLBACK, kind: 'mortal', present: false },
+  };
+}
+
 /** Which clock ended the age (Decided 1, 3). Mandate completed → 'mandate'; otherwise the doom kind. */
 export function ageEnding(state: GameState, fallbacks: string[] = []): AgeEnding {
   const god = godName(state);
   if (state.mandateState?.completed) {
     const m = mandateName(state);
     if (m.missing) fallbacks.push('mandate_definition_missing');
+    const where = mandateWhere(state, fallbacks);
     return {
       kind: 'mandate',
       mandateName: m.name,
       title: m.missing ? 'The Mandate, fulfilled' : TWILIGHT_WORDS.mandateTitle(m.name),
       line: TWILIGHT_WORDS.mandateLine(god),
       close: TWILIGHT_WORDS.mandateClose(god),
+      ...(where ? { reckon: where.reckon, reckonEntity: where.entity } : {}),
     };
   }
+  // THR-2250 — a Doom ending says how far the Mandate came; no Mandate, no line.
+  const progress = state.mandateState?.progress;
+  const reckonName = capitalize(mandateName(state).name);
+  const reckon = state.mandateState && typeof progress === 'number'
+    ? { reckon: doomMandateReckon(reckonName, progress), reckonMandateName: reckonName }
+    : undefined;
   const archetype = state.doomDefinition?.archetype;
   const stage = finalStageName(archetype);
   if (stage === null || !isDoomArchetype(archetype)) {
@@ -129,6 +229,7 @@ export function ageEnding(state: GameState, fallbacks: string[] = []): AgeEnding
       finalStageName: DOOM_ENDING_FALLBACK_TITLE,
       title: DOOM_ENDING_FALLBACK_TITLE,
       close: TWILIGHT_WORDS.doomClose(god),
+      ...(reckon ?? {}),
     };
   }
   return {
@@ -138,6 +239,7 @@ export function ageEnding(state: GameState, fallbacks: string[] = []): AgeEnding
     title: stage,
     line: DOOM_ENDING_LINES[archetype],
     close: TWILIGHT_WORDS.doomClose(god),
+    ...(reckon ?? {}),
   };
 }
 

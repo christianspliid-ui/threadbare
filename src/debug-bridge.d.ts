@@ -60,6 +60,11 @@ export interface DebugActionInfo {
  * `error` is set — and the tick fields absent — when the call was rejected
  * (no game loaded, or n was not a finite number >= 1).
  */
+/** THR-2250 — what `setMandateProgress` wrote, or why it could not. */
+export type DebugSetMandateProgressResult =
+  | { progress: number; completed: boolean; godLedger: { primary: number; secondary: number } }
+  | { error: string };
+
 export interface DebugTickResult {
   /** Ticks actually advanced (may be < requested when capped or interrupted). */
   ticksRun?: number;
@@ -2883,6 +2888,18 @@ export interface DebugBridge {
   setBand(band: 'transcendent' | 'healthy' | 'strained' | 'weakened' | 'critical' | 'dissolving'): void;
   /** @internal AscendantBar / GameView registers its setQuintessence callback here */
   _registerSetQuintessence(fn: (ratio: number) => void): void;
+
+  /**
+   * THR-2250 (debug-only) — write the god ledger to `fraction` (clamped 0–1) of both
+   * Mandate targets and set the progress the bar and the Twilight read; 1 completes the
+   * Mandate. With `heldAt` (an entity id), that entity holds the whole ledger in
+   * `godHeld`, so a Mandate ending's reckon line names it. Then call `beginTwilight()`.
+   */
+  setMandateProgress(fraction: number, heldAt?: string): Promise<DebugSetMandateProgressResult>;
+  /** @internal useGameDebugLevers registers the writer here */
+  _registerSetMandateProgress(
+    fn: (fraction: number, heldAt?: string) => DebugSetMandateProgressResult,
+  ): void;
 
   // ── Spawn / world-spawn commands ────────────────────────────────────────
   /** Spawn an encounter on an agent. Opens the encounter modal by default. */

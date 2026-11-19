@@ -73,6 +73,45 @@ export const TWILIGHT_WORDS = {
   chronicleMandate: (mandateName: string) => `${capitalizeFirst(mandateName)} is fulfilled.`,
 } as const;
 
+// ─── THR-2250 — what the Mandate came to (beat 1's reckon line) ──────
+//
+// Plan `Docs/plans/2026-11-19-thr-2245-a-well-played-age-can-be-won.md` Decision 6,
+// § Player-facing text. A Mandate ending names where the god's hand raised it most
+// (the entity holding the largest `godHeld` share); a Doom ending says how far the
+// Mandate came, in a word, never a number (Law 13). The words read the same
+// `mandateState.progress` as the Mandate bar's fill, so a bar three-quarters full is
+// "within reach" by construction (PC-6).
+
+/** At or above this share of the Mandate, a Doom ending says it "stood within reach". */
+export const TWILIGHT_MANDATE_WITHIN_REACH = 0.75;
+/** At or above this share (and below within-reach), it "stood half-raised". */
+export const TWILIGHT_MANDATE_HALF_RAISED = 0.40;
+
+/** A place: "Most of it was raised at the Shrine of Ash." */
+export function mandateWherePlace(place: string): string {
+  return `Most of it was raised at ${place}.`;
+}
+
+/**
+ * A mortal (a chapter deed's key is its actor). A nameless mortal reads the deed
+ * line's fallback without the possessive, so no slot renders "a mortal bound to
+ * you's" (PC-3).
+ */
+export function mandateWhereMortal(mortal: string | null | undefined, fallback: string): string {
+  const name = mortal?.trim();
+  if (name) return `Most of it was raised through ${name}'s chapters.`;
+  return `Most of it was raised through the chapters of ${fallback.charAt(0).toLowerCase()}${fallback.slice(1)}.`;
+}
+
+/** A Doom ending's word for how far the Mandate came. */
+export function doomMandateReckon(mandateName: string, progress: number): string {
+  const name = capitalizeFirst(mandateName);
+  const p = Number.isFinite(progress) ? progress : 0;
+  if (p >= TWILIGHT_MANDATE_WITHIN_REACH) return `${name} stood within reach.`;
+  if (p >= TWILIGHT_MANDATE_HALF_RAISED) return `${name} stood half-raised.`;
+  return `${name} had barely begun.`;
+}
+
 // ─── THR-2229 — what the god did with its First ──────────────────────
 //
 // Plan `Docs/plans/2026-11-14-thr-2204-put-the-god-in-the-climax.md` slice 4. Plain
