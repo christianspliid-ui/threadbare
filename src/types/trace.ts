@@ -2861,6 +2861,10 @@ export interface UnrestRisingTrace extends TraceBase {
   newFactionId: string | null;
   residentsMoved: number;
   sackedBuildingId: string | null;
+  /** THR-2033 — the sacked building's card name, or null. */
+  sackedBuildingName?: string | null;
+  /** THR-2033 — whether the sacked building's Place was removed (else it stands, stripped). */
+  sackedPlaceRemoved?: boolean;
 }
 
 /** THR-1935 — a hungry town on the god's ground opened a prayer. */
