@@ -31,6 +31,7 @@ import { getWealthTier } from '../../wealth';
 import { readMeansBand, readPurseDay } from '../../factionPurse';
 import { factionPurseView } from '../../factionPurse/purseSentences';
 import { openCommissionsOf } from '../../factionCommissions';
+import { FACTION_COMMISSIONS_ENABLED } from '../../../types/factionAction';
 import { fealtyPurseSentence, wagesPurseSentence, fealtyView } from '../../crown/fealtySentences';
 import { composeCultureMores } from '../../cultureMores';
 import { durationLabel, elapsedLabel, humanizeKeySegment, reachDisplayName } from '../../aftermathWords';
@@ -161,6 +162,8 @@ const means: SectionResolver = (ctx) => {
  * as no commission.
  */
 function openCommissionSentence(f: FactionRead): string | null {
+  // Switch off → nobody is paid (takeUpCommission returns null), so the sheet promises nothing.
+  if (!FACTION_COMMISSIONS_ENABLED) return null;
   try {
     return openCommissionsOf(f.graph, f.node.id, f.tick).length > 0 ? FACTION_LINES.openCommission : null;
   } catch {
