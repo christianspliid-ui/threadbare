@@ -179,6 +179,13 @@ function applyEffect(
     case 'doom_micro_tick': {
       if (!state.doomClock) break;
       // Advance doom clock by a fractional tick amount
+      { // PROTO thr-2247 doom-push census: who pushed the clock, where, and how much.
+        const g: any = globalThis; (g.__doomPushes ??= []).push({
+          tick, kind: 'micro', name: complicationName, mag: effect.magnitude,
+          actorId: ctx.action?.actorId ?? null, templateId: ctx.action?.templateId ?? null,
+          locationId: ctx.locationId, stage: ctx.doomStage,
+        });
+      }
       state.doomClock = {
         ...state.doomClock,
         currentTick: state.doomClock.currentTick + effect.magnitude,

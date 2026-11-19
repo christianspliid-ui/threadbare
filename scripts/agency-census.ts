@@ -224,6 +224,8 @@ function handleHeldSteps(): void {
       try { phase = buildNudgePhaseModel({ template, activeAction: live, step, graph: state.graph, gameState: state, allowEmptyHand: true } as any); } catch { phase = undefined; }
       const cards: any[] = phase?.cards ?? [];
       if (cards.length) heldWithCards++;
+      // PROTO thr-2247 — a held step with a hand is a decision the world offered
+      ((globalThis as any).__decisions ??= []).push({ t: state.tick, kind: cards.length ? 'hand' : 'held-nohand', id: live.templateId, step: live.currentStep, cards: cards.length, actorId: live.actorId });
       // THR-2227 — each held Apotheosis step: its hand size and the bare chance it opens on.
       if (/apotheosis/.test(String(live.templateId))) {
         apotheosisSteps.push({
@@ -460,7 +462,19 @@ for (let i = 0; i < TICKS; i++) {
     if (e) toggleAttentionMode(state.graph, e.id, state.ascendantId, state.tick);
     restored = true;
   }
+  const g: any = globalThis; g.__censusTick = state.tick + 1; // PROTO thr-2247
+  const dcBefore = state.doomClock?.currentTick ?? 0;
   state = runTick(state, [], runtime);
+  { // PROTO thr-2247 — per-tick Doom ledger and the decisions the world offered the god
+    const dc: any = state.doomClock;
+    (g.__doomLedger ??= []).push({ t: state.tick, d: (dc?.currentTick ?? 0) - dcBefore, own: dc?.lastStep ?? 0, mod: dc?.tickModifier, stage: dc?.currentStage, p: dc?.progress });
+    const pb: any = state.ascendantBeats?.pending;
+    if (!warming && pb && !(g.__beatSeen ??= new Set()).has(pb.beatId)) { g.__beatSeen.add(pb.beatId); (g.__decisions ??= []).push({ t: state.tick, kind: 'beat', id: pb.beatId, beatKind: pb.kind }); }
+    for (const v of (state.pendingVignettes ?? []) as any[]) {
+      const id = v?.data?.templateId ?? v?.id; const n = (v?.data?.choices ?? []).length;
+      if (!warming && !(g.__vigSeen ??= new Set()).has(`${state.tick}:${id}`)) { g.__vigSeen.add(`${state.tick}:${id}`); (g.__decisions ??= []).push({ t: state.tick, kind: n ? 'vision' : 'vision-nochoice', id }); }
+    }
+  }
   if (warming) state = unattended(state);
   else handleHeldSteps();
   answerVisions(PLAYS && !warming);
@@ -484,3 +498,11 @@ const { firstChapterIds, ...endShort } = end;
 console.log(JSON.stringify({ ...result, end: endShort, snaps: undefined }));
 console.log(`  first chapters: ${firstChapterIds.join(' · ')}`);
 if (OUT) { fs.mkdirSync(path.dirname(OUT), { recursive: true }); fs.writeFileSync(OUT, JSON.stringify(result, null, 1)); }
+{ // PROTO thr-2247 — raw ledgers for the push and decision analysis
+  const g: any = globalThis;
+  const raw = { seed: SEED, arm: ARM, warm: WARM, ranTo: state.tick, stopReason, phase: state.phase, totalTicks: state.doomClock?.totalTicks, ascendantId: state.ascendantId,
+    firstId: firstEdge()?.target ?? null, visionChoices, pushes: g.__doomPushes ?? [], ledger: g.__doomLedger ?? [], decisions: g.__decisions ?? [] };
+  const f = (OUT || `.cache/doom-push/raw-${SEED}-${ARM}.json`).replace(/\.json$/, '') + '.raw.json';
+  fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, JSON.stringify(raw));
+  console.log(`PROTO-2247 raw → ${f}`);
+}

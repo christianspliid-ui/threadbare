@@ -772,6 +772,7 @@ export function advanceDoomClock(state: DoomClockState, rateMultiplier = 1): Doo
 }
 
 export function accelerateDoomClock(state: DoomClockState, amount: number): DoomClockState {
+  { const g: any = globalThis; (g.__doomPushes ??= []).push({ tick: g.__censusTick ?? null, kind: 'rate+', mag: amount }); } // PROTO thr-2247
   return {
     ...state,
     tickModifier: state.tickModifier + amount,
@@ -779,6 +780,7 @@ export function accelerateDoomClock(state: DoomClockState, amount: number): Doom
 }
 
 export function decelerateDoomClock(state: DoomClockState, amount: number): DoomClockState {
+  { const g: any = globalThis; (g.__doomPushes ??= []).push({ tick: g.__censusTick ?? null, kind: 'rate-', mag: amount }); } // PROTO thr-2247
   return {
     ...state,
     tickModifier: Math.max(0.1, state.tickModifier - amount),
