@@ -222,6 +222,11 @@ export const FACTION_LINES = {
   /** "{ruler} wears the crown; nine factions owe it fealty." */
   crownRuler: ' wears the crown; ',
   noActions: 'No recent actions on record.',
+  /**
+   * THR-2043 — the purse row's commission sentence, shown only while the faction holds an
+   * open posting (`openCommissionsOf`), so the pay a member earns is not a surprise (PC-2).
+   */
+  openCommission: 'It has posted a commission: the first member to finish its work is paid.',
 } as const;
 
 /** A faction action's outcome, worded (the sheet printed the raw `outcome`). */

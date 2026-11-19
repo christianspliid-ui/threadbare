@@ -1275,10 +1275,10 @@ exit
 - **Producer → Consumer:** Factions & Succession → Mortal Economy & Prosperity
 - **UL terms:** *Means*, *Faction*
 - **Module:** `src/engine/factionCommissions.ts`
-- **Production hits:** 8 total — 2 write, 2 read, 4 unclassified
+- **Production hits:** 10 total — 2 write, 2 read, 6 unclassified
 - **Write sites:** `src/engine/factionCommissions.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/data/mortal-means-constants.ts`, `src/types/edgeSchema.ts`, `src/types/factionAction.ts`, `src/types/graph.ts`
+- **Other hits:** `src/data/mortal-means-constants.ts`, `src/data/subject-sheet-words.ts`, `src/engine/views/subjects/factionRows.ts`, `src/types/edgeSchema.ts`, `src/types/factionAction.ts` +1 more
 - **Verdict:** Verified 2026-10-26: THR-2042. factionCommissions.test.ts: a decider member takes the oldest open posting (Means +COMMISSION_MEANS_PAY, posting taken, one took_up edge passing EDGE_SCHEMA); a non-decider, a stranger, an expired posting and a Magnate at 100 take nothing and leave it open. factionCommissionsResolution.test.ts: a completed encounter through executeStepResult carries one economy change ending "— a commission their faction paid for."; a failed or unfinished one carries none. npm run census:commissions (medium, 360 ticks): taken 4 / 8 / 10 on seeds 42 / 99 / 7.
 
 ### `companion-capability-contribution` — 🟢 LIVE
