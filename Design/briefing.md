@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-19 08:55 local (07:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-19 09:57 local (08:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,14 +27,13 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Queue
 
-**Starved: 0 in Ready for Dev.** The one ticket in progress, [the faction sheet names its open commission](https://linear.app/threadbare/issue/THR-2043/the-faction-sheet-names-its-open-commission-the-player-can-see-before), has its work saved on [its branch](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-2043-faction-sheet-commission) (checkpoint before verify, 00:32 local), nothing uncommitted in its worktree, and a builder run is underway. New work comes from [THR-2245, a well-played age can be won](https://linear.app/threadbare/issue/THR-2245/a-well-played-age-can-be-won-a-god-who-plays-the-whole-game-finishes), which is with the design lane; its next run is due about 09:17 local.
+**Starved: 0 in Ready for Dev, nothing being built.** [The faction sheet names its open commission](https://linear.app/threadbare/issue/THR-2043/the-faction-sheet-names-its-open-commission-the-player-can-see-before) merged and is live ([#2861](https://github.com/christianspliid-ui/threadbare/pull/2861)). New work comes from [THR-2245, a well-played age can be won](https://linear.app/threadbare/issue/THR-2245/a-well-played-age-can-be-won-a-god-who-plays-the-whole-game-finishes): the design lane is measuring how fast an active god fills the Mandate before it writes the plan. Its next run is due about 12:17 local. Until then the builder has nothing to pick up, which is correct, not a stall.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (30 days; last touched 8 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- Engine speed: tick cost 213 ms/tick steady, 38% above the 7-day median (155, 130 rows since 0a999d5b); top phase agent_decision, 638 agents. Name the merges between 0a999d5b and 210bdbec: `git log --oneline --merges 0a999d5b..210bdbec`. A builder run was active on this machine during the measurement, so this may be a busy CPU. The executor's to chase if it holds.
-- Lane silence: the newest unrecorded gap is Sunday 15 Nov, 09:57 to 21:48 local (12 hours on a weekend). Per your ruling weekend quiet is normal, so this is not an ask.
-- The broken branch pointer from last hour is gone: `git fetch` runs clean again and the home copy of main is current.
-- Everything else green: main is live on 210bdbec, CI and heavy tests green on main, no PRs waiting, every enabled lane on schedule, the worktree reaper last ran at 08:27 local.
+- Engine speed: tick cost 221 ms/tick steady, 43% above the 7-day median (155, 131 rows since 0a999d5b); top phase agent_decision, 638 agents. Name the merges between 0a999d5b and 6ba8d579: `git log --oneline --merges 0a999d5b..6ba8d579`. Second hour in a row above the line (213 last hour), so it is holding rather than a busy CPU. The executor's to chase.
+- Lane silence: the newest unrecorded gap is Sunday 15 Nov, 09:57 to 21:48 local (12 hours on a weekend), plus last night's 00:33 to 08:43. Per your ruling overnight and weekend quiet is normal, so neither is an ask.
+- Everything else green: main is live on 6ba8d579, CI and heavy tests green on main, no PRs waiting, every enabled lane on schedule, the worktree reaper last ran at 09:40 local.
