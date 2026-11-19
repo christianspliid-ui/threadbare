@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-18 23:56 local (22:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-19 08:43 local (07:43 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
 
@@ -58,6 +58,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-19: when a town rises, it now sacks its costliest building (or plunders one it did not build), and the Chronicle names it. It is live** ([THR-2033](https://linear.app/threadbare/issue/THR-2033)). Merged via [#2860](https://github.com/christianspliid-ui/threadbare/pull/2860).
+- **2026-11-18: the Flawed Steel encounter no longer calls Maren, Dalla or Torve "she" whatever they are. It is live** ([THR-2150](https://linear.app/threadbare/issue/THR-2150)). Merged via [#2859](https://github.com/christianspliid-ui/threadbare/pull/2859).
 - **2026-11-18: "What should the design lane plan next?" answered in chat: make the ending a game. The first of three tickets, [a well-played age can be won](https://linear.app/threadbare/issue/THR-2245), is with the design lane.**
 - **2026-11-18: hovering a card in the god rail's hand now shows the full card beside the rail. It is live** ([THR-1975](https://linear.app/threadbare/issue/THR-1975)). Merged via [#2858](https://github.com/christianspliid-ui/threadbare/pull/2858).
 - **2026-11-18: a sheet's Story rows now say when the deed was done to the mortal ("done to them", "set upon", "defending", "fell in it"). It is live** ([THR-2191](https://linear.app/threadbare/issue/THR-2191)). Merged via [#2856](https://github.com/christianspliid-ui/threadbare/pull/2856).
@@ -66,8 +68,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-16: on the test route, the pre-bonded First now has a real meeting record, so the Return no longer always "vanishes". It is live** ([THR-2242](https://linear.app/threadbare/issue/THR-2242)). Merged via [#2851](https://github.com/christianspliid-ui/threadbare/pull/2851).
 - **2026-11-16: each clock-answer card now has one name everywhere: Stay the Unmaking and Rebuke. It is live** ([THR-2241](https://linear.app/threadbare/issue/THR-2241)). Merged via [#2850](https://github.com/christianspliid-ui/threadbare/pull/2850).
 - **2026-11-15: the Play button now promises only what it keeps. It is live** ([THR-2238](https://linear.app/threadbare/issue/THR-2238)). Merged via [#2849](https://github.com/christianspliid-ui/threadbare/pull/2849).
-- **2026-11-15: the Doom panel and bar now say how to slow Doom, with a Stay it button. It is live** ([THR-2240](https://linear.app/threadbare/issue/THR-2240)). Merged via [#2848](https://github.com/christianspliid-ui/threadbare/pull/2848).
-- **2026-11-15: the rival panel now says where the threat is and how to answer it. It is live** ([THR-2237](https://linear.app/threadbare/issue/THR-2237)). Merged via [#2847](https://github.com/christianspliid-ui/threadbare/pull/2847).
 
 ---
 

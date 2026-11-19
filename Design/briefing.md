@@ -1,11 +1,9 @@
 # Briefing
-**Generated:** 2026-11-18 23:56 local (22:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-19 08:43 local (07:43 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
 **Should every one of Kael's chapters give you a hand?** About 1 in 4 of The First's chapters is "Theirs alone": it plays out without you. Two of three warm testers asked for cards in every one. Say **"every chapter asks"** or **"keep theirs alone"** ([THR-2174](https://linear.app/threadbare/issue/THR-2174/the-player-cant-tell-which-chapters-wait-for-their-cards-the-gallows)). The design lane leans "every chapter asks". If you say nothing, it stays as it is. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-18.md)*
-
-Your "what next" answer from tonight's chat ("make the ending a game") is now in motion: the first of its three tickets, [A well-played age can be won](https://linear.app/threadbare/issue/THR-2245/a-well-played-age-can-be-won-a-god-who-plays-the-whole-game-finishes), is with the design lane. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-18b.md)*
 
 ## Also waiting (11)
 
@@ -29,13 +27,14 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Queue
 
-**Healthy, but thin: 2 in Ready for Dev**, both follow-ups from the economy work: [a town that rises sacks its costliest building](https://linear.app/threadbare/issue/THR-2033/a-town-that-rises-sacks-its-costliest-building-wire-risingts-to-the) and [the faction sheet names its open commission](https://linear.app/threadbare/issue/THR-2043/the-faction-sheet-names-its-open-commission-the-player-can-see-before). The builder is working on [THR-2150](https://linear.app/threadbare/issue/THR-2150/flawed-steel-genders-reuse-bound-cast-she-for-maren-and-torve-who-can) right now (an encounter calls a reused character "she" whatever their gender). The last merge, [THR-1975](https://linear.app/threadbare/issue/THR-1975) via [PR #2858](https://github.com/christianspliid-ui/threadbare/pull/2858) (hovering a card in your hand shows the full card), is live. [THR-2245](https://linear.app/threadbare/issue/THR-2245/a-well-played-age-can-be-won-a-god-who-plays-the-whole-game-finishes) is with the design lane, whose next run is about 00:17 local; its two sibling tickets wait in Todo.
+**Starved: 0 in Ready for Dev.** Two things shipped overnight and are live: [a town that rises sacks its costliest building](https://linear.app/threadbare/issue/THR-2033) ([PR #2860](https://github.com/christianspliid-ui/threadbare/pull/2860)) and [Flawed Steel no longer genders its cast](https://linear.app/threadbare/issue/THR-2150) ([PR #2859](https://github.com/christianspliid-ui/threadbare/pull/2859)). The last ready ticket, [the faction sheet names its open commission](https://linear.app/threadbare/issue/THR-2043/the-faction-sheet-names-its-open-commission-the-player-can-see-before), is in progress: its work is saved on [its branch](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-2043-faction-sheet-commission) (checkpoint before verify, 00:32 local), nothing uncommitted, and a builder run started 08:35 local. New work comes from [THR-2245, a well-played age can be won](https://linear.app/threadbare/issue/THR-2245/a-well-played-age-can-be-won-a-god-who-plays-the-whole-game-finishes), which is with the design lane; its next run is due about 09:17 local.
 
 Items for agents, not you:
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (29 days; last touched 8 Nov; no branch or local worktree holds work for it). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (30 days; last touched 8 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- Engine speed: tick cost 347 ms/tick steady, 125% above the 7-day median (155, 128 rows since 0a999d5b); top phase agent_decision, 638 agents. Name the merges between 0a999d5b and 5ff53719: `git log --oneline --merges 0a999d5b..5ff53719`. Last hour's reading was 170, and the builder was mid-run on this machine during this measurement, so this may be a busy CPU rather than a slower engine; next hour's reading will tell. The executor's to chase if it holds.
-- Everything else green: main is live on 5ff53719, CI and heavy tests green on main, no PRs waiting, all 10 lanes on schedule, the worktree reaper last ran at 23:40 local.
-- Lane silence: Sunday 15 Nov 09:57–21:48 local (11.8 hours) is a weekend gap, and Thursday night 12–13 Nov is overnight, so per your rulings neither is its own ask.
+- **A broken git branch pointer on this machine.** The local pointer for `proto/thr-2245-full-player-census` was written as blank bytes at 00:36 local (a write cut off mid-way). Every `git fetch` here now ends with "bad object", and the session precheck reports freshness as unknown; the remote copies of main and ops still update. Repair: point it back at the remote's commit (`91e703c9`). This run's repair was refused by the permission check, so an agent in a watched session should do it. The home copy of main is 3 commits behind because of it.
+- Engine speed: tick cost 228 ms/tick steady, 47% above the 7-day median (155, 129 rows since 0a999d5b); top phase agent_decision, 638 agents. Name the merges between 0a999d5b and 210bdbec: `git log --oneline --merges 0a999d5b..210bdbec`. A builder run was active on this machine during the measurement (last hour's 347 had the same caveat), so this may be a busy CPU. The executor's to chase if it holds.
+- Lane silence: no lane ran from 00:33 to 08:35 local (8 hours overnight; the computer was most likely asleep). Per your ruling overnight quiet is normal, so this is not an ask; lanes are running again.
+- Everything else green: main is live on 210bdbec, CI and heavy tests green on main, no PRs waiting, the worktree reaper last ran at 08:27 local.
