@@ -6,7 +6,9 @@
 import { describe, it, expect } from 'vitest';
 import {
   agencyVerdict, agencyNotMeasured, agencyReport, agencyEndingPredicate,
+  agencyWinPredicate, agencyWinLine,
   AGENCY_COMPARE_TICK, AGENCY_MANDATE_DELTA, AGENCY_END_TICK_DELTA,
+  AGENCY_PURSE_BITE_MIN_SHARE, AGENCY_WIN_TICKS,
   type AgencyArmResult, type AgencySnapshot,
 } from '../agency-verdict';
 
@@ -199,5 +201,82 @@ describe('THR-2229 — H6, H7 and the ending predicate', () => {
       agencyVerdict(arm('none', same), arm('greedy', diff)),
     ]);
     expect(textOnly.holds).toBe(false);
+  });
+});
+
+describe('THR-2248 — agencyWinPredicate (a well-played age can be won)', () => {
+  // A hand-built arm read at the age's end. Doom's last stage starts at 0.80 (DOOM_CLIMAX_START).
+  const end = (armName: 'none' | 'greedy' | 'full', seed: number, o: { done?: boolean; doom?: number; mandate?: number; attempts?: number; refused?: number; stop?: string } = {}): AgencyArmResult => ({
+    seed, arm: armName, ranTo: AGENCY_WIN_TICKS, stopReason: o.stop ?? 'phase=ended',
+    placeAttempts: o.attempts ?? 0, placeRefused: o.refused ?? 0,
+    end: snap({ tick: AGENCY_WIN_TICKS, phase: 'ended', mandateCompleted: o.done ?? false, mandateProgress: o.mandate ?? (o.done ? 1 : 0.1), doomProgress: o.doom ?? 1 }),
+  });
+  // The plan's target world: hands-off never finishes, the full player finishes before Doom 0.80
+  // on two seeds, chapters-only finishes late (or not) but well above hands-off, the purse bites.
+  const holding = () => [42, 99, 7].map((seed, i) => ({
+    seed,
+    none: end('none', seed, { mandate: 0.1 }),
+    greedy: end('greedy', seed, { mandate: 0.9 }),
+    full: end('full', seed, { done: true, doom: i < 2 ? 0.7 : 0.9, attempts: 100, refused: 90 }),
+  }));
+
+  it('holds on the target world, and the line names every clause', () => {
+    const v = agencyWinPredicate(holding());
+    expect(v.holds).toBe(true);
+    expect(v.clauses.full.earlyWins).toBe(2);
+    const line = agencyWinLine(v);
+    for (const s of ['hands-off finishes 0/3', 'full finishes before Doom 0.8 2/3', 'chapters-only finishes before Doom 0.8 0/3', 'above hands-off 3/3', 'purse refused 270/300', 'HOLDS']) {
+      expect(line).toContain(s);
+    }
+  });
+
+  it('fails when hands-off finishes the Mandate', () => {
+    const s = holding(); s[0].none = end('none', 42, { done: true, doom: 0.95 });
+    const v = agencyWinPredicate(s);
+    expect(v.clauses.handsOff.holds).toBe(false);
+    expect(v.holds).toBe(false);
+    expect(agencyWinLine(v)).toContain('NOT MET');
+  });
+
+  it('a finish at or past Doom 0.80 is not an early win (main today: NOT MET)', () => {
+    const s = holding(); s[1].full = end('full', 99, { done: true, doom: 0.93, attempts: 100, refused: 92 });
+    const v = agencyWinPredicate(s);
+    expect(v.clauses.full.earlyWins).toBe(1);
+    expect(v.holds).toBe(false);
+  });
+
+  it('fails when chapters-only finishes before Doom 0.80', () => {
+    const s = holding(); s[2].greedy = end('greedy', 7, { done: true, doom: 0.6 });
+    expect(agencyWinPredicate(s).clauses.chaptersEarly.holds).toBe(false);
+  });
+
+  it('fails when chapters-only does not end clearly above hands-off on two seeds', () => {
+    const s = holding();
+    s[0].greedy = end('greedy', 42, { mandate: 0.1 + AGENCY_MANDATE_DELTA / 2 });
+    s[1].greedy = end('greedy', 99, { mandate: 0.1 });
+    expect(agencyWinPredicate(s).clauses.chaptersAbove.holds).toBe(false);
+  });
+
+  it('fails when the purse barely refuses the full player, or it never attempted a cast', () => {
+    const s = holding();
+    for (const x of s) x.full = end('full', x.seed, { done: true, doom: 0.7, attempts: 100, refused: Math.floor(100 * AGENCY_PURSE_BITE_MIN_SHARE) - 1 });
+    expect(agencyWinPredicate(s).clauses.purseBite.holds).toBe(false);
+    for (const x of s) x.full = end('full', x.seed, { done: true, doom: 0.7 });
+    const v = agencyWinPredicate(s);
+    expect(v.clauses.purseBite.share).toBeNull();
+    expect(agencyWinLine(v)).toContain('none attempted');
+  });
+
+  it('counts measured seeds only: a missing or budget-stopped arm is left out', () => {
+    const s = holding();
+    s[0].full = null;
+    s[1].full = end('full', 99, { done: true, doom: 0.7, attempts: 100, refused: 90, stop: 'budget' });
+    const v = agencyWinPredicate(s);
+    expect(v.clauses.full.measured).toBe(1);
+    expect(v.clauses.full.holds).toBe(false);
+    s.forEach((x) => { x.none = null; });
+    const w = agencyWinPredicate(s);
+    expect(w.clauses.handsOff.measured).toBe(0);
+    expect(w.clauses.handsOff.holds).toBe(false);
   });
 });
