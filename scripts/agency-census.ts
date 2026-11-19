@@ -402,7 +402,13 @@ function cheapestPlaceCard(sphere: string): any | undefined {
 }
 function castPlaces(): void {
   const d = state.mandateDefinition; if (!d) return;
-  for (const sp of [d.primarySphere, d.secondarySphere]) {
+  // PROTO THR-2245 run b — a careful player casts only in a sphere still short of its target
+  // (the Mandate's fill line names the short sphere, THR-2236); --place-all restores run a.
+  const led = state.mandateState?.godLedger ?? { primary: 0, secondary: 0 };
+  const short = (sp: string) => has('--place-all') ? true
+    : sp === d.primarySphere ? led.primary < ((d as any).primaryTargetPoints ?? Infinity)
+    : led.secondary < ((d as any).secondaryTargetPoints ?? Infinity);
+  for (const sp of [d.primarySphere, d.secondarySphere].filter(short)) {
     const t = cheapestPlaceCard(sp); if (!t) continue;
     if ((state.essencePool?.[sp] ?? 0) < t.essenceCost) continue;
     const cats: string[] = t.targetCategories ?? ['actor'];
