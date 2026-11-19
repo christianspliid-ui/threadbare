@@ -19,7 +19,7 @@ function world(): GameState {
 
 function withMandate(state: GameState, mandate: Partial<NonNullable<GameState['mandateState']>>): GameState {
   const def = state.mandateDefinition ?? ({ id: 'mandate.test' } as NonNullable<GameState['mandateDefinition']>);
-  const base = state.mandateState ?? ({ mandateId: def.id, currentStage: 'growth', progress: 0, failed: false } as NonNullable<GameState['mandateState']>);
+  const base = state.mandateState ?? ({ mandateId: def.id, currentStage: 'growth', progress: 0, failed: false } as unknown as NonNullable<GameState['mandateState']>);
   return {
     ...state,
     mandateDefinition: { ...def, name: 'the Hunger for Order' },

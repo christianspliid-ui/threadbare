@@ -3735,6 +3735,22 @@ export const CONTRACTS: readonly Contract[] = [
     // `age.ended { by: 'mandate' }`. No floor: Law 31 limits doom only.
   },
   {
+    id: 'mandate-ledger-reckons-twilight',
+    producerSystem: PROGRESSION,
+    consumerSystem: NARRATIVE,
+    intent:
+      'The end of the age says what the Mandate came to: a fulfilled one names the place or mortal where the god\'s hand raised it most, and a Doom ending says in a word how near it stood.',
+    ulTerms: ['Mandate', 'Doom Clock', 'Run'],
+    mechanism: { kind: 'state-field', symbols: ['mandateState'] },
+    writeSites: ['src/engine/phaseMandate.ts'],
+    readSites: ['src/engine/twilight.ts'],
+    // THR-2250 (plan 2026-11-19-thr-2245 Decision 6). `phaseMandate` folds credits into
+    // `godHeld` (per `entityId|sphere`) and computes `progress`; `ageEnding` reads them into
+    // `AgeEnding.reckon` — `topGodHeldEntity` + `mandateWhere` on a Mandate ending,
+    // `doomMandateReckon` on a Doom ending (thresholds in twilight-content.ts) — and
+    // AgeTwilightScreen renders it under the ending line.
+  },
+  {
     id: 'age-end-writes-resonance-memories',
     producerSystem: NARRATIVE,
     consumerSystem: WORLDGEN,

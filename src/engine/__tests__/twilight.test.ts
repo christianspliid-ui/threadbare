@@ -418,7 +418,7 @@ describe('THR-2250 — a Doom ending says how far the Mandate came', () => {
   });
 
   it('no Mandate at all: no reckon line', () => {
-    const ending = ageEnding({ ...withDoom(newWorld(), 'breach'), mandateState: undefined });
+    const ending = ageEnding({ ...withDoom(newWorld(), 'breach'), mandateState: null });
     expect(ending.reckon).toBeUndefined();
   });
 

@@ -81,6 +81,7 @@ import { resolveAftermathContextForAgent } from '../../../engine/encounterAfterm
 import { type BeatDismissalRecord, type BeatInterruptSurface, selectDefaultBeatChoice } from '../beatDismissal';
 import type { WorldRef } from '../../../types/worldRef';
 import { isHexTargetId } from '../../../engine/hexActionBridge';
+import { MANDATE_PRIMARY_TARGET_POINTS, MANDATE_SECONDARY_TARGET_POINTS } from '../../../data/game-config';
 
 /** The argument a bridge's `_register*` method takes. */
 type Registered<K extends keyof DebugBridge> =
@@ -482,9 +483,11 @@ export function useGameDebugLevers(ctx: GameDebugLeverContext): void {
       const def = live?.mandateDefinition;
       const ms = live?.mandateState;
       if (!def || !ms) return { error: 'This world has no Mandate' };
+      // Before the settle the definition carries no point targets yet; the configured
+      // targets are what `phaseMandate` writes there at the settle.
       const godLedger = {
-        primary: (def.primaryTargetPoints ?? 0) * fraction,
-        secondary: (def.secondaryTargetPoints ?? 0) * fraction,
+        primary: (def.primaryTargetPoints ?? MANDATE_PRIMARY_TARGET_POINTS) * fraction,
+        secondary: (def.secondaryTargetPoints ?? MANDATE_SECONDARY_TARGET_POINTS) * fraction,
       };
       const godHeld = heldAt
         ? {
