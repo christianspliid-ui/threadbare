@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-19 15:59 local (14:59 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-19 16:57 local (15:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -36,7 +36,7 @@ Say "veto <title>" to reverse any of these. The build tickets cannot start befor
 
 ## Queue
 
-**Healthy: 4 in Ready for Dev, nothing being built yet.** All four sit in their veto windows: [the census that plays the whole game](https://linear.app/threadbare/issue/THR-2248/the-agency-census-plays-the-whole-game-chapter-spend-credits-the) and [the Twilight line on what the Mandate came to](https://linear.app/threadbare/issue/THR-2250/the-twilight-says-what-the-mandate-came-to-where-your-hand-raised-it) until 22:30 local, [engine reads the race](https://linear.app/threadbare/issue/THR-2251/the-engine-reads-the-race-a-daily-pace-sample-a-forecast-of-which) until 23:00 local, and [Doom feeds at a place](https://linear.app/threadbare/issue/THR-2255/the-doom-feeds-at-a-place-ground-you-tend-starves-it-rebuke-answers-it) until 01:00 local. The builder's recent runs (through 15:52 local) each stood down for exactly that reason, which is correct, not a stall.
+**Healthy: 4 in Ready for Dev, nothing being built yet.** All four sit in their veto windows: [the census that plays the whole game](https://linear.app/threadbare/issue/THR-2248/the-agency-census-plays-the-whole-game-chapter-spend-credits-the) and [the Twilight line on what the Mandate came to](https://linear.app/threadbare/issue/THR-2250/the-twilight-says-what-the-mandate-came-to-where-your-hand-raised-it) until 22:30 local, [engine reads the race](https://linear.app/threadbare/issue/THR-2251/the-engine-reads-the-race-a-daily-pace-sample-a-forecast-of-which) until 23:00 local, and [Doom feeds at a place](https://linear.app/threadbare/issue/THR-2255/the-doom-feeds-at-a-place-ground-you-tend-starves-it-rebuke-answers-it) until 01:00 local. The builder's recent runs (through 16:52 local) each stood down for exactly that reason, which is correct, not a stall.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (30 days; last touched 8 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
@@ -44,4 +44,4 @@ Items for agents, not you:
 ## Health
 
 - Lane silence: the newest unrecorded gap is Sunday 15 Nov, 09:57 to 21:48 local (12 hours on a weekend). Per your ruling weekend quiet is normal, so it is not an ask.
-- Everything else green: engine speed 164 ms/tick, 6% above the 7-day median of 155 (inside the normal range); main is live on 6ba8d579 (later commits are docs only); CI and scheduled jobs green; no PRs waiting; every enabled lane on schedule; the worktree reaper last ran at 15:40 local.
+- Everything else green: engine speed 145 ms/tick, 7% below the 7-day median of 155; main is live on 6ba8d579 (later commits are docs only); CI and scheduled jobs green; no PRs waiting; every enabled lane on schedule; the worktree reaper last ran at 16:55 local.
