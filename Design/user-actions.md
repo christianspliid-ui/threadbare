@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-19 09:57 local (08:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-19 10:56 local (09:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
 
@@ -58,6 +58,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-19: the design lane planned "a well-played age can be won" ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-19-thr-2245-a-well-played-age-can-be-won.md)). Spells cast on a place in the Mandate's spheres will fill the Mandate; the closing screen will say what it came to. Two build tickets can start after 22:30 local today** ([THR-2245](https://linear.app/threadbare/issue/THR-2245)).
 - **2026-11-19: a faction's sheet now names the commission it has open, so you can see it before you act. It is live** ([THR-2043](https://linear.app/threadbare/issue/THR-2043)). Merged via [#2861](https://github.com/christianspliid-ui/threadbare/pull/2861).
 - **2026-11-19: when a town rises, it now sacks its costliest building (or plunders one it did not build), and the Chronicle names it. It is live** ([THR-2033](https://linear.app/threadbare/issue/THR-2033)). Merged via [#2860](https://github.com/christianspliid-ui/threadbare/pull/2860).
 - **2026-11-18: the Flawed Steel encounter no longer calls Maren, Dalla or Torve "she" whatever they are. It is live** ([THR-2150](https://linear.app/threadbare/issue/THR-2150)). Merged via [#2859](https://github.com/christianspliid-ui/threadbare/pull/2859).
@@ -67,7 +68,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-17: Stay the Unmaking can now land clean for a god with no star affinity; its card reads "uncertain". It is live** ([THR-2244](https://linear.app/threadbare/issue/THR-2244)). Merged via [#2855](https://github.com/christianspliid-ui/threadbare/pull/2855).
 - **2026-11-16: the agency census now plays the Doom and rival answers; answering Doom barely slows it** ([THR-2243](https://linear.app/threadbare/issue/THR-2243)). Merged via [#2852](https://github.com/christianspliid-ui/threadbare/pull/2852).
 - **2026-11-16: on the test route, the pre-bonded First now has a real meeting record, so the Return no longer always "vanishes". It is live** ([THR-2242](https://linear.app/threadbare/issue/THR-2242)). Merged via [#2851](https://github.com/christianspliid-ui/threadbare/pull/2851).
-- **2026-11-16: each clock-answer card now has one name everywhere: Stay the Unmaking and Rebuke. It is live** ([THR-2241](https://linear.app/threadbare/issue/THR-2241)). Merged via [#2850](https://github.com/christianspliid-ui/threadbare/pull/2850).
 
 ---
 

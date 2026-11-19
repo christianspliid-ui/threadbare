@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-19 09:57 local (08:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-19 10:56 local (09:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -21,19 +21,25 @@
 
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
+## Decided for you
+
+- [A well-played age can be won](https://linear.app/threadbare/issue/THR-2245) — a god's spell cast on a place in one of the Mandate's spheres now fills the Mandate by what it cost, at the same rate as essence spent on a mortal's chapter. Measured, a god who plays everything then finishes the Mandate before Doom's last stage on 2 of 3 worlds; today it does on none. A god who only plays chapters comes close (82–96%) but never finishes, and a hands-off god never gets past 12%. The Mandate's targets stay as they are.
+- Same ticket — when an age ends, the closing screen adds one line: where your hand raised the Mandate if you fulfilled it, or how near it stood ("within reach", "half-raised", "had barely begun") if Doom ended the age. Words, never numbers; it never grades you.
+
+Say "veto <title>" to reverse any of these. The build tickets cannot start before 22:30 local today. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-19a.md)*
+
 ## This week's screens
 
 [Contact sheet — this week next to last week](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/ux-review/2026-11-12/contact-sheet.jpg) — better: The First's name fits, the essence and Doom readouts speak in words, and returning to the mid-game now opens on a "While you were away" summary, but arrival toasts still pile up and his thread row cuts his story short.
 
 ## Queue
 
-**Starved: 0 in Ready for Dev, nothing being built.** [The faction sheet names its open commission](https://linear.app/threadbare/issue/THR-2043/the-faction-sheet-names-its-open-commission-the-player-can-see-before) merged and is live ([#2861](https://github.com/christianspliid-ui/threadbare/pull/2861)). New work comes from [THR-2245, a well-played age can be won](https://linear.app/threadbare/issue/THR-2245/a-well-played-age-can-be-won-a-god-who-plays-the-whole-game-finishes): the design lane is measuring how fast an active god fills the Mandate before it writes the plan. Its next run is due about 12:17 local. Until then the builder has nothing to pick up, which is correct, not a stall.
+**Healthy but thin: 2 in Ready for Dev, nothing being built yet.** The design lane's plan for [a well-played age can be won](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-19-thr-2245-a-well-played-age-can-be-won.md) merged ([#2862](https://github.com/christianspliid-ui/threadbare/pull/2862)) and filed [the census that plays the whole game](https://linear.app/threadbare/issue/THR-2248/the-agency-census-plays-the-whole-game-chapter-spend-credits-the) and [the Twilight line on what the Mandate came to](https://linear.app/threadbare/issue/THR-2250/the-twilight-says-what-the-mandate-came-to-where-your-hand-raised-it). Both sit in their veto window until 22:30 local; the first pickup run after that takes the census ticket. A third, [a place you tend fills the Mandate](https://linear.app/threadbare/issue/THR-2249), waits on the census. The builder standing down until then is correct, not a stall.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (30 days; last touched 8 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- Engine speed: tick cost 221 ms/tick steady, 43% above the 7-day median (155, 131 rows since 0a999d5b); top phase agent_decision, 638 agents. Name the merges between 0a999d5b and 6ba8d579: `git log --oneline --merges 0a999d5b..6ba8d579`. Second hour in a row above the line (213 last hour), so it is holding rather than a busy CPU. The executor's to chase.
-- Lane silence: the newest unrecorded gap is Sunday 15 Nov, 09:57 to 21:48 local (12 hours on a weekend), plus last night's 00:33 to 08:43. Per your ruling overnight and weekend quiet is normal, so neither is an ask.
-- Everything else green: main is live on 6ba8d579, CI and heavy tests green on main, no PRs waiting, every enabled lane on schedule, the worktree reaper last ran at 09:40 local.
+- Lane silence: the newest unrecorded gap is Sunday 15 Nov, 09:57 to 21:48 local (12 hours on a weekend). Per your ruling weekend quiet is normal, so it is not an ask.
+- Everything else green: engine speed is back near normal (173 ms/tick, 12% above the 7-day median, down from 43% last hour), main is live on 6ba8d579 (later commits are docs only), CI and scheduled jobs green, no PRs waiting, every enabled lane on schedule, the worktree reaper last ran at 10:40 local.
