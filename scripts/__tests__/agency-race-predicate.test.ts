@@ -93,10 +93,19 @@ describe('THR-2253 — raceForecastPredicate', () => {
     expect(v.holds).toBe(false);
   });
 
-  it('close names neither clock, and an unreached climax names nothing', () => {
+  it('close names neither clock, and an unreached climax with nothing shown at the end names nothing', () => {
     const v = raceForecastPredicate(seeds((seed, a) => (a === 'greedy' ? { atClimax: seed === 42 ? 'close' : seed === 99 ? null : 'doom_first' } : {})));
     expect(v.climax.greedy.named).toBe(1);
-    expect(raceForecastLine(v)).toMatch(/42:close\/doom✗ 99:unreached\/doom✗ 7:doom_first\/doom✓/);
+    expect(raceForecastLine(v)).toMatch(/42:close\/doom✗ 99:unreached@end\/doom✗ 7:doom_first\/doom✓/);
+  });
+
+  it('an age that ended before the climax is read on its last tick', () => {
+    const s = seeds((_seed, a) => (a === 'full' ? { atClimax: null } : {}));
+    for (const x of s) x.arms.full = { ...x.arms.full!, raceShownAtEnd: x.seed === 7 ? 'doom_first' : 'mandate_first' };
+    const v = raceForecastPredicate(s);
+    expect(v.climax.full.named).toBe(2);
+    expect(v.climax.full.holds).toBe(true);
+    expect(raceForecastLine(v)).toMatch(/42:mandate_first@end\/mandate✓.*7:doom_first@end\/mandate✗/);
   });
 
   it('stalled at the climax names Doom', () => {

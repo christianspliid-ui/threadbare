@@ -315,6 +315,7 @@ export function agencyWinLine(v: AgencyWinVerdict): string {
 // RACE_MAX_TURNS_PER_AGE on every measured seed and arm, AND on each played arm the state shown
 // when Doom first reaches DOOM_CLIMAX_START names the clock that ended the age on at least
 // RACE_CLIMAX_MIN_SEEDS seeds. `close` names neither clock, so it never counts as naming one.
+// An age that ended before Doom reached the climax is read on its last tick (raceShownAtEnd).
 
 export const RACE_CLIMAX_MIN_SEEDS = 2;                    // seeds per played arm whose climax forecast must name the ending
 export const RACE_PLAYED_ARMS = ['greedy', 'answer', 'full'] as const;
@@ -357,13 +358,18 @@ export function raceForecastPredicate(seeds: Array<{ seed: string | number; arms
     const readings: string[] = []; let named = 0; let measured = 0;
     for (const { seed, r } of rows) {
       const ended = ageEndedBy(r!);
-      const shown = (r!.raceAtClimax as string | null | undefined) ?? null;
+      const atClimax = (r!.raceAtClimax as string | null | undefined) ?? null;
       // An age still playing at the run's end names no clock: not measured for this clause.
-      if (ended === 'none') { readings.push(`${seed}:${shown ?? 'unreached'}/still playing`); continue; }
+      if (ended === 'none') { readings.push(`${seed}:${atClimax ?? 'unreached'}/still playing`); continue; }
+      // An age that ended before Doom reached the climax (a Mandate won early) is read on its
+      // last tick instead: the forecast the player saw as the age closed. Without this, every
+      // early win — what the win predicate asks of the full arm — would fail this clause.
+      const early = atClimax === null;
+      const shown = atClimax ?? ((r!.raceShownAtEnd as string | null | undefined) ?? null);
       measured++;
       const hit = raceEndingOf(shown) === ended;
       if (hit) named++;
-      readings.push(`${seed}:${shown ?? 'unreached'}/${ended}${hit ? '✓' : '✗'}`);
+      readings.push(`${seed}:${shown ?? 'unreached'}${early ? '@end' : ''}/${ended}${hit ? '✓' : '✗'}`);
     }
     climax[arm] = { named, measured, readings, holds: named >= RACE_CLIMAX_MIN_SEEDS };
   }
