@@ -463,6 +463,12 @@ export interface GameState {
   // phaseSpherePressure, folded and cleared by phaseMandate the same tick
   pendingMandateCredits?: MandateCredit[];
 
+  // THR-2265: the tick a closed chapter first credited the Mandate (a deed or a cast,
+  // any band). Written once by phaseUnifiedActionProgress, never cleared; read by
+  // `mandateNamed`, so the Mandate stays named after the resolved action is pruned.
+  // Absent on old saves and before any credit.
+  mandateFirstCreditedTick?: number;
+
   // THR-2209: places the god rebuked, keyed by top-level place id, to the tick the
   // rebuke stops tending them. Written by a landed Rebuke cast; read by
   // `buildTendingIndex` (`rebukeTendingOf`). Absent on old saves = none.

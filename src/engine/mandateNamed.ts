@@ -13,8 +13,11 @@
  *   shows the row), or the opening spine has finished (`spine_done`);
  * - the Seat gift (`MANDATE_NAMED_GIFT_BEAT`) has resolved;
  * - a bound mortal's chapter has credited the Mandate: a live `UnifiedAction`
- *   carries non-empty `mandateDeedCredits`, or the Mandate state remembers a deed
- *   (`mandateState.recentDeeds` — durable after the resolved action is pruned).
+ *   carries non-empty `mandateDeedCredits` (the closing tick, before the phase
+ *   result lands), or `state.mandateFirstCreditedTick` is set — the durable latch
+ *   written by the first credit of any source (deed or cast), which outlives the
+ *   resolved-action prune. `mandateState.recentDeeds` is read too, for saves from
+ *   before the latch.
  *
  * The opening-reveal ceiling (`OPENING_REVEAL_CEILING_TICKS`) can still bring the
  * row before this is true; the card hint then waits for the first credit, which
@@ -35,6 +38,7 @@ export type MandateNamedReason = 'not_staged' | 'no_beat_state' | 'spine_done' |
 export function mandateNamedReason(state: GameState): MandateNamedReason | null {
   try {
     if (state.openingRevealStaged !== true) return 'not_staged';
+    if (typeof state.mandateFirstCreditedTick === 'number') return 'deed';
     if (state.mandateState?.recentDeeds?.length) return 'deed';
     for (const a of state.unifiedActions ?? []) {
       if (a.mandateDeedCredits && a.mandateDeedCredits.length > 0) return 'deed';

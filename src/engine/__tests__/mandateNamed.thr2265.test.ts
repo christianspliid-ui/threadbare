@@ -37,6 +37,8 @@ interface Opts {
   /** A plain resolved First chapter at this tick. */
   chapterAt?: number[];
   recentDeeds?: boolean;
+  /** `mandateFirstCreditedTick` — the durable latch the first credit writes. */
+  firstCreditedTick?: number;
 }
 
 function makeState(o: Opts = {}): GameState {
@@ -67,6 +69,7 @@ function makeState(o: Opts = {}): GameState {
       targetId: 'elara', targetName: 'Elara', scale: 'personal', startTick: 0,
       resolvedTick: t, resolved: true, threaded: true, participants: [], openingProse: '', steps: [],
     })),
+    ...(o.firstCreditedTick !== undefined ? { mandateFirstCreditedTick: o.firstCreditedTick } : {}),
     mandateState: o.recentDeeds ? { recentDeeds: [{ tick: 12, actorId: 'elara' }] } : null,
     rivalStates: [],
   } as unknown as GameState;
@@ -85,6 +88,16 @@ describe('THR-2265 · mandateNamed', () => {
     expect(mandateNamedReason(makeState({ creditedChapterAt: 14 }))).toBe('deed');
     // Durable after the resolved action is pruned.
     expect(mandateNamedReason(makeState({ recentDeeds: true }))).toBe('deed');
+  });
+
+  it('stays named after the crediting action is pruned — a cast credit leaves no recentDeeds, only the latch', () => {
+    // Review-gate round 1: a cast-only credit is not a deed record; once the resolved
+    // action is pruned, only `mandateFirstCreditedTick` remembers it.
+    const pruned = makeState({ firstCreditedTick: 14 });
+    expect(pruned.unifiedActions).toEqual([]);
+    expect(pruned.mandateState).toBeNull();
+    expect(mandateNamedReason(pruned)).toBe('deed');
+    expect(selectOpeningReveal(pruned).rows.mandate).toEqual({ revealed: true, reason: 'mandate_named' });
   });
 
   it('fails soft to named', () => {
@@ -189,6 +202,8 @@ describe('THR-2265 · the card hint waits for the row', () => {
     expect(hintOf(makeState())).toBeUndefined();
     expect(hintOf(makeState({ resolvedBeats: ['beat.spine.opening', MANDATE_NAMED_GIFT_BEAT] }))).toBe(MANDATE_CARD_HINT);
     expect(hintOf(makeState({ creditedChapterAt: 14 }))).toBe(MANDATE_CARD_HINT);
+    // After the crediting action is pruned, the latch keeps the line.
+    expect(hintOf(makeState({ firstCreditedTick: 14 }))).toBe(MANDATE_CARD_HINT);
   });
 
   it('(e) an unstaged run shows the row and the hint from the bond', () => {

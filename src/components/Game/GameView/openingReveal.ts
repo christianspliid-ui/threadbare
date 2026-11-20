@@ -133,6 +133,7 @@ export function useOpeningReveal(
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [gameState.openingRevealStaged, gameState.tick, gameState.ascendantBeats, gameState.chapterArchive,
       gameState.unifiedActions, gameState.doomClock, gameState.rivalStates, gameState.mandateState,
+      gameState.mandateFirstCreditedTick,
       worldVersion, showAll],
   );
 

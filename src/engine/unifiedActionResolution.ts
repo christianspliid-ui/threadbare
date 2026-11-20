@@ -4982,5 +4982,9 @@ export function phaseUnifiedActionProgress(
     ...(mandateDeedCredits.length > 0
       ? { pendingMandateCredits: [...(state.pendingMandateCredits ?? []), ...mandateDeedCredits] }
       : {}),
+    // THR-2265 — the first credit names the Mandate for good (`mandateNamed`).
+    ...(mandateDeedCredits.length > 0 && state.mandateFirstCreditedTick === undefined
+      ? { mandateFirstCreditedTick: state.tick }
+      : {}),
   };
 }
