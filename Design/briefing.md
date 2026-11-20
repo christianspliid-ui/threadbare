@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-20 09:58 local (08:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-20 11:00 local (10:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,7 +23,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Queue
 
-**Healthy: 2 in Ready for Dev, 1 being built.** The Twilight's Mandate line ([THR-2250](https://linear.app/threadbare/issue/THR-2250/the-twilight-says-what-the-mandate-came-to-where-your-hand-raised-it)) has merged and is live. The builder is now on [a place you tend fills the Mandate by what it cost](https://linear.app/threadbare/issue/THR-2249/a-place-you-tend-fills-the-mandate-by-what-it-cost-a-gods-place-cast) (run started 09:34, still active). Waiting: [engine reads the race](https://linear.app/threadbare/issue/THR-2251/the-engine-reads-the-race-a-daily-pace-sample-a-forecast-of-which) and [Doom feeds at a place](https://linear.app/threadbare/issue/THR-2255/the-doom-feeds-at-a-place-ground-you-tend-starves-it-rebuke-answers-it). Both veto windows have passed.
+**Thin: 1 in Ready for Dev, 1 being built.** [A place you tend fills the Mandate by what it cost](https://linear.app/threadbare/issue/THR-2249/a-place-you-tend-fills-the-mandate-by-what-it-cost-a-gods-place-cast) has merged and is live. The builder is now on [the engine reads the race](https://linear.app/threadbare/issue/THR-2251/the-engine-reads-the-race-a-daily-pace-sample-a-forecast-of-which): it is built and set to merge once its checks pass ([PR #2869](https://github.com/christianspliid-ui/threadbare/pull/2869)), and the run is still active. Next up is [Doom feeds at a place](https://linear.app/threadbare/issue/THR-2255/the-doom-feeds-at-a-place-ground-you-tend-starves-it-rebuke-answers-it), the last ticket of the "make the ending a game" work. When that one is claimed the shelf is empty. The orchestrator and the design lane refill it, so this is not yours to act on.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (31 days; last touched 8 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
@@ -31,5 +31,6 @@ Items for agents, not you:
 ## Health
 
 - Weekend quiet, not an ask: the lanes were silent for about 12 hours on Sunday 15 Nov (09:57 to 21:48). Per your ruling, weekend quiet is normal.
-- Engine speed (for the builder): tick cost 242 ms/tick steady, 56% above the 7-day median (155, 139 rows since 80720d45); top phase agent_decision, 638 agents. Name the merges between 80720d45 and 2b9cfaed: git log --oneline --merges 80720d45..2b9cfaed. A builder run was working beside this measurement again, so machine load may explain part of it.
-- Everything else green: main is live on 2b9cfaed (the Twilight Mandate merge); CI and scheduled jobs green; no PRs waiting; every enabled lane on schedule. No UX contact sheet this week yet (the newest, 12 Nov, is over a week old).
+- Overnight, for the record: the builder hit the 5-hour usage limit at 23:29 local and did not run again until 09:19. The limit reset at 04:30, so the builder lost about five hours of the night.
+- Engine speed (for the builder): tick cost 217 ms/tick steady, 39% above the 7-day median (155, 140 rows since 80720d45); top phase agent_decision, 638 agents. Name the merges between 80720d45 and 6d8e94fc: git log --oneline --merges 80720d45..6d8e94fc. A builder run was working beside this measurement too, so machine load may explain part of it.
+- Everything else green: main is live on 6d8e94fc (the Mandate cast-credit merge); CI and scheduled jobs green; one PR armed and waiting on checks; every enabled lane on schedule. No UX contact sheet this week yet (the newest, 12 Nov, is over a week old).

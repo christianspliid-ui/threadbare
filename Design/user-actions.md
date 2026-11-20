@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-20 09:35 local (08:35 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-20 11:00 local (10:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
 
@@ -58,6 +58,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-20: a spell your god casts on a place now fills the Mandate by what it cost, credited to the sphere it was paid from. It is live** ([THR-2249](https://linear.app/threadbare/issue/THR-2249)). Merged via [#2868](https://github.com/christianspliid-ui/threadbare/pull/2868).
+- **2026-11-20: the Twilight's closing screen now says what the Mandate came to and where your hand raised it. It is live** ([THR-2250](https://linear.app/threadbare/issue/THR-2250)). Merged via [#2867](https://github.com/christianspliid-ui/threadbare/pull/2867).
 - **2026-11-19: the agency census now plays the whole game: essence spent on a chapter fills the Mandate, and the census checks whether an age can be won** ([THR-2248](https://linear.app/threadbare/issue/THR-2248)). Merged via [#2866](https://github.com/christianspliid-ui/threadbare/pull/2866).
 - **2026-11-19: the design lane planned "Doom's last stage is a stand" ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-19-thr-2247-dooms-last-stage-is-a-stand.md)). A failure feeds the Doom at a place, ground you tend starves it, and Rebuke can hold a place it fed. The build ticket can start after 01:00 local tonight** ([THR-2247](https://linear.app/threadbare/issue/THR-2247)).
 - **2026-11-19: the design lane planned "a well-played age can be won" ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-19-thr-2245-a-well-played-age-can-be-won.md)). Spells cast on a place in the Mandate's spheres will fill the Mandate; the closing screen will say what it came to. Two build tickets can start after 22:30 local today** ([THR-2245](https://linear.app/threadbare/issue/THR-2245)).
@@ -66,8 +68,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-18: the Flawed Steel encounter no longer calls Maren, Dalla or Torve "she" whatever they are. It is live** ([THR-2150](https://linear.app/threadbare/issue/THR-2150)). Merged via [#2859](https://github.com/christianspliid-ui/threadbare/pull/2859).
 - **2026-11-18: "What should the design lane plan next?" answered in chat: make the ending a game. The first of three tickets, [a well-played age can be won](https://linear.app/threadbare/issue/THR-2245), is with the design lane.**
 - **2026-11-18: hovering a card in the god rail's hand now shows the full card beside the rail. It is live** ([THR-1975](https://linear.app/threadbare/issue/THR-1975)). Merged via [#2858](https://github.com/christianspliid-ui/threadbare/pull/2858).
-- **2026-11-18: a sheet's Story rows now say when the deed was done to the mortal ("done to them", "set upon", "defending", "fell in it"). It is live** ([THR-2191](https://linear.app/threadbare/issue/THR-2191)). Merged via [#2856](https://github.com/christianspliid-ui/threadbare/pull/2856).
-- **2026-11-17: Stay the Unmaking can now land clean for a god with no star affinity; its card reads "uncertain". It is live** ([THR-2244](https://linear.app/threadbare/issue/THR-2244)). Merged via [#2855](https://github.com/christianspliid-ui/threadbare/pull/2855).
 
 ---
 
