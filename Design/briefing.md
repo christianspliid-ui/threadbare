@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-20 17:58 local (16:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-20 18:57 local (17:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -30,13 +30,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Thin but moving: 2 in Ready for Dev, 1 in progress.** New since last hour: [the Doom panel shows where it feeds](https://linear.app/threadbare/issue/THR-2256/the-doom-panel-shows-where-it-feeds-a-place-list-with-rebuke-a-bar) ([PR #2879](https://github.com/christianspliid-ui/threadbare/pull/2879)) and [after a chapter closes, the map comes back to the middle](https://linear.app/threadbare/issue/THR-2260/recurs-after-fix-after-a-chapter-closes-the-map-sits-off-to-one-side) ([PR #2880](https://github.com/christianspliid-ui/threadbare/pull/2880)) both merged and are live. The builder is now working on [five small round-8 faults](https://linear.app/threadbare/issue/THR-2261/five-small-faults-from-cold-playtest-round-8-a-card-price-that-shows) (fixing review notes in its worktree). Next on the shelf: [the Mandate arrives with its first mention](https://linear.app/threadbare/issue/THR-2265/the-mandate-arrives-with-its-first-mention-the-rail-row-lands-with-the) and [a quiet day on the map between chapters](https://linear.app/threadbare/issue/THR-2266/a-quiet-day-on-the-map-between-chapters-after-a-chapters-aftermath), both held for the veto windows above.
+**Thin and on hold: 2 in Ready for Dev, nothing being built.** New since last hour: [five small round-8 faults](https://linear.app/threadbare/issue/THR-2261/five-small-faults-from-cold-playtest-round-8-a-card-price-that-shows) merged ([PR #2881](https://github.com/christianspliid-ui/threadbare/pull/2881)) and are live. Both tickets on the shelf, [the Mandate arrives with its first mention](https://linear.app/threadbare/issue/THR-2265/the-mandate-arrives-with-its-first-mention-the-rail-row-lands-with-the) and [a quiet day on the map between chapters](https://linear.app/threadbare/issue/THR-2266/a-quiet-day-on-the-map-between-chapters-after-a-chapters-aftermath), wait for their veto windows (23:30Z and 02:30Z). So the builder's short runs right now are by design, not a stall.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (31 days; last touched 8 Nov). No branch or local worktree holds work for it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- Engine speed, for the builder (not an ask): tick cost 382 ms/tick steady, 144% above the 7-day median (156, 140 rows since 175d10b0); top phase agent_decision, 638 agents. Name the merges between 175d10b0 and 314f0547: git log --oneline --merges 175d10b0..314f0547. A pickup run was building on this machine during the measurement (as last hour, when it read 214), so machine load is the likely cause; a reading this high with the machine idle would be a real slowdown.
 - Weekend quiet, not an ask: the lanes were silent for about 12 hours on Sunday 15 Nov (09:57 to 21:48). Per your ruling, weekend quiet is normal.
-- All green otherwise: the live site serves the latest main (314f0547); CI and scheduled jobs green; no PRs waiting to merge; every enabled lane on schedule; the worktree reaper ran at 17:40 local. No UX contact sheet this week yet (the newest, 12 Nov, is over a week old; the next review runs Monday).
+- All green otherwise: the live site serves the latest main (651e44a6); CI and scheduled jobs green; no PRs waiting to merge; every enabled lane on schedule; the worktree reaper ran at 18:40 local. Engine speed is back to normal (160 ms/tick, +2% vs the 7-day median), so last hour's spike was machine load. No UX contact sheet this week yet (the newest, 12 Nov, is over a week old; the next review runs Monday).
