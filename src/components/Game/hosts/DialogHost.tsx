@@ -72,6 +72,7 @@ import { DoomClockDetail } from '../DoomClockDetail';
 import { MandateDetail } from '../MandateDetail';
 import { EventPopup } from '../EventPopup';
 import { doomStayNotice, DOOM_STAY_NOTICE_EVENT_TYPE, type DoomStayNotice } from '../../../engine/views/doomStayNotice';
+import { selectRaceLever, selectRaceView } from '../../../engine/views/subjects/godSheet';
 import { AgendaPicker } from '../AgendaPicker';
 import { InterventionConfirm } from '../InterventionConfirm';
 import { ChoiceSetModal } from '../ChoiceSetModal';
@@ -351,6 +352,10 @@ export function DialogHost({
   };
   // THR-2240 — read only while the Doom panel is open.
   const doomDetailStay: DoomStayNotice = doomDetailOpen ? doomStayNotice(gameState, { includeNotHeld: true }) : {};
+  // THR-2252 — the race and its lever, read only while a dialog that shows them is open.
+  const raceDialogOpen = doomDetailOpen || mandateDetailOpen;
+  const raceView = raceDialogOpen ? selectRaceView(gameState) : null;
+  const raceLeverView = raceDialogOpen && raceView ? selectRaceLever(gameState) : null;
   return (
     <>
       {renderDialog('divine-court')}
@@ -447,6 +452,8 @@ export function DialogHost({
         stayLine={doomDetailStay.line}
         stayButton={doomDetailStay.button}
         onStay={() => { setDoomDetailOpen(false); openAgentSheetForId(gameState.ascendantId); }}
+        race={raceView}
+        lever={raceLeverView}
       />
 
       {/* Mandate detail modal */}
@@ -457,6 +464,10 @@ export function DialogHost({
           definition={gameState.mandateDefinition}
           state={gameState.mandateState}
           currentTick={gameState.tick}
+          race={raceView}
+          lever={raceLeverView}
+          // THR-2252: the Stay lever reuses the Doom dialog's handler (close, open the god's page).
+          onStay={() => { setMandateDetailOpen(false); openAgentSheetForId(gameState.ascendantId); }}
         />
       )}
 

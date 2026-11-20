@@ -58,6 +58,14 @@ import { mandateDeedLine, mandateFillLine } from '../../../data/ascendant-bar-co
 import { MANDATE_DEED_STRONG_POINTS } from '../../../data/game-config';
 import { mandateTrendOf } from '../../mandateLedger';
 import { sphereWord } from '../../../data/essence-format';
+import type { RaceState } from '../../../types/mandate';
+import { raceLever, shownRaceState } from '../../raceForecast';
+import { raceChapterLeverRuns, raceForecastLine, raceRailWord, RACE_LEVER_STAY, type RaceLeverRun } from '../../../data/race-content';
+import { DOOM_STAY_ACTIVE_LINE, DOOM_STAY_BUTTON } from '../../../data/doom-stay-content';
+import type { RaceState } from '../../../types/mandate';
+import { raceLever, shownRaceState } from '../../raceForecast';
+import { raceChapterLeverRuns, raceForecastLine, raceRailWord, RACE_LEVER_STAY, type RaceLeverRun } from '../../../data/race-content';
+import { DOOM_STAY_ACTIVE_LINE, DOOM_STAY_BUTTON } from '../../../data/doom-stay-content';
 import { godsPeopleIds } from '../knowledge';
 import { REACH_SIGNATURE_CONTENT_TEMPLATES } from '../../../data/reach-signature-content';
 import { getAscendantProgress } from '../../../engine/phaseAscendantProgression';
@@ -431,6 +439,57 @@ export interface MandateRowView {
    * until a deed credits. Never a number.
    */
   recentDeedLines: string[];
+  /**
+   * THR-2252 — which clock lands first at this pace, while the race is shown; `null`
+   * while it is hidden (the surfaces keep today's text). Never a number (Law 13).
+   */
+  race: RaceView | null;
+}
+
+/** THR-2252 — the shown race reading, in words. */
+export interface RaceView {
+  state: Exclude<RaceState, 'hidden'>;
+  /** "At this pace, Doom ends the age before your Mandate is fulfilled." */
+  sentence: string;
+  /** The folded rail row's word: "Lands first" / "Doom lands first" / "Close finish". */
+  word: string;
+}
+
+/**
+ * THR-2252 — the one move, in words (plan decision 4). A chapter names the Mandate sphere
+ * furthest from its target and a mortal bound to the god; Stay offers THR-2240's button
+ * until it is held, then THR-2240's held line with no button.
+ */
+export type RaceLeverView =
+  | { kind: 'chapter'; runs: RaceLeverRun[]; line: string; mortalId: string; sphere: SphereName }
+  | { kind: 'stay'; line: string; button?: string };
+
+/** THR-2252 — the shown race as words, or `null` while hidden or unreadable (fail-soft). */
+export function selectRaceView(gameState: Pick<GameState, 'mandateState'>): RaceView | null {
+  const state = shownRaceState(gameState.mandateState?.raceWatch);
+  if (state === 'hidden') return null;
+  const sentence = raceForecastLine(state);
+  const word = raceRailWord(state);
+  if (!sentence || !word) return null;
+  return { state, sentence, word };
+}
+
+/** THR-2252 — the lever for the shown race state, or `null` (none offered, or unreadable). */
+export function selectRaceLever(gameState: GameState): RaceLeverView | null {
+  try {
+    const shown = shownRaceState(gameState.mandateState?.raceWatch);
+    const lever = raceLever(shown, gameState);
+    if (!lever) return null;
+    if (lever.kind === 'stay') {
+      return lever.held ? { kind: 'stay', line: DOOM_STAY_ACTIVE_LINE } : { kind: 'stay', line: RACE_LEVER_STAY, button: DOOM_STAY_BUTTON };
+    }
+    let name: string | undefined;
+    try { name = gameState.graph.getNode(lever.mortalId)?.name; } catch { name = undefined; }
+    const runs = raceChapterLeverRuns(sphereWord(lever.sphere), name);
+    return { kind: 'chapter', runs, line: runs.map(r => r.text).join(''), mortalId: lever.mortalId, sphere: lever.sphere };
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -523,6 +582,7 @@ export function selectMandateRow(gameState: GameState): MandateRowView | null {
     stage: STAGE_LABELS[currentStageIdx] ?? 'I',
     trend,
     recentDeedLines,
+    race: selectRaceView(gameState),
   };
 }
 
