@@ -24,6 +24,7 @@ import { rebukablePlaceIds, rebukeAnswerFor, resolveRebuke, rivalRebukablePlaceI
 import { doomFeedAlert, phaseDoom } from '../phaseDoom';
 import { createRivalState } from '../rival';
 import { createDoomClockState } from '../doomClock';
+import { deriveNavigationTarget, eventTypeToCategory } from '../notificationRouter';
 import { clearTraces, enableTracing, getTraces } from '../traceBuffer';
 import { TICKS_PER_DAY } from '../../data/attention-constants';
 import {
@@ -277,6 +278,9 @@ describe('the last stage raises a daily alert', () => {
     expect(alerts[0].notification).toEqual({ channel: 'alert', icon: 'doom' });
     expect(alerts[0].refs).toEqual([{ kind: 'location', id: 't1', name: 'Ashmoor' }]);
     expect(out.doomFeedAlertTick).toBe(tick);
+    // It routes under Doom (one mute for both) and opens the place it names (review gate).
+    expect(eventTypeToCategory('doom_feeding')).toBe('doom');
+    expect(deriveNavigationTarget(alerts[0])).toEqual({ kind: 'location', locationNodeId: 't1' });
     expect(getTraces().find(t => t.category === 'doom.feed_alert')).toMatchObject({ placeId: 't1', stage: DOOM_FEED_ALERT_FROM_STAGE });
     // The next tick, same day: nothing.
     const next = phaseDoom({ ...state, tick: tick + 1, doomFeedAlertTick: tick, tickEvents: [] } as GameState);
