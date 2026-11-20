@@ -23,6 +23,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { DOOM_CLIMAX_START } from '../src/data/game-config';
+import { RACE_MAX_TURNS_PER_AGE } from '../src/data/race-content';
 
 export const AGENCY_COMPARE_TICK = 800;     // the headline is read here (or at the age's end, if sooner)
 export const AGENCY_MANDATE_DELTA = 0.10;   // Mandate progress gap that counts as different
@@ -304,6 +305,84 @@ export function agencyWinLine(v: AgencyWinVerdict): string {
     + ` · purse refused ${c.purseBite.refused}/${c.purseBite.attempts} place casts`
     + ` (${c.purseBite.share === null ? 'none attempted' : c.purseBite.share.toFixed(2)}, min ${AGENCY_PURSE_BITE_MIN_SHARE}) ${mark(c.purseBite.holds)}`
     + ` → ${v.holds ? 'HOLDS' : 'NOT MET'}`;
+}
+
+// ─── THR-2253 — the race forecast holds (plan THR-2246, ticket 3) ────
+// Per seed and arm the census records the shown race state through the age and counts its
+// turns: a move between two shown states that name different endings (first sight out of
+// `hidden` is not a turn, nor is a return from a data gap, nor `doom_first` ↔ `stalled`,
+// mirroring settleRace in src/engine/raceForecast.ts). The predicate: turns ≤
+// RACE_MAX_TURNS_PER_AGE on every measured seed and arm, AND on each played arm the state shown
+// when Doom first reaches DOOM_CLIMAX_START names the clock that ended the age on at least
+// RACE_CLIMAX_MIN_SEEDS seeds. `close` names neither clock, so it never counts as naming one.
+
+export const RACE_CLIMAX_MIN_SEEDS = 2;                    // seeds per played arm whose climax forecast must name the ending
+export const RACE_PLAYED_ARMS = ['greedy', 'answer', 'full'] as const;
+
+export type RaceEnding = 'none' | 'mandate' | 'doom' | 'close';
+
+/** Which ending a shown race state names (the engine's RACE_ENDING, kept here so this file stays engine-free). */
+export function raceEndingOf(state: string | null | undefined): RaceEnding {
+  if (state === 'mandate_first') return 'mandate';
+  if (state === 'doom_first' || state === 'stalled') return 'doom';
+  if (state === 'close') return 'close';
+  return 'none';
+}
+
+/** Whether a move between two shown race states is a turn (see the section header). */
+export function isRaceTurn(from: string | null | undefined, to: string | null | undefined): boolean {
+  const a = raceEndingOf(from); const b = raceEndingOf(to);
+  return a !== 'none' && b !== 'none' && a !== b;
+}
+
+/** Which clock ended the age: the Mandate, Doom, or neither (still playing when the run stopped). */
+export function ageEndedBy(r: AgencyArmResult): 'mandate' | 'doom' | 'none' {
+  if (!r.end || r.end.phase === 'playing') return 'none';
+  return r.end.mandateCompleted ? 'mandate' : 'doom';
+}
+
+export function raceForecastPredicate(seeds: Array<{ seed: string | number; arms: Partial<Record<AgencyArmResult['arm'], AgencyArmResult | null>> }>) {
+  const ok = (r: AgencyArmResult | null | undefined): r is AgencyArmResult =>
+    !!r && r.stopReason !== 'budget' && !!r.end && typeof r.raceTurns === 'number';
+  const turnRows: Array<{ seed: string | number; arm: string; turns: number }> = [];
+  for (const s of seeds) for (const [arm, r] of Object.entries(s.arms)) if (ok(r)) turnRows.push({ seed: s.seed, arm, turns: r.raceTurns as number });
+  const maxTurns = turnRows.reduce((m, x) => Math.max(m, x.turns), 0);
+  const over = turnRows.filter((x) => x.turns > RACE_MAX_TURNS_PER_AGE);
+  const turns = { measured: turnRows.length, max: maxTurns, over: over.map((x) => `${x.seed}/${x.arm}:${x.turns}`), holds: turnRows.length > 0 && over.length === 0 };
+
+  const climax: Record<string, { named: number; measured: number; readings: string[]; holds: boolean }> = {};
+  for (const arm of RACE_PLAYED_ARMS) {
+    const rows = seeds.map((s) => ({ seed: s.seed, r: s.arms[arm] })).filter((x) => ok(x.r));
+    if (!rows.length) continue;
+    const readings: string[] = []; let named = 0; let measured = 0;
+    for (const { seed, r } of rows) {
+      const ended = ageEndedBy(r!);
+      const shown = (r!.raceAtClimax as string | null | undefined) ?? null;
+      // An age still playing at the run's end names no clock: not measured for this clause.
+      if (ended === 'none') { readings.push(`${seed}:${shown ?? 'unreached'}/still playing`); continue; }
+      measured++;
+      const hit = raceEndingOf(shown) === ended;
+      if (hit) named++;
+      readings.push(`${seed}:${shown ?? 'unreached'}/${ended}${hit ? '✓' : '✗'}`);
+    }
+    climax[arm] = { named, measured, readings, holds: named >= RACE_CLIMAX_MIN_SEEDS };
+  }
+  const climaxArms = Object.values(climax);
+  return { turns, climax, holds: turns.holds && climaxArms.length > 0 && climaxArms.every((c) => c.holds) };
+}
+
+export type RaceForecastVerdict = ReturnType<typeof raceForecastPredicate>;
+
+/** The one printed line, naming each clause. */
+export function raceForecastLine(v: RaceForecastVerdict): string {
+  const mark = (h: boolean) => (h ? '✓' : '✗');
+  const t = v.turns;
+  const parts = [`race predicate: turns ≤${RACE_MAX_TURNS_PER_AGE} per age on ${t.measured - t.over.length}/${t.measured} seed-arms (max ${t.max}${t.over.length ? `; over ${t.over.join(',')}` : ''}) ${mark(t.holds)}`];
+  for (const [arm, c] of Object.entries(v.climax)) {
+    parts.push(`${arm} names the ending at Doom ${DOOM_CLIMAX_START} ${c.named}/${c.measured} (min ${RACE_CLIMAX_MIN_SEEDS}; ${c.readings.join(' ')}) ${mark(c.holds)}`);
+  }
+  if (!Object.keys(v.climax).length) parts.push('no played arm measured ✗');
+  return `${parts.join(' · ')} → ${v.holds ? 'HOLDS' : 'NOT MET'}`;
 }
 
 // ─── THR-2255 — the last stage gives the god something to decide ─────

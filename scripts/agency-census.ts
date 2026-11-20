@@ -47,7 +47,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { spawn } from 'child_process';
-import { agencyReport, agencyWinPredicate, agencyWinLine, lastStageLine, lastStagePredicate, AGENCY_COMPARE_TICK, AGENCY_WIN_TICKS, type AgencyArmResult } from './agency-verdict';
+import { agencyReport, agencyWinPredicate, agencyWinLine, lastStageLine, lastStagePredicate, isRaceTurn, raceForecastPredicate, raceForecastLine, AGENCY_COMPARE_TICK, AGENCY_WIN_TICKS, type AgencyArmResult } from './agency-verdict';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -99,6 +99,14 @@ function compareFromDir(dir: string): string[] {
     lines.push(agencyWinLine(agencyWinPredicate(AGENCY_SEEDS.map((seed) => ({
       seed, none: readArm(armFile(dir, seed, 'none')), greedy: readArm(armFile(dir, seed, 'greedy')), full: readArm(armFile(dir, seed, 'full')),
     })))));
+  }
+  // THR-2253 — the race predicate over every arm written (arms from before THR-2253 carry no
+  // raceTurns and are left out as not measured).
+  const raceSeeds = AGENCY_SEEDS.map((seed) => ({
+    seed, arms: Object.fromEntries(AGENCY_ARMS_ALL.filter((arm) => fs.existsSync(armFile(dir, seed, arm))).map((arm) => [arm, readArm(armFile(dir, seed, arm))])),
+  }));
+  if (raceSeeds.some((s) => Object.values(s.arms).some((r) => typeof r?.raceTurns === 'number'))) {
+    lines.push(raceForecastLine(raceForecastPredicate(raceSeeds)));
   }
   return lines;
 }
@@ -178,7 +186,7 @@ const [
   { UNIFIED_ACTION_TEMPLATES },
   { getPlaceNodes, getLocationNodes },
   { addMandateSphereSpend },
-  { DOOM_FEED_ALERT_FROM_STAGE, LAST_STAGE_DECISION_SHARE },
+  { DOOM_FEED_ALERT_FROM_STAGE, LAST_STAGE_DECISION_SHARE, DOOM_CLIMAX_START },
   { TICKS_PER_DAY },
 ] = await Promise.all([
   import('../src/engine/gameInit'),
@@ -512,6 +520,26 @@ function beat2(): string | null {
   } catch { return null; }
 }
 
+// ─── THR-2253 — the race forecast, watched every tick (warm included) ─
+// The shown state, read off MandateState.raceWatch (absent reads `hidden`). A turn is a move
+// between two shown states naming different endings (isRaceTurn); first sight and a return
+// from a data gap pass through `hidden` and so never count. raceAtClimax is the state shown
+// on the first tick Doom's progress reaches DOOM_CLIMAX_START.
+const shownRace = (): string => state.mandateState?.raceWatch?.shown ?? 'hidden';
+let raceTurns = 0;
+const raceTurnTicks: string[] = [];
+let racePrev = 'hidden';
+let raceFirstSeenAt: number | null = null;
+let raceAtClimax: string | null = null;
+let raceClimaxTick: number | null = null;
+function watchRace(): void {
+  const now = shownRace();
+  if (raceFirstSeenAt === null && now !== 'hidden') raceFirstSeenAt = state.tick;
+  if (isRaceTurn(racePrev, now)) { raceTurns++; raceTurnTicks.push(`t${state.tick}:${racePrev}→${now}`); }
+  racePrev = now;
+  if (raceClimaxTick === null && (state.doomClock?.progress ?? 0) >= DOOM_CLIMAX_START) { raceClimaxTick = state.tick; raceAtClimax = now; }
+}
+
 function snapshot() {
   const ff = (() => { try { return firstFate(state); } catch { return undefined; } })();
   const chapters: any[] = (state.chapterArchive ?? []).filter((c: any) => c.actorId === firstId);
@@ -527,6 +555,7 @@ function snapshot() {
   return {
     tick: state.tick,
     phase: state.phase,
+    raceState: shownRace(), // THR-2253 — the race state the player sees (never the debug-forced one)
     doomStage: state.doomClock?.currentStage ?? null,
     doomProgress: Number((state.doomClock?.progress ?? 0).toFixed(3)),
     mandateStage: state.mandateState?.currentStage ?? null,
@@ -588,6 +617,7 @@ for (let i = 0; i < TICKS; i++) {
   answerVisions(PLAYS && !warming);
   if ((ARM === 'answer' || ARM === 'full') && !warming) answerClocks();
   if (ARM === 'full' && !warming) castPlaces();
+  watchRace();
   if (state.tick % SNAP_EVERY === 0) snaps.push(snapshot());
   if (state.tick % AGENCY_PROGRESS_EVERY === 0) console.error(`[agency] t${state.tick} ${((Date.now() - t0) / 1000).toFixed(0)}s held=${heldSteps} played=${cardsPlayed}`);
   if (state.phase && state.phase !== 'playing') { stopReason = `phase=${state.phase}`; break; }
@@ -620,10 +650,12 @@ const doomFeeds = {
   doomPushTicks: Number(doomPushTicks.toFixed(2)), doomPushEvents, doomPushAbsorbed: Number(doomPushAbsorbed.toFixed(2)), doomAbsorbEvents,
   doomRebukesCast, ...lastStage, lastStageVerdict,
 };
-const result = { placeCasts, placeEssence: Math.round(placeEssence), placeAttempts, placeRefused, seed: SEED, arm: ARM, warm: WARM, ranTo: state.tick, seconds: Math.round(ms / 1000), stopReason, heldSteps, heldWithCards, cardsPlayed, essenceSpent: Math.round(essenceSpent), apotheosisSteps, visionsAnswered, visionChoices, ordealRolls, ...clockVerbs, ...doomFeeds, end, snaps };
+const race = { raceTurns, raceTurnTicks, raceFirstSeenAt, raceAtClimax, raceClimaxTick, raceShownAtEnd: shownRace() };
+const result = { ...race, placeCasts, placeEssence: Math.round(placeEssence), placeAttempts, placeRefused, seed: SEED, arm: ARM, warm: WARM, ranTo: state.tick, seconds: Math.round(ms / 1000), stopReason, heldSteps, heldWithCards, cardsPlayed, essenceSpent: Math.round(essenceSpent), apotheosisSteps, visionsAnswered, visionChoices, ordealRolls, ...clockVerbs, ...doomFeeds, end, snaps };
 const { firstChapterIds, ...endShort } = end;
 console.log(JSON.stringify({ ...result, end: endShort, snaps: undefined }));
 console.log(`  first chapters: ${firstChapterIds.join(' · ')}`);
 console.log(`  doom feeds: pushed ${doomFeeds.doomPushTicks} clock ticks in ${doomPushEvents} feedings · absorbed ${doomFeeds.doomPushAbsorbed} in ${doomAbsorbEvents} · doom Rebukes cast ${doomRebukesCast}`);
 console.log(`  ${lastStageLine(SEED, lastStage, lastStageVerdict, LAST_STAGE_DECISION_SHARE)}`);
+console.log(`  race: first shown t${raceFirstSeenAt ?? '-'} · ${raceTurns} turn(s)${raceTurnTicks.length ? ` (${raceTurnTicks.join(', ')})` : ''} · at Doom ${DOOM_CLIMAX_START} (t${raceClimaxTick ?? '-'}) ${raceAtClimax ?? 'unreached'} · at end ${race.raceShownAtEnd}`);
 if (OUT) { fs.mkdirSync(path.dirname(OUT), { recursive: true }); fs.writeFileSync(OUT, JSON.stringify(result, null, 1)); }
