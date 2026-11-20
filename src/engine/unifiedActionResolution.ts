@@ -2687,9 +2687,11 @@ export function executeStepResult(
     // THR-2255 — the Stage and the chapter archive read this entry's `prose`, so it carries
     // the line the player was shown (the held line on tended ground, the fed line with its
     // Rebuke sentence), never the raw template line beside a contradicting tick event.
-    const shownComplication = complicationProseShown !== undefined && complicationProseShown !== consequence.complication.prose
-      ? { ...consequence.complication, prose: complicationProseShown }
-      : consequence.complication;
+    const rawComplication = consequence.complication;
+    const shownProse: string | undefined = complicationProseShown;
+    const shownComplication: typeof rawComplication = rawComplication && typeof shownProse === 'string' && shownProse !== rawComplication.prose
+      ? { ...rawComplication, prose: shownProse }
+      : rawComplication;
     finalAction = {
       ...finalAction,
       stepComplications: [...prevComplications, shownComplication],

@@ -248,6 +248,8 @@ describe('the last stage raises a daily alert', () => {
     const every = DOOM_FEED_ALERT_EVERY_DAYS * DAY;
     expect(doomFeedAlert(ready(g, tick, { doomFeedAlertTick: tick - every + 1 }), DOOM_FEED_ALERT_FROM_STAGE)).toBeNull();
     expect(doomFeedAlert(ready(g, tick, { doomFeedAlertTick: tick - every }), DOOM_FEED_ALERT_FROM_STAGE)).not.toBeNull();
+    // A stamp from a past Age (later than now, since a new Age restarts the tick) never blocks.
+    expect(doomFeedAlert(ready(g, tick, { doomFeedAlertTick: tick + DAY * 30 }), DOOM_FEED_ALERT_FROM_STAGE)).not.toBeNull();
     // A Rebuke already in flight there answers it: no alert.
     expect(doomFeedAlert(ready(g, tick, {
       unifiedActions: [{ templateId: RIVAL_REBUKE_TEMPLATE_ID, targetId: 't1', resolved: false }] as never,

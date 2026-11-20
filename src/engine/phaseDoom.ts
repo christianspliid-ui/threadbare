@@ -75,7 +75,9 @@ export function doomFeedAlert(
   if (stage < DOOM_FEED_ALERT_FROM_STAGE) return null;
   if (!(state.unlockedActionIds ?? []).includes(RIVAL_REBUKE_TEMPLATE_ID)) return null;
   const last = state.doomFeedAlertTick;
-  if (typeof last === 'number' && state.tick - last < DOOM_FEED_ALERT_EVERY_DAYS * TICKS_PER_DAY) return null;
+  // A stamp from a later tick than now is a past Age's (a new Age restarts the tick at 0):
+  // it has expired, never blocks.
+  if (typeof last === 'number' && last <= state.tick && state.tick - last < DOOM_FEED_ALERT_EVERY_DAYS * TICKS_PER_DAY) return null;
   if (!state.doomFeedings || Object.keys(state.doomFeedings).length === 0) return null;
   const god = state.graph.getNode(state.ascendantId);
   const primary = (god?.properties.sphereAlignment as { primary?: string } | undefined)?.primary;
