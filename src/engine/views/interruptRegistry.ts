@@ -111,6 +111,11 @@ export interface InterruptSnapshot {
   /** THR-1853 — the last input was under `INTERRUPT_QUIET_AFTER_INPUT_MS` ago. Holds arrivals. Optional. */
   recentInput?: boolean;
   /**
+   * THR-2259 — the player has a card armed and is aiming it. Holds arrivals until the
+   * card is cast or set down, so a vision never replaces the cast in progress. Optional.
+   */
+  cardArmed?: boolean;
+  /**
    * THR-2197 — arrival kinds the player opened by their own hand this time (a receipt
    * clicked through from its toast). They mount at once, like any non-arrival surface.
    * Optional: absent = none.
@@ -191,7 +196,7 @@ export interface InterruptSurface {
 }
 
 /** Why an arrival is not on screen yet (THR-1853). */
-export type ArrivalHoldReason = 'interrupt' | 'player_surface' | 'recent_input';
+export type ArrivalHoldReason = 'interrupt' | 'player_surface' | 'recent_input' | 'card_armed';
 
 export interface HeldArrival {
   id: string;
@@ -204,6 +209,8 @@ export interface WorldOpenedEncounterHoldInput {
   playerSurfaceOpen: boolean;
   /** The last pointer or key input is inside `INTERRUPT_QUIET_AFTER_INPUT_MS`. */
   recentInput: boolean;
+  /** THR-2259 — a card is armed. Optional: absent = no card armed. */
+  cardArmed?: boolean;
 }
 
 /**
@@ -217,6 +224,7 @@ export function worldOpenedEncounterHeldBy(input: WorldOpenedEncounterHoldInput)
   const heldBy: ArrivalHoldReason[] = [];
   if (input.playerSurfaceOpen) heldBy.push('player_surface');
   if (input.recentInput) heldBy.push('recent_input');
+  if (input.cardArmed === true) heldBy.push('card_armed');
   return heldBy;
 }
 
@@ -337,6 +345,7 @@ export function resolveInterrupts(
   const quietHolds: ArrivalHoldReason[] = [];
   if (snapshot.playerSurfaceOpen === true) quietHolds.push('player_surface');
   if (snapshot.recentInput === true) quietHolds.push('recent_input');
+  if (snapshot.cardArmed === true) quietHolds.push('card_armed');
   const quiet = quietHolds.length === 0;
 
   // THR-2184 — the warm arrival recap is exclusive: while it is up, nothing else renders

@@ -387,13 +387,13 @@ export interface DebugInterruptState {
    * card, popup) that want the screen but wait: behind another interrupt, a surface the
    * player opened, or the `INTERRUPT_QUIET_AFTER_INPUT_MS` window after a click.
    */
-  heldArrivals: Array<{ id: string; heldBy: Array<'interrupt' | 'player_surface' | 'recent_input'> }>;
+  heldArrivals: Array<{ id: string; heldBy: Array<'interrupt' | 'player_surface' | 'recent_input' | 'card_armed'> }>;
   /**
    * THR-2053 — a chapter the world would open, held while the player is mid-click
    * (`INTERRUPT_QUIET_AFTER_INPUT_MS`) or has a surface open (the ledger and court included).
    * `null` when no chapter waits. Badge-, row- and Needs-you-opened chapters never wait.
    */
-  heldEncounter: { notificationId: string; heldBy: Array<'interrupt' | 'player_surface' | 'recent_input'> } | null;
+  heldEncounter: { notificationId: string; heldBy: Array<'interrupt' | 'player_surface' | 'recent_input' | 'card_armed'> } | null;
   /**
    * THR-1877 — every homed surface rendering now, stopping or not, by kind
    * (`HomedSurfaceKind`, `src/data/homed-surfaces.ts`). The hosts render exactly these.
@@ -442,7 +442,7 @@ export interface DebugGiftDelivery {
   /** Its modal is on screen. */
   entered: boolean;
   /** Why it waits (`giftDelivery.ts` `GiftHoldReason`); empty when entered or nothing is due. */
-  heldBy: Array<'player_surface' | 'recent_input' | 'interrupt' | 'vignette' | 'suppressed' | 'awaiting_boundary'>;
+  heldBy: Array<'player_surface' | 'recent_input' | 'interrupt' | 'vignette' | 'suppressed' | 'awaiting_boundary' | 'card_armed'>;
   /** The player-opened surfaces holding it. */
   heldBySurfaces: string[];
   /** Wall-clock ms since the last pointer or key input (large when none yet). */
