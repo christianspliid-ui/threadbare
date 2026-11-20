@@ -19,9 +19,15 @@ import { phaseDoomExpiry, phaseMandate, resetDecisionCache, resetEventCounter } 
 import { getFirstId } from '../meetingEncounter';
 import { markMortalDead } from '../agentLifecycle';
 import { clearTraces, enableTracing, getTraces } from '../traceBuffer';
-import { buildTwilightBeats, captureAgeMemories, openTwilight } from '../twilight';
+import { ageEnding, buildTwilightBeats, captureAgeMemories, openTwilight, rankGodHeldEntities, topGodHeldEntity } from '../twilight';
 import { ARCHETYPE_STAGE_NAMES } from '../../data/doom-content';
-import { DOOM_ENDING_LINES } from '../../data/twilight-content';
+import {
+  DOOM_ENDING_LINES,
+  TWILIGHT_MANDATE_HALF_RAISED,
+  TWILIGHT_MANDATE_WITHIN_REACH,
+  mandateWhereMortal,
+  mandateWherePlace,
+} from '../../data/twilight-content';
 import { RESONANCE_DEGRADE_PER_RUN } from '../../data/game-config';
 import type { EchoDefinition } from '../../types/echo';
 
@@ -300,5 +306,155 @@ describe('THR-1381 fail-soft — a ceremony that cannot be built still reaches t
     const opened = openTwilight(state);
     expect(opened.ok).toBe(true);
     expect(getTraces().filter(t => t.category === 'twilight.beats_built')).toHaveLength(1);
+  });
+});
+
+// ─── THR-2250 — what the Mandate came to ────────────────────────────────────
+
+function withHeld(state: GameState, held: Record<string, number>, extra: Partial<NonNullable<GameState['mandateState']>> = {}): GameState {
+  const ms = state.mandateState!;
+  return { ...state, mandateState: { ...ms, godHeld: held, ...extra } };
+}
+
+function aPlace(state: GameState): { id: string; name: string } {
+  const node = state.graph.getNodesByType('location').find(n => n.name?.trim())!;
+  return { id: node.id, name: node.name };
+}
+
+describe('THR-2250 — a Mandate ending names where the god raised it most', () => {
+  it('a place holding the largest share reads "Most of it was raised at {place}."', () => {
+    const base = withMandate(newWorld());
+    const place = aPlace(base);
+    const state = withHeld(base, { [`${place.id}|order`]: 5, [`${place.id}|life`]: 2, [`${getFirstId(base.graph, base.ascendantId)}|order`]: 6 });
+    const ending = ageEnding(state);
+    expect(ending.kind).toBe('mandate');
+    expect(ending.reckon).toBe(`Most of it was raised at ${place.name}.`);
+    if (ending.kind === 'mandate') expect(ending.reckonEntity).toEqual({ id: place.id, name: place.name, kind: 'place', present: true });
+  });
+
+  it('a mortal holding the largest share reads "…through {mortal}\'s chapters."', () => {
+    const base = withMandate(newWorld());
+    const firstId = getFirstId(base.graph, base.ascendantId)!;
+    const name = base.graph.getNode(firstId)!.name;
+    const ending = ageEnding(withHeld(base, { [`${firstId}|order`]: 9, [`${aPlace(base).id}|order`]: 1 }));
+    expect(ending.reckon).toBe(`Most of it was raised through ${name}'s chapters.`);
+    if (ending.kind === 'mandate') expect(ending.reckonEntity?.kind).toBe('mortal');
+  });
+
+  it('ties break on the id, never on insertion order', () => {
+    expect(topGodHeldEntity({ 'b|order': 3, 'a|life': 3 })).toBe('a');
+    expect(topGodHeldEntity({ 'a|life': 3, 'b|order': 3 })).toBe('a');
+    expect(topGodHeldEntity({ 'a|order': 1, 'a|life': 1, 'b|order': 1.5 })).toBe('a');
+    expect(topGodHeldEntity({ 'a|order': 0, 'b|order': -1 })).toBeNull();
+    expect(topGodHeldEntity(undefined)).toBeNull();
+  });
+
+  it('nothing held: no reckon line', () => {
+    const ending = ageEnding(withHeld(withMandate(newWorld()), {}));
+    expect(ending.reckon).toBeUndefined();
+  });
+
+  it('a place whose node is gone drops the line, with a fallback row', () => {
+    const base = withMandate(newWorld());
+    const fallbacks: string[] = [];
+    const ending = ageEnding(withHeld(base, { 'loc_gone|order': 4 }), fallbacks);
+    expect(ending.reckon).toBeUndefined();
+    expect(fallbacks).toContain('mandate_where_node_gone');
+  });
+
+  it('a mortal whose node is gone keeps the name the deed captured, unlinked', () => {
+    const base = withMandate(newWorld());
+    const state = withHeld(base, { 'agent_gone|order': 4 }, {
+      recentDeeds: [{ tick: 3, actorId: 'agent_gone', actorName: 'Kael Thornweaver', sphere: 'order', points: 4 }],
+    });
+    const ending = ageEnding(state);
+    expect(ending.reckon).toBe("Most of it was raised through Kael Thornweaver's chapters.");
+    if (ending.kind === 'mandate') expect(ending.reckonEntity?.present).toBe(false);
+  });
+
+  it('a mortal gone with no captured name reads the deed fallback, without a broken possessive', () => {
+    const base = withMandate(newWorld());
+    const state = withHeld(base, { 'agent_gone|order': 4 }, {
+      recentDeeds: [{ tick: 3, actorId: 'agent_gone', sphere: 'order', points: 4 }],
+    });
+    expect(ageEnding(state).reckon).toBe('Most of it was raised through the chapters of a mortal bound to you.');
+  });
+
+  it('a holder that cannot be named (gone, an artifact, a faction) is passed over for the next', () => {
+    const base = withMandate(newWorld());
+    const place = aPlace(base);
+    const faction = base.graph.getNodesByType('actor').find(n => n.properties?.actorType === 'faction');
+    const held: Record<string, number> = { 'loc_gone|order': 9, [`${place.id}|order`]: 2 };
+    if (faction) held[`${faction.id}|order`] = 8;
+    const fallbacks: string[] = [];
+    const ending = ageEnding(withHeld(base, held), fallbacks);
+    expect(ending.reckon).toBe(`Most of it was raised at ${place.name}.`);
+    expect(fallbacks).toContain('mandate_where_node_gone');
+    if (faction) expect(fallbacks).toContain('mandate_where_unknown_kind');
+    expect(rankGodHeldEntities(held)[0]).toBe('loc_gone');
+  });
+
+  it('a mortal the god never threaded and who left no deed reads without "chapters"', () => {
+    const base = withMandate(newWorld());
+    const threaded = new Set(base.graph.getOutgoingEdges(base.ascendantId, 'thread').map(e => e.target));
+    const mortal = base.graph.getNodesByType('actor')
+      .find(n => n.properties?.actorType === 'individual' && n.name?.trim() && !threaded.has(n.id))!;
+    const ending = ageEnding(withHeld(base, { [`${mortal.id}|order`]: 5 }));
+    expect(ending.reckon).toBe(`Most of it was raised through ${mortal.name}.`);
+  });
+
+  it('the content functions render their samples', () => {
+    expect(mandateWherePlace('the Shrine of Ash')).toBe('Most of it was raised at the Shrine of Ash.');
+    expect(mandateWhereMortal('  ', 'A mortal bound to you')).toBe('Most of it was raised through the chapters of a mortal bound to you.');
+  });
+});
+
+describe('THR-2250 — a Doom ending says how far the Mandate came', () => {
+  function doomAt(progress: number): GameState {
+    const state = withDoom(newWorld(), 'breach');
+    const def = state.mandateDefinition ?? ({ id: 'mandate.test' } as NonNullable<GameState['mandateDefinition']>);
+    return {
+      ...state,
+      mandateDefinition: { ...def, name: 'the Hunger for Order' },
+      mandateState: { ...(state.mandateState ?? { mandateId: def.id, currentStage: 'growth', failed: false }), progress, completed: false } as NonNullable<GameState['mandateState']>,
+    };
+  }
+
+  it.each([
+    [0.8, 'The Hunger for Order stood within reach.'],
+    [TWILIGHT_MANDATE_WITHIN_REACH, 'The Hunger for Order stood within reach.'],
+    [0.6, 'The Hunger for Order stood half-raised.'],
+    [TWILIGHT_MANDATE_HALF_RAISED, 'The Hunger for Order stood half-raised.'],
+    [0.39, 'The Hunger for Order had barely begun.'],
+    [0, 'The Hunger for Order had barely begun.'],
+  ])('progress %s reads "%s"', (progress, line) => {
+    const ending = ageEnding(doomAt(progress));
+    expect(ending.kind).toBe('doom');
+    expect(ending.reckon).toBe(line);
+    if (ending.kind === 'doom') expect(ending.reckonMandateName).toBe('The Hunger for Order');
+  });
+
+  it('no Mandate name: the fallback name', () => {
+    const state = doomAt(0.5);
+    const ending = ageEnding({ ...state, mandateDefinition: { ...state.mandateDefinition!, name: '' } });
+    expect(ending.reckon).toBe('The Mandate stood half-raised.');
+  });
+
+  it('no Mandate at all: no reckon line', () => {
+    const ending = ageEnding({ ...withDoom(newWorld(), 'breach'), mandateState: null });
+    expect(ending.reckon).toBeUndefined();
+  });
+
+  it('the doom-data fallback ending still reckons', () => {
+    const state = doomAt(0.9);
+    const ending = ageEnding({ ...state, doomDefinition: { ...state.doomDefinition, archetype: 'nope' as never } });
+    expect(ending.title).toBe('The Unmaking');
+    expect(ending.reckon).toBe('The Hunger for Order stood within reach.');
+  });
+
+  it('the beats carry the reckon line', () => {
+    const state = startTwilight(doomAt(0.2));
+    const beats = buildTwilightBeats(state, computeHarvest(state), 1);
+    expect(beats.ending.reckon).toBe('The Hunger for Order had barely begun.');
   });
 });
