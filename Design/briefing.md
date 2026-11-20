@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-20 20:57 local (19:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-20 21:57 local (20:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -25,17 +25,17 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 - [The goal is named before it is shown](https://linear.app/threadbare/issue/THR-2262/the-goal-is-named-before-it-is-shown-aftermaths-and-cards-say-raised) — the Mandate now arrives with its first mention. The first time Kael's deeds raise the Mandate (or the Seat comes, if that is first), the Mandate row appears beside the map in that same moment, ahead of anything else waiting. Before that, cards no longer say "Counts toward your Mandate." The rest of the new panels still arrive one per chapter. Veto in chat. The build ticket waits until 23:30Z (00:30 local) for that. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-20a.md)*
 - [Chapters arrive back to back](https://linear.app/threadbare/issue/THR-2263/chapters-arrive-back-to-back-with-no-quiet-beat-on-the-map-the-next) — you now get a quiet day on the map between chapters. When you close a chapter's Aftermath, the world keeps running for one game day (about 12 seconds at normal speed) before it opens the next chapter on its own. While you wait, "Needs you" lists that chapter, and you can open it early. Pausing does not use up the day, and chapters you open yourself never wait. Veto in chat. The build ticket waits until 02:30Z (03:30 local) for that. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-20b.md)*
+- [The Doom panel scrolls at its last stage](https://linear.app/threadbare/issue/THR-2269/the-doom-panel-scrolls-at-its-last-stage-at-19201080-the-stage-list) — the Doom dialog now fits on one screen. Each Doom card shows once, in the stage that dealt it. The "Recent consequences" list goes, because it repeated those same cards. Passed stages fold to their names, and you can open one to read it again. The "1.23x" severity numbers go. The dialog says "stage" instead of "chapter", because a chapter is a story. It is a layout fix with no change to how the Doom plays, so the build has no hold. Veto in chat. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-20c.md)*
 
 Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Thin and on hold: 2 in Ready for Dev, nothing being built.** Nothing new since last hour. Both tickets on the shelf, [the Mandate arrives with its first mention](https://linear.app/threadbare/issue/THR-2265/the-mandate-arrives-with-its-first-mention-the-rail-row-lands-with-the) and [a quiet day on the map between chapters](https://linear.app/threadbare/issue/THR-2266/a-quiet-day-on-the-map-between-chapters-after-a-chapters-aftermath), wait for their veto windows (23:30Z and 02:30Z). So the builder's short runs right now are by design, not a stall.
-
+**Thin but moving: 2 in Ready for Dev, 1 being built.** New since last hour: the builder is working on [the Doom panel fit](https://linear.app/threadbare/issue/THR-2269/the-doom-panel-scrolls-at-its-last-stage-at-19201080-the-stage-list) (claimed 20:22Z, run still active). Both tickets on the shelf, [the Mandate arrives with its first mention](https://linear.app/threadbare/issue/THR-2265/the-mandate-arrives-with-its-first-mention-the-rail-row-lands-with-the) and [a quiet day on the map between chapters](https://linear.app/threadbare/issue/THR-2266/a-quiet-day-on-the-map-between-chapters-after-a-chapters-aftermath), wait for their veto windows (23:30Z and 02:30Z).
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (31 days; last touched 8 Nov, 12 days ago). No branch or local worktree holds work for it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
 - Weekend quiet, not an ask: the lanes were silent for about 12 hours on Sunday 15 Nov (09:57 to 21:48). Per your ruling, weekend quiet is normal.
-- All green otherwise: the live site serves the latest main (651e44a6); CI and scheduled jobs green; no PRs waiting to merge; every enabled lane on schedule; the worktree reaper ran at 20:40 local. Engine speed is normal (149 ms/tick, 5% under the 7-day median). No UX contact sheet this week yet (the newest, 12 Nov, is over a week old; the next review runs Monday).
+- All green otherwise: the live site serves the latest main (651e44a6); CI and scheduled jobs green; no PRs waiting to merge; every enabled lane on schedule; the worktree reaper ran at 21:40 local. For agents: tick cost 232 ms/tick steady, 48% above the 7-day median (156, 140 rows since 4e7a88c8); top phase agent_decision, 638 agents. Name the merges between 4e7a88c8 and 651e44a6: git log --oneline --merges 4e7a88c8..651e44a6. The same commit (651e44a6) measured 149 ms/tick an hour ago, and a build run was active on this machine during the measurement, so this is most likely load, not a code change; next hour's row will tell. No UX contact sheet this week yet (the newest, 12 Nov, is over a week old; the next review runs Monday).
