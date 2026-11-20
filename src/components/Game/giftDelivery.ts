@@ -47,6 +47,11 @@ export interface GiftDeliveryInput {
    * the clock would resume now. Optional: absent = false (the gift waits for its pill).
    */
   atResumeBoundary?: boolean;
+  /**
+   * THR-2259 — the player has a card armed and is aiming it. A gift never takes the
+   * cast the player is in the middle of. Optional: absent = no card armed.
+   */
+  cardArmed?: boolean;
 }
 
 export type GiftHoldReason =
@@ -56,7 +61,9 @@ export type GiftHoldReason =
   | 'vignette'
   | 'suppressed'
   /** THR-1853 — no interrupt has just closed; the gift waits for its pill or the next boundary. */
-  | 'awaiting_boundary';
+  | 'awaiting_boundary'
+  /** THR-2259 — a card is armed; the gift waits until it is cast or set down. */
+  | 'card_armed';
 
 export interface GiftDelivery {
   /** The modal may enter now. */
@@ -85,6 +92,7 @@ export function resolveGiftDelivery(input: GiftDeliveryInput): GiftDelivery {
     ? []
     : input.playerSurfacesOpen.filter(id => GIFT_HOLD_SURFACES.includes(id));
   if (heldBySurfaces.length > 0) heldBy.push('player_surface');
+  if (input.cardArmed === true && !input.isArrivalBeat) heldBy.push('card_armed');
 
   // At a resume boundary the click that closed the interrupt is spent: it never holds.
   const atBoundary = input.atResumeBoundary === true;
@@ -99,6 +107,30 @@ export function resolveGiftDelivery(input: GiftDeliveryInput): GiftDelivery {
     heldBySurfaces,
     recheckInMs: recentInput && heldBy.length === 1 ? quietLeft : null,
   };
+}
+
+/** The registry id of the live answering card (`homed-surfaces.ts`, THR-2151). */
+export const ANSWERING_CARD_SURFACE_ID = 'EncounterVeilAnswering';
+
+/**
+ * THR-2259 — the interrupts that hold a gift. `open` lists only surfaces that stop time,
+ * so the live answering card (`encounter-answering`, `stopsTime: false`) was missing:
+ * on Play the chapter's veil turned into the answering card, the list emptied, and that
+ * read as a resume boundary, so a due gift (the Seat) entered over the chapter's answer.
+ * The answering card counts here while it renders. The step from `encounter` to
+ * `encounter-answering` then keeps the list non-empty, so it is no boundary; the
+ * boundary comes when the chapter's Aftermath closes. The ledger and the court are
+ * reported as player surfaces instead, and the gift's own modal never holds itself.
+ */
+export function giftHoldingInterrupts(
+  open: readonly string[],
+  rendering: readonly string[],
+): string[] {
+  const held = open.filter(id => id !== 'AscendantBeatModal' && !PLAYER_SURFACE_INTERRUPT_IDS.includes(id));
+  if (rendering.includes('encounter-answering') && !held.includes(ANSWERING_CARD_SURFACE_ID)) {
+    held.push(ANSWERING_CARD_SURFACE_ID);
+  }
+  return held;
 }
 
 /** True for Beat 0 and any other gift that opens at once regardless (THR-1716). */

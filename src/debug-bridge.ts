@@ -12,8 +12,8 @@ if (import.meta.env.DEV) {
     wasRunningBeforeInterrupt: boolean | null;
     queuedPopups: number;
     running: boolean;
-    heldArrivals: Array<{ id: string; heldBy: Array<'interrupt' | 'player_surface' | 'recent_input'> }>;
-    heldEncounter: { notificationId: string; heldBy: Array<'interrupt' | 'player_surface' | 'recent_input'> } | null;
+    heldArrivals: Array<{ id: string; heldBy: Array<'interrupt' | 'player_surface' | 'recent_input' | 'card_armed'> }>;
+    heldEncounter: { notificationId: string; heldBy: Array<'interrupt' | 'player_surface' | 'recent_input' | 'card_armed'> } | null;
     rendering: string[];
     foreground: string | null;
     stage: string | null;

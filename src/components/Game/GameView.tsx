@@ -214,6 +214,7 @@ import {
   arrivalHoldingSurfaces,
   encounterHoldingSurfaces,
   isGiftHoldExempt,
+  giftHoldingInterrupts,
   PLAYER_SURFACE_INTERRUPT_IDS,
   type GiftDelivery,
 } from './giftDelivery';
@@ -2134,6 +2135,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
    * render below it) and looks again on `encounterHoldRecheck` when the hold lifts.
    */
   const encounterSurfaceHoldRef = useRef(false);
+  /** THR-2259 — a card is armed: the scan opens no chapter until it is cast or set down. */
+  const cardArmedHoldRef = useRef(false);
   const [encounterHoldRecheck, setEncounterHoldRecheck] = useState(0);
   /** `__DEBUG.getInterruptState().heldEncounter` — the chapter the scan holds, and why. */
   const heldEncounterRef = useRef<{ notificationId: string; heldBy: ArrivalHoldReason[] } | null>(null);
@@ -3053,6 +3056,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       ? worldOpenedEncounterHeldBy({
           playerSurfaceOpen: encounterSurfaceHoldRef.current,
           recentInput: lastInputAtRef.current > 0 && msSinceInput < INTERRUPT_QUIET_AFTER_INPUT_MS,
+          cardArmed: cardArmedHoldRef.current,
         })
       : [];
     if (waiting && heldBy.length > 0) {
@@ -3722,6 +3726,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   useEffect(() => {
     if (!encounterSurfaceHold && heldEncounterRef.current) setEncounterHoldRecheck(n => n + 1);
   }, [encounterSurfaceHold]);
+  // THR-2141 / THR-2259 — an armed card holds the clock, the arrivals, a world-opened
+  // chapter and a due gift until it is cast or set down. `useCardArming` is declared
+  // further down (it needs the cast wiring), so it reports into this state from there.
+  const [cardArmedHold, setCardArmedHold] = useState(false);
+  cardArmedHoldRef.current = cardArmedHold;
+  useEffect(() => {
+    if (!cardArmedHold && heldEncounterRef.current) setEncounterHoldRecheck(n => n + 1);
+  }, [cardArmedHold]);
   const msSinceInputNow = Date.now() - lastInputAtRef.current;
   const arrivalRecentInput = lastInputAtRef.current > 0 && msSinceInputNow < INTERRUPT_QUIET_AFTER_INPUT_MS;
   // What the registry rendered last commit: an arrival already on screen keeps its slot.
@@ -3767,6 +3779,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     warmRecapOpen: warmStart.recap !== null,
     playerSurfaceOpen: arrivalSurfaceOpen,
     recentInput: arrivalRecentInput,
+    cardArmed: cardArmedHold,
     // THR-2197 — a receipt the player clicked through from its toast mounts at once.
     playerOpenedKinds: openedReceiptId !== null && activeReceipt?.id === openedReceiptId ? ['divine-receipt'] : undefined,
     alreadyShown: shownInterruptsRef.current,
@@ -3852,10 +3865,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (anyInterruptShown && inspectorFullOpen) setInspector(stepFullToDocked);
   }, [anyInterruptShown, inspectorFullOpen, setInspector]);
 
-  // THR-2141: an armed card holds the clock too, so a target cannot walk out from
-  // under the cursor while the player aims. `useCardArming` is declared further down
-  // (it needs the cast wiring), so it reports into this state from there.
-  const [cardArmedHold, setCardArmedHold] = useState(false);
+  // THR-2141: an armed card holds the clock too (`cardArmedHold`, declared with the
+  // arrival holds above), so a target cannot walk out from under the cursor while the player aims.
   const clockHeldBySurface = clockHoldOpen({ interruptOpen: interruptResolution.anyOpen, inspectorFullOpen, cardArmed: cardArmedHold });
   const interruptAutoPause = useInterruptAutoPause({
     // THR-1911: the Inspector's Full view holds the clock while it is open (§ D2).
@@ -3966,10 +3977,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [pendingMoment, otherInterruptOpen, gameState.pendingUndertakingMoments, gameState.tick]);
 
   // The ledger and the court are registry interrupts *and* player surfaces: report them
-  // once, as surfaces. The gift's own modal is not a hold on itself.
-  const giftOtherInterrupts = interruptResolution.open.filter(
-    id => id !== 'AscendantBeatModal' && !PLAYER_SURFACE_INTERRUPT_IDS.includes(id),
-  );
+  // once, as surfaces. The gift's own modal is not a hold on itself. THR-2259 — the live
+  // answering card holds the gift too, so Play is no resume boundary.
+  const giftOtherInterrupts = giftHoldingInterrupts(interruptResolution.open, interruptResolution.rendering);
   const giftOtherInterruptsKey = giftOtherInterrupts.join('|');
   // THR-1853 — a resume boundary: the interrupt in front of a held gift just closed.
   // Read in render on purpose: the gift effect below runs in the same commit.
@@ -3997,9 +4007,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       msSinceLastInput,
       atResumeBoundary: giftBoundaryAtRef.current > 0
         && Date.now() - giftBoundaryAtRef.current <= GIFT_RESUME_BOUNDARY_WINDOW_MS,
+      cardArmed: cardArmedHold,
     });
     return { ...delivery, msSinceLastInput };
-  }, [pendingBeat, interruptsSuppressed, journeyVignettePending, giftOtherInterruptsKey, playerSurfacesKey]);
+  }, [pendingBeat, interruptsSuppressed, journeyVignettePending, giftOtherInterruptsKey, playerSurfacesKey, cardArmedHold]);
 
   const [giftRecheck, setGiftRecheck] = useState(0);
   const giftHoldLogRef = useRef('');
@@ -4030,7 +4041,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const giftPillRaised = !!pendingBeat && !beatEntered && (() => {
     const held = computeGiftDelivery().heldBy;
     return held.length > 0
-      && held.every(r => r === 'player_surface' || r === 'recent_input' || r === 'awaiting_boundary');
+      && held.every(r => r === 'player_surface' || r === 'recent_input' || r === 'awaiting_boundary' || r === 'card_armed');
   })();
 
   // ── Needs you (THR-1875, frame plan § F4–F5) ──
