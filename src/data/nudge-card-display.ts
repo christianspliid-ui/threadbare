@@ -37,7 +37,17 @@ export const ESSENCE_PIP_GLYPH = '✦';
  */
 export const MAX_COST_PIPS = 6;
 
-/** Drawn once after a capped cost row to say "and more than this". */
+/**
+ * Rows a cost may wrap onto before it collapses to the overflow glyph. THR-2261:
+ * a price past `MAX_COST_PIPS` used to collapse at once to six pips and "⋯", so
+ * the number lived only in the aria-label and a title the cost tooltip suppresses —
+ * a player paid for a card whose price they could not read (cold playtest round
+ * 8). A second row keeps every pip countable up to twelve, with no numeral on the
+ * card face (Law 13).
+ */
+export const COST_PIP_ROWS = 2;
+
+/** Drawn once after the last pip row when even the wrapped rows cannot hold the price. */
 export const COST_OVERFLOW_GLYPH = '⋯';
 
 /**
@@ -239,9 +249,14 @@ export const ARTIFACT_CATEGORY_RESULT_NOUNS: Readonly<Record<ArtifactCategory, s
   mundane: 'something useful',
 };
 
-/** Where a planted urge points, by the encounter kind it leans toward. */
+/**
+ * Where a planted urge points, by the encounter kind it leans toward. Each noun
+ * names a want inside the mortal, never a place in the scene, so the line reads
+ * true in any chapter: THR-2261 — "toward the open road" read as a description of
+ * the moment in a chapter about guarding a wall (cold playtest round 8).
+ */
 export const COMPULSION_URGE_NOUNS: Readonly<Record<EncounterType, string>> = {
-  explore: 'the open road',
+  explore: 'far places',
   acquire: 'gain',
   create: 'making something',
   hire: 'gathering help',

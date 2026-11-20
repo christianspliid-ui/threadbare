@@ -25,7 +25,7 @@ import { SPHERE_NAMES } from '../../../../types/index';
 import { buildNudgePhaseModel } from '../adapters/buildNudgePhaseModel';
 import { NudgePhaseShell } from '../shells/NudgePhaseShell';
 import { NUDGE_ESSENCE_COST_SCALE } from '../../../../data/nudge-constants';
-import { MAX_COST_PIPS } from '../../../../data/nudge-card-display';
+import { COST_PIP_ROWS, MAX_COST_PIPS } from '../../../../data/nudge-card-display';
 
 const ORDER: StepNudge = { id: 'nothing_breaks', name: 'Nothing Breaks Tonight', sphere: 'order', essenceCost: 3, forecastDelta: 0.05, effectLine: 'The night holds.' };
 const MIND: StepNudge = { id: 'count_the_cost', name: 'Count What It Costs', sphere: 'mind', essenceCost: 3, forecastDelta: 0.05, effectLine: 'She reckons it.' };
@@ -102,10 +102,11 @@ describe('THR-2201 · the hand prices only the god\'s own spheres', () => {
     const mind = screen.getByTestId(`nudge-card-${MIND.id}`).textContent ?? '';
     // The face prints the price as essence pips (✦), one per essence.
     const pips = (text: string) => (text.match(/^✦+/u)?.[0] ?? '').length;
-    // The face caps at MAX_COST_PIPS pips (then an overflow mark); the exact price
+    // The face draws up to COST_PIP_ROWS rows of MAX_COST_PIPS pips (THR-2261; then an
+    // overflow mark); the exact price
     // rides the price row's aria-label, "N essence".
-    expect(pips(order)).toBe(Math.min(3 * S, MAX_COST_PIPS));
-    expect(pips(mind)).toBe(Math.min(3 * S - 1, MAX_COST_PIPS));
+    expect(pips(order)).toBe(Math.min(3 * S, MAX_COST_PIPS * COST_PIP_ROWS));
+    expect(pips(mind)).toBe(Math.min(3 * S - 1, MAX_COST_PIPS * COST_PIP_ROWS));
     const priceLabel = (id: string) =>
       screen.getByTestId(`nudge-card-${id}`).querySelector('[aria-label$=" essence"]')?.getAttribute('aria-label');
     expect(priceLabel(ORDER.id)).toBe(`${3 * S} essence`); // full price — before THR-2201 the stray discount showed one less

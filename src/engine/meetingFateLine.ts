@@ -19,7 +19,6 @@ import type { ValuePair } from '../types/agent';
 import type { BondOutcome, FormativeOutcome } from '../types/meetingEncounter';
 import type { ForecastTier } from '../types/resolution';
 import type { StepOutcome } from '../types/unifiedAction';
-import { getAxisByValuePair } from '../types/axisRegistry';
 import { VALUE_WORD_MAP } from '../data/domain-words';
 import {
   FATE_ANSWER_BY_BAND,
@@ -99,13 +98,20 @@ function splitValuePairWords(valuePair: ValuePair): PoleWords {
 
 /**
  * The words a meeting test's two poles are read as. Pole `a` is the virtue (the
- * positive direction of `AxiologicalProfile`), pole `b` the vice — the same
- * words the agent sheet shows. A pair no reach axis owns (`courage_prudence`)
- * falls back to the sheet's adjectives; never the raw key.
+ * positive direction of `AxiologicalProfile`), pole `b` the vice.
+ *
+ * THR-2261: always the value pair's own sheet adjectives (`VALUE_WORD_MAP`:
+ * `sacrifice_survival` → Self-Sacrificing / Self-Preserving), never the owning
+ * reach axis's role words. Star's axis was re-scoped to Guiding / Misleading
+ * (THR-545) and Stone's reads Careful / Reckless (THR-1135), so a card authored
+ * as "a fair structure" was tagged "Misleading" and "Other people exist" was
+ * tagged "Reckless" — labels that contradicted the card's own words. The pair
+ * words name what the test actually weighs. The fate line, the card tag and the
+ * agent sheet's meeting-lean chip (`meetingLeans`) all read this one function, so
+ * they agree word for word (THR-2149). The sheet's Nature row beside that chip
+ * keeps the reach axis words (`naturePoleWord`).
  */
 export function poleWordsFor(valuePair: ValuePair): PoleWords {
-  const axis = getAxisByValuePair(valuePair);
-  if (axis) return { a: axis.virtue.word, b: axis.vice.word };
   return splitValuePairWords(valuePair);
 }
 

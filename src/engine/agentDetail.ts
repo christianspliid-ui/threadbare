@@ -159,10 +159,12 @@ export function naturePoleWord(pair: ValuePair, pole: 'a' | 'b'): string {
   return poleWordsFor(pair)[pole];
 }
 
-/** One lean the threading meeting wrote, in the axis's own word. */
+/** One lean the threading meeting wrote, in the meeting's own pole word (THR-2261). */
 export interface MeetingLean {
   readonly pair: ValuePair;
   readonly word: string;
+  /** The pole the meeting wrote (THR-2261), so the sheet can tell a lean it already shows. */
+  readonly pole: 'a' | 'b';
 }
 
 /**
@@ -174,12 +176,14 @@ export interface MeetingLean {
 export function meetingLeans(graph: WorldGraph, agentId: string): MeetingLean[] {
   const edge = graph.getIncomingEdges(agentId, 'thread').find(e => e.properties.meetingChoiceRecord != null);
   const record = edge?.properties.meetingChoiceRecord as { formativeOutcomes?: readonly FormativeOutcome[] } | undefined;
-  const byPair = new Map<ValuePair, string>();
+  const byPair = new Map<ValuePair, { word: string; pole: 'a' | 'b' }>();
   for (const o of record?.formativeOutcomes ?? []) {
     if (!o?.valuePair || (o.writtenPole !== 'a' && o.writtenPole !== 'b') || !o.shift) continue;
-    byPair.set(o.valuePair, naturePoleWord(o.valuePair, o.writtenPole));
+    // THR-2261: the meeting's own word (`poleWordsFor`), so the chip echoes the fate line
+    // and the card tag word for word. The Nature row beside it keeps the axis words.
+    byPair.set(o.valuePair, { word: poleWordsFor(o.valuePair)[o.writtenPole], pole: o.writtenPole });
   }
-  return [...byPair].map(([pair, word]) => ({ pair, word }));
+  return [...byPair].map(([pair, { word, pole }]) => ({ pair, word, pole }));
 }
 
 // ─── Prototype flag ──────────────────────────────────────────────
@@ -519,7 +523,8 @@ export interface AgentInfoCardData {
   holdRealmNodeId?: string;
   holdGripWord?: string;
   cultureName?: string;
-  topValues?: { pair: ValuePair; word: string }[];
+  /** `pole` (THR-2261): which side of the pair the word names — `a` for value ≥ 0. */
+  topValues?: { pair: ValuePair; word: string; pole?: 'a' | 'b' }[];
   /**
    * THR-1815: `recentTierCross` marks a row appended beyond the top N because the
    * agent crossed a tier in that domain within `RECENT_TIER_CROSS_WINDOW_TICKS`.
@@ -1787,6 +1792,7 @@ export function getAgentInfoCard(
       card.topValues = valuesToShow.map(tv => ({
         pair: tv.pair,
         word: natureValueWord(tv.pair, tv.value),
+        pole: tv.value >= 0 ? 'a' : 'b',
       }));
     }
 

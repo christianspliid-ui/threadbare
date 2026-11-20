@@ -21,6 +21,7 @@ import { memo } from 'react';
 import {
   ESSENCE_PIP_GLYPH,
   COST_OVERFLOW_GLYPH,
+  COST_PIP_ROWS,
   MAX_COST_PIPS,
 } from '../../data/nudge-card-display';
 import { NUDGE_FREE_COST_LABEL } from '../../data/nudge-stage-content';
@@ -213,8 +214,13 @@ export const CostPips = memo(function CostPips({
     );
   }
 
+  // THR-2261: a price past the cap wraps onto a second row of pips rather than
+  // collapsing to "⋯", so the player can count it (no numeral — Law 13). Only a
+  // price past both rows still ends in the overflow glyph.
+  const drawn = Math.min(rounded, MAX_COST_PIPS * COST_PIP_ROWS);
   const shown = Math.min(rounded, MAX_COST_PIPS);
-  const overflowed = rounded > MAX_COST_PIPS;
+  const wrapped = drawn - shown;
+  const overflowed = rounded > drawn;
   const label = `${rounded} essence`;
   // THR-1750: the band's change against par, inside the same pip budget.
   const par = ghostFrom ?? dearFrom;
@@ -222,8 +228,22 @@ export const CostPips = memo(function CostPips({
     ? Math.max(0, Math.min(Math.round(ghostFrom) - rounded, MAX_COST_PIPS - shown))
     : 0;
   const dearPips = dearFrom !== undefined && dearFrom < rounded && par !== undefined
-    ? Math.max(0, shown - Math.min(shown, Math.round(dearFrom)))
+    ? Math.max(0, drawn - Math.min(drawn, Math.round(dearFrom)))
     : 0;
+  // Pip i (0-based over every drawn pip) is dear when it sits in the last dearPips.
+  const pipRun = (from: number, to: number) => {
+    const dearStart = Math.max(from, drawn - dearPips);
+    const plain = Math.max(0, Math.min(to, dearStart) - from);
+    const dear = Math.max(0, to - Math.max(from, dearStart));
+    return (
+      <>
+        {ESSENCE_PIP_GLYPH.repeat(plain)}
+        {dear > 0 && (
+          <span data-cost-dear={dear} style={{ color: 'var(--negative)' }}>{ESSENCE_PIP_GLYPH.repeat(dear)}</span>
+        )}
+      </>
+    );
+  };
 
   return wrap(
     <span
@@ -240,15 +260,18 @@ export const CostPips = memo(function CostPips({
         color: ESSENCE_COLOR,
         textShadow: emphasised ? `0 0 6px ${ESSENCE_COLOR}` : undefined,
         whiteSpace: 'nowrap',
+        ...(wrapped > 0 ? { display: 'inline-block', textAlign: 'center' as const } : {}),
         ...frameStyle,
       }}
     >
       <span aria-hidden="true">
-        {ESSENCE_PIP_GLYPH.repeat(shown - dearPips)}
-        {dearPips > 0 && (
-          <span data-cost-dear={dearPips} style={{ color: 'var(--negative)' }}>{ESSENCE_PIP_GLYPH.repeat(dearPips)}</span>
+        {pipRun(0, shown)}
+        {wrapped > 0 && (
+          <span data-cost-wrapped={wrapped} style={{ display: 'block', marginTop: '0.15em' }}>
+            {pipRun(shown, drawn)}
+            {overflowed ? COST_OVERFLOW_GLYPH : ''}
+          </span>
         )}
-        {overflowed ? COST_OVERFLOW_GLYPH : ''}
         {ghostPips > 0 && (
           <span data-cost-ghost={ghostPips} style={{ opacity: DOMINION_GHOST_PIP_OPACITY, textDecoration: 'line-through' }}>
             {ESSENCE_PIP_GLYPH.repeat(ghostPips)}

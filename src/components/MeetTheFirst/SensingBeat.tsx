@@ -31,6 +31,21 @@ const PERIPHERAL_POSITIONS = [
 ];
 
 /**
+ * THR-2261 — which peripheral slot a side portrait takes, relative to the focused
+ * one: the next candidate (what the right arrow brings) sits right, the previous
+ * (what the left arrow brings) sits left, anything further sits in the third slot.
+ * Fixed slots by index put the "previous" face on the right for some focuses, so
+ * the left arrow looked like it brought in the right-hand portrait. Pure.
+ */
+export function peripheralSlotFor(idx: number, focusedIdx: number, count: number): number {
+  if (count <= 1) return 0;
+  const offset = (((idx - focusedIdx) % count) + count) % count;
+  if (offset === 1) return 1; // next → right
+  if (offset === count - 1) return 0; // previous → left
+  return 2;
+}
+
+/**
  * THR-1836 — was 1.1, which put the vignette's bottom edge at 1085.9px on a
  * 1080px viewport (Law 33). The vignette block sits inside the scaled button, so
  * the scale moves the block and the portrait together. See `focusedVignetteBottomPx`.
@@ -145,7 +160,7 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
     }
 
     if (somethingFocused) {
-      const p = PERIPHERAL_POSITIONS[idx] ?? PERIPHERAL_POSITIONS[0];
+      const p = PERIPHERAL_POSITIONS[peripheralSlotFor(idx, focusedIdx ?? 0, candidates.length)] ?? PERIPHERAL_POSITIONS[0];
       return {
         transform: `translate(calc(-50% + ${p.x}vw), calc(-50% + ${p.y}vh)) scale(${p.scale}) rotate(${p.rotate}deg)`,
         opacity: 0.3,

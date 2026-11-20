@@ -295,7 +295,7 @@ describe('THR-1714 — fate line table', () => {
         formativeFixture({ band: 'failure', writtenPole: 'b', handForecastTier: 'favorable' }),
         'Kael',
       ).text,
-    ).toBe('Your hand made it Favorable. Fate turned against you: Kael leans Power-Hungry now.');
+    ).toBe('Your hand made it Favorable. Fate turned against you: Kael leans Ruthless now.');
     expect(
       selectBondFateLine(
         bondFixture({ playedNudgeIds: [], band: 'success', baseForecastTier: 'uncertain', handForecastTier: 'uncertain' }),
@@ -313,7 +313,7 @@ describe('THR-1714 — fate line table', () => {
       expect(words.a).not.toBe(words.b);
     }
     expect(poleWordsFor('courage_prudence')).toEqual({ a: 'Courageous', b: 'Prudent' });
-    expect(poleWordsFor('mercy_ruthlessness')).toEqual({ a: 'Brave', b: 'Power-Hungry' });
+    expect(poleWordsFor('mercy_ruthlessness')).toEqual({ a: 'Merciful', b: 'Ruthless' });
   });
 
   it('an outcome without forecast fields drops the forecast clause and says so in the key', () => {
@@ -322,7 +322,7 @@ describe('THR-1714 — fate line table', () => {
       'Kael',
     );
     expect(line.key).toBe(`leaned.with${FATE_LINE_NO_FORECAST_SUFFIX}`);
-    expect(line.text).toBe('Fate went with you: Kael leans Brave now.');
+    expect(line.text).toBe('Fate went with you: Kael leans Merciful now.');
   });
 
   it('an empty name reads as the shared stand-in, never a blank', () => {
@@ -331,10 +331,21 @@ describe('THR-1714 — fate line table', () => {
   });
 
   it('the lean tag is the sheet word, and only a leaning card carries one', () => {
-    expect(leanTagFor('mercy_ruthlessness', 'a')).toBe('Leans Brave');
-    expect(leanTagFor('mercy_ruthlessness', 'b')).toBe('Leans Power-Hungry');
+    expect(leanTagFor('mercy_ruthlessness', 'a')).toBe('Leans Merciful');
+    expect(leanTagFor('mercy_ruthlessness', 'b')).toBe('Leans Ruthless');
     expect(leanTagFor('mercy_ruthlessness', undefined)).toBeUndefined();
     expect(leanTagFor(undefined, 'a')).toBeUndefined();
+    // THR-2261 (cold playtest round 8): the tag names what the test weighs, not the
+    // reach axis's role word. "They brought trades — a fair structure" leans `b` on
+    // sacrifice_survival, and "Other people exist" leans `b` on
+    // preservation_transformation; they read Misleading / Reckless before the fix.
+    expect(leanTagFor('sacrifice_survival', 'b')).toBe('Leans Self-Preserving');
+    expect(leanTagFor('preservation_transformation', 'b')).toBe('Leans Transforming');
+    for (const pair of VALUE_PAIRS) {
+      for (const pole of ['a', 'b'] as const) {
+        expect(leanTagFor(pair, pole), `${pair}.${pole}`).not.toMatch(/Misleading|Guiding|Reckless|Careful/);
+      }
+    }
 
     const test = CONVERTED[0].test!;
     const phase = buildMeetingNudgePhaseModel({ test, testId: CONVERTED[0].id, stepIndex: 0 });
