@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-20 09:35 local (08:35 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-20 09:58 local (08:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,13 +23,13 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Queue
 
-**Healthy: 2 in Ready for Dev, 1 being built.** The builder is on [the Twilight line on what the Mandate came to](https://linear.app/threadbare/issue/THR-2250/the-twilight-says-what-the-mandate-came-to-where-your-hand-raised-it). Last night's run built it and pushed it, then hit the usage limit during review. This morning's run picked it up again and is on its second review round. Waiting: [engine reads the race](https://linear.app/threadbare/issue/THR-2251/the-engine-reads-the-race-a-daily-pace-sample-a-forecast-of-which) and [Doom feeds at a place](https://linear.app/threadbare/issue/THR-2255/the-doom-feeds-at-a-place-ground-you-tend-starves-it-rebuke-answers-it). Both veto windows have passed.
+**Healthy: 2 in Ready for Dev, 1 being built.** The Twilight's Mandate line ([THR-2250](https://linear.app/threadbare/issue/THR-2250/the-twilight-says-what-the-mandate-came-to-where-your-hand-raised-it)) has merged and is live. The builder is now on [a place you tend fills the Mandate by what it cost](https://linear.app/threadbare/issue/THR-2249/a-place-you-tend-fills-the-mandate-by-what-it-cost-a-gods-place-cast) (run started 09:34, still active). Waiting: [engine reads the race](https://linear.app/threadbare/issue/THR-2251/the-engine-reads-the-race-a-daily-pace-sample-a-forecast-of-which) and [Doom feeds at a place](https://linear.app/threadbare/issue/THR-2255/the-doom-feeds-at-a-place-ground-you-tend-starves-it-rebuke-answers-it). Both veto windows have passed.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (31 days; last touched 8 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- Overnight quiet, not an ask: nothing was written from 23:33 Thursday to 09:19 this morning. The builder hit the 5-hour usage limit at about 23:50, and the computer then seems to have slept (the worktree reaper's last run was 01:40). Lanes came back at 09:19. Per your ruling, overnight quiet is normal.
-- Engine speed (for the builder): tick cost 240 ms/tick steady, 55% above the 7-day median (155, 139 rows since 1e32e9f6); top phase agent_decision, 638 agents. Name the merges between 1e32e9f6 and 7415c30f: git log --oneline --merges 1e32e9f6..7415c30f. A builder run was again working beside this measurement, so machine load may still explain part of it.
-- Everything else green: main is live on 7415c30f (the census merge); CI and scheduled jobs green; no PRs waiting; every enabled lane on schedule. No UX contact sheet this week yet (the newest, 12 Nov, is over a week old).
+- Weekend quiet, not an ask: the lanes were silent for about 12 hours on Sunday 15 Nov (09:57 to 21:48). Per your ruling, weekend quiet is normal.
+- Engine speed (for the builder): tick cost 242 ms/tick steady, 56% above the 7-day median (155, 139 rows since 80720d45); top phase agent_decision, 638 agents. Name the merges between 80720d45 and 2b9cfaed: git log --oneline --merges 80720d45..2b9cfaed. A builder run was working beside this measurement again, so machine load may explain part of it.
+- Everything else green: main is live on 2b9cfaed (the Twilight Mandate merge); CI and scheduled jobs green; no PRs waiting; every enabled lane on schedule. No UX contact sheet this week yet (the newest, 12 Nov, is over a week old).
