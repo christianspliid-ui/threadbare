@@ -31,6 +31,8 @@ interface DoomBarProps {
    * Appended to the hover after the next-stage hint.
    */
   stayLine?: string;
+  /** THR-2256 — "It feeds on failures at Riverford and two other places." (`doomFeedHoverLine`). */
+  feedLine?: string | null;
 }
 
 /** THR-1875 — where the stage name ellipsizes before yield step 3 moves it into the tooltip. */
@@ -48,7 +50,7 @@ function getNextStageHint(definition: DoomClockDefinition, state: DoomClockState
   return `Next: ${nextStage.name}`;
 }
 
-export function DoomBar({ definition, state, journeyLabel, locked = false, hideStageName = false, stayLine }: DoomBarProps) {
+export function DoomBar({ definition, state, journeyLabel, locked = false, hideStageName = false, stayLine, feedLine }: DoomBarProps) {
   const color = DOOM_ARCHETYPE_COLORS[definition.archetype] ?? DOOM_ARCHETYPE_COLORS.breach;
   // currentStage is 1-5, so index into stages array with currentStage - 1
   const currentStageDef = definition.stages[state.currentStage - 1] ?? definition.stages[0];
@@ -88,7 +90,7 @@ export function DoomBar({ definition, state, journeyLabel, locked = false, hideS
   // its tooltip — the label keeps today's composition, the description gains the hint.
   const baseDesc = getUITooltip('ui.doom_bar')?.desc ?? '';
   // THR-2240: the answer line follows the next-stage hint, so the hover says what slows it.
-  const desc = [baseDesc, `${nextStageHint}.`, state.expired ? '' : (stayLine ?? ''), locked ? TOPBAR_LOCKED_SUFFIX : ''].filter(Boolean).join(' ');
+  const desc = [baseDesc, `${nextStageHint}.`, state.expired ? '' : (stayLine ?? ''), state.expired ? '' : (feedLine ?? ''), locked ? TOPBAR_LOCKED_SUFFIX : ''].filter(Boolean).join(' ');
   const slotWord = state.expired ? DOOM_UNMADE_WORD : stageName;
 
   return (

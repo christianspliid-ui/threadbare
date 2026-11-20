@@ -36,6 +36,8 @@ export const SUBJECT_ROW_LABELS = {
   notable: 'Notable',
   // THR-2237 — the rival whose landing on this place can still be answered.
   rivalPressed: 'A rival’s hand',
+  // THR-2256 — where the Doom fed and can still be answered.
+  doomFed: 'The doom’s feeding',
   // Faction (§ D7.4)
   description: 'Who they are',
   venerates: 'Venerates',

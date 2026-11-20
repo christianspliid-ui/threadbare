@@ -569,6 +569,11 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'A rival’s hand',
     desc: 'Another god pressed this place, and it gave ground. For a few days you can answer it here.',
   },
+  // THR-2256: the place page row where the Doom fed (a static explainer, never a fill string).
+  'ui.doom.fed_row': {
+    label: 'The doom’s feeding',
+    desc: 'A mortal failed here and the doom fed on it. For a few days you can answer it here; ground you tend starves it.',
+  },
   'ui.rival.pressed_answer_rebuke': {
     label: 'How to answer it',
     desc: 'Rebuke it here, or tend it, and its next blow is turned.',

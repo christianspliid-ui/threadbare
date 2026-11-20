@@ -73,6 +73,7 @@ import { MandateDetail } from '../MandateDetail';
 import { EventPopup } from '../EventPopup';
 import { doomStayNotice, DOOM_STAY_NOTICE_EVENT_TYPE, type DoomStayNotice } from '../../../engine/views/doomStayNotice';
 import { selectRaceLever, selectRaceView } from '../../../engine/views/subjects/godSheet';
+import { selectDoomFeedings } from '../../../engine/views/doomFeedings';
 import { AgendaPicker } from '../AgendaPicker';
 import { InterventionConfirm } from '../InterventionConfirm';
 import { ChoiceSetModal } from '../ChoiceSetModal';
@@ -454,6 +455,8 @@ export function DialogHost({
         onStay={() => { setDoomDetailOpen(false); openAgentSheetForId(gameState.ascendantId); }}
         race={raceView}
         lever={raceLeverView}
+        // THR-2256: where the Doom fed; each place opens its page (Rebuke leads there).
+        feedings={doomDetailOpen ? selectDoomFeedings(gameState) : undefined}
       />
 
       {/* Mandate detail modal */}

@@ -80,6 +80,7 @@ import { getSettlementNotable, type SettlementNotableClauseKind } from '../../se
 import { buildLairMonsterCardModel } from '../stage/buildLairMonsterCardModel';
 import { sizeLine, livelihoodParts } from '../../settlementEconomy/describe';
 import { godHoldsRebuke, rivalPressedNowLine, rivalPressedOn } from '../rivalEntry';
+import { doomFedLead } from '../doomFeedings';
 
 // ─── Shared ──────────────────────────────────────────────────────────────────
 
@@ -593,6 +594,24 @@ const rivalPressed: SectionResolver = (ctx) => {
   });
 };
 
+/**
+ * THR-2256 (plan THR-2247, Decision 4): while the Doom fed here inside the window on ground
+ * the god does not tend, and no rival's landing here is Rebuke's target, the page leads
+ * with it — "The doom fed here when {name} failed." — and how the god answers: Rebuke here
+ * (when held) or tend it. Null otherwise.
+ */
+const doomFed: SectionResolver = (ctx) => {
+  const p = placeOf(ctx);
+  if (!p) return null;
+  const lead = doomFedLead(p.state, p.node.id);
+  if (!lead) return null;
+  return sentenceSection('doom_fed', SUBJECT_ROW_LABELS.doomFed, [[lead.answer]], 'doomFeedings.doomFedLead', {
+    labelTooltipId: 'ui.doom.fed_row',
+    icon: 'doom',
+    highlight: { icon: 'doom', headline: lead.headline },
+  });
+};
+
 /** The place rows, by `typeId` (the registry's `placeRow` reads this). */
 export const PLACE_ROW_RESOLVERS = {
   place_prose: placeProse,
@@ -616,4 +635,5 @@ export const PLACE_ROW_RESOLVERS = {
   lair_monster: lairMonster,
   settlement_notable: settlementNotable,
   rival_pressed: rivalPressed,
+  doom_fed: doomFed,
 } satisfies Record<string, SectionResolver>;
