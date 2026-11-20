@@ -640,6 +640,14 @@ if (import.meta.env.DEV) {
       const reading = raceReading(state);
       return { ...reading, sentence: raceForecastLine(reading.shown) };
     },
+    // THR-2256 — where the Doom fed: the Doom panel's view model (rows newest first).
+    getDoomFeedings: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const { selectDoomFeedings, doomFeedHoverLine } = await import('./engine/views/doomFeedings');
+      const view = selectDoomFeedings(state);
+      return { ...view, hoverLine: doomFeedHoverLine(view), raw: { ...(state.doomFeedings ?? {}) } };
+    },
     getEssenceRefill: async () => {
       const state = _gameStateProvider?.();
       if (!state) return { error: 'no live game state' };

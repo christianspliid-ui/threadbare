@@ -80,6 +80,7 @@ import { getSettlementNotable, type SettlementNotableClauseKind } from '../../se
 import { buildLairMonsterCardModel } from '../stage/buildLairMonsterCardModel';
 import { sizeLine, livelihoodParts } from '../../settlementEconomy/describe';
 import { godHoldsRebuke, rivalPressedNowLine, rivalPressedOn } from '../rivalEntry';
+import { doomFedLead } from '../doomFeedings';
 
 // ─── Shared ──────────────────────────────────────────────────────────────────
 
@@ -593,6 +594,29 @@ const rivalPressed: SectionResolver = (ctx) => {
   });
 };
 
+/**
+ * THR-2256 (plan THR-2247, Decision 4): while the Doom fed here inside the window on ground
+ * the god does not tend, and no rival's landing here is Rebuke's target, the page leads
+ * with it — "The doom fed here when {name} failed." — and how the god answers: Rebuke here
+ * (when held) or tend it. Null otherwise.
+ */
+const doomFed: SectionResolver = (ctx) => {
+  const p = placeOf(ctx);
+  if (!p) return null;
+  const lead = doomFedLead(p.state, p.node.id);
+  if (!lead) return null;
+  // Law 21: the mortal who failed is a link, so the name lives in the parts, not the headline.
+  const at = lead.actor ? lead.who.indexOf(lead.actor.name) : -1;
+  const who: SentencePart[] = lead.actor && at >= 0
+    ? [lead.who.slice(0, at), { text: lead.actor.name, ref: { kind: 'agent', id: lead.actor.id, name: lead.actor.name } }, lead.who.slice(at + lead.actor.name.length)]
+    : [lead.who];
+  return sentenceSection('doom_fed', SUBJECT_ROW_LABELS.doomFed, [who, [lead.answer]], 'doomFeedings.doomFedLead', {
+    labelTooltipId: 'ui.doom.fed_row',
+    icon: 'doom',
+    highlight: { icon: 'doom', headline: lead.headline },
+  });
+};
+
 /** The place rows, by `typeId` (the registry's `placeRow` reads this). */
 export const PLACE_ROW_RESOLVERS = {
   place_prose: placeProse,
@@ -616,4 +640,5 @@ export const PLACE_ROW_RESOLVERS = {
   lair_monster: lairMonster,
   settlement_notable: settlementNotable,
   rival_pressed: rivalPressed,
+  doom_fed: doomFed,
 } satisfies Record<string, SectionResolver>;

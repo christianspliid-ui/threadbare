@@ -58,7 +58,8 @@ export function deriveNavigationTarget(event: TickEvent): NavigationTarget | und
   // (The artifact line carries the bearer as `actorId`, which the default below opens.)
   // THR-2185: a rival's toast opens the place its hand landed on (or its scheme targets),
   // where the god's cards for that place are.
-  if (event.type === 'narrative' || event.type === 'rival_action') {
+  // THR-2256: the last-stage doom-feeding alert opens the place it names, where Rebuke leads.
+  if (event.type === 'narrative' || event.type === 'rival_action' || event.type === 'doom_feeding') {
     const place = event.refs?.find((r) => r.kind === 'location');
     if (place) return { kind: 'location', locationNodeId: place.id };
   }

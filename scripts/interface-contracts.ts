@@ -1942,7 +1942,8 @@ export const CONTRACTS: readonly Contract[] = [
     ulTerms: ['Doom Clock', 'Dominion'],
     mechanism: { kind: 'function', symbols: ['recordDoomFeeding', 'doomRebukablePlaceIds', 'rebukeAnswerFor', 'doomFeedAlert'], module: 'src/engine/doomFeedings.ts' },
     writeSites: ['src/engine/complicationEffects.ts', 'src/engine/unifiedActionResolution.ts', 'src/engine/phaseDoom.ts'],
-    readSites: ['src/engine/rivalRebuke.ts', 'src/engine/phaseDoom.ts', 'src/engine/views/subjects/actOn.ts'],
+    // THR-2256: the Doom panel / Doom bar / place page view model reads the record too.
+    readSites: ['src/engine/rivalRebuke.ts', 'src/engine/phaseDoom.ts', 'src/engine/views/subjects/actOn.ts', 'src/engine/views/doomFeedings.ts'],
     verifiedLive: {
       date: '2026-11-20',
       evidence: 'THR-2255. doomFeedings.thr2255.test.ts: a 0.3 doom_micro_tick at the seated t0 leaves the clock at 100 and traces doom.feed_absorbed tendedBy [seat]; at untended t1 it pushes to 100.3 and records doomFeedings.t1; t1 is rebukable at fedAt and fedAt + 3 days, not one tick later; a clean doom Rebuke writes rebukedPlaces.t1, heldUntil, pushes 4 mind, raises no temper (rivalId null, targetKind doom); a place both pressed and fed answers the rival; doomFeedAlert fires only at stage 5 with Rebuke held and affordable, once a day. The agency census answer arm reports doomPushAbsorbed > 0 on seeds 42, 7 and 99.',

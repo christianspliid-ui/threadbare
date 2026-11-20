@@ -27,6 +27,7 @@ import type { NeedsYouRowVM, NeedsYouVM } from '../../../engine/views/needsYou';
 
 import type { GameState } from '../../../types/gameState';
 import { doomStayNotice } from '../../../engine/views/doomStayNotice';
+import { doomFeedHoverLine, selectDoomFeedings } from '../../../engine/views/doomFeedings';
 import type { FirstScreenReveal } from './firstScreenReveal';
 import { NEWLY_REVEALED_STYLE, type OpeningRevealShow } from './openingReveal';
 import type { OpeningRevealSurfaceId } from '../../../data/opening-reveal-table';
@@ -367,6 +368,8 @@ export function GameViewTopBar({
           locked={encounterOpen}
           hideStageName={y.has('doom_name')}
           stayLine={doomStayNotice(gameState, { includeNotHeld: true }).line}
+          // THR-2256: where the Doom feeds, one line in the hover.
+          feedLine={doomFeedHoverLine(selectDoomFeedings(gameState))}
         />
       </div>
       <FirstUseCaption id="doom" floating />

@@ -2246,6 +2246,19 @@ export interface DebugBridge {
    */
   getRace: () => Promise<DebugRaceReading | { error: string }>;
 
+  /**
+   * THR-2256 — where the Doom fed: the Doom panel's view model (`selectDoomFeedings`, rows
+   * newest first, at most DOOM_FEED_LIST_MAX), the Doom bar's hover line, and the raw
+   * `GameState.doomFeedings` record.
+   */
+  getDoomFeedings: () => Promise<
+    | (import('./engine/views/doomFeedings').DoomFeedingsView & {
+      hoverLine: string | null;
+      raw: Record<string, import('./types/gameState').DoomFeeding>;
+    })
+    | { error: string }
+  >;
+
   getEssenceRefill: () => Promise<
     | (Omit<import('./engine/views/essenceRefill').EssenceRefillReading, 'spheres'> & {
         spheres: Partial<Record<

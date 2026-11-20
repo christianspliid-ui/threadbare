@@ -10,6 +10,11 @@ import { durationLabel } from '../../engine/aftermathWords';
 import { DOOM_ARCHETYPE_FALLBACK_GLYPH, DOOM_ARCHETYPE_GLYPHS } from '../../data/doom-archetype-presentation';
 import type { RaceLeverView, RaceView } from '../../engine/views/subjects/godSheet';
 import { RaceForecastLine, RaceLeverLine } from './RaceForecast';
+import { useCallback } from 'react';
+import { ListRow } from '../shared/ListRow';
+import { useRefRouterContext } from '../../contexts/RefRouterContext';
+import { EntityLink } from '../shared/EntityLink';
+import { DOOM_FEED_WORDS, type DoomFeedingsView } from '../../engine/views/doomFeedings';
 
 interface DoomClockDetailProps {
   open: boolean;
@@ -33,6 +38,16 @@ interface DoomClockDetailProps {
   race?: RaceView | null;
   /** THR-2252 — the race lever; only a chapter lever renders here (Stay is THR-2240's answer). */
   lever?: RaceLeverView | null;
+  /**
+   * THR-2256 — where the Doom fed (`selectDoomFeedings`): a Where it feeds section under the
+   * Stay line. Absent = the section is not shown (an old caller).
+   */
+  feedings?: DoomFeedingsView;
+  /**
+   * THR-2256 — open a fed place. Default: close the panel and open the place page through
+   * the ref router (the page leads with Rebuke while it is offered there).
+   */
+  onOpenPlace?: (placeId: string) => void;
 }
 
 const DOOM_ARCHETYPE_FLAVOR: Record<string, string> = {
@@ -84,7 +99,15 @@ export function DoomClockDetail({
   onStay,
   race,
   lever,
+  feedings,
+  onOpenPlace,
 }: DoomClockDetailProps) {
+  const router = useRefRouterContext();
+  const openPlaceViaRouter = useCallback((placeId: string) => {
+    onClose();
+    router?.open({ kind: 'location', id: placeId }, 'sheet', { via: 'entity-link' });
+  }, [onClose, router]);
+  const openPlace = onOpenPlace ?? (router ? openPlaceViaRouter : undefined);
   const color = DOOM_ARCHETYPE_COLORS[definition.archetype] ?? DOOM_ARCHETYPE_COLORS.breach;
   const glyph = (DOOM_ARCHETYPE_GLYPHS as Readonly<Record<string, string>>)[definition.archetype] ?? DOOM_ARCHETYPE_FALLBACK_GLYPH;
   const flavor = DOOM_ARCHETYPE_FLAVOR[definition.archetype] ?? '';
@@ -107,7 +130,11 @@ export function DoomClockDetail({
       </div>
     )
     : null;
-  const answer = raceBlock || stayAnswer ? <>{raceBlock}{stayAnswer}</> : null;
+  // THR-2256 — where the Doom fed, under the Stay line (the Act slot).
+  const feedBlock = !state.expired && feedings
+    ? <DoomFeedList view={feedings} color={color} onOpenPlace={openPlace} />
+    : null;
+  const answer = raceBlock || stayAnswer || feedBlock ? <>{raceBlock}{stayAnswer}{feedBlock}</> : null;
 
   return (
     <Modal open={open} onClose={onClose} size="m" aria-label="Doom clock">
@@ -441,6 +468,42 @@ export function DoomClockDetail({
         </div>
       </Modal.Footer>
     </Modal>
+  );
+}
+
+/**
+ * THR-2256 — Where it feeds: at most `DOOM_FEED_LIST_MAX` rows, newest first, each a place
+ * link (Law 21) and its word. A Rebuke button only while the card is held and a Rebuke
+ * there answers the Doom (Law 25); the row otherwise reads the place only.
+ */
+function DoomFeedList({ view, color, onOpenPlace }: { view: DoomFeedingsView; color: string; onOpenPlace?: (placeId: string) => void }) {
+  return (
+    <div data-testid="doom-feed-list" style={{ marginTop: '8px', marginLeft: '26px' }}>
+      <div style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-tertiary)', marginBottom: '4px' }}>
+        {DOOM_FEED_WORDS.sectionLabel}
+      </div>
+      {view.rows.length === 0
+        ? <div data-testid="doom-feed-empty" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>{DOOM_FEED_WORDS.empty}</div>
+        : view.rows.map((row) => (
+          <div key={row.placeId} data-testid="doom-feed-row" data-place-id={row.placeId} data-feed-status={row.status}>
+            <ListRow
+              accentColor={`${color}60`}
+              trailing={row.rebukable && onOpenPlace
+                ? (
+                  <Button variant="secondary" size="sm" data-testid="doom-feed-rebuke" onClick={() => onOpenPlace(row.placeId)} style={{ borderColor: `${color}60` }}>
+                    {DOOM_FEED_WORDS.rebukeButton}
+                  </Button>
+                )
+                : undefined}
+            >
+              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
+                <EntityLink id={row.placeId} name={row.placeName} entityRef={onOpenPlace ? undefined : { kind: 'location', id: row.placeId, name: row.placeName }} onOpenEntity={onOpenPlace} />
+                {` · ${row.word}`}
+              </span>
+            </ListRow>
+          </div>
+        ))}
+    </div>
   );
 }
 
