@@ -38,7 +38,12 @@ import { resolveSceneHere } from './sceneHere';
 import { MORTAL_MEANS_ENABLED, COMMISSION_CAUSE_LINE } from '../data/mortal-means-constants';
 import {
   foldActorReputation,
+  isLostActionOutcome,
+  REPUTATION_FOLD_EPSILON,
   reputationFoldId,
+  lostEndingGainCap,
+  nextReputationGainGap,
+  settleLostEncounterReputation,
   stepReputationParts,
 } from './reputationAftermathFold';
 import {
@@ -1935,6 +1940,12 @@ export function executeStepResult(
     stepCast?: StepCastRecord;
   },
   runtime?: SimulationRuntime,
+  /**
+   * THR-2257 — this step closes a group contest the actor lost. The contest loop
+   * stamps `contested_lost` only after this returns, over what may read here as
+   * `success_at_cost`, so the lost-ending settle has to be told in advance.
+   */
+  ending?: { contestLost?: boolean },
 ): { updatedAction: UnifiedAction; events: TickEvent[] } {
   if (resolutionStats?.fightEnd) {
     return executeFightNoRollEnd(action, template, resolutionStats.fightEnd.reason, state, rng, tick, runtime);
@@ -3115,15 +3126,74 @@ export function executeStepResult(
     total: reputationDelta,
   });
   let supersededReputationIds: readonly string[] = [];
-  if (reputationParts.net !== 0) {
-    const fold = foldActorReputation({
+  // THR-2257 — a lost ending settles the row to its final band: the earlier
+  // steps' gains are forfeited, so "lost" never sits over "rose". Runs even on
+  // an ending step that moved nothing, since an earlier step's gain may stand.
+  const lostEnding = finalAction.resolved
+    && (isLostActionOutcome(finalAction.outcome) || ending?.contestLost === true);
+  if (reputationParts.net !== 0 || lostEnding) {
+    const foldArgs = {
       prior: action.aftermathChanges,
       actionId: action.actionId,
       actorId: action.actorId,
-      stepNet: reputationParts.net,
-    });
+    };
+    const fold = foldActorReputation({ ...foldArgs, stepNet: reputationParts.net });
     supersededReputationIds = fold.supersededIds;
-    if (fold.net !== 0) {
+    let rowNet = fold.net;
+    const priorNet = foldActorReputation({ ...foldArgs, stepNet: 0 }).net;
+    if (!lostEnding) {
+      // Review round 2 — record how much of the chapter's gain stands on the
+      // score, so a later lost ending can forfeit it exactly, even after decay
+      // has carried the score across neutral.
+      finalAction = {
+        ...finalAction,
+        reputationGainGap: nextReputationGainGap({
+          prior: action.reputationGainGap,
+          tick,
+          score: finalSnapshot.reputationScore,
+          priorNet,
+          stepNet: reputationParts.net,
+        }),
+      };
+    }
+    if (lostEnding) {
+      const settle = settleLostEncounterReputation({
+        priorNet,
+        stepNet: reputationParts.net,
+        gainCap: lostEndingGainCap({
+          record: action.reputationGainGap,
+          tick,
+          scoreBeforeEndingStep: beforeSnapshot.reputationScore,
+        }),
+      });
+      rowNet = settle.settledNet;
+      if (settle.correction !== 0) {
+        const scoreOf = () => (state.graph.getNode(action.actorId)?.properties?.reputationScore as number | undefined)
+          ?? DEFAULT_REPUTATION;
+        const scoreBefore = scoreOf();
+        applyReputationScoreDelta(state, action.actorId, settle.correction);
+        // Traced as applied: the [0, 1] clamp may swallow part of the correction.
+        const applied = scoreOf() - scoreBefore;
+        // Review round 2 — the row reports what the sheet shows, so a correction
+        // the floor clamp swallowed comes back out of the settled net.
+        rowNet = settle.settledNet + (applied - settle.correction);
+        if (Math.abs(rowNet) <= REPUTATION_FOLD_EPSILON) rowNet = 0;
+        emitTrace({
+          tick,
+          category: 'reputation_lost_encounter_settled',
+          agentId: action.actorId,
+          actionId: action.actionId,
+          templateId: action.templateId,
+          outcome: ending?.contestLost ? 'contested_lost' : (finalAction.outcome ?? 'failure'),
+          priorNet,
+          stepNet: reputationParts.net,
+          correction: applied,
+          settledNet: rowNet,
+          summary: `${action.templateId} lost: reputation settled ${(priorNet + reputationParts.net).toFixed(3)} → ${rowNet.toFixed(3)}`,
+        });
+      }
+    }
+    if (rowNet !== 0) {
       // The checkpoint's clause is true only when its judgement is the whole
       // movement the row reports.
       const branchOnly = !fold.hadPrior
@@ -3133,7 +3203,7 @@ export function executeStepResult(
       const sentence = reputationSentence({
         actorName: currentActorName,
         actorId: action.actorId,
-        delta: fold.net,
+        delta: rowNet,
         flavour: branchOnly ? 'branch' : 'authored',
       });
       aftermathChanges.push({
@@ -3143,7 +3213,7 @@ export function executeStepResult(
         detail: sentence.detail,
         concepts: sentence.concepts,
         ...derivedFields(sentence),
-        polarity: fold.net > 0 ? 'gain' : 'loss',
+        polarity: rowNet > 0 ? 'gain' : 'loss',
         actorId: action.actorId,
         actorName: currentActorName,
       });
@@ -4347,6 +4417,10 @@ export function phaseUnifiedActionProgress(
       attacker, defender, atkTemplate, defTemplate, state, rng,
     );
 
+    const opposition = pair.groupOpposition
+      ? oppositionByInitiator.get(pair.attackerActionId)
+      : undefined;
+
     // Apply attacker outcome
     const atkOps = contestResult.attackerOutcome === 'success'
       ? (atkTemplate.steps[attacker.currentStep]?.onSuccess ?? [])
@@ -4354,6 +4428,7 @@ export function phaseUnifiedActionProgress(
     const { updatedAction: updAtk, events: atkEvents } = executeStepResult(
       attacker, atkTemplate, contestResult.attackerOutcome, atkOps, state, rng, state.tick,
       undefined, runtime,
+      { contestLost: !!opposition && contestResult.attackerOutcome !== 'success' },
     );
 
     // Apply defender outcome
@@ -4363,6 +4438,7 @@ export function phaseUnifiedActionProgress(
     const { updatedAction: updDef, events: defEvents } = executeStepResult(
       defender, defTemplate, contestResult.defenderOutcome, defOps, state, rng, state.tick,
       undefined, runtime,
+      { contestLost: !!opposition && contestResult.defenderOutcome !== 'success' },
     );
 
     // THR-731: a group contest is the one contested shape that carries consequences
@@ -4372,9 +4448,6 @@ export function phaseUnifiedActionProgress(
     // engagement actually produced.
     let atkResolved = updAtk;
     let defResolved = updDef;
-    const opposition = pair.groupOpposition
-      ? oppositionByInitiator.get(pair.attackerActionId)
-      : undefined;
     if (opposition) {
       applyContestConsequences(
         state, opposition,

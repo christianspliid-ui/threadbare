@@ -3447,6 +3447,14 @@ export interface UnifiedAction {
   readonly fightState?: import('./fight').FightState;
   /** Accumulated world-facing deltas across resolved steps, used to build the final aftermath summary. */
   readonly aftermathChanges?: readonly EncounterAftermathChange[];
+  /**
+   * THR-2257 — the actor's real reputation score minus the score it would hold
+   * without this chapter's earlier gains, as of `tick` (`ReputationGainGap` in
+   * `reputationAftermathFold.ts`). Rewritten after each step that moves the
+   * actor's reputation; a lost ending forfeits exactly this gap, decayed to now.
+   * Absent until a step moves reputation, and on saves made before it.
+   */
+  readonly reputationGainGap?: { readonly tick: number; readonly score: number; readonly gap: number };
   /** THR-1936 — the outcome table was applied; it never runs twice for one action. */
   readonly outcomeEffectsApplied?: boolean;
   /**
