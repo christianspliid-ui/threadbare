@@ -38,12 +38,17 @@ export const ESSENCE_PIP_GLYPH = '✦';
 export const MAX_COST_PIPS = 6;
 
 /**
- * Drawn after a capped cost row, naming how many pips the cap hid: six pips and
- * "+3" for a 9-cost card. THR-2261: this was a bare "⋯", so the number lived only
- * in the aria-label and a title the cost tooltip suppresses — a player paid for a
- * card whose price they could not read (cold playtest round 8).
+ * Rows a cost may wrap onto before it collapses to the overflow glyph. THR-2261:
+ * a price past `MAX_COST_PIPS` used to collapse at once to six pips and "⋯", so
+ * the number lived only in the aria-label and a title the cost tooltip suppresses —
+ * a player paid for a card whose price they could not read (cold playtest round
+ * 8). A second row keeps every pip countable up to twelve, with no numeral on the
+ * card face (Law 13).
  */
-export const COST_OVERFLOW_LABEL = '+{n}';
+export const COST_PIP_ROWS = 2;
+
+/** Drawn once after the last pip row when even the wrapped rows cannot hold the price. */
+export const COST_OVERFLOW_GLYPH = '⋯';
 
 /**
  * The carved icon per card type (THR-1904, plan THR-1879 Appendix B). The keyword chip draws it

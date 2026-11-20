@@ -601,10 +601,14 @@ const nature: SectionResolver = (ctx) => {
     i === 0 ? { label: personLine(NATURE_LEAD, { word: v.word }), lead: true } : { label: v.word }
   ));
   // THR-2149: a lean the threading meeting wrote shows as its own chip, never the lead,
-  // and only when its pole word is not already one of the chips ("Deeply Fair" holds "Fair").
+  // and only when the row does not already show it ("Deeply Fair" holds "Fair").
+  // THR-2261: the lean speaks the meeting's words (Cunning) while the row speaks the
+  // axis words (Scheming), so "already shown" is the same pair on the same pole, not
+  // the same word — else one lean would show twice under two names.
   const shown = values.map(v => v.word.replace(/^(Deeply|Somewhat) /, ''));
+  const shownPoles = new Set(values.flatMap(v => (v.pole ? [`${v.pair}.${v.pole}`] : [])));
   for (const lean of meetingLeans(s.state.graph, ctx.nodeId)) {
-    if (shown.includes(lean.word)) continue;
+    if (shownPoles.has(`${lean.pair}.${lean.pole}`) || shown.includes(lean.word)) continue;
     shown.push(lean.word);
     list.push({ label: personLine(NATURE_LEAN_CHIP, { word: lean.word }), dataKey: { attribute: 'lean', value: lean.word } });
   }

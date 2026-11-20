@@ -156,14 +156,14 @@ describe('Nature words and meeting leans (THR-2149 E4)', () => {
     expect(natureValueWord('courage_prudence', 0.6)).toBe('Courageous');
     // The lean on that pair uses the fate line's word, so the chip and the line agree.
     const state = world({ outcomes: [outcome('courage_prudence', 'b', -0.3)] });
-    expect(meetingLeans(state.graph, 'kael')).toEqual([{ pair: 'courage_prudence', word: 'Prudent' }]);
+    expect(meetingLeans(state.graph, 'kael')).toEqual([{ pair: 'courage_prudence', word: 'Prudent', pole: 'b' }]);
   });
 
   it("meetingLeans reads the pole each test wrote, in the fate line's word (THR-2261)", () => {
     const state = world({ outcomes: [outcome('honesty_cunning', 'b', -0.3), outcome('loyalty_ambition', 'a', 0.3), outcome('mercy_ruthlessness', 'a', 0)] });
     expect(meetingLeans(state.graph, 'kael')).toEqual([
-      { pair: 'honesty_cunning', word: 'Cunning' },
-      { pair: 'loyalty_ambition', word: 'Loyal' },
+      { pair: 'honesty_cunning', word: 'Cunning', pole: 'b' },
+      { pair: 'loyalty_ambition', word: 'Loyal', pole: 'a' },
     ]);
     expect(meetingLeans(world().graph, 'kael')).toEqual([]);
   });
@@ -172,7 +172,7 @@ describe('Nature words and meeting leans (THR-2149 E4)', () => {
     for (const pair of VALUE_PAIRS) {
       for (const pole of ['a', 'b'] as const) {
         const state = world({ outcomes: [outcome(pair, pole, pole === 'a' ? 0.3 : -0.3)] });
-        expect(meetingLeans(state.graph, 'kael'), `${pair}.${pole}`).toEqual([{ pair, word: poleWordsFor(pair)[pole] }]);
+        expect(meetingLeans(state.graph, 'kael'), `${pair}.${pole}`).toEqual([{ pair, word: poleWordsFor(pair)[pole], pole }]);
       }
     }
   });
@@ -189,6 +189,15 @@ describe('Nature words and meeting leans (THR-2149 E4)', () => {
     expect(labels.filter(l => l.startsWith('leaning'))).toEqual(['leaning Cunning']);
     // THR-2261: the chip echoes the meeting ("leans Cunning"); the row keeps the axis word.
     expect(labels.join(' ')).not.toMatch(/Honest|leaning Scheming/);
+  });
+
+  it("THR-2261: a lean the row already shows on the same pole adds no chip, though the words differ", () => {
+    // Profile: honesty_cunning leans Scheming (pole b); the meeting wrote pole b ("Cunning").
+    const state = world({ outcomes: [outcome('honesty_cunning', 'b', -0.3)], profile: { honesty_cunning: -0.9 } });
+    const nature = sections(state).find(s => s.typeId === 'nature') as ChipsSection;
+    const labels = nature.chips.map(c => c.label);
+    expect(labels.join(' ')).toMatch(/Scheming/);
+    expect(labels.filter(l => l.startsWith('leaning'))).toEqual([]);
   });
 });
 

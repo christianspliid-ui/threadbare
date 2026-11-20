@@ -364,9 +364,9 @@ describe('ActionCard — THR-1464: the chip row wraps instead of overlapping', (
     expect(container.querySelector('[data-testid^="action-card-keyword-"]')).toBeTruthy();
     expect(container.querySelector('[data-testid^="action-card-reach-"]')).toBeTruthy();
     const cost = container.querySelector('[data-testid^="action-card-cost-"]') as HTMLElement;
-    // The price is shown IN FULL — six pips plus the hidden count (THR-2261: "+4", was a bare "⋯"), never ellipsised
+    // The price is shown IN FULL — six pips and a wrapped row of four (THR-2261; was six and a bare "⋯"), never ellipsised
     // away. Wrapping is what buys the room for it (the ticket's explicit choice).
-    expect(cost.textContent).toBe('✦'.repeat(6) + '+4');
+    expect(cost.textContent).toBe('✦'.repeat(10));
   });
 
   it('lets the row wrap, so content that will not fit takes a second line', () => {
