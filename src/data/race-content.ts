@@ -64,6 +64,51 @@ export const RACE_LEVER_CHAPTER_BARE = 'Spend essence on the chapters of a morta
 /** Stay lever (the surfaces add THR-2240's "Stay it" button beside it). */
 export const RACE_LEVER_STAY = 'Stay the Unmaking to slow Doom.';
 
+/** THR-2252 — the hover id on the rail word and the forecast sentence (`ui-content.ts`). */
+export const RACE_TOOLTIP_ID = 'ui.race';
+
+/** THR-2252 — warm recap lead when the race came into view during the warm-up (never "shifted"). */
+export const RACE_RECAP_CAME_INTO_VIEW_LEAD = 'While you were away, how the age ends came into view.';
+/** THR-2252 — warm recap lead when the shown state differs from the snapshot. */
+export const RACE_RECAP_SHIFTED_LEAD = 'While you were away, how the age ends shifted.';
+
+/** The rail word for a shown state, or `null` for `hidden` / an unknown state. */
+export function raceRailWord(state: RaceState | string | undefined): string | null {
+  if (!state || state === 'hidden') return null;
+  return (RACE_RAIL_WORDS as Record<string, string>)[state] ?? null;
+}
+
+/** One run of the chapter lever: plain text, or the slot that carries a hover / link. */
+export interface RaceLeverRun {
+  text: string;
+  slot?: 'sphere' | 'mortal';
+}
+
+/**
+ * THR-2252 — the chapter lever as runs, so the surfaces can hang the sphere hover and
+ * the mortal's `EntityLink` on their words. Joined, it reads exactly
+ * {@link raceChapterLeverLine}.
+ */
+export function raceChapterLeverRuns(sphereWord: string | undefined, mortalName: string | undefined): RaceLeverRun[] {
+  const sphere = sphereWord?.trim();
+  const mortal = mortalName?.trim();
+  const template = sphere && mortal
+    ? RACE_LEVER_CHAPTER
+    : sphere ? RACE_LEVER_CHAPTER_NO_MORTAL : mortal ? RACE_LEVER_CHAPTER_NO_SPHERE : RACE_LEVER_CHAPTER_BARE;
+  const runs: RaceLeverRun[] = [];
+  const re = /\{(Sphere|Mortal)\}/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(template)) !== null) {
+    if (m.index > last) runs.push({ text: template.slice(last, m.index) });
+    if (m[1] === 'Sphere' && sphere) runs.push({ text: sphere, slot: 'sphere' });
+    if (m[1] === 'Mortal' && mortal) runs.push({ text: mortal, slot: 'mortal' });
+    last = m.index + m[0].length;
+  }
+  if (last < template.length) runs.push({ text: template.slice(last) });
+  return runs;
+}
+
 /** The forecast sentence for a shown state, or `null` for `hidden` / an unknown state (Law 43). */
 export function raceForecastLine(state: RaceState | string | undefined): string | null {
   if (!state || state === 'hidden') return null;

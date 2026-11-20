@@ -13,6 +13,8 @@ import type { SphereName } from '../../types';
 import { sphereHasAscendantCard } from '../../engine/views/subjects/godSheet';
 import { MANDATE_RAISED_BY_LINE, MANDATE_RECENT_DEEDS_HEADING, mandateDeedLine } from '../../data/ascendant-bar-content';
 import { MANDATE_DEED_STRONG_POINTS, MANDATE_RECENT_DEEDS_KEPT } from '../../data/game-config';
+import type { RaceLeverView, RaceView } from '../../engine/views/subjects/godSheet';
+import { RaceForecastLine, RaceLeverLine } from './RaceForecast';
 
 interface MandateDetailProps {
   open: boolean;
@@ -26,6 +28,12 @@ interface MandateDetailProps {
    * day`, which is English rather than a crash (NFP #4).
    */
   currentTick?: number;
+  /** THR-2252 — which clock lands first at this pace; absent/null while the race is hidden. */
+  race?: RaceView | null;
+  /** THR-2252 — the one move (a chapter, or Stay); null when none is offered. */
+  lever?: RaceLeverView | null;
+  /** THR-2252 — the Stay lever's button: the same handler as the Doom dialog's "Stay it". */
+  onStay?: () => void;
 }
 
 const STAGE_ORDER: MandateStage[] = ['setup', 'escalation', 'culmination'];
@@ -273,7 +281,7 @@ function CheckpointRow({
   );
 }
 
-export function MandateDetail({ open, onClose, definition, state, currentTick }: MandateDetailProps) {
+export function MandateDetail({ open, onClose, definition, state, currentTick, race, lever, onStay }: MandateDetailProps) {
   const color = MANDATE_TYPE_COLORS[definition.type] ?? MANDATE_TYPE_COLORS.graph_state;
   const typeLabel = MANDATE_TYPE_LABELS[definition.type] ?? 'Unknown';
   const isSphereGrowth = definition.runtimeKind === 'sphere_growth';
@@ -334,6 +342,13 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
           paddingBottom: '16px',
           borderBottom: '1px solid var(--border-subtle)',
         }}>
+          {/* THR-2252 — forecast first, then the one move, then the hunger's own words. */}
+          {race && (
+            <div data-testid="mandate-detail-race" style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
+              <RaceForecastLine race={race} />
+              {lever && <RaceLeverLine lever={lever} onStay={onStay} color={color} />}
+            </div>
+          )}
           <p style={{
             fontSize: 'var(--text-xs)',
             color: 'var(--text-secondary)',

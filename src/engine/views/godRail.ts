@@ -67,6 +67,8 @@ import {
   type SignaturePathView,
 } from './subjects/godSheet';
 import type { GodRailSectionId } from '../../data/frame-registry';
+import { shownRaceState } from '../raceForecast';
+import { RACE_TOOLTIP_ID } from '../../data/race-content';
 
 // ─── Shapes ──────────────────────────────────────────────────────────
 
@@ -152,6 +154,8 @@ export interface GodRailRow {
   id: GodRailSectionId;
   renders: boolean;
   summary: string;
+  /** THR-2252 — a hover on the summary word itself (the Mandate row's race word: `ui.race`). */
+  summaryTooltipId?: string;
 }
 
 export interface GodRailBodies {
@@ -273,10 +277,11 @@ export function reachSummary(reachLabel: string, tierWord: string): string {
   return firstFittingStep(GOD_RAIL_REACH_SUMMARY_STEPS, (t) => t.replace('{reach}', reachLabel).replace('{tier}', tierWord));
 }
 
-/** "Goal · Holding" — the same trend table the opened block reads (THR-2183). */
+/** "Goal · Holding" — the same trend table the opened block reads (THR-2183); "Goal · Doom lands first" while the race is shown (THR-2252). */
 export function mandateSummary(mandate: MandateRowView | null): string {
   if (!mandate) return '';
-  const trend = MANDATE_TREND_WORD[mandate.trend] ?? MANDATE_TREND_WORD.steady;
+  // THR-2252 — while the race is shown, the row trades its trend word for the race word.
+  const trend = mandate.race?.word ?? MANDATE_TREND_WORD[mandate.trend] ?? MANDATE_TREND_WORD.steady;
   return firstFittingStep(GOD_RAIL_MANDATE_SUMMARY_STEPS, (t) => t.replace('{trend}', trend));
 }
 
@@ -317,6 +322,8 @@ export function godRailStamp(state: GameState): string {
     attentionCanBeSpent(state.graph, state.ascendantId) ? 1 : 0,
     state.mandateState?.currentStage ?? '',
     Math.round((state.mandateState?.progress ?? 0) * 100),
+    // THR-2252: the shown race state (and the debug override) move without touchWorld.
+    shownRaceState(state.mandateState?.raceWatch),
   ].join('|');
 }
 
@@ -379,7 +386,7 @@ export function buildGodRail(state: GameState, rawArgs: GodRailArgs): GodRailVM 
     },
     rows: {
       reaches: { id: 'reaches', renders: true, summary: primaryReach ? reachSummary(primaryReach.label, primaryReach.tierWord) : '' },
-      mandate: { id: 'mandate', renders: true, summary: mandateSummary(mandate) },
+      mandate: { id: 'mandate', renders: true, summary: mandateSummary(mandate), ...(mandate?.race ? { summaryTooltipId: RACE_TOOLTIP_ID } : {}) },
       covenants: { id: 'covenants', renders: covenants.length > 0, summary: countWords(covenants.length, GOD_RAIL_ROW_SUMMARIES.covenants) },
       signatures: { id: 'signatures', renders: yourSignatures > 0, summary: settledSignatures > 0
         ? countWords(settledSignatures, GOD_RAIL_ROW_SUMMARIES.signatures)

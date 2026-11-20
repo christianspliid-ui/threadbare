@@ -1693,10 +1693,10 @@ exit
 - **Intent:** The game can say which clock ends the age at the current pace: once a day the Mandate phase samples both clocks and reads which lands first, holding a new reading two days before it shows.
 - **Producer → Consumer:** Doom Clock & Journey → Ascendant Beats & Progression
 - **UL terms:** *Mandate*, *Doom Clock*, *Run*
-- **Production hits:** 63 total — 2 write, 2 read, 59 unclassified
+- **Production hits:** 63 total — 2 write, 5 read, 56 unclassified
 - **Write sites:** `src/engine/phaseDoom.ts`, `src/engine/phaseMandate.ts`
-- **Read sites:** `src/debug-bridge.ts`, `src/engine/raceForecast.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/DoomBar.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView/openingReveal.ts` +54 more
+- **Read sites:** `src/debug-bridge.ts`, `src/engine/raceForecast.ts`, `src/engine/views/godRail.ts`, `src/engine/views/subjects/godSheet.ts`, `src/engine/views/warmRecap.ts`
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/DoomBar.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView/openingReveal.ts` +51 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `doom-feeds-at-a-place` — 🟢 LIVE
@@ -3081,10 +3081,10 @@ exit
 - **Intent:** Finishing the Mandate ends the age in triumph, at once, instead of play running on until doom ends it anyway.
 - **Producer → Consumer:** Ascendant Beats & Progression → Doom Clock & Journey
 - **UL terms:** *Mandate*, *Doom Clock*, *Run*
-- **Production hits:** 20 total — 1 write, 1 read, 18 unclassified
+- **Production hits:** 21 total — 1 write, 1 read, 19 unclassified
 - **Write sites:** `src/engine/phaseMandate.ts`
 - **Read sites:** `src/engine/orchestrator.ts`
-- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/Game/hosts/DialogHost.tsx`, `src/data/ia-manifest.ts`, `src/data/twilight-content.ts` +13 more
+- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/Game/hosts/DialogHost.tsx`, `src/data/ia-manifest.ts`, `src/data/twilight-content.ts` +14 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mandate-ledger-reckons-twilight` — 🔵 UNVERIFIED-OK
@@ -3092,10 +3092,10 @@ exit
 - **Intent:** The end of the age says what the Mandate came to: a fulfilled one names the place or mortal where the god's hand raised it most, and a Doom ending says in a word how near it stood.
 - **Producer → Consumer:** Ascendant Beats & Progression → Attention, Chronicle & Narrative
 - **UL terms:** *Mandate*, *Doom Clock*, *Run*
-- **Production hits:** 20 total — 1 write, 1 read, 18 unclassified
+- **Production hits:** 21 total — 1 write, 1 read, 19 unclassified
 - **Write sites:** `src/engine/phaseMandate.ts`
 - **Read sites:** `src/engine/twilight.ts`
-- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/Game/hosts/DialogHost.tsx`, `src/data/ia-manifest.ts`, `src/data/twilight-content.ts` +13 more
+- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/Game/hosts/DialogHost.tsx`, `src/data/ia-manifest.ts`, `src/data/twilight-content.ts` +14 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mandate-milestone-prose-narrates-transitions` — 🟢 LIVE

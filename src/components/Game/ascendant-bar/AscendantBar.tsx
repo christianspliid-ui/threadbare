@@ -108,12 +108,15 @@ function railFaceCount(vm: GodRailVM, gameState: GameState): string {
 function FoldedRow({
   def,
   summary,
+  summaryTooltipId,
   open,
   onToggle,
   children,
 }: {
   def: GodRailSectionDef;
   summary: string;
+  /** THR-2252 — a hover on the summary word (the Mandate row's race word). */
+  summaryTooltipId?: string;
   open: boolean;
   onToggle: () => void;
   children: ReactElement | null;
@@ -152,7 +155,7 @@ function FoldedRow({
         {def.tooltipId ? <Tooltip id={def.tooltipId} focusable={false}>{label}</Tooltip> : label}
         {summary && (
           <span data-testid={`god-rail-row-summary-${def.id}`} style={{ color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
-            {summary}
+            {summaryTooltipId ? <Tooltip id={summaryTooltipId} focusable={false}>{summary}</Tooltip> : summary}
           </span>
         )}
         <Icon name="disclosure" size="floor" decorative style={{ marginLeft: 'auto', flexShrink: 0, transform: open ? 'rotate(180deg)' : 'rotate(90deg)' }} />
@@ -241,8 +244,8 @@ export function AscendantBar({
   const pinned = visible.filter((d) => d.place === 'pinned');
   const fill = visible.filter((d) => d.place === 'fill');
   const folded = visible.filter((d) => d.place === 'folded');
-  const summaryOf = (id: GodRailSectionId): string =>
-    id === 'reaches' || id === 'mandate' || id === 'covenants' || id === 'signatures' || id === 'hooks' ? vm.rows[id].summary : '';
+  const rowOf = (id: GodRailSectionId) =>
+    id === 'reaches' || id === 'mandate' || id === 'covenants' || id === 'signatures' || id === 'hooks' ? vm.rows[id] : null;
 
   return (
     <aside
@@ -270,7 +273,7 @@ export function AscendantBar({
         <div data-testid="god-rail-folded-rows" className={styles.foldedRows}>
           {folded.map((def) => (
             <div key={def.id} {...ring(def, { flexShrink: 0 })}>
-              <FoldedRow def={def} summary={summaryOf(def.id)} open={openRows.includes(def.id)} onToggle={() => toggleRow(def.id)}>
+              <FoldedRow def={def} summary={rowOf(def.id)?.summary ?? ''} summaryTooltipId={rowOf(def.id)?.summaryTooltipId} open={openRows.includes(def.id)} onToggle={() => toggleRow(def.id)}>
                 {GOD_RAIL_COMPONENTS[def.id](bag)}
               </FoldedRow>
             </div>

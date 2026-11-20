@@ -421,6 +421,11 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Mandate',
     desc: "What you are working toward, racing the doom. Keep a checkpoint well and you blunt the doom's next blow.",
   },
+  // THR-2252 — the rail word and the forecast sentence: which clock finishes first at this pace.
+  'ui.race': {
+    label: 'How the age ends',
+    desc: "Which clock finishes first if the last fifteen days' pace holds, not which is fuller: your {{ui.mandate}} or {{ui.doom_bar}}.",
+  },
   // THR-1814 — the TIME readout while something holds the clock.
   'ui.clock_held': {
     label: 'Held',

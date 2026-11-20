@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { MANDATE_TREND_COLOR, MANDATE_TREND_ARROW, MANDATE_TREND_WORD } from '../../../data/ascendant-bar-content';
 import type { MandateRowView } from './selectors';
 import styles from './styles.module.css';
+import { Tooltip } from '../../shared/Tooltip';
+import { RACE_TOOLTIP_ID } from '../../../data/race-content';
 
 interface MandateBlockProps {
   mandate: MandateRowView;
@@ -26,15 +28,29 @@ export function MandateBlock({ mandate, onOpen }: MandateBlockProps) {
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onOpen(); }}
       aria-label="View mandate details"
     >
-      {/* Flavor line */}
-      <div style={{
-        fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)',
-        color: hov ? 'var(--text-primary)' : 'var(--text-secondary)',
-        fontStyle: 'italic', lineHeight: 1.4,
-        transition: 'color 0.15s ease',
-      }}>
-        {mandate.flavorLine}
-      </div>
+      {/* THR-2252 — while the race is shown, the forecast takes the flavour line's slot
+          (same size, not italic); the flavour moves to the Mandate dialog. Height unchanged. */}
+      {mandate.race ? (
+        <div
+          data-testid="mandate-race-line"
+          data-race-state={mandate.race.state}
+          style={{
+            fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)',
+            color: 'var(--text-primary)', lineHeight: 1.4,
+          }}
+        >
+          <Tooltip id={RACE_TOOLTIP_ID} focusable={false}>{mandate.race.sentence}</Tooltip>
+        </div>
+      ) : (
+        <div style={{
+          fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)',
+          color: hov ? 'var(--text-primary)' : 'var(--text-secondary)',
+          fontStyle: 'italic', lineHeight: 1.4,
+          transition: 'color 0.15s ease',
+        }}>
+          {mandate.flavorLine}
+        </div>
+      )}
 
       {/* THR-2154: what fills the goal — the god and the mortals bound to it. */}
       {mandate.fillLine && (

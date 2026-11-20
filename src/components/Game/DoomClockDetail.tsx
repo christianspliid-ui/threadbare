@@ -8,6 +8,8 @@ import { DOOM_CLIMAX_START } from '../../data/game-config';
 import { durationLabel } from '../../engine/aftermathWords';
 // THR-2103 (decision 8, Law 58): the doom marks live in one list; this file kept a second copy.
 import { DOOM_ARCHETYPE_FALLBACK_GLYPH, DOOM_ARCHETYPE_GLYPHS } from '../../data/doom-archetype-presentation';
+import type { RaceLeverView, RaceView } from '../../engine/views/subjects/godSheet';
+import { RaceForecastLine, RaceLeverLine } from './RaceForecast';
 
 interface DoomClockDetailProps {
   open: boolean;
@@ -24,6 +26,13 @@ interface DoomClockDetailProps {
   stayButton?: string;
   /** THR-2240 — the button's handler: the same one the stage notice's "Stay it" uses. */
   onStay?: () => void;
+  /**
+   * THR-2252 — which clock lands first at this pace; absent/null while the race is hidden.
+   * While shown it sits above the Stay answer and replaces the rate-blind Remaining row.
+   */
+  race?: RaceView | null;
+  /** THR-2252 — the race lever; only a chapter lever renders here (Stay is THR-2240's answer). */
+  lever?: RaceLeverView | null;
 }
 
 const DOOM_ARCHETYPE_FLAVOR: Record<string, string> = {
@@ -73,6 +82,8 @@ export function DoomClockDetail({
   stayLine,
   stayButton,
   onStay,
+  race,
+  lever,
 }: DoomClockDetailProps) {
   const color = DOOM_ARCHETYPE_COLORS[definition.archetype] ?? DOOM_ARCHETYPE_COLORS.breach;
   const glyph = (DOOM_ARCHETYPE_GLYPHS as Readonly<Record<string, string>>)[definition.archetype] ?? DOOM_ARCHETYPE_FALLBACK_GLYPH;
@@ -83,9 +94,19 @@ export function DoomClockDetail({
   // THR-2240 — the answer sits under the current stage (Who → Now → Act); before the
   // first stage, or once the doom has landed, it sits under the list (or not at all).
   const hasCurrentStage = definition.stages.some((_, idx) => idx === state.currentStage - 1);
-  const answer = !state.expired && stayLine
+  const stayAnswer = !state.expired && stayLine
     ? <DoomStayAnswer line={stayLine} button={stayButton} onStay={onStay} color={color} />
     : null;
+  // THR-2252 — the forecast above the Stay answer, with the chapter lever only.
+  const raceBlock = !state.expired && race
+    ? (
+      <div data-testid="doom-detail-race" style={{ marginTop: '8px', marginLeft: '26px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <RaceForecastLine race={race} />
+        {lever?.kind === 'chapter' && <RaceLeverLine lever={lever} />}
+      </div>
+    )
+    : null;
+  const answer = raceBlock || stayAnswer ? <>{raceBlock}{stayAnswer}</> : null;
 
   return (
     <Modal open={open} onClose={onClose} size="m" aria-label="Doom clock">
@@ -213,7 +234,8 @@ export function DoomClockDetail({
                 label="Elapsed"
                 value={`${durationLabel(state.currentTick)} of ${durationLabel(state.totalTicks)}`}
               />
-              <StatRow label="Remaining" value={durationLabel(ticksRemaining)} />
+              {/* THR-2252 — rate-blind; the forecast replaces it while the race is shown (PC-6). */}
+              {!race && <StatRow label="Remaining" value={durationLabel(ticksRemaining)} />}
               <StatRow label="Next beat" value={nextBeatLabel} />
               {journeyLabel && (
                 <StatRow label="The First" value={journeyLabel} color={color} />
