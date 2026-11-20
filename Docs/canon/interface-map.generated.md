@@ -3092,10 +3092,10 @@ exit
 - **Intent:** The end of the age says what the Mandate came to: a fulfilled one names the place or mortal where the god's hand raised it most, and a Doom ending says in a word how near it stood.
 - **Producer → Consumer:** Ascendant Beats & Progression → Attention, Chronicle & Narrative
 - **UL terms:** *Mandate*, *Doom Clock*, *Run*
-- **Production hits:** 21 total — 1 write, 1 read, 19 unclassified
+- **Production hits:** 21 total — 1 write, 2 read, 18 unclassified
 - **Write sites:** `src/engine/phaseMandate.ts`
-- **Read sites:** `src/engine/twilight.ts`
-- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/Game/hosts/DialogHost.tsx`, `src/data/ia-manifest.ts`, `src/data/twilight-content.ts` +14 more
+- **Read sites:** `src/engine/raceForecast.ts`, `src/engine/twilight.ts`
+- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/Game/hosts/DialogHost.tsx`, `src/data/ia-manifest.ts`, `src/data/twilight-content.ts` +13 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mandate-milestone-prose-narrates-transitions` — 🟢 LIVE

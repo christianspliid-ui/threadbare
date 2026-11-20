@@ -3772,7 +3772,9 @@ export const CONTRACTS: readonly Contract[] = [
     ulTerms: ['Mandate', 'Doom Clock', 'Run'],
     mechanism: { kind: 'state-field', symbols: ['mandateState'] },
     writeSites: ['src/engine/phaseMandate.ts'],
-    readSites: ['src/engine/twilight.ts'],
+    readSites: ['src/engine/twilight.ts', 'src/engine/raceForecast.ts'],
+    // THR-2254 — `raceLeverPlaceId` (raceForecast) also reads `godHeld`: the race lever names
+    // the god's place with the largest held share in the short Mandate sphere.
     // THR-2250 (plan 2026-11-19-thr-2245 Decision 6). `phaseMandate` folds credits into
     // `godHeld` (per `entityId|sphere`) and computes `progress`; `ageEnding` reads them into
     // `AgeEnding.reckon` — `topGodHeldEntity` + `mandateWhere` on a Mandate ending,

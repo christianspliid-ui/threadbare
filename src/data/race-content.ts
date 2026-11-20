@@ -61,6 +61,14 @@ export const RACE_LEVER_CHAPTER_NO_MORTAL = 'Spend {Sphere} essence on the chapt
 export const RACE_LEVER_CHAPTER_NO_SPHERE = 'Spend essence on {Mortal}\'s chapters to raise your Mandate.';
 /** Chapter lever with neither name. */
 export const RACE_LEVER_CHAPTER_BARE = 'Spend essence on the chapters of a mortal bound to you.';
+/** THR-2254 — place lever. `{Place}` and `{Sphere}` are filled; the place is an `EntityLink`. */
+export const RACE_LEVER_PLACE = 'Tend {Place} in {Sphere} to raise your Mandate.';
+/** THR-2254 — place lever when the place has no name (no link). */
+export const RACE_LEVER_PLACE_NO_NAME = 'Tend a place in {Sphere} to raise your Mandate.';
+/** THR-2254 — place lever with no sphere word. */
+export const RACE_LEVER_PLACE_NO_SPHERE = 'Tend {Place} to raise your Mandate.';
+/** THR-2254 — place lever with neither name. */
+export const RACE_LEVER_PLACE_BARE = 'Tend a place you hold to raise your Mandate.';
 /** Stay lever (the surfaces add THR-2240's "Stay it" button beside it). */
 export const RACE_LEVER_STAY = 'Stay the Unmaking to slow Doom.';
 
@@ -81,7 +89,7 @@ export function raceRailWord(state: RaceState | string | undefined): string | nu
 /** One run of the chapter lever: plain text, or the slot that carries a hover / link. */
 export interface RaceLeverRun {
   text: string;
-  slot?: 'sphere' | 'mortal';
+  slot?: 'sphere' | 'mortal' | 'place';
 }
 
 /**
@@ -107,6 +115,35 @@ export function raceChapterLeverRuns(sphereWord: string | undefined, mortalName:
   }
   if (last < template.length) runs.push({ text: template.slice(last) });
   return runs;
+}
+
+/**
+ * THR-2254 — the place lever as runs (the sphere hover and the place's `EntityLink` hang
+ * on their words). Joined, it reads exactly {@link racePlaceLeverLine}.
+ */
+export function racePlaceLeverRuns(sphereWord: string | undefined, placeName: string | undefined): RaceLeverRun[] {
+  const sphere = sphereWord?.trim();
+  const place = placeName?.trim();
+  const template = place && sphere
+    ? RACE_LEVER_PLACE
+    : sphere ? RACE_LEVER_PLACE_NO_NAME : place ? RACE_LEVER_PLACE_NO_SPHERE : RACE_LEVER_PLACE_BARE;
+  const runs: RaceLeverRun[] = [];
+  const re = /{(Sphere|Place)}/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(template)) !== null) {
+    if (m.index > last) runs.push({ text: template.slice(last, m.index) });
+    if (m[1] === 'Sphere' && sphere) runs.push({ text: sphere, slot: 'sphere' });
+    if (m[1] === 'Place' && place) runs.push({ text: place, slot: 'place' });
+    last = m.index + m[0].length;
+  }
+  if (last < template.length) runs.push({ text: template.slice(last) });
+  return runs;
+}
+
+/** THR-2254 — the place lever sentence, with the fallback grammar for a missing name. */
+export function racePlaceLeverLine(sphereWord: string | undefined, placeName: string | undefined): string {
+  return racePlaceLeverRuns(sphereWord, placeName).map(r => r.text).join('');
 }
 
 /** The forecast sentence for a shown state, or `null` for `hidden` / an unknown state (Law 43). */

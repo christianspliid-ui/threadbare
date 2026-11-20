@@ -40,6 +40,7 @@ import {
   RACE_TURN_LEAD,
   raceChapterLeverLine,
   raceForecastLine,
+  racePlaceLeverLine,
 } from '../data/race-content';
 import { sphereWord } from '../data/essence-format';
 
@@ -144,6 +145,11 @@ function raceLeverLine(
   const lever = raceLever(shown, { ...state, mandateDefinition: definition, mandateState });
   if (!lever) return undefined;
   if (lever.kind === 'stay') return lever.held ? undefined : RACE_LEVER_STAY;
+  if (lever.kind === 'place') {
+    let placeName: string | undefined;
+    try { placeName = state.graph.getNode(lever.placeId)?.name; } catch { placeName = undefined; }
+    return racePlaceLeverLine(sphereWord(lever.sphere), placeName);
+  }
   let name: string | undefined;
   try { name = state.graph.getNode(lever.mortalId)?.name; } catch { name = undefined; }
   return raceChapterLeverLine(sphereWord(lever.sphere), name);

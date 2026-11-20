@@ -29,19 +29,23 @@ export function RaceForecastLine({ race }: { race: RaceView }) {
 
 /**
  * The lever line. A chapter names the sphere (its `sphere.*` hover) and the mortal (an
- * `EntityLink` to their card, Law 21). Stay reuses THR-2240's "Stay it" button and
+ * `EntityLink` to their card, Law 21); a place (THR-2254) names the sphere and the place
+ * (an `EntityLink` to its page). Stay reuses THR-2240's "Stay it" button and
  * handler; once held it is THR-2240's held line with no button.
  */
 export function RaceLeverLine({ lever, onStay, color }: { lever: RaceLeverView; onStay?: () => void; color?: string }) {
-  if (lever.kind === 'chapter') {
+  if (lever.kind === 'chapter' || lever.kind === 'place') {
     return (
-      <p data-testid="race-lever" data-lever-kind="chapter" style={{ ...LINE_STYLE, color: 'var(--text-secondary)' }}>
+      <p data-testid="race-lever" data-lever-kind={lever.kind} style={{ ...LINE_STYLE, color: 'var(--text-secondary)' }}>
         {lever.runs.map((run, i) => {
           if (run.slot === 'sphere') {
             return <Tooltip key={i} id={`sphere.${lever.sphere}`}>{run.text}</Tooltip>;
           }
-          if (run.slot === 'mortal') {
+          if (run.slot === 'mortal' && lever.kind === 'chapter') {
             return <EntityLink key={i} id={lever.mortalId} name={run.text} entityRef={{ kind: 'agent', id: lever.mortalId }} />;
+          }
+          if (run.slot === 'place' && lever.kind === 'place') {
+            return <EntityLink key={i} id={lever.placeId} name={run.text} entityRef={{ kind: 'location', id: lever.placeId }} />;
           }
           return <span key={i}>{run.text}</span>;
         })}

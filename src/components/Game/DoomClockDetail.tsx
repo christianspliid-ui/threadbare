@@ -120,12 +120,13 @@ export function DoomClockDetail({
   const stayAnswer = !state.expired && stayLine
     ? <DoomStayAnswer line={stayLine} button={stayButton} onStay={onStay} color={color} />
     : null;
-  // THR-2252 — the forecast above the Stay answer, with the chapter lever only.
+  // THR-2252 — the forecast above the Stay answer, with the chapter or place lever only
+  // (THR-2254); the Stay lever is the answer below, never twice.
   const raceBlock = !state.expired && race
     ? (
       <div data-testid="doom-detail-race" style={{ marginTop: '8px', marginLeft: '26px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
         <RaceForecastLine race={race} />
-        {lever?.kind === 'chapter' && <RaceLeverLine lever={lever} />}
+        {(lever?.kind === 'chapter' || lever?.kind === 'place') && <RaceLeverLine lever={lever} />}
       </div>
     )
     : null;
