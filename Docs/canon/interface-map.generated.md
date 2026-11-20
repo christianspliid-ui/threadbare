@@ -1705,9 +1705,9 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Doom Clock & Journey
 - **UL terms:** *Doom Clock*, *Dominion*
 - **Module:** `src/engine/doomFeedings.ts`
-- **Production hits:** 4 total — 2 write, 1 read, 1 unclassified
+- **Production hits:** 5 total — 2 write, 2 read, 1 unclassified
 - **Write sites:** `src/engine/complicationEffects.ts`, `src/engine/phaseDoom.ts`
-- **Read sites:** `src/engine/rivalRebuke.ts`
+- **Read sites:** `src/engine/rivalRebuke.ts`, `src/engine/views/doomFeedings.ts`
 - **Other hits:** `src/engine/doomFeedings.ts`
 - **Verdict:** Verified 2026-11-20: THR-2255. doomFeedings.thr2255.test.ts: a 0.3 doom_micro_tick at the seated t0 leaves the clock at 100 and traces doom.feed_absorbed tendedBy [seat]; at untended t1 it pushes to 100.3 and records doomFeedings.t1; t1 is rebukable at fedAt and fedAt + 3 days, not one tick later; a clean doom Rebuke writes rebukedPlaces.t1, heldUntil, pushes 4 mind, raises no temper (rivalId null, targetKind doom); a place both pressed and fed answers the rival; doomFeedAlert fires only at stage 5 with Rebuke held and affordable, once a day. The agency census answer arm reports doomPushAbsorbed > 0 on seeds 42, 7 and 99.
 
@@ -3371,10 +3371,10 @@ exit
 - **Producer → Consumer:** Ascendant Beats & Progression → Essence & Divine Economy
 - **UL terms:** *Ascendant Beat*, *Offering*
 - **Module:** `src/engine/ascendantBeat.ts`
-- **Production hits:** 34 total — 1 write, 3 read, 30 unclassified
+- **Production hits:** 35 total — 1 write, 3 read, 31 unclassified
 - **Write sites:** `src/engine/ascendantBeat.ts`
 - **Read sites:** `src/engine/actionUnlock.ts`, `src/engine/targetActions.ts`, `src/engine/views/godRail.ts`
-- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +25 more
+- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +26 more
 - **Verdict:** Verified 2026-10-14: THR-1811 — `godProgression.test.ts` "taking one up unlocks it, spends from the ledger, and never touches the earned counter": the card lands in `unlockedActionIds`, `essenceEarnedBySphere` is unchanged and `offeringSpentBySphere` rises by the traced `offering.taken` price; seed 42 headless rose an offering of three cards at tick 21 that passed at the tick-36 day boundary.
 
 ### `one-namer-shared-primitives` — 🟢 LIVE
@@ -3557,10 +3557,10 @@ exit
 - **Producer → Consumer:** Essence & Divine Economy → Rival Gods & Schemes
 - **UL terms:** *Dominion*, *Opposing Dominion*
 - **Module:** `src/engine/rivalRebuke.ts`
-- **Production hits:** 14 total — 2 write, 5 read, 7 unclassified
+- **Production hits:** 15 total — 2 write, 5 read, 8 unclassified
 - **Write sites:** `src/engine/rivalRebuke.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/engine/dominion.ts`, `src/engine/orchestrator.ts`, `src/engine/phaseSpherePressure.ts`, `src/engine/views/rivalEntry.ts`, `src/engine/views/subjects/actOn.ts`
-- **Other hits:** `src/data/action-technical-effects.ts`, `src/debug-bridge.ts`, `src/engine/doomFeedings.ts`, `src/engine/phaseDominion.ts`, `src/engine/targetActions.ts` +2 more
+- **Other hits:** `src/data/action-technical-effects.ts`, `src/debug-bridge.ts`, `src/engine/doomFeedings.ts`, `src/engine/phaseDominion.ts`, `src/engine/targetActions.ts` +3 more
 - **Verdict:** Verified 2026-11-14: THR-2209. rivalRebuke.thr2209.test.ts: a probe lands on untended t0 (lastPressed, not absorbed) → rebukablePlaceIds = {t0}; resolveRebuke on a clean landing writes rebukedPlaces.t0 = tick + 4 days, pushes 4 mind at t0 causedBy the god, raises the rival 0.30 → 0.38 with cause rebuked (panel: "You rebuked it at Town 0."), traces rival.rebuked; the next probe that draws t0 reads tendedBy [rebuke], is absorbed (dominion.raid absorbed: true), toasts "…but your rebuke held it.", and records lastPressed absorbed, so t0 is no longer rebukable. getTargetActionSlots offers the card only on a place in the rebuke set.
 
 ### `receipt-event-band-toast` — 🔵 UNVERIFIED-OK
@@ -3861,10 +3861,10 @@ exit
 - **Producer → Consumer:** Ascendant Beats & Progression → Essence & Divine Economy
 - **UL terms:** *Ascendant Beat*, *Rung*, *Key card*
 - **Module:** `src/engine/phaseAscendantProgression.ts`
-- **Production hits:** 34 total — 2 write, 1 read, 31 unclassified
+- **Production hits:** 35 total — 2 write, 1 read, 32 unclassified
 - **Write sites:** `src/engine/ascendantBeat.ts`, `src/engine/phaseAscendantProgression.ts`
 - **Read sites:** `src/engine/actionUnlock.ts`
-- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +26 more
+- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +27 more
 - **Verdict:** Verified 2026-10-14: THR-1811 — `godProgression.test.ts`: three summed marks open rung 2, the secondary signature is the first gift, the next key waits `RUNG_GIFT_SPACING`, a held key is skipped, and the resolve traces `via: rung`.
 
 ### `rung-reads-attunement-marks` — 🟢 LIVE
