@@ -139,7 +139,8 @@ describe('selectOpeningReveal (THR-1837 E1)', () => {
     // THR-1986: Attention waits for the first chapter, the first moment that draws on it.
     expect(r.rows.attention).toEqual({ revealed: false, reason: 'waiting:first_chapter' });
     expect(r.rows.doom).toEqual({ revealed: false, reason: 'waiting:beat.spine.the_seat' });
-    expect(r.rows.mandate.reason).toBe('waiting:beat.spine.the_seat');
+    // THR-2265: the Mandate waits for its first mention (the Seat or a credited chapter).
+    expect(r.rows.mandate.reason).toBe('waiting:mandate_named');
     expect(r.rows.investiture.reason).toBe('waiting:beat.spine.the_seat');
     expect(r.rows.notables.reason).toBe('waiting:beat.spine.the_first_word');
     for (const s of ['reaches', 'dominion', 'world_soul', 'omen'] as const) {
@@ -306,23 +307,24 @@ describe('the arrival queue (THR-2060 E1–E2)', () => {
   });
   const arrivedOf = (l: OpeningArrivalLedger) => Object.keys(l.arrived).sort();
 
+  // THR-2265: Mandate jumps the queue, so these use rows that queue normally.
   it('three rows ready at once arrive on three successive chapter closes', () => {
-    const ready: OpeningRevealSurfaceId[] = ['doom', 'mandate', 'investiture'];
+    const ready: OpeningRevealSurfaceId[] = ['doom', 'investiture', 'lens_threads'];
     let l = releaseOpeningArrivals(EMPTY_ARRIVAL_LEDGER, ready, at(20));
     expect(arrivedOf(l)).toEqual(['doom']);
     expect(releaseOpeningArrivals(l, ready, at(21))).toBe(l);
     l = releaseOpeningArrivals(l, ready, at(26, [25]));
-    expect(arrivedOf(l)).toEqual(['doom', 'mandate']);
+    expect(arrivedOf(l)).toEqual(['doom', 'investiture']);
     expect(releaseOpeningArrivals(l, ready, at(27, [25]))).toBe(l);
     l = releaseOpeningArrivals(l, ready, at(31, [25, 30]));
-    expect(l.arrived).toEqual({ doom: 20, mandate: 26, investiture: 31 });
+    expect(l.arrived).toEqual({ doom: 20, investiture: 26, lens_threads: 31 });
   });
 
   it('with no chapter, the next row arrives after OPENING_REVEAL_ARRIVAL_IDLE_TICKS', () => {
-    const ready: OpeningRevealSurfaceId[] = ['doom', 'mandate'];
+    const ready: OpeningRevealSurfaceId[] = ['doom', 'investiture'];
     const l = releaseOpeningArrivals(EMPTY_ARRIVAL_LEDGER, ready, at(20));
     expect(releaseOpeningArrivals(l, ready, at(20 + OPENING_REVEAL_ARRIVAL_IDLE_TICKS - 1))).toBe(l);
-    expect(arrivedOf(releaseOpeningArrivals(l, ready, at(20 + OPENING_REVEAL_ARRIVAL_IDLE_TICKS)))).toEqual(['doom', 'mandate']);
+    expect(arrivedOf(releaseOpeningArrivals(l, ready, at(20 + OPENING_REVEAL_ARRIVAL_IDLE_TICKS)))).toEqual(['doom', 'investiture']);
   });
 
   it('dominion arrives in the same step as reaches', () => {
@@ -342,11 +344,14 @@ describe('the arrival queue (THR-2060 E1–E2)', () => {
     // With every other row arrived, Rivals still waiting means the ceiling line cannot claim nothing is hidden.
     const allButRivals = applyArrivalLedger(r, seedArrivalLedger(ready, 300));
     expect(revealToastFor(new Set(['lens_trade']), allButRivals)).not.toContain('Nothing more is hidden');
+    // THR-2265: the Mandate jumps the queue and arrives first, alone.
     let l = releaseOpeningArrivals(EMPTY_ARRIVAL_LEDGER, ready, at(210));
-    expect(arrivedOf(l)).toEqual(['chapter_ledger']);
+    expect(arrivedOf(l)).toEqual(['mandate']);
     expect(releaseOpeningArrivals(l, ready, at(211))).toBe(l);
     l = releaseOpeningArrivals(l, ready, at(212, [211]));
-    expect(arrivedOf(l)).toEqual(['chapter_ledger', 'notables']);
+    expect(arrivedOf(l)).toEqual(['chapter_ledger', 'mandate']);
+    l = releaseOpeningArrivals(l, ready, at(214, [211, 213]));
+    expect(arrivedOf(l)).toEqual(['chapter_ledger', 'mandate', 'notables']);
     const read = applyArrivalLedger(r, l);
     expect(read.rows.notables).toEqual({ revealed: true, reason: 'queued', readyReason: 'ceiling' });
     expect(read.rows.omen).toEqual({ revealed: false, reason: 'waiting:queue', readyReason: 'ceiling' });

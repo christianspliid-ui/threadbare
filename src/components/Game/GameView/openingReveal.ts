@@ -132,7 +132,8 @@ export function useOpeningReveal(
     // the arrays the selector reads.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [gameState.openingRevealStaged, gameState.tick, gameState.ascendantBeats, gameState.chapterArchive,
-      gameState.unifiedActions, gameState.doomClock, gameState.rivalStates, worldVersion, showAll],
+      gameState.unifiedActions, gameState.doomClock, gameState.rivalStates, gameState.mandateState,
+      worldVersion, showAll],
   );
 
   // THR-2060 — the arrival ledger. Advanced during render (like the latch below):
