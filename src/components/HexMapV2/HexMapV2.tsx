@@ -518,7 +518,13 @@ export interface HexMapV2Handle {
   /** THR-1892 — a hex's centre in viewport pixels, on the canvas or not; null before mount. */
   projectHex: (col: number, row: number) => { x: number; y: number } | null;
   getCanvasRect: () => { left: number; top: number; right: number; bottom: number } | null;
-  centerHexesAt: (hexKeys: readonly string[], screenPoint: { x: number; y: number }, options: { zoom: number; instant: boolean }) => Promise<'eased' | 'cut' | 'stayed'>;
+  centerHexesAt: (hexKeys: readonly string[], screenPoint: { x: number; y: number }, options: { zoom: number; instant: boolean; clamp?: boolean }) => Promise<'eased' | 'cut' | 'stayed'>;
+  /**
+   * THR-2260 — if the camera sits outside the pan bound (the grid covers less than
+   * `PAN_MIN_GRID_COVER` of the canvas), move it back inside: eased, or a cut when
+   * `instant`. `'stayed'` when already inside or there is no map.
+   */
+  settlePanClamp: (options: { instant: boolean }) => Promise<'eased' | 'cut' | 'stayed'>;
 }
 
 // ─── Selected hex ring geometry ──────────────────────────────────────────────
@@ -664,6 +670,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const keptCameraRef = useRef<{ transform: import('d3').ZoomTransform; cols: number; rows: number } | null>(null);
     const setZoomTargetRef   = useRef<((wx: number, wy: number) => void) | null>(null);
     const clearZoomTargetRef = useRef<(() => void) | null>(null);
+    /** THR-2260 — the pan clamp's switch and its pure clamp, from setupD3Zoom. */
+    const setPanClampRef = useRef<((enabled: boolean) => void) | null>(null);
+    const clampTransformRef = useRef<((t: d3.ZoomTransform) => d3.ZoomTransform) | null>(null);
+    const stageHoldsMapRef = useRef(false);
 
     // Army and battle layer refs
     const armyLayerRef = useRef<ArmyLayerGroup | null>(null);
@@ -995,6 +1005,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       },
       setStageFocus(focus: StageMapFocus | null, options?: { fadeMs?: number }) {
         setStageFocusState(focus ? { focus, fadeMs: Math.max(0, options?.fadeMs ?? 0) } : null);
+        // THR-2260 — the Stage may frame an edge place in its right-hand window: no clamp while it holds the map.
+        stageHoldsMapRef.current = focus !== null;
+        setPanClampRef.current?.(focus === null);
       },
       getStageFocusState() {
         const layer = stageFocusLayerRef.current;
@@ -1019,7 +1032,28 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         const r = canvasRef.current?.getBoundingClientRect();
         return r ? { left: r.left, top: r.top, right: r.right, bottom: r.bottom } : null;
       },
-      centerHexesAt(hexKeys: readonly string[], screenPoint: { x: number; y: number }, options: { zoom: number; instant: boolean }) {
+      settlePanClamp(options: { instant: boolean }) {
+        const canvas = canvasRef.current;
+        const zoom = zoomRef.current;
+        const clamp = clampTransformRef.current;
+        if (!canvas || !zoom || !clamp) return Promise.resolve('stayed' as const);
+        const now = d3.zoomTransform(canvas);
+        const next = clamp(now);
+        if (next === now) return Promise.resolve('stayed' as const);
+        if (options.instant) {
+          d3.select(canvas).interrupt().call(zoom.transform, next);
+          return Promise.resolve('cut' as const);
+        }
+        return new Promise<'eased'>(resolve => {
+          d3.select(canvas)
+            .transition()
+            .duration(CAMERA_CONSTANTS.JUMP_TO_DURATION_MS)
+            .call(zoom.transform, next)
+            .on('end', () => resolve('eased'))
+            .on('interrupt', () => resolve('eased'));
+        });
+      },
+      centerHexesAt(hexKeys: readonly string[], screenPoint: { x: number; y: number }, options: { zoom: number; instant: boolean; clamp?: boolean }) {
         const canvas = canvasRef.current;
         const zoom = zoomRef.current;
         const worlds = hexKeys
@@ -1032,7 +1066,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         const [minK, maxK] = zoom.scaleExtent();
         const k = Math.max(minK, Math.min(maxK, options.zoom));
         const centre = centreForWorldAt(target, { x: screenPoint.x - rect.left, y: screenPoint.y - rect.top }, { w: rect.width, h: rect.height }, k);
-        const next = d3.zoomIdentity.translate(-centre.x * k, centre.y * k).scale(k);
+        const unclamped = d3.zoomIdentity.translate(-centre.x * k, centre.y * k).scale(k);
+        // THR-2260 — the Stage's close re-centre stays inside the pan bound.
+        const next = options.clamp && clampTransformRef.current ? clampTransformRef.current(unclamped) : unclamped;
         const now = d3.zoomTransform(canvas);
         if (Math.abs(now.k - next.k) < 1e-6 && Math.abs(now.x - next.x) < 0.5 && Math.abs(now.y - next.y) < 0.5) {
           return Promise.resolve('stayed' as const);
@@ -1406,8 +1442,12 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         scene.add(hoverOverlay);
 
         // Set up d3-zoom — attaches to canvas, drives OrthographicCamera
-        const { zoom, setZoomTarget, clearZoomTarget, destroy } = setupD3Zoom(canvas, camera, cols, rows);
+        const { zoom, setZoomTarget, clearZoomTarget, setPanClamp, clampTransform, destroy } = setupD3Zoom(canvas, camera, cols, rows);
         zoomRef.current = zoom;
+        setPanClampRef.current = setPanClamp;
+        clampTransformRef.current = clampTransform;
+        // A rebuild under an open Stage keeps the clamp off.
+        setPanClamp(!stageHoldsMapRef.current);
         destroyZoomRef.current = destroy;
         setZoomTargetRef.current = setZoomTarget;
         clearZoomTargetRef.current = clearZoomTarget;
@@ -1604,6 +1644,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           destroyZoomRef.current = null;
           setZoomTargetRef.current = null;
           clearZoomTargetRef.current = null;
+          setPanClampRef.current = null;
+          clampTransformRef.current = null;
           cameraRef.current = null;
           // Clear scene-bound refs
           fillResultRef.current = null;

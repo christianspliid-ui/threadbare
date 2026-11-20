@@ -6,12 +6,16 @@
  * camera that framed each one and re-centred on each close read as a camera following him
  * (warm playtest round 4). Now the open frames a place only when it is not already inside
  * the Stage's window, and the close never moves the camera.
+ *
+ * THR-2260 — the close re-centres again (cold playtest round 8: the map sat off to one side
+ * after every chapter): a place outside the visible map's middle third is eased to its
+ * centre once, unless the player moved the camera; then the pan clamp holds.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { useState, type RefObject } from 'react';
 import type { HexMapV2Handle } from '../../../HexMapV2/HexMapV2';
-import { frameAlreadyInWindow, useStageCamera } from '../useStageCamera';
+import { chooseCloseRecentre, frameAlreadyInWindow, useStageCamera } from '../useStageCamera';
 import { IDLE_STAGE, type StageScreenState } from '../stageState';
 import { hexScreenWidth } from '../../../HexMapV2/camera/stageCamera';
 
@@ -30,6 +34,7 @@ function fakeMap(litAt: { x: number; y: number }) {
     projectHex: vi.fn(() => litAt),
     getCanvasRect: () => CANVAS,
     centerHexesAt: vi.fn(() => Promise.resolve('eased' as const)),
+    settlePanClamp: vi.fn(() => Promise.resolve('stayed' as const)),
   };
 }
 
@@ -124,42 +129,69 @@ describe('useStageCamera — open (THR-2221)', () => {
     const hook = run(map);
     await settleOpen();
     expect(map.centerHexesAt).toHaveBeenCalledTimes(1);
-    // The frame put the place in the window.
+    // The frame put the place in the window; the player panned on close so it stays there.
     map.litAt.x = IN_WINDOW.x;
+    map.view.x += 40;
     await closeAndSettle(hook);
+    map.centerHexesAt.mockClear();
     act(() => hook.result.current.setStage(openStage()));
     await settleOpen();
-    expect(map.centerHexesAt).toHaveBeenCalledTimes(1);
+    expect(map.centerHexesAt).not.toHaveBeenCalled();
     expect(hook.result.current.stage.cameraMode).toBe('stayed');
   });
 });
 
-describe('useStageCamera — close never moves the camera (THR-2221)', () => {
+describe('chooseCloseRecentre (THR-2260)', () => {
+  const rect = { left: 0, top: 0, right: 1200, bottom: 900 };
+  it('a place outside the middle third goes to the visible map centre', () => {
+    expect(chooseCloseRecentre({ x: 1100, y: 450 }, rect, false)).toEqual({ x: 600, y: 450 });
+    expect(chooseCloseRecentre({ x: 100, y: 450 }, rect, false)).toEqual({ x: 600, y: 450 });
+  });
+  it('a place inside the middle third stays', () => {
+    expect(chooseCloseRecentre({ x: 600, y: 450 }, rect, false)).toBeNull();
+  });
+  it('a camera the player moved stays, wherever the place is', () => {
+    expect(chooseCloseRecentre({ x: 1100, y: 450 }, rect, true)).toBeNull();
+  });
+  it('no projection or no canvas: stays (fail-soft)', () => {
+    expect(chooseCloseRecentre(null, rect, false)).toBeNull();
+    expect(chooseCloseRecentre({ x: 1100, y: 450 }, null, false)).toBeNull();
+  });
+});
+
+describe('useStageCamera — close (THR-2260)', () => {
   beforeEach(() => { vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'setTimeout'] }); });
   afterEach(() => { vi.useRealTimers(); });
 
-  it('a place left at the right edge (outside the middle third) is not re-centred', async () => {
-    const map = fakeMap(OUTSIDE_WINDOW);
+  it('a place left at the right edge (outside the middle third) is re-centred once, inside the pan bound', async () => {
+    const map = fakeMap(IN_WINDOW);
+    const hook = run(map);
+    await settleOpen();
+    map.centerHexesAt.mockClear();
+    await closeAndSettle(hook);
+    expect(map.setStageFocus).toHaveBeenLastCalledWith(null);
+    expect(map.centerHexesAt).toHaveBeenCalledTimes(1);
+    const [keys, point, opts] = map.centerHexesAt.mock.calls[0] as unknown as [string[], { x: number; y: number }, { clamp?: boolean }];
+    expect(keys).toEqual(['13,9']);
+    expect(point).toEqual({ x: (CANVAS.left + CANVAS.right) / 2, y: (CANVAS.top + CANVAS.bottom) / 2 });
+    expect(opts.clamp).toBe(true);
+    expect(map.settlePanClamp).not.toHaveBeenCalled();
+    expect(hook.result.current.stage.closeCamera).toEqual({ hex: '13,9', recentred: true });
+  });
+
+  it('a place in the middle of the canvas stays; only the pan bound is checked', async () => {
+    const map = fakeMap({ x: 650, y: 560 });
     const hook = run(map);
     await settleOpen();
     map.centerHexesAt.mockClear();
     await closeAndSettle(hook);
     expect(map.centerHexesAt).not.toHaveBeenCalled();
-    expect(map.setStageFocus).toHaveBeenLastCalledWith(null);
+    expect(map.settlePanClamp).toHaveBeenCalledTimes(1);
     expect(hook.result.current.stage.closeCamera).toEqual({ hex: '13,9', recentred: false });
   });
 
-  it('a place in the middle of the canvas stays too', async () => {
-    const map = fakeMap({ x: 700, y: 600 });
-    const hook = run(map);
-    await settleOpen();
-    map.centerHexesAt.mockClear();
-    await closeAndSettle(hook);
-    expect(map.centerHexesAt).not.toHaveBeenCalled();
-  });
-
-  it('THR-2166 record kept: a pan after the frame settled is reported as the player moving the map', async () => {
-    const map = fakeMap(OUTSIDE_WINDOW);
+  it('THR-2166: a pan after the frame settled is the player moving the map — no re-centre', async () => {
+    const map = fakeMap(IN_WINDOW);
     const hook = run(map);
     await settleOpen();
     map.centerHexesAt.mockClear();
@@ -170,11 +202,24 @@ describe('useStageCamera — close never moves the camera (THR-2221)', () => {
   });
 
   it('a zoom after the frame settled also counts as the player moving the map', async () => {
-    const map = fakeMap(OUTSIDE_WINDOW);
+    const map = fakeMap(IN_WINDOW);
     const hook = run(map);
     await settleOpen();
+    map.centerHexesAt.mockClear();
     map.view.k = 8;
     await closeAndSettle(hook);
+    expect(map.centerHexesAt).not.toHaveBeenCalled();
     expect(hook.result.current.stage.closeCamera?.playerMoved).toBe(true);
+  });
+
+  it('a Stage that reopens before the rails settle cancels the close re-centre', async () => {
+    const map = fakeMap(IN_WINDOW);
+    const hook = run(map);
+    await settleOpen();
+    map.centerHexesAt.mockClear();
+    act(() => hook.result.current.setStage(IDLE_STAGE));
+    act(() => hook.result.current.setStage(openStage()));
+    for (let i = 0; i < 6; i++) await act(async () => { vi.advanceTimersByTime(20); });
+    expect(map.centerHexesAt).not.toHaveBeenCalledWith(['13,9'], expect.anything(), expect.objectContaining({ clamp: true }));
   });
 });
