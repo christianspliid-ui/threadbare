@@ -105,6 +105,8 @@ export interface DebugOpenedEncounter {
 export interface GameDebugLeverContext {
   gameState: GameState;
   setGameState: Dispatch<SetStateAction<GameState>>;
+  /** THR-2250: useSimulation's ref-syncing commit — what `beginTwilightNow` reads. */
+  commitLiveState: (next: GameState) => void;
   runtime: SimulationRuntime;
   tiles: HexTile[];
   hexMapRef: RefObject<HexMapV2Handle>;
@@ -172,7 +174,7 @@ export interface GameDebugLeverContext {
 
 export function useGameDebugLevers(ctx: GameDebugLeverContext): void {
   const {
-    gameState, setGameState, runtime, tiles, hexMapRef,
+    gameState, setGameState, commitLiveState, runtime, tiles, hexMapRef,
     handleAgentSelect, openAgentProfileForId, fogDisabled, setFogDisabled, _gameStateRef,
     viewSource, avatarNodeId, threadedAgentIdsForActivity, activityActionsVersion, needsYouSources, needsYouStamp,
     dominionLensBase, dominionLensOn, dominionProjectionNow, dominionDrops, setDominionLens,
@@ -497,9 +499,10 @@ export function useGameDebugLevers(ctx: GameDebugLeverContext): void {
         : ms.godHeld;
       const completed = fraction >= 1;
       const next = { ...live, mandateState: { ...ms, godLedger, godHeld, progress: fraction, completed } };
-      // The ref first, so a `beginTwilight()` in the same turn reads the written Mandate.
+      // Both refs before the render, so a `beginTwilight()` in the same turn reads the
+      // written Mandate: `beginTwilightNow` reads useSimulation's ref, not GameView's.
       _gameStateRef.current = next;
-      setGameState(next);
+      commitLiveState(next);
       return { progress: fraction, completed, godLedger };
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps

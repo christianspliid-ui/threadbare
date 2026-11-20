@@ -243,6 +243,14 @@ export function useSimulation({
   }, [markClockRan]);
 
   const getLiveState = useCallback(() => gameStateRef.current, []);
+  /**
+   * THR-2250: commit a debug-written state to this hook's ref and React together, so a
+   * same-turn `beginTwilightNow` (which reads this ref, not GameView's) sees it.
+   */
+  const commitLiveState = useCallback((next: GameState) => {
+    gameStateRef.current = next;
+    setGameState(next);
+  }, []);
 
   // ── The end of the age (THR-1381) ──
   /**
@@ -441,6 +449,8 @@ export function useSimulation({
     runTicksSync,
     /** THR-1744: the live state as `runTicksSync` left it, before React re-renders. Read-only. */
     getLiveState,
+    /** THR-2250: write a state to the live ref and React together (debug levers). */
+    commitLiveState,
     /** THR-1813: the record this run was folded into at harvest (null before the harvest). */
     concludedRun,
     /** THR-1813: the record this run folds into — the one the world was loaded with. */
