@@ -34,6 +34,15 @@ import { getFirstId } from './meetingEncounter';
 
 export type { RaceState, RaceWatch, RaceSample } from '../types/mandate';
 
+/** Which ending each state names; a change within one ending is not a turn. */
+const RACE_ENDING: Readonly<Record<RaceState, 'none' | 'mandate' | 'doom' | 'close'>> = {
+  hidden: 'none',
+  mandate_first: 'mandate',
+  doom_first: 'doom',
+  stalled: 'doom',
+  close: 'close',
+};
+
 /** The states a lever is offered in — never while the Mandate lands first. */
 const LEVER_STATES: ReadonlySet<RaceState> = new Set<RaceState>(['doom_first', 'close', 'stalled']);
 
@@ -178,7 +187,10 @@ export function settleRace(watch: RaceWatch, computed: RaceState, tick: number):
   const pending = watch.pending;
   if (pending && pending.state === computed) {
     if (tick - pending.since >= RACE_TURN_HOLD_TICKS) {
-      return { watch: { ...cleared, shown: computed }, turned: computed, firstSight: false, from };
+      // `doom_first` ↔ `stalled` names the same ending (Doom first): the shown line
+      // updates, but the age has not shifted, so it is no turn and owes no alert.
+      const sameEnding = RACE_ENDING[computed] === RACE_ENDING[from];
+      return { watch: { ...cleared, shown: computed }, turned: sameEnding ? null : computed, firstSight: false, from };
     }
     return { watch, turned: null, firstSight: false, from };
   }

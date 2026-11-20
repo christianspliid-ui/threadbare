@@ -170,6 +170,17 @@ describe('THR-2251 — settleRace', () => {
     expect(r.watch.pending).toBeUndefined();
   });
 
+  it('doom_first ↔ stalled updates the shown line after the hold but is no turn (same ending)', () => {
+    let r = settleRace({ samples: [], shown: 'doom_first', seen: true }, 'stalled', 100);
+    r = settleRace(r.watch, 'stalled', 100 + RACE_TURN_HOLD_TICKS);
+    expect(r.turned).toBeNull();
+    expect(r.watch.shown).toBe('stalled');
+    r = settleRace(r.watch, 'doom_first', 200);
+    r = settleRace(r.watch, 'doom_first', 200 + RACE_TURN_HOLD_TICKS);
+    expect(r.turned).toBeNull();
+    expect(r.watch.shown).toBe('doom_first');
+  });
+
   it('a flap back to the shown state clears the hold, and a different state restarts it', () => {
     const w: RaceWatch = { samples: [], shown: 'doom_first', seen: true, pending: { state: 'close', since: 100 } };
     expect(settleRace(w, 'doom_first', 110).watch.pending).toBeUndefined();
