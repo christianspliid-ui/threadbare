@@ -10,7 +10,8 @@
  *  3. `settleRace`  — the two-day hold, the once-per-age first sight, and the silent
  *                     fall to `hidden` on a data gap.
  * `raceLever` names the one move that would change the race most: a chapter in the
- * Mandate sphere furthest from its target (the First first), else Stay the Unmaking.
+ * Mandate sphere furthest from its target (the First first), else the god's strongest
+ * place in that sphere (THR-2254), else Stay the Unmaking.
  *
  * Constants and every player sentence live in `src/data/race-content.ts`.
  */
@@ -31,6 +32,7 @@ import { doomFloorMetAtTick } from './doomClock';
 import { mandateDeedSpheres, mandateTrendOf } from './mandateLedger';
 import { doomStayNotice } from './views/doomStayNotice';
 import { getFirstId } from './meetingEncounter';
+import { isPlaceNode } from './sublocationShape';
 
 export type { RaceState, RaceWatch, RaceSample } from '../types/mandate';
 
@@ -56,6 +58,8 @@ export interface RaceProjection {
 
 export type RaceLever =
   | { kind: 'chapter'; sphere: SphereName; mortalId: string }
+  /** THR-2254 — tend the god's place holding the most of the short sphere's `godHeld`. */
+  | { kind: 'place'; sphere: SphereName; placeId: string }
   /** `held` — Stay is already active; the surfaces show THR-2240's held line, no button. */
   | { kind: 'stay'; held: boolean };
 
@@ -229,6 +233,36 @@ export function raceLeverMortalIds(
   }
 }
 
+/**
+ * THR-2254 — the god's place holding the largest `godHeld` share in `sphere` (keys are
+ * `entityId|sphere`), or null. Only a place whose node still exists counts; a mortal,
+ * an artifact or a faction holding points is not a place to tend. Ties break on the id
+ * (NFP 3). Fail-soft: a graph read that throws names no place.
+ */
+export function raceLeverPlaceId(
+  gameState: Pick<GameState, 'graph' | 'mandateState'>,
+  sphere: SphereName,
+): string | null {
+  try {
+    const held = gameState.mandateState?.godHeld;
+    const graph = gameState.graph;
+    if (!held || !graph) return null;
+    let best: { id: string; points: number } | null = null;
+    for (const [key, points] of Object.entries(held)) {
+      if (!Number.isFinite(points) || points <= 0) continue;
+      const bar = key.lastIndexOf('|');
+      if (bar <= 0 || key.slice(bar + 1) !== sphere) continue;
+      const id = key.slice(0, bar);
+      const node = graph.getNode(id);
+      if (!node || !(node.type === 'location' || isPlaceNode(node))) continue;
+      if (!best || points > best.points || (points === best.points && id < best.id)) best = { id, points };
+    }
+    return best?.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /** The Mandate sphere furthest from its target (the lower share filled); the primary on a tie. */
 export function shortMandateSphere(
   gameState: Pick<GameState, 'mandateDefinition' | 'mandateState'>,
@@ -292,7 +326,9 @@ export function raceReading(
 /**
  * The one move that would change the race most (plan decision 4), or `null`.
  * Offered only in `doom_first`, `close` and `stalled`. A chapter when a mortal bound to
- * the god can credit the Mandate; else Stay the Unmaking once the god holds the card.
+ * the god can credit the Mandate; else the god's strongest place in the short sphere
+ * (THR-2254 — a place the god has already tended there, so the promise is one a place
+ * cast keeps, THR-2249); else Stay the Unmaking once the god holds the card.
  */
 export function raceLever(
   state: RaceState,
@@ -305,6 +341,8 @@ export function raceLever(
   const sphere = shortMandateSphere(gameState);
   const mortalId = sphere ? raceLeverMortalIds(gameState)[0] : undefined;
   if (sphere && mortalId) return { kind: 'chapter', sphere, mortalId };
+  const placeId = sphere ? raceLeverPlaceId(gameState, sphere) : null;
+  if (sphere && placeId) return { kind: 'place', sphere, placeId };
   try {
     const stay = doomStayNotice(gameState);
     if (stay.button) return { kind: 'stay', held: false };
