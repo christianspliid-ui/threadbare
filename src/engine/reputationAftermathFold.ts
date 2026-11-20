@@ -15,6 +15,7 @@
  */
 
 import type { EncounterAftermathChange, UnifiedActionOutcome } from '../types/unifiedAction';
+import { DEFAULT_REPUTATION } from '../types/disposition';
 
 /** Below this, a reputation movement is rounding noise and draws no row. */
 export const REPUTATION_FOLD_EPSILON = 0.0001;
@@ -89,6 +90,27 @@ export function isLostActionOutcome(outcome: UnifiedActionOutcome | undefined): 
 }
 
 /**
+ * THR-2257 — how much of an earlier step's gain can still be standing on the
+ * score when the ending step begins.
+ *
+ * `phaseReputationDecay` pulls every mortal's score toward
+ * `DEFAULT_REPUTATION` each tick and clamps there, so a gain taken several
+ * ticks earlier may already be gone. Decay preserves the gap between the score
+ * and where it would sit without the gain, until the clamp at neutral closes it:
+ *
+ * - Below neutral, the score has not met the clamp, so the whole gain stands.
+ * - At or above neutral, at most the height above neutral can be the gain.
+ *
+ * Forfeiting more than this would leave the mortal below where an outright loss
+ * would have, and the row would no longer match the sheet (review round 1).
+ */
+export function standingGainCap(scoreBeforeEndingStep: number): number {
+  return scoreBeforeEndingStep < DEFAULT_REPUTATION
+    ? Number.POSITIVE_INFINITY
+    : scoreBeforeEndingStep - DEFAULT_REPUTATION;
+}
+
+/**
  * THR-2257 — a lost encounter forfeits the reputation its earlier steps gained.
  *
  * Templates author roughly +0.02 on a step's success and −0.01 on its failure
@@ -101,20 +123,25 @@ export function isLostActionOutcome(outcome: UnifiedActionOutcome | undefined): 
  * - The ending step's own movement stays as it was.
  * - The settled net is never above zero: a lost encounter never reads "rose".
  *
- * Returns the settled net and the correction to apply to the score so the sheet
- * agrees with the row (Law 56). The correction is zero when no earlier gain
- * or ending-step rise needs undoing.
- * The step-level deltas stay in the trace; the correction is traced on its own.
+ * `settledNet` is what the ending's row reports. `correction` (≤ 0) is what
+ * to apply to the score: the ending step's own rise, if any, plus the earlier
+ * gain, but only the part of it `gainCap` says can still be standing (decay may
+ * have taken the rest). The step-level deltas stay in the trace; the
+ * correction is traced on its own.
  */
 export function settleLostEncounterReputation(args: {
   readonly priorNet: number;
   readonly stepNet: number;
+  /** {@link standingGainCap} — omitted means the whole earlier gain stands. */
+  readonly gainCap?: number;
 }): { settledNet: number; correction: number } {
-  const unsettled = args.priorNet + args.stepNet;
+  const priorGain = Math.max(0, args.priorNet);
+  const forfeited = Math.min(priorGain, Math.max(0, args.gainCap ?? Number.POSITIVE_INFINITY));
   const settled = Math.min(0, Math.min(0, args.priorNet) + args.stepNet);
-  const correction = settled - unsettled;
+  // The full correction undoes every earlier gain; give back the part decay already took.
+  const correction = settled - (args.priorNet + args.stepNet) + (priorGain - forfeited);
   return {
     settledNet: Math.abs(settled) > REPUTATION_FOLD_EPSILON ? settled : 0,
-    correction: Math.abs(correction) > REPUTATION_FOLD_EPSILON ? correction : 0,
+    correction: correction < -REPUTATION_FOLD_EPSILON ? correction : 0,
   };
 }

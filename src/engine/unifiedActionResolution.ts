@@ -39,9 +39,9 @@ import { MORTAL_MEANS_ENABLED, COMMISSION_CAUSE_LINE } from '../data/mortal-mean
 import {
   foldActorReputation,
   isLostActionOutcome,
-  REPUTATION_FOLD_EPSILON,
   reputationFoldId,
   settleLostEncounterReputation,
+  standingGainCap,
   stepReputationParts,
 } from './reputationAftermathFold';
 import {
@@ -3133,16 +3133,19 @@ export function executeStepResult(
     let rowNet = fold.net;
     if (lostEnding) {
       const priorNet = foldActorReputation({ ...foldArgs, stepNet: 0 }).net;
-      const settle = settleLostEncounterReputation({ priorNet, stepNet: reputationParts.net });
+      const settle = settleLostEncounterReputation({
+        priorNet,
+        stepNet: reputationParts.net,
+        gainCap: standingGainCap(beforeSnapshot.reputationScore),
+      });
+      rowNet = settle.settledNet;
       if (settle.correction !== 0) {
         const scoreOf = () => (state.graph.getNode(action.actorId)?.properties?.reputationScore as number | undefined)
           ?? DEFAULT_REPUTATION;
         const scoreBefore = scoreOf();
         applyReputationScoreDelta(state, action.actorId, settle.correction);
-        // The [0, 1] clamp may swallow part of the correction: the row reports what the score did.
+        // Traced as applied: the [0, 1] clamp may swallow part of the correction.
         const applied = scoreOf() - scoreBefore;
-        const settled = priorNet + reputationParts.net + applied;
-        rowNet = Math.abs(settled) > REPUTATION_FOLD_EPSILON ? settled : 0;
         emitTrace({
           tick,
           category: 'reputation_lost_encounter_settled',

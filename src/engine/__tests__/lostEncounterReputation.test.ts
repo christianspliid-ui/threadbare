@@ -20,6 +20,7 @@ import { clearTraces, disableTracing, enableTracing, getTraces } from '../traceB
 import {
   isLostActionOutcome,
   settleLostEncounterReputation,
+  standingGainCap,
 } from '../reputationAftermathFold';
 import { buildFalloutPreview, type BuildUnifiedEncounterStageModelArgs } from '../views/stage/buildUnifiedEncounterStageModel';
 import type {
@@ -91,13 +92,19 @@ function makeTemplate(steps: readonly ActionStep[]): UnifiedActionTemplate {
   } as unknown as UnifiedActionTemplate;
 }
 
-function run(template: UnifiedActionTemplate, state: GameState, outcomes: readonly StepOutcome[]) {
+function run(
+  template: UnifiedActionTemplate,
+  state: GameState,
+  outcomes: readonly StepOutcome[],
+  betweenSteps?: () => void,
+) {
   let action: UnifiedAction = createUnifiedAction({
     actorId: 'actor-1', templateId: template.id, targetId: 'loc-1',
     scale: 'local', source: 'agent', tick: 0, template, rng: fixedRng,
   });
   let beforeLast = action;
-  for (const outcome of outcomes) {
+  for (const [i, outcome] of outcomes.entries()) {
+    if (i > 0) betweenSteps?.();
     beforeLast = action;
     action = executeStepResult(action, template, outcome, [], state, fixedRng, 10).updatedAction;
   }
@@ -186,6 +193,26 @@ describe('THR-2257 — a lost two-step encounter never nets a rise', () => {
     expect(getTraces().filter(t => t.category === 'reputation_lost_encounter_settled')).toHaveLength(0);
   });
 
+  it('a gain decay already took back is not taken twice — never below an outright loss (review round 1)', () => {
+    const state = createMinimalGameState();
+    // Step 1 lifts 0.50 → 0.52; four ticks of decay (0.005 a tick) bring it back to 0.50.
+    const { action } = run(
+      makeTemplate([step('fail_action'), step('fail_action')]), state, ['success', 'failure'],
+      () => { state.graph.getNode('actor-1')!.properties.reputationScore = START_SCORE; },
+    );
+    // An outright loss would have ended at 0.49; so does this.
+    expect(scoreOf(state)).toBeCloseTo(START_SCORE - 0.01, 6);
+    const rows = reputationRows(action);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].magnitude?.raw).toBeCloseTo(-0.01, 6);
+  });
+
+  it('below neutral the whole earlier gain still stands, and is forfeited', () => {
+    const state = createMinimalGameState(0.3);
+    run(makeTemplate([step('fail_action'), step('fail_action')]), state, ['success', 'failure']);
+    expect(scoreOf(state)).toBeCloseTo(0.29, 6);
+  });
+
   it('the "At Stake" line and the applied total agree for a lost encounter', () => {
     const template = makeTemplate([step('fail_action'), step('fail_action')]);
     const state = createMinimalGameState();
@@ -225,6 +252,22 @@ describe('THR-2257 — the settle arithmetic', () => {
     const s = settleLostEncounterReputation({ priorNet: -0.05, stepNet: 0.02 });
     expect(s.settledNet).toBeCloseTo(-0.03, 6);
     expect(s.correction).toBe(0);
+  });
+
+  it('forfeits only the gain the cap says still stands', () => {
+    const s = settleLostEncounterReputation({ priorNet: 0.02, stepNet: -0.01, gainCap: 0.005 });
+    expect(s.settledNet).toBeCloseTo(-0.01, 6);
+    expect(s.correction).toBeCloseTo(-0.005, 6);
+    // A zero cap: decay took it all, so the score keeps its ending-step loss only.
+    expect(settleLostEncounterReputation({ priorNet: 0.02, stepNet: -0.01, gainCap: 0 }).correction).toBe(0);
+    // The ending step's own rise is always removable — no tick has passed since it landed.
+    expect(settleLostEncounterReputation({ priorNet: 0.02, stepNet: 0.01, gainCap: 0 }).correction).toBeCloseTo(-0.01, 6);
+  });
+
+  it('the cap: the whole gain below neutral, the height above neutral at or over it', () => {
+    expect(standingGainCap(0.3)).toBe(Number.POSITIVE_INFINITY);
+    expect(standingGainCap(0.5)).toBe(0);
+    expect(standingGainCap(0.52)).toBeCloseTo(0.02, 6);
   });
 
   it('names exactly the outcomes the ending sentence calls lost', () => {
