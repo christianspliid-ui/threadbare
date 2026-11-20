@@ -23,6 +23,7 @@ import { SPHERE_OPPOSITES } from './cosmology';
 import {
   MANDATE_DEED_BAND_FACTOR,
   MANDATE_DEED_BASE_POINTS,
+  MANDATE_CAST_POINTS_PER_ESSENCE,
   MANDATE_DEED_POINTS_PER_ESSENCE,
   MANDATE_TREND_WINDOW_TICKS,
 } from '../data/game-config';
@@ -234,6 +235,37 @@ export function mandateDeedCredit(input: MandateDeedCreditInput): MandateCredit[
     }
   }
   return credits;
+}
+
+// ─── THR-2249 — a place the god tends fills the Mandate by what it cost ──────────
+
+export interface MandateCastCreditInput {
+  /** The place the god cast on — the ledger key, so rival wear can take it back. */
+  targetId: string;
+  /** The cast template's `sphereAffinity`. Absent ⇒ no credit. */
+  sphere?: SphereName;
+  /** Essence the god paid on the cast. Missing, zero or non-finite ⇒ no credit. */
+  essencePaid?: number;
+  band: DeedBand;
+  primary: SphereName;
+  secondary: SphereName;
+}
+
+/**
+ * The Mandate credit a god's cast on a place earns (plan 2026-11-19-thr-2245 Decision 3):
+ * `essencePaid × MANDATE_CAST_POINTS_PER_ESSENCE × MANDATE_DEED_BAND_FACTOR[band]` on the
+ * cast's sphere, when that sphere is one of the Mandate's two; empty otherwise. The
+ * pressure level-up credit is untouched — this is a second, cost-shaped source. Pure, no PRNG.
+ */
+export function mandateCastCredit(input: MandateCastCreditInput): MandateCredit[] {
+  const { sphere, essencePaid } = input;
+  if (!input.targetId || !sphere) return [];
+  if (sphere !== input.primary && sphere !== input.secondary) return [];
+  if (typeof essencePaid !== 'number' || !Number.isFinite(essencePaid) || !(essencePaid > 0)) return [];
+  const factor = MANDATE_DEED_BAND_FACTOR[input.band] ?? 0;
+  const points = essencePaid * MANDATE_CAST_POINTS_PER_ESSENCE * factor;
+  if (!(points > 0) || !Number.isFinite(points)) return [];
+  return [{ entityId: input.targetId, sphere, points, cause: 'god', sources: ['divine_action'], source: 'cast' }];
 }
 
 /**

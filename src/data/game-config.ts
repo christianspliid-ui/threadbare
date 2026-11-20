@@ -166,6 +166,17 @@ export const MANDATE_DEED_BASE_POINTS = 1.5;
 export const MANDATE_DEED_POINTS_PER_ESSENCE = 1.0;
 
 /**
+ * THR-2249 (plan 2026-11-19-thr-2245 Decisions 3–4) — Mandate points per essence the god
+ * pays on a cast on a place in a Mandate sphere, scaled by the cast's band
+ * (`MANDATE_DEED_BAND_FACTOR`) and keyed to the place, so rival wear can take it back.
+ * Fit: the smallest value at which the careful full player (census `full` arm) finishes
+ * the Mandate before Doom's last stage on at least two of three seeds while hands-off and
+ * chapters-only do not. Plan projection (run c): 1.0 → 2 of 3. Shipped reading: see the
+ * THR-2249 census line in Docs/status/2026-11-20-thr-2249.md.
+ */
+export const MANDATE_CAST_POINTS_PER_ESSENCE = 1.0;
+
+/**
  * How the chapter ended scales its credit (Law 23: the hand shows at every band). Every
  * band credits something, so the card-face hint "Counts toward your Mandate." is never
  * a promise the world breaks (Law 56).
