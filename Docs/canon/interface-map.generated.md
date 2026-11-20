@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 124 |
-| **Total** | **371** |
+| 🔵 UNVERIFIED-OK | 125 |
+| **Total** | **372** |
 
 ## Contracts by producing subsystem
 
@@ -174,6 +174,7 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `climax-fit-sizes-apotheosis-hand` | When an Apotheosis step is entered, its difficulty is fitted once so the no-card forecast reads "Uncertain" for this mortal, and the First's chapters the god paid into earn up to two extra cards on the deciding step; the Stage, the forecast and the roll all read that one stored value, and no other step's hand changes. | state-field: `climaxFit`, `ensureClimaxFits`, `apotheosisEarnedSlots` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `doom-clock-paces-mandate-race` | The game can say which clock ends the age at the current pace: once a day the Mandate phase samples both clocks and reads which lands first, holding a new reading two days before it shows. | state-field: `doomClock`, `mandateState` | Ascendant Beats & Progression | 🔵 UNVERIFIED-OK | — |
 | `doom-floor-holds-unmaking` | No world ends before its First has had a life: however fast the clock is pushed, the Unmaking cannot begin until a floor of ticks has passed since the doom woke at the bond. | state-field: `wokeAtTick`, `doomFloorMetAtTick`, `DOOM_MIN_RUN_TICKS_AFTER_BOND` | Doom Clock & Journey | 🔵 UNVERIFIED-OK | — |
 | `doom-progress-paces-first-journey` | The First's hero's journey moves with the doom clock: its phases are fractions of doom progress, so a longer clock that starts at the bond stretches the whole call-to-return arc inside every run. | state-field: `doomClock` | Doom Clock & Journey | 🔵 UNVERIFIED-OK | — |
 | `doom-stage-feeds-warm-recap` | The warm recap says Doom moved (THR-2240). `snapshotWarmRecap` (`engine/views/warmRecap.ts`) records `doomClock.currentStage` before the warm-up; `buildWarmRecap` compares it at arrival and, when a stage passed, adds "Doom took a step while you were away: {stage}." with the stage name from `doomDefinition`, plus "Stay the Unmaking slows it." when the god already holds the card (`unlockedActionIds`). A snapshot without a stage gives no line. Read only. | state-field: `doomClock` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
@@ -1687,6 +1688,17 @@ exit
 - **Other hits:** `src/components/Game/debug/SphereStateTabContent.tsx`, `src/debug-bridge.ts`, `src/engine/cycleEnd.ts`, `src/engine/dominionProjection.ts`, `src/engine/dominionViewModels.ts` +6 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
+### `doom-clock-paces-mandate-race` — 🔵 UNVERIFIED-OK
+
+- **Intent:** The game can say which clock ends the age at the current pace: once a day the Mandate phase samples both clocks and reads which lands first, holding a new reading two days before it shows.
+- **Producer → Consumer:** Doom Clock & Journey → Ascendant Beats & Progression
+- **UL terms:** *Mandate*, *Doom Clock*, *Run*
+- **Production hits:** 63 total — 2 write, 2 read, 59 unclassified
+- **Write sites:** `src/engine/phaseDoom.ts`, `src/engine/phaseMandate.ts`
+- **Read sites:** `src/debug-bridge.ts`, `src/engine/raceForecast.ts`
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/DoomBar.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView/openingReveal.ts` +54 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `doom-feeds-at-a-place` — 🟢 LIVE
 
 - **Intent:** A failure's `doom_micro_tick` reads the dominion tending index at the failure's top-level place (`placeOf` + `buildTendingIndex` / `isTended`): tended ground absorbs DOOM_FEED_ABSORB_SHARE of the push (trace `doom.feed_absorbed`, the complication's `heldProse` line); untended ground pushes as before and writes `GameState.doomFeedings[place]` (trace `doom.fed`). Rebuke's target filter (`rebukablePlaceIds`) adds every untended place with a feeding inside DOOM_REBUKE_WINDOW_DAYS; a landed doom Rebuke (`resolveRebuke`, rival target wins ties) tends it through `rebukedPlaces`, sets `doomFeedings[place].heldUntil`, raises no temper and traces `rival.rebuked` with targetKind doom. From Doom stage DOOM_FEED_ALERT_FROM_STAGE, `phaseDoom` raises one non-pausing `doom_feeding` alert a day while the god holds and can pay for Rebuke at such a place (`doomFeedAlertTick`).
@@ -1705,10 +1717,10 @@ exit
 - **Producer → Consumer:** Doom Clock & Journey → Doom Clock & Journey
 - **UL terms:** *Doom Clock*, *The First*
 - **Module:** `src/engine/doomClock.ts`
-- **Production hits:** 12 total — 2 write, 1 read, 9 unclassified
+- **Production hits:** 13 total — 2 write, 1 read, 10 unclassified
 - **Write sites:** `src/engine/doomClock.ts`, `src/engine/phaseDoom.ts`
 - **Read sites:** `src/engine/orchestrator.ts`
-- **Other hits:** `src/data/game-config.ts`, `src/data/player-progression.ts`, `src/debug-bridge.ts`, `src/engine/cycleEnd.ts`, `src/engine/openingReveal.ts` +4 more
+- **Other hits:** `src/data/game-config.ts`, `src/data/player-progression.ts`, `src/debug-bridge.ts`, `src/engine/cycleEnd.ts`, `src/engine/openingReveal.ts` +5 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `doom-progress-paces-first-journey` — 🔵 UNVERIFIED-OK
@@ -1717,10 +1729,10 @@ exit
 - **Producer → Consumer:** Doom Clock & Journey → Doom Clock & Journey
 - **UL terms:** *Doom Clock*, *The First*
 - **Module:** `src/engine/journeyEngine.ts`
-- **Production hits:** 57 total — 1 write, 1 read, 55 unclassified
+- **Production hits:** 58 total — 1 write, 1 read, 56 unclassified
 - **Write sites:** `src/engine/phaseDoom.ts`
 - **Read sites:** `src/engine/journeyEngine.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/DoomBar.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView/openingReveal.ts` +50 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/DoomBar.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView/openingReveal.ts` +51 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `doom-stage-feeds-warm-recap` — 🔵 UNVERIFIED-OK
@@ -1729,10 +1741,10 @@ exit
 - **Producer → Consumer:** Doom Clock & Journey → Attention, Chronicle & Narrative
 - **UL terms:** *Doom Clock*
 - **Module:** `src/engine/views/warmRecap.ts`
-- **Production hits:** 57 total — 1 write, 1 read, 55 unclassified
+- **Production hits:** 58 total — 1 write, 1 read, 56 unclassified
 - **Write sites:** `src/engine/phaseDoom.ts`
 - **Read sites:** `src/engine/views/warmRecap.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/DoomBar.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView/openingReveal.ts` +50 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/DoomBar.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView/openingReveal.ts` +51 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `draw-together-carries-caster-sphere-to-the-name` — 🟢 LIVE
@@ -3069,10 +3081,10 @@ exit
 - **Intent:** Finishing the Mandate ends the age in triumph, at once, instead of play running on until doom ends it anyway.
 - **Producer → Consumer:** Ascendant Beats & Progression → Doom Clock & Journey
 - **UL terms:** *Mandate*, *Doom Clock*, *Run*
-- **Production hits:** 19 total — 1 write, 1 read, 17 unclassified
+- **Production hits:** 20 total — 1 write, 1 read, 18 unclassified
 - **Write sites:** `src/engine/phaseMandate.ts`
 - **Read sites:** `src/engine/orchestrator.ts`
-- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/Game/hosts/DialogHost.tsx`, `src/data/ia-manifest.ts`, `src/data/twilight-content.ts` +12 more
+- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/Game/hosts/DialogHost.tsx`, `src/data/ia-manifest.ts`, `src/data/twilight-content.ts` +13 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mandate-ledger-reckons-twilight` — 🔵 UNVERIFIED-OK
@@ -3080,10 +3092,10 @@ exit
 - **Intent:** The end of the age says what the Mandate came to: a fulfilled one names the place or mortal where the god's hand raised it most, and a Doom ending says in a word how near it stood.
 - **Producer → Consumer:** Ascendant Beats & Progression → Attention, Chronicle & Narrative
 - **UL terms:** *Mandate*, *Doom Clock*, *Run*
-- **Production hits:** 19 total — 1 write, 1 read, 17 unclassified
+- **Production hits:** 20 total — 1 write, 1 read, 18 unclassified
 - **Write sites:** `src/engine/phaseMandate.ts`
 - **Read sites:** `src/engine/twilight.ts`
-- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/Game/hosts/DialogHost.tsx`, `src/data/ia-manifest.ts`, `src/data/twilight-content.ts` +12 more
+- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/Game/hosts/DialogHost.tsx`, `src/data/ia-manifest.ts`, `src/data/twilight-content.ts` +13 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mandate-milestone-prose-narrates-transitions` — 🟢 LIVE
@@ -3230,10 +3242,10 @@ exit
 - **Intent:** Every mortal leaves the world through one function, so every death owes the same guards and every reader sees the same shape. `markMortalDead` carries, in order: the `death_prevented` ward (THR-1241 — the ward wins and the caller resolves as *survived*, never as an error), the Aspect echo (THR-479 — an Aspect of the god is never unmade), and then the write in the caller's `mode`. `retain` leaves the node carrying `deceased`, `deceasedTick`, `deathCause` and `slainBy` so the chronicle can still name the dead and the grievance lane can still avenge them; `remove` sweeps the edges and deletes, which is what the lifecycle's own low-reputation death has always done. Callers today: the lifecycle (`remove`), band opposition, the plot, and the god's commissioned killing (`retain`), and all four ask the ward. THR-1534 closed the two that did not: band opposition's `applyCasualty` now builds the override context, and `GraphOpContext.overrideCtx` carries it to `mark_mortal_dead` from every builder that holds `GameState`. Behaviour is preserved for every death that existed before the extraction; whether *every* death should retain is deliberately left open, because it would change every node-absence reader at once. The Physical Conflict fight framework (THR-1258) is the next caller — it calls this, it does not extract its own (THR-1430).
 - **Producer → Consumer:** Agent Lifecycle → Ambitions & Undertakings
 - **Module:** `src/engine/agentLifecycle.ts`
-- **Production hits:** 63 total — 5 write, 3 read, 55 unclassified
+- **Production hits:** 64 total — 5 write, 3 read, 56 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/agentLifecycle.ts`, `src/engine/battleAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/groups/bandOpposition.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/factionNetwork.ts`, `src/engine/groups/groupQueries.ts`
-- **Other hits:** `src/data/fight-screen-content.ts`, `src/debug-bridge.ts`, `src/engine/aspects.ts`, `src/engine/battleRecord.ts`, `src/engine/battleResolution.ts` +50 more
+- **Other hits:** `src/data/fight-screen-content.ts`, `src/debug-bridge.ts`, `src/engine/aspects.ts`, `src/engine/battleRecord.ts`, `src/engine/battleResolution.ts` +51 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mortal-inflicts-a-condition` — 🟢 LIVE
@@ -3359,10 +3371,10 @@ exit
 - **Producer → Consumer:** Ascendant Beats & Progression → Essence & Divine Economy
 - **UL terms:** *Ascendant Beat*, *Offering*
 - **Module:** `src/engine/ascendantBeat.ts`
-- **Production hits:** 33 total — 1 write, 3 read, 29 unclassified
+- **Production hits:** 34 total — 1 write, 3 read, 30 unclassified
 - **Write sites:** `src/engine/ascendantBeat.ts`
 - **Read sites:** `src/engine/actionUnlock.ts`, `src/engine/targetActions.ts`, `src/engine/views/godRail.ts`
-- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +24 more
+- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +25 more
 - **Verdict:** Verified 2026-10-14: THR-1811 — `godProgression.test.ts` "taking one up unlocks it, spends from the ledger, and never touches the earned counter": the card lands in `unlockedActionIds`, `essenceEarnedBySphere` is unchanged and `offeringSpentBySphere` rises by the traced `offering.taken` price; seed 42 headless rose an offering of three cards at tick 21 that passed at the tick-36 day boundary.
 
 ### `one-namer-shared-primitives` — 🟢 LIVE
@@ -3849,10 +3861,10 @@ exit
 - **Producer → Consumer:** Ascendant Beats & Progression → Essence & Divine Economy
 - **UL terms:** *Ascendant Beat*, *Rung*, *Key card*
 - **Module:** `src/engine/phaseAscendantProgression.ts`
-- **Production hits:** 33 total — 2 write, 1 read, 30 unclassified
+- **Production hits:** 34 total — 2 write, 1 read, 31 unclassified
 - **Write sites:** `src/engine/ascendantBeat.ts`, `src/engine/phaseAscendantProgression.ts`
 - **Read sites:** `src/engine/actionUnlock.ts`
-- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +25 more
+- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +26 more
 - **Verdict:** Verified 2026-10-14: THR-1811 — `godProgression.test.ts`: three summed marks open rung 2, the secondary signature is the first gift, the next key waits `RUNG_GIFT_SPACING`, a held key is skipped, and the resolve traces `via: rung`.
 
 ### `rung-reads-attunement-marks` — 🟢 LIVE
@@ -3940,10 +3952,10 @@ exit
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **UL terms:** *Location*
 - **Module:** `src/engine/worldPast.ts`
-- **Production hits:** 56 total — 1 write, 4 read, 51 unclassified
+- **Production hits:** 57 total — 1 write, 4 read, 52 unclassified
 - **Write sites:** `src/engine/worldPast.ts`
 - **Read sites:** `src/engine/graphQueries.ts`, `src/engine/hexActorIndex.ts`, `src/engine/hexZoom.ts`, `src/engine/phases/routeEvents.ts`
-- **Other hits:** `src/data/fight-screen-content.ts`, `src/data/undertaking-objects.ts`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts`, `src/engine/agentLifecycle.ts` +46 more
+- **Other hits:** `src/data/fight-screen-content.ts`, `src/data/undertaking-objects.ts`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts`, `src/engine/agentLifecycle.ts` +47 more
 - **Verdict:** Verified 2026-09-28: THR-1631 S1. The first 200-tick census on seed 99 found a seeded founder drawn as the actor of `mct.quest.settle_dispute` and `cg.quest.investigate_disturbance` from tick 27 (`routeEvents.pickTargetAgent` walked `located_at` without a death check). That reader was fixed, not the dead, and so were the three location readers that counted the dead as residents: `graphQueries.getAgentsAtLocation` (birth density, rumour hearers, mentorship and strategic pools), `hexZoom.getAgentsAtLocation` and `buildHexActorIndex`. The run-time dead had the same leak. After the fix, `readers/past.ts` over 200 ticks on seeds 42 and 99 (medium) found 0 seeded dead alive, deciding or acting. The heavy test `worldPast-generatedWorld.test.ts` repeats the check every tick for 200 ticks on a small world, including resident counts and the hex actor index.
 
 ### `seeded-notable-holds-a-local-agenda` — 🟢 LIVE
@@ -4020,10 +4032,10 @@ exit
 - **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 439 total — 1 write, 1 read, 437 unclassified
+- **Production hits:** 440 total — 1 write, 1 read, 438 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +432 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +433 more
 - **Verdict:** Verified 2026-09-10: THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.
 
 ### `settlement-economy-drives-tier` — 🟢 LIVE

@@ -495,7 +495,8 @@ export function selectMandateRow(gameState: GameState): MandateRowView | null {
   const currentStageIdx = ['setup', 'escalation', 'culmination'].indexOf(state.currentStage);
   const progress = state.progress ?? 0;
 
-  // THR-2208 — the word reads the ledger's last day (`recentLedgerDelta`), not the
+  // THR-2208 — the word reads the ledger's last three days (`recentLedgerDelta` over
+  // `MANDATE_TREND_WINDOW_TICKS`, THR-2236), not the
   // cumulative 2%-of-the-world gate it used to, which read "Holding" for most of a run.
   const trend = mandateTrendOf(state.recentLedgerDelta);
   const recentDeedLines = (state.recentDeeds ?? []).map(d =>
