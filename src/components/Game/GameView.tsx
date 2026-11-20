@@ -3989,6 +3989,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (prevGiftOtherKeyRef.current && !giftOtherInterruptsKey) giftBoundaryAtRef.current = Date.now();
     prevGiftOtherKeyRef.current = giftOtherInterruptsKey;
   }
+  // THR-2259 — casting or setting down an armed card is a resume boundary too, so a gift
+  // the card held enters then, however long the player aimed.
+  const prevCardArmedForGiftRef = useRef(false);
+  if (prevCardArmedForGiftRef.current !== cardArmedHold) {
+    if (prevCardArmedForGiftRef.current && !cardArmedHold && !giftOtherInterruptsKey) {
+      giftBoundaryAtRef.current = Date.now();
+    }
+    prevCardArmedForGiftRef.current = cardArmedHold;
+  }
 
   // ── A ready opening gift waits for a quiet moment (THR-1809) ──
   // `resolveGiftDelivery` is the one rule; this effect and `__DEBUG.getGiftDelivery()`
