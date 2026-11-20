@@ -254,6 +254,7 @@ const doomAlertDaySet = new Set<number>();
 const doomRebukeDaySet = new Set<number>();
 let lastStageFrom: number | null = null;
 const beatSeen = new Set<string>();
+const alertedThisTick = new Set<string>(); // places the last-stage alert named this tick
 const dayOf = (t: number) => Math.floor(t / TICKS_PER_DAY);
 const apotheosisSteps: any[] = [];
 function handleHeldSteps(): void {
@@ -425,8 +426,13 @@ function answerClocks(): void {
       if (rebuked.has(key)) continue;
       if (tryCast(RIVAL_REBUKE_TEMPLATE_ID, placeId)) { rebukeCasts++; rebuked.add(key); }
     }
-    // THR-2255 — and each place where the Doom fed, untended, once per feeding.
+    // THR-2255 — and each place where the Doom fed, untended, once per feeding. In the last
+    // stage the arm answers the daily alert instead (the place it names, the tick it fires), as
+    // a player who reads it would: answering every feeding the tick it lands would leave the
+    // alert nothing to name, and the predicate measures whether the alert is a choice.
+    const inLastStage = lastStageFrom !== null;
     for (const placeId of [...rebukablePlaceIds(state)].sort()) {
+      if (inLastStage && !alertedThisTick.has(placeId)) continue;
       const t: any = rebukeAnswerFor(state, placeId);
       if (!t || t.kind !== 'doom') continue;
       const key = `doom|${placeId}|${t.fedAt}`;
@@ -564,12 +570,13 @@ for (let i = 0; i < TICKS; i++) {
   // THR-2255 — the doom.* traces of this tick only (read after it, cleared before the next).
   if (!warming && !isTracingEnabled()) enableTracing();
   clearTraces();
+  alertedThisTick.clear();
   state = runTick(state, [], runtime);
   if (!warming) {
     for (const tr of getTraces() as any[]) {
       if (tr.category === 'doom.fed') { doomPushTicks += tr.magnitude ?? 0; doomPushEvents++; }
       else if (tr.category === 'doom.feed_absorbed') { doomPushAbsorbed += tr.magnitude ?? 0; doomAbsorbEvents++; }
-      else if (tr.category === 'doom.feed_alert') doomAlertDaySet.add(dayOf(tr.tick ?? state.tick));
+      else if (tr.category === 'doom.feed_alert') { doomAlertDaySet.add(dayOf(tr.tick ?? state.tick)); alertedThisTick.add(tr.placeId); }
     }
     if (lastStageFrom === null && (state.doomClock?.currentStage ?? 0) >= DOOM_FEED_ALERT_FROM_STAGE) lastStageFrom = state.tick;
     const pb: any = state.ascendantBeats?.pending;

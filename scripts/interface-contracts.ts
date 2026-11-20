@@ -1931,6 +1931,23 @@ export const CONTRACTS: readonly Contract[] = [
       evidence: 'THR-2209. rivalRebuke.thr2209.test.ts: a probe lands on untended t0 (lastPressed, not absorbed) → rebukablePlaceIds = {t0}; resolveRebuke on a clean landing writes rebukedPlaces.t0 = tick + 4 days, pushes 4 mind at t0 causedBy the god, raises the rival 0.30 → 0.38 with cause rebuked (panel: "You rebuked it at Town 0."), traces rival.rebuked; the next probe that draws t0 reads tendedBy [rebuke], is absorbed (dominion.raid absorbed: true), toasts "…but your rebuke held it.", and records lastPressed absorbed, so t0 is no longer rebukable. getTargetActionSlots offers the card only on a place in the rebuke set.',
     },
   },
+  // THR-2255 (plan 2026-11-19-thr-2247 slice 1): the Doom feeds at a place — tended
+  // ground starves it, and Rebuke answers it where it fed.
+  {
+    id: 'doom-feeds-at-a-place',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: DOOM,
+    intent:
+      'A failure\x27s `doom_micro_tick` reads the dominion tending index at the failure\x27s top-level place (`placeOf` + `buildTendingIndex` / `isTended`): tended ground absorbs DOOM_FEED_ABSORB_SHARE of the push (trace `doom.feed_absorbed`, the complication\x27s `heldProse` line); untended ground pushes as before and writes `GameState.doomFeedings[place]` (trace `doom.fed`). Rebuke\x27s target filter (`rebukablePlaceIds`) adds every untended place with a feeding inside DOOM_REBUKE_WINDOW_DAYS; a landed doom Rebuke (`resolveRebuke`, rival target wins ties) tends it through `rebukedPlaces`, sets `doomFeedings[place].heldUntil`, raises no temper and traces `rival.rebuked` with targetKind doom. From Doom stage DOOM_FEED_ALERT_FROM_STAGE, `phaseDoom` raises one non-pausing `doom_feeding` alert a day while the god holds and can pay for Rebuke at such a place (`doomFeedAlertTick`).',
+    ulTerms: ['Doom Clock', 'Dominion'],
+    mechanism: { kind: 'function', symbols: ['recordDoomFeeding', 'doomRebukablePlaceIds', 'rebukeAnswerFor', 'doomFeedAlert'], module: 'src/engine/doomFeedings.ts' },
+    writeSites: ['src/engine/complicationEffects.ts', 'src/engine/unifiedActionResolution.ts', 'src/engine/phaseDoom.ts'],
+    readSites: ['src/engine/rivalRebuke.ts', 'src/engine/phaseDoom.ts', 'src/engine/views/subjects/actOn.ts'],
+    verifiedLive: {
+      date: '2026-11-20',
+      evidence: 'THR-2255. doomFeedings.thr2255.test.ts: a 0.3 doom_micro_tick at the seated t0 leaves the clock at 100 and traces doom.feed_absorbed tendedBy [seat]; at untended t1 it pushes to 100.3 and records doomFeedings.t1; t1 is rebukable at fedAt and fedAt + 3 days, not one tick later; a clean doom Rebuke writes rebukedPlaces.t1, heldUntil, pushes 4 mind, raises no temper (rivalId null, targetKind doom); a place both pressed and fed answers the rival; doomFeedAlert fires only at stage 5 with Rebuke held and affordable, once a day. The agency census answer arm reports doomPushAbsorbed > 0 on seeds 42, 7 and 99.',
+    },
+  },
   {
     id: 'world-events-mint-ambitions',
     producerSystem: 'Encounters & Dilemmas',

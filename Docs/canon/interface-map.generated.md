@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 238 |
+| 🟢 LIVE | 239 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 124 |
-| **Total** | **370** |
+| **Total** | **371** |
 
 ## Contracts by producing subsystem
 
@@ -218,6 +218,7 @@ remediation ticket or the build fails.
 | `content-tag-vocabulary` | Every word an author may hang on a piece of content comes from one closed list, so a query can ask for content by what it IS rather than by its id. Five axes: form and family authored, reach and sphere derived from REACH_DOMAINS and SPHERE_NAMES so a ninth reach appears in the vocabulary the day it is added, polarity the two words the condition proxy-event classifier already reads. Where a kind declares a typed projection field the tag is derived and never authored, and an authored tag contradicting its projection fails. The corpus held 153 spellings, 62 of them worn by one or two entries and read by nothing; a query written against that matches whatever the last author typed, which is why the list is closed and why adding to it is a design-session decision rather than a keystroke (THR-1486). | function: `CONTENT_TAGS`, `isContentTag`, `axisOfContentTag`, `contentTagsOnAxis`, `contentTagTooltipId`, `effectiveTags`, `authoredTags`, `projectedTags` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `decision-board-crossroads-snapshot` | A threaded mortal's next roads are read off the board that actually decides (THR-1926, Law 18). At each full decision `phaseAgentDecision` writes `crossroads` on every mortal the god threads: the board's entries in order, minus the road just taken and secret cells (`isSecretCellId`), cut at `CROSSROADS_OPTION_COUNT`. `placeCrossroadsLean` validates a lean against it and prices it by rank; `settledness` and `forecastLean` read it with the decision's own multiplier. The page row (`crossroadsRow.ts`) and the torn badge (`crossroadsBadgeModel.ts`, via `crossroadsTornName`) read the same field (THR-1928). | node-prop: `crossroads`, `buildCrossroadsSnapshot`, `settledness`, `forecastLean` | Essence & Divine Economy | 🟢 LIVE | — |
 | `decision-board-shadow-telemetry` | One ranking now decides what a mortal does with a free tick — encounter, undertaking, or nothing — and every decision it makes is on the record beside the encounter scorer’s own pick, so the decision mix the census gates is measured from behaviour rather than asserted (the shadow week that preceded the cutover was judged from the same trace, THR-1349). | event: `decision_board_comparison`, `decision_board_error`, `shadowWinnerFamily`, `shadowWinnerId`, `shadowAgreement`, `ambitionBoost` | Strategic Projects & Control | 🟢 LIVE | — |
+| `doom-feeds-at-a-place` | A failure's `doom_micro_tick` reads the dominion tending index at the failure's top-level place (`placeOf` + `buildTendingIndex` / `isTended`): tended ground absorbs DOOM_FEED_ABSORB_SHARE of the push (trace `doom.feed_absorbed`, the complication's `heldProse` line); untended ground pushes as before and writes `GameState.doomFeedings[place]` (trace `doom.fed`). Rebuke's target filter (`rebukablePlaceIds`) adds every untended place with a feeding inside DOOM_REBUKE_WINDOW_DAYS; a landed doom Rebuke (`resolveRebuke`, rival target wins ties) tends it through `rebukedPlaces`, sets `doomFeedings[place].heldUntil`, raises no temper and traces `rival.rebuked` with targetKind doom. From Doom stage DOOM_FEED_ALERT_FROM_STAGE, `phaseDoom` raises one non-pausing `doom_feeding` alert a day while the god holds and can pay for Rebuke at such a place (`doomFeedAlertTick`). | function: `recordDoomFeeding`, `doomRebukablePlaceIds`, `rebukeAnswerFor`, `doomFeedAlert` | Doom Clock & Journey | 🟢 LIVE | — |
 | `encounter-brokers-oath-of-fealty` | A won Faction Unification or a won Warlord's Tribute demand fires the faction_broker_fealty aftermath effect from the band's outcome table. It swears one faction to the realm the mortal serves (highest-ranked realm membership; that realm's own liege when it is sworn) through swearBrokeredOath, which applies every crown rule (crown on, maySwear, an unsworn realm liege, the re-swear cooldown) and writes through writeOath with brokeredBy and, for a demand, forcedBy:demand. The vassal is the warlord's company ($cast:warlord) or the best-standing present faction at the mortal's town (never the liege's enemy). The win replaces the offer score; no gift is paid. A refusal writes nothing and traces its reason. THR-2051 adds a second liege source: a won Tribute Exchange (liegeFrom: scene_town) swears the actor's own house to the crown the scene's town answers to — getLocationHolder's realm holder (or its liege), else the realm its non-realm holder is sworn to (liegeOf). | edge: `sworn_to`, `faction_broker_fealty`, `brokerOath`, `swearBrokeredOath`, `brokeredBy`, `townLiegeOf`, `liegeFrom` | Factions & Succession | 🟢 LIVE | — |
 | `encounter-hex-lights-stage` | An encounter lights its own place on the Stage (THR-1895, plan THR-1877 § D9; THR-1822 D16 step 5). Every encounter adapter (unified, simple, gate duty) writes the notification hexCol / hexRow into the stage model header; GameView hands it to the stage selector, and resolveMomentHexes lights that hex first (litSource beat), else the Location of the mortal, so the camera eases the place into the Stage window. | property: `hexCol`, `hexRow` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `encounter-outcome-guild-holds-a-building` | The fellowship a scene names is a real faction. The `guild_hold_place` outcome effect (on *The Lease Sealed*) leaves the town's own guild — `pickTownGuild`: the first of `MILL_FELLOWSHIP_AFFINITIES` with a purse faction present, then most members standing there, then id; never a realm — holding the town building through a faction → Place `controls` edge (`role: 'guild_holding'`). It is the first encounter writer of a faction→Place `controls`. One per town: an unheld one is taken up, one held by another faction stays theirs, no guild present or no free slot writes nothing. The holding reads on the guild's page (Connections), in its purse (held-building dues) and in its war-aim defence list; a non-realm `controls` never moves a border (THR-2077). | function: `guild_hold_place`, `pickTownGuild`, `heldBuildingDuesOf` | Factions & Succession | 🔵 UNVERIFIED-OK | — |
@@ -1485,10 +1486,10 @@ exit
 - **Intent:** Holding a place grows it (THR-1748, THR-1762). `phaseDominion` turns an active Claim Dominion, the seat and every threaded mortal (tier ≥ 1, one tier higher with a bestowed gift) into small pushes of the god's bought vector at the place they hold or stand in, and relaxes every untended place toward its seeded scores (neglect). Other sustained holds keep pushing their upkeep sphere, at `CONTROL_PRESSURE_PER_TICK` (now 0.03).
 - **Producer → Consumer:** Strategic Projects & Control → Spheres & Quintessence
 - **UL terms:** *Dominion*
-- **Production hits:** 16 total — 2 write, 2 read, 12 unclassified
+- **Production hits:** 17 total — 2 write, 2 read, 13 unclassified
 - **Write sites:** `src/engine/dominion.ts`, `src/engine/phaseDominion.ts`
 - **Read sites:** `src/engine/orchestrator.ts`, `src/engine/phaseSpherePressure.ts`
-- **Other hits:** `src/components/Game/debug/SphereStateTabContent.tsx`, `src/data/action-technical-effects.ts`, `src/data/unified-action-templates.ts`, `src/debug-bridge.ts`, `src/engine/dominionProjection.ts` +7 more
+- **Other hits:** `src/components/Game/debug/SphereStateTabContent.tsx`, `src/data/action-technical-effects.ts`, `src/data/unified-action-templates.ts`, `src/debug-bridge.ts`, `src/engine/dominionProjection.ts` +8 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `crown-liege-pays-vassal-wages` — 🟢 LIVE
@@ -1647,10 +1648,10 @@ exit
 - **Intent:** Home turf is cheaper and surer (THR-1748). A god card is priced and rolled on its target's Dominion band — `dominionOf` over the target's sphere scores against the god's bought points. The preview (`getTargetActionSlots`) and the charge (`preparePlayerCast`, through `dominionScaledEssenceCost`) read the same band so the price shown is the price paid; the resolver's `sphereFactor` reads it for a player cast only, and the card forecast reads the same factor. Both read the band since THR-1750 turned `DOMINION_PRICES_LIVE` on with the card chip.
 - **Producer → Consumer:** Spheres & Quintessence → Essence & Divine Economy
 - **UL terms:** *Dominion*, *Dominion Band*, *Sphere*
-- **Production hits:** 10 total — 1 write, 3 read, 6 unclassified
+- **Production hits:** 11 total — 1 write, 3 read, 7 unclassified
 - **Write sites:** `src/engine/dominion.ts`
 - **Read sites:** `src/engine/playerCastDispatch.ts`, `src/engine/targetActions.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/Game/GameView.tsx`, `src/engine/crossroadsActions.ts`, `src/engine/playerCastReadout.ts`, `src/engine/views/godRail.ts`, `src/engine/views/stage/momentCardModel.ts` +1 more
+- **Other hits:** `src/components/Game/GameView.tsx`, `src/engine/crossroadsActions.ts`, `src/engine/phaseDoom.ts`, `src/engine/playerCastReadout.ts`, `src/engine/views/godRail.ts` +2 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `dominion-band-projected-to-hex-map` — 🔵 UNVERIFIED-OK
@@ -1680,11 +1681,23 @@ exit
 - **Intent:** The god's places in the warm recap (THR-2184). `readWarmRecapBands` reads each place's band live through `dominionOf`, the read `afterSpherePressure` writes into the dominion ledger. It does not read the ledger itself, which is empty before a warm-up's first tick; the ledger is only a fallback when the live read throws. `snapshotWarmRecap` reads once after the opening gifts settle and before the first warm tick; `buildWarmRecap` reads again at arrival and names places that slipped from Touched or better, and places that rose to Held or Sovereign. The diff stands in for the day lines, which `recentEvents` has dropped by the end of a long warm-up. The rival behind a slip is never named (THR-2172). Read only.
 - **Producer → Consumer:** Spheres & Quintessence → Attention, Chronicle & Narrative
 - **UL terms:** *Dominion*
-- **Production hits:** 12 total — 1 write, 1 read, 10 unclassified
+- **Production hits:** 13 total — 1 write, 1 read, 11 unclassified
 - **Write sites:** `src/engine/dominion.ts`
 - **Read sites:** `src/engine/views/warmRecap.ts`
-- **Other hits:** `src/components/Game/debug/SphereStateTabContent.tsx`, `src/debug-bridge.ts`, `src/engine/cycleEnd.ts`, `src/engine/dominionProjection.ts`, `src/engine/dominionViewModels.ts` +5 more
+- **Other hits:** `src/components/Game/debug/SphereStateTabContent.tsx`, `src/debug-bridge.ts`, `src/engine/cycleEnd.ts`, `src/engine/dominionProjection.ts`, `src/engine/dominionViewModels.ts` +6 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `doom-feeds-at-a-place` — 🟢 LIVE
+
+- **Intent:** A failure's `doom_micro_tick` reads the dominion tending index at the failure's top-level place (`placeOf` + `buildTendingIndex` / `isTended`): tended ground absorbs DOOM_FEED_ABSORB_SHARE of the push (trace `doom.feed_absorbed`, the complication's `heldProse` line); untended ground pushes as before and writes `GameState.doomFeedings[place]` (trace `doom.fed`). Rebuke's target filter (`rebukablePlaceIds`) adds every untended place with a feeding inside DOOM_REBUKE_WINDOW_DAYS; a landed doom Rebuke (`resolveRebuke`, rival target wins ties) tends it through `rebukedPlaces`, sets `doomFeedings[place].heldUntil`, raises no temper and traces `rival.rebuked` with targetKind doom. From Doom stage DOOM_FEED_ALERT_FROM_STAGE, `phaseDoom` raises one non-pausing `doom_feeding` alert a day while the god holds and can pay for Rebuke at such a place (`doomFeedAlertTick`).
+- **Producer → Consumer:** Encounters & Dilemmas → Doom Clock & Journey
+- **UL terms:** *Doom Clock*, *Dominion*
+- **Module:** `src/engine/doomFeedings.ts`
+- **Production hits:** 4 total — 2 write, 1 read, 1 unclassified
+- **Write sites:** `src/engine/complicationEffects.ts`, `src/engine/phaseDoom.ts`
+- **Read sites:** `src/engine/rivalRebuke.ts`
+- **Other hits:** `src/engine/doomFeedings.ts`
+- **Verdict:** Verified 2026-11-20: THR-2255. doomFeedings.thr2255.test.ts: a 0.3 doom_micro_tick at the seated t0 leaves the clock at 100 and traces doom.feed_absorbed tendedBy [seat]; at untended t1 it pushes to 100.3 and records doomFeedings.t1; t1 is rebukable at fedAt and fedAt + 3 days, not one tick later; a clean doom Rebuke writes rebukedPlaces.t1, heldUntil, pushes 4 mind, raises no temper (rivalId null, targetKind doom); a place both pressed and fed answers the rival; doomFeedAlert fires only at stage 5 with Rebuke held and affordable, once a day. The agency census answer arm reports doomPushAbsorbed > 0 on seeds 42, 7 and 99.
 
 ### `doom-floor-holds-unmaking` — 🔵 UNVERIFIED-OK
 
@@ -1750,10 +1763,10 @@ exit
 - **Producer → Consumer:** Spheres & Quintessence → World Generation, Terrain & Places
 - **UL terms:** *Echo*, *Dominion*
 - **Module:** `src/engine/dominion.ts`
-- **Production hits:** 12 total — 1 write, 1 read, 10 unclassified
+- **Production hits:** 13 total — 1 write, 1 read, 11 unclassified
 - **Write sites:** `src/engine/dominion.ts`
 - **Read sites:** `src/engine/seedEchoes.ts`
-- **Other hits:** `src/components/Game/debug/SphereStateTabContent.tsx`, `src/debug-bridge.ts`, `src/engine/cycleEnd.ts`, `src/engine/dominionProjection.ts`, `src/engine/dominionViewModels.ts` +5 more
+- **Other hits:** `src/components/Game/debug/SphereStateTabContent.tsx`, `src/debug-bridge.ts`, `src/engine/cycleEnd.ts`, `src/engine/dominionProjection.ts`, `src/engine/dominionViewModels.ts` +6 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `echo-seeding-writes-place-scores` — 🔵 UNVERIFIED-OK
@@ -1886,10 +1899,10 @@ exit
 - **Intent:** An encounter lights its own place on the Stage (THR-1895, plan THR-1877 § D9; THR-1822 D16 step 5). Every encounter adapter (unified, simple, gate duty) writes the notification hexCol / hexRow into the stage model header; GameView hands it to the stage selector, and resolveMomentHexes lights that hex first (litSource beat), else the Location of the mortal, so the camera eases the place into the Stage window.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Encounter*, *Location*
-- **Production hits:** 167 total — 3 write, 1 read, 163 unclassified
+- **Production hits:** 169 total — 3 write, 1 read, 165 unclassified
 - **Write sites:** `src/engine/views/stage/buildGateDutyEncounterStageModel.ts`, `src/engine/views/stage/buildSimpleEncounterStageModel.ts`, `src/engine/views/stage/buildUnifiedEncounterStageModel.ts`
 - **Read sites:** `src/components/Game/GameView.tsx`
-- **Other hits:** `src/components/Game/debug/BeatsDebugTab.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/hooks/useAgentInteraction.ts` +158 more
+- **Other hits:** `src/components/Game/debug/BeatsDebugTab.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/hooks/useAgentInteraction.ts` +160 more
 - **Verdict:** Verified 2026-10-20: THR-1895. On ?view=game&seeded&size=medium&forceencounters at 1920x1080, getStage() reported the encounter with vm.litSource beat and litHex 16,12 inside the 280 px window (litHexInWindow true); buildGateDutyEncounterStageModel.test.ts pins the gate-duty header hex.
 
 ### `encounter-outcome-guild-holds-a-building` — 🔵 UNVERIFIED-OK
@@ -2072,10 +2085,10 @@ exit
 
 - **Intent:** A spend visibly moves the pool it drew from (THR-1607, Law 47). `commitPlayerCast` deducts a cast's price from `GameState.essencePool[sphere]`; `selectEssenceRows` reads the pool in a fixed order (identity spheres, then canonical — never by level, so a spend never reorders the list) and `EssenceBlock` draws each row against `ESSENCE_BAR_CEILING` (the starting pool) with its whole-number balance and a delta-cluster flash after a spend. Before this the bar filled against `/10` while pools start at fifty, so no spend ever moved it.
 - **Producer → Consumer:** Encounters & Dilemmas → Essence & Divine Economy
-- **Production hits:** 57 total — 1 write, 1 read, 55 unclassified
+- **Production hits:** 58 total — 1 write, 1 read, 56 unclassified
 - **Write sites:** `src/engine/playerCastDispatch.ts`
 - **Read sites:** `src/engine/views/godRail.ts`
-- **Other hits:** `src/components/Game/ascendant-bar/EssenceBlock.tsx`, `src/components/Game/contexts/ScryContext.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useCrossroadsActs.ts` +50 more
+- **Other hits:** `src/components/Game/ascendant-bar/EssenceBlock.tsx`, `src/components/Game/contexts/ScryContext.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useCrossroadsActs.ts` +51 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `explored-hexes-draw-minimap` — 🔵 UNVERIFIED-OK
@@ -3346,10 +3359,10 @@ exit
 - **Producer → Consumer:** Ascendant Beats & Progression → Essence & Divine Economy
 - **UL terms:** *Ascendant Beat*, *Offering*
 - **Module:** `src/engine/ascendantBeat.ts`
-- **Production hits:** 31 total — 1 write, 3 read, 27 unclassified
+- **Production hits:** 33 total — 1 write, 3 read, 29 unclassified
 - **Write sites:** `src/engine/ascendantBeat.ts`
 - **Read sites:** `src/engine/actionUnlock.ts`, `src/engine/targetActions.ts`, `src/engine/views/godRail.ts`
-- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +22 more
+- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +24 more
 - **Verdict:** Verified 2026-10-14: THR-1811 — `godProgression.test.ts` "taking one up unlocks it, spends from the ledger, and never touches the earned counter": the card lands in `unlockedActionIds`, `essenceEarnedBySphere` is unchanged and `offeringSpentBySphere` rises by the traced `offering.taken` price; seed 42 headless rose an offering of three cards at tick 21 that passed at the tick-36 day boundary.
 
 ### `one-namer-shared-primitives` — 🟢 LIVE
@@ -3535,17 +3548,17 @@ exit
 - **Production hits:** 14 total — 2 write, 5 read, 7 unclassified
 - **Write sites:** `src/engine/rivalRebuke.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/engine/dominion.ts`, `src/engine/orchestrator.ts`, `src/engine/phaseSpherePressure.ts`, `src/engine/views/rivalEntry.ts`, `src/engine/views/subjects/actOn.ts`
-- **Other hits:** `src/data/action-technical-effects.ts`, `src/debug-bridge.ts`, `src/engine/phaseAscendantProgression.ts`, `src/engine/phaseDominion.ts`, `src/engine/targetActions.ts` +2 more
+- **Other hits:** `src/data/action-technical-effects.ts`, `src/debug-bridge.ts`, `src/engine/doomFeedings.ts`, `src/engine/phaseDominion.ts`, `src/engine/targetActions.ts` +2 more
 - **Verdict:** Verified 2026-11-14: THR-2209. rivalRebuke.thr2209.test.ts: a probe lands on untended t0 (lastPressed, not absorbed) → rebukablePlaceIds = {t0}; resolveRebuke on a clean landing writes rebukedPlaces.t0 = tick + 4 days, pushes 4 mind at t0 causedBy the god, raises the rival 0.30 → 0.38 with cause rebuked (panel: "You rebuked it at Town 0."), traces rival.rebuked; the next probe that draws t0 reads tendedBy [rebuke], is absorbed (dominion.raid absorbed: true), toasts "…but your rebuke held it.", and records lastPressed absorbed, so t0 is no longer rebukable. getTargetActionSlots offers the card only on a place in the rebuke set.
 
 ### `receipt-event-band-toast` — 🔵 UNVERIFIED-OK
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 492 total — 1 write, 1 read, 490 unclassified
+- **Production hits:** 493 total — 1 write, 1 read, 491 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +485 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +486 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `recovered-town-keeps-faith` — 🟢 LIVE
@@ -3836,10 +3849,10 @@ exit
 - **Producer → Consumer:** Ascendant Beats & Progression → Essence & Divine Economy
 - **UL terms:** *Ascendant Beat*, *Rung*, *Key card*
 - **Module:** `src/engine/phaseAscendantProgression.ts`
-- **Production hits:** 31 total — 2 write, 1 read, 28 unclassified
+- **Production hits:** 33 total — 2 write, 1 read, 30 unclassified
 - **Write sites:** `src/engine/ascendantBeat.ts`, `src/engine/phaseAscendantProgression.ts`
 - **Read sites:** `src/engine/actionUnlock.ts`
-- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +23 more
+- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +25 more
 - **Verdict:** Verified 2026-10-14: THR-1811 — `godProgression.test.ts`: three summed marks open rung 2, the secondary signature is the first gift, the next key waits `RUNG_GIFT_SPACING`, a held key is skipped, and the resolve traces `via: rung`.
 
 ### `rung-reads-attunement-marks` — 🟢 LIVE
@@ -4479,10 +4492,10 @@ exit
 - **Producer → Consumer:** World Generation, Terrain & Places → Attachments, Items & Possessions
 - **UL terms:** *Echo*, *Dominion*
 - **Module:** `src/engine/seedEchoes.ts`
-- **Production hits:** 18 total — 1 write, 3 read, 14 unclassified
+- **Production hits:** 19 total — 1 write, 3 read, 15 unclassified
 - **Write sites:** `src/engine/seedEchoes.ts`
 - **Read sites:** `src/engine/dominion.ts`, `src/engine/views/connections.ts`, `src/engine/views/subjects/subjectPage.ts`
-- **Other hits:** `src/components/Game/debug/SphereStateTabContent.tsx`, `src/data/undertaking-objects.ts`, `src/debug-bridge.ts`, `src/engine/dominionViewModels.ts`, `src/engine/itemGenerator/worldContext.ts` +9 more
+- **Other hits:** `src/components/Game/debug/SphereStateTabContent.tsx`, `src/data/undertaking-objects.ts`, `src/debug-bridge.ts`, `src/engine/complicationEffects.ts`, `src/engine/dominionViewModels.ts` +10 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `undertaking-catalyst-resolves-by-query` — 🟢 LIVE
