@@ -39,6 +39,7 @@ import { MORTAL_MEANS_ENABLED, COMMISSION_CAUSE_LINE } from '../data/mortal-mean
 import {
   foldActorReputation,
   isLostActionOutcome,
+  REPUTATION_FOLD_EPSILON,
   reputationFoldId,
   lostEndingGainCap,
   nextReputationGainGap,
@@ -1939,6 +1940,12 @@ export function executeStepResult(
     stepCast?: StepCastRecord;
   },
   runtime?: SimulationRuntime,
+  /**
+   * THR-2257 — this step closes a group contest the actor lost. The contest loop
+   * stamps `contested_lost` only after this returns, over what may read here as
+   * `success_at_cost`, so the lost-ending settle has to be told in advance.
+   */
+  ending?: { contestLost?: boolean },
 ): { updatedAction: UnifiedAction; events: TickEvent[] } {
   if (resolutionStats?.fightEnd) {
     return executeFightNoRollEnd(action, template, resolutionStats.fightEnd.reason, state, rng, tick, runtime);
@@ -3122,7 +3129,8 @@ export function executeStepResult(
   // THR-2257 — a lost ending settles the row to its final band: the earlier
   // steps' gains are forfeited, so "lost" never sits over "rose". Runs even on
   // an ending step that moved nothing, since an earlier step's gain may stand.
-  const lostEnding = finalAction.resolved && isLostActionOutcome(finalAction.outcome);
+  const lostEnding = finalAction.resolved
+    && (isLostActionOutcome(finalAction.outcome) || ending?.contestLost === true);
   if (reputationParts.net !== 0 || lostEnding) {
     const foldArgs = {
       prior: action.aftermathChanges,
@@ -3166,13 +3174,17 @@ export function executeStepResult(
         applyReputationScoreDelta(state, action.actorId, settle.correction);
         // Traced as applied: the [0, 1] clamp may swallow part of the correction.
         const applied = scoreOf() - scoreBefore;
+        // Review round 2 — the row reports what the sheet shows, so a correction
+        // the floor clamp swallowed comes back out of the settled net.
+        rowNet = settle.settledNet + (applied - settle.correction);
+        if (Math.abs(rowNet) <= REPUTATION_FOLD_EPSILON) rowNet = 0;
         emitTrace({
           tick,
           category: 'reputation_lost_encounter_settled',
           agentId: action.actorId,
           actionId: action.actionId,
           templateId: action.templateId,
-          outcome: finalAction.outcome ?? 'failure',
+          outcome: ending?.contestLost ? 'contested_lost' : (finalAction.outcome ?? 'failure'),
           priorNet,
           stepNet: reputationParts.net,
           correction: applied,
@@ -4405,6 +4417,10 @@ export function phaseUnifiedActionProgress(
       attacker, defender, atkTemplate, defTemplate, state, rng,
     );
 
+    const opposition = pair.groupOpposition
+      ? oppositionByInitiator.get(pair.attackerActionId)
+      : undefined;
+
     // Apply attacker outcome
     const atkOps = contestResult.attackerOutcome === 'success'
       ? (atkTemplate.steps[attacker.currentStep]?.onSuccess ?? [])
@@ -4412,6 +4428,7 @@ export function phaseUnifiedActionProgress(
     const { updatedAction: updAtk, events: atkEvents } = executeStepResult(
       attacker, atkTemplate, contestResult.attackerOutcome, atkOps, state, rng, state.tick,
       undefined, runtime,
+      { contestLost: !!opposition && contestResult.attackerOutcome !== 'success' },
     );
 
     // Apply defender outcome
@@ -4421,6 +4438,7 @@ export function phaseUnifiedActionProgress(
     const { updatedAction: updDef, events: defEvents } = executeStepResult(
       defender, defTemplate, contestResult.defenderOutcome, defOps, state, rng, state.tick,
       undefined, runtime,
+      { contestLost: !!opposition && contestResult.defenderOutcome !== 'success' },
     );
 
     // THR-731: a group contest is the one contested shape that carries consequences
@@ -4430,9 +4448,6 @@ export function phaseUnifiedActionProgress(
     // engagement actually produced.
     let atkResolved = updAtk;
     let defResolved = updDef;
-    const opposition = pair.groupOpposition
-      ? oppositionByInitiator.get(pair.attackerActionId)
-      : undefined;
     if (opposition) {
       applyContestConsequences(
         state, opposition,

@@ -238,6 +238,36 @@ describe('THR-2257 — a lost two-step encounter never nets a rise', () => {
     expect(scoreOf(state)).toBeCloseTo(0.49, 6);
   });
 
+  it('a correction the floor clamp swallows comes out of the row too — row and sheet agree (review round 2)', () => {
+    // 0.005 + 0.02 → 0.025, −0.01 → 0.015. Forfeiting 0.02 would go below 0, so
+    // the clamp applies −0.015: the sheet ends at 0, a net of −0.005.
+    const state = createMinimalGameState(0.005);
+    const { action } = run(makeTemplate([step('fail_action'), step('fail_action')]), state, ['success', 'failure']);
+    expect(scoreOf(state)).toBeCloseTo(0, 9);
+    const rows = reputationRows(action);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].magnitude?.raw).toBeCloseTo(-0.005, 6);
+  });
+
+  it('a group contest lost on a weakened final step settles as lost, though the step reads won-at-a-price (review round 2)', () => {
+    const template = makeTemplate([step('continue_weakened'), step('continue_weakened')]);
+    const state = createMinimalGameState();
+    let action: UnifiedAction = createUnifiedAction({
+      actorId: 'actor-1', templateId: template.id, targetId: 'loc-1',
+      scale: 'local', source: 'agent', tick: 0, template, rng: fixedRng,
+    });
+    action = executeStepResult(action, template, 'success', [], state, fixedRng, 10).updatedAction;
+    action = executeStepResult(
+      action, template, 'failure', [], state, fixedRng, 10, undefined, undefined, { contestLost: true },
+    ).updatedAction;
+    // The step's own band is a win at a price; the contest loop stamps contested_lost after.
+    expect(action.outcome).toBe('success_at_cost');
+    expect(scoreOf(state) - START_SCORE).toBeCloseTo(-0.01, 6);
+    expect(reputationRows(action)[0].polarity).toBe('loss');
+    const settled = getTraces().filter(t => t.category === 'reputation_lost_encounter_settled');
+    expect((settled[0] as unknown as { outcome: string }).outcome).toBe('contested_lost');
+  });
+
   it('below neutral the whole earlier gain still stands, and is forfeited', () => {
     const state = createMinimalGameState(0.3);
     run(makeTemplate([step('fail_action'), step('fail_action')]), state, ['success', 'failure']);
