@@ -92,3 +92,17 @@ describe('transitionToNewCycle resets the doom clock (THR-1642)', () => {
       .toBe(false);
   });
 });
+
+describe('transitionToNewCycle clears the Doom feedings (THR-2255, review round 2)', () => {
+  it('the new age starts with no feeding record and no alert tick from the old clock', () => {
+    const ended = {
+      ...expiredEndOfCycleState(),
+      doomFeedings: { someplace: { lastTick: 240, lastActorId: 'm', recentTicks: [240], heldUntil: 290 } },
+      doomFeedAlertTick: 245,
+    } as GameState;
+    const next = transitionToNewCycle(ended, [], [], 'A somber age.');
+    expect(next.tick).toBe(0);
+    expect(next.doomFeedings).toBeUndefined();
+    expect(next.doomFeedAlertTick).toBeUndefined();
+  });
+});

@@ -2043,7 +2043,8 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     spellName: 'Rebuke',
     rarityTier: 2,
     intrinsicTier: 'shaping',
-    description: 'Answer a rival god where it pressed. The place holds against them for a few days, and some of what was taken comes back. The rival will remember.',
+    // THR-2255: Rebuke also answers the Doom where it fed, so the card names both.
+    description: 'Answer a rival god where it pressed, or the doom where it fed. The place holds against them for a few days, and some of what was taken comes back. A rival will remember.',
     reach: 'star',
     crudType: 'update',
     scale: 'regional',

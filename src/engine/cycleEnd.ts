@@ -526,5 +526,10 @@ export function transitionToNewCycle(
     // THR-887 — the tally is run-scoped. Carrying it across the transition would
     // let the first cycle's favorite card keep winning every later harvest.
     cardPlayTally: {},
+    // THR-2255 — the Doom's feedings and its daily alert are age-scoped: their ticks
+    // belong to the old clock, and left set they would hold the new age's places and
+    // silence its last-stage alert until the new tick passed the old one.
+    doomFeedings: undefined,
+    doomFeedAlertTick: undefined,
   };
 }
