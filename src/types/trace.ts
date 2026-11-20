@@ -3357,6 +3357,12 @@ export interface MandateDeedCreditTrace extends TraceBase {
   /** Essence the god paid per sphere on the chapter's cards. */
   spend: Partial<Record<SphereName, number>>;
   credits: { sphere: SphereName; points: number }[];
+  /** THR-2249 — `cast` for the god's own cast on a place; absent = a mortal's deed. */
+  source?: 'deed' | 'cast';
+  /** THR-2249 — the place a cast credit is keyed to. */
+  targetId?: string;
+  /** THR-2249 — the essence the god paid on the cast. */
+  essencePaid?: number;
 }
 
 /**
