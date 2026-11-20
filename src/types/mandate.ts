@@ -156,6 +156,42 @@ export interface MandateState {
   recentLedgerDelta?: number;
   /** THR-2208 — the last few deeds of bound mortals that raised the Mandate, newest first. */
   recentDeeds?: MandateDeedRecord[];
+  /**
+   * THR-2251 — the race reading: which clock lands first at the last fifteen days' pace
+   * (`raceForecast.ts`). Optional; absent reads as `hidden` and starts empty.
+   */
+  raceWatch?: RaceWatch;
+}
+
+/**
+ * THR-2251 — how the age ends at this pace. `hidden` until Doom reaches its Signs stage
+ * and five daily samples exist; `stalled` when the Mandate has not risen across the
+ * window and its trend word is not Rising.
+ */
+export type RaceState = 'hidden' | 'mandate_first' | 'doom_first' | 'close' | 'stalled';
+
+/** THR-2251 — one daily sample of both clocks' progress (0–1). */
+export interface RaceSample {
+  tick: number;
+  mandate: number;
+  doom: number;
+}
+
+/** THR-2251 — the race reading kept on the Mandate state (`raceForecast.ts`). */
+export interface RaceWatch {
+  /** The last `RACE_WINDOW_SAMPLES` daily samples, oldest first. */
+  samples: RaceSample[];
+  /** The state the surfaces show — it changes only after a new state held two days. */
+  shown: RaceState;
+  /** True once the race has been shown this age, so a first sight is told once. */
+  seen: boolean;
+  /** A computed state that differs from `shown`, and the tick it was first computed. */
+  pending?: { state: RaceState; since: number };
+  /**
+   * Debug-only override written by `window.__DEBUG.forceRace` for evidence. The surfaces
+   * read `forced ?? shown` (`shownRaceState`); the phase never writes it.
+   */
+  forced?: RaceState;
 }
 
 /** THR-2208 — one bound mortal's chapter that credited the Mandate. */

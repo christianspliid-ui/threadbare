@@ -165,6 +165,7 @@ export type TraceCategory =
   | 'mandate_baseline_settled' // THR-2080
   | 'mandate_ledger_credit' // THR-2081
   | 'mandate.deed_credit' // THR-2208
+  | 'mandate.race_turned' // THR-2251
   | 'revelation' | 'tick_health' | 'tick_crash'
   | 'agent_revelation' | 'interaction_depth'
   | 'faction_ambition'
@@ -847,6 +848,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'mandate_baseline_settled',
   'mandate_ledger_credit',
   'mandate.deed_credit',
+  'mandate.race_turned',
   'revelation', 'tick_health', 'tick_crash',
   'agent_revelation', 'interaction_depth',
   'faction_ambition',
@@ -3363,6 +3365,22 @@ export interface MandateDeedCreditTrace extends TraceBase {
   essencePaid?: number;
 }
 
+/**
+ * Trace: the shown race state changed (THR-2251, `raceForecast.ts`) — a turn after the
+ * two-day hold, or the first sight of the age (`from: 'hidden'`).
+ */
+export interface MandateRaceTurnedTrace extends TraceBase {
+  category: 'mandate.race_turned';
+  from: 'hidden' | 'mandate_first' | 'doom_first' | 'close' | 'stalled';
+  to: 'hidden' | 'mandate_first' | 'doom_first' | 'close' | 'stalled';
+  /** True for the once-per-age first sight, which the census does not count as a turn. */
+  firstSight: boolean;
+  mandateProgress: number;
+  doomProgress: number;
+  mandateEndTick: number | null;
+  doomEndTick: number | null;
+}
+
 /** Trace: control effect ticked (per-tick drain, income, threshold check) */
 export interface ControlEffectTickTrace extends TraceBase {
   category: 'control_effect';
@@ -5847,6 +5865,7 @@ export type TraceEntry =
   | MandateBaselineSettledTrace
   | MandateLedgerCreditTrace
   | MandateDeedCreditTrace
+  | MandateRaceTurnedTrace
   | ControlEffectTickTrace
   | ControlEffectLapseTrace
   | ControlEffectEstablishedTrace

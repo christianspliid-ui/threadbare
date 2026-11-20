@@ -240,6 +240,10 @@ if (import.meta.env.DEV) {
   let _setMandateProgressCb:
     | ((fraction: number, heldAt?: string) => import('./debug-bridge.d').DebugSetMandateProgressResult)
     | null = null;
+  /** THR-2251 — write the debug race override. Registered by the debug levers hook. */
+  let _forceRaceCb:
+    | ((state: import('./types/mandate').RaceState | null) => { ok: true } | { error: string })
+    | null = null;
 
   /** THR-1414 — stage a premonition from the debug bridge. Registered by GameView. */
   let _forcePremonitionCb:
@@ -625,6 +629,16 @@ if (import.meta.env.DEV) {
         recentDeedLines: row?.recentDeedLines ?? [],
         pendingSpend,
       };
+    },
+    // THR-2251 — the race reading (shown / computed / ends / samples / lever).
+    getRace: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      if (!state.mandateState) return { error: 'This world has no Mandate' };
+      const { raceReading } = await import('./engine/raceForecast');
+      const { raceForecastLine } = await import('./data/race-content');
+      const reading = raceReading(state);
+      return { ...reading, sentence: raceForecastLine(reading.shown) };
     },
     getEssenceRefill: async () => {
       const state = _gameStateProvider?.();
@@ -1810,6 +1824,19 @@ if (import.meta.env.DEV) {
       return _setMandateProgressCb(clamped, heldAt);
     },
     _registerSetMandateProgress: (fn) => { _setMandateProgressCb = fn; },
+
+    // ── THR-2251 — override the shown race state for evidence (debug-only) ─
+    forceRace: async (raceState) => {
+      if (!_forceRaceCb) return { error: 'Game not loaded' };
+      const RACE_STATES = ['hidden', 'mandate_first', 'doom_first', 'close', 'stalled'];
+      if (raceState !== null && !RACE_STATES.includes(raceState)) {
+        return { error: `Unknown race state "${String(raceState)}" — one of ${RACE_STATES.join(', ')}, or null` };
+      }
+      const written = _forceRaceCb(raceState);
+      if ('error' in written) return written;
+      return window.__DEBUG!.getRace();
+    },
+    _registerForceRace: (fn) => { _forceRaceCb = fn; },
 
     // ── Spawn / world-spawn commands (delegated to encounter bridge) ──────
     spawnEncounter: (agentQuery: string, templateId: string, options?: Record<string, unknown>) =>
