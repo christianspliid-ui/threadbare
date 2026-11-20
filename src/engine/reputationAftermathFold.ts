@@ -14,7 +14,7 @@
  * change. Pure helpers, so the arithmetic is testable without a world.
  */
 
-import type { EncounterAftermathChange } from '../types/unifiedAction';
+import type { EncounterAftermathChange, UnifiedActionOutcome } from '../types/unifiedAction';
 
 /** Below this, a reputation movement is rounding noise and draws no row. */
 export const REPUTATION_FOLD_EPSILON = 0.0001;
@@ -69,5 +69,52 @@ export function foldActorReputation(args: {
     net: Math.abs(net) > REPUTATION_FOLD_EPSILON ? net : 0,
     supersededIds: priorRows.map(c => c.id),
     hadPrior: priorRows.length > 0,
+  };
+}
+
+/**
+ * THR-2257 — the action outcomes the ending sentence calls "lost"
+ * (`OUTCOME_SENTENCE_SHAPES` in `aftermathWords.ts`). A won-at-a-price ending is
+ * not here: it is a win, and keeps the reputation its steps earned.
+ */
+export const LOST_ACTION_OUTCOMES: ReadonlySet<UnifiedActionOutcome> = new Set<UnifiedActionOutcome>([
+  'failure',
+  'critical_failure',
+  'contested_lost',
+]);
+
+/** True when the ending reads "{actor} lost {encounter}". */
+export function isLostActionOutcome(outcome: UnifiedActionOutcome | undefined): boolean {
+  return outcome !== undefined && LOST_ACTION_OUTCOMES.has(outcome);
+}
+
+/**
+ * THR-2257 — a lost encounter forfeits the reputation its earlier steps gained.
+ *
+ * Templates author roughly +0.02 on a step's success and −0.01 on its failure
+ * (49 of them in `encounter-content.ts`). Step deltas apply as each step lands,
+ * so "pass step 1, fail step 2" netted about +0.01 and the ending read "Seren
+ * lost …" over "Seren's reputation rose a little", against the "At Stake" line
+ * that promised a fall on failure. The rule lives here, not in the templates:
+ *
+ * - The earlier steps' net counts only if it was a loss (`min(0, priorNet)`).
+ * - The ending step's own movement stays as it was.
+ * - The settled net is never above zero: a lost encounter never reads "rose".
+ *
+ * Returns the settled net and the correction to apply to the score so the sheet
+ * agrees with the row (Law 56). The correction is zero when no earlier gain
+ * or ending-step rise needs undoing.
+ * The step-level deltas stay in the trace; the correction is traced on its own.
+ */
+export function settleLostEncounterReputation(args: {
+  readonly priorNet: number;
+  readonly stepNet: number;
+}): { settledNet: number; correction: number } {
+  const unsettled = args.priorNet + args.stepNet;
+  const settled = Math.min(0, Math.min(0, args.priorNet) + args.stepNet);
+  const correction = settled - unsettled;
+  return {
+    settledNet: Math.abs(settled) > REPUTATION_FOLD_EPSILON ? settled : 0,
+    correction: Math.abs(correction) > REPUTATION_FOLD_EPSILON ? correction : 0,
   };
 }

@@ -293,6 +293,8 @@ export type TraceCategory =
   | 'reputation_with_changed'
   | 'reputation_with_pruned'
   | 'reputation_set_applied'
+  // THR-2257 — a lost encounter forfeits its earlier steps' reputation gains
+  | 'reputation_lost_encounter_settled'
   | 'condition_applied'
   | 'condition_removed'
   // Location conditions (THR-1143)
@@ -952,6 +954,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'reputation_with_changed',
   'reputation_with_pruned',
   'reputation_set_applied',
+  'reputation_lost_encounter_settled',
   'condition_applied',
   'condition_removed',
   // Location conditions (THR-1143)
@@ -5305,6 +5308,28 @@ export interface ReputationSetAppliedTrace extends TraceBase {
   reactionId: string;
 }
 
+/**
+ * Trace: a lost encounter's reputation settled to its final band (THR-2257).
+ *
+ * The step deltas keep their own movement on the sheet as each step lands; this
+ * records the one correction the ending applied, so the causal trail shows why
+ * the score fell back after an earlier step had raised it (NFP #2).
+ */
+export interface ReputationLostEncounterSettledTrace extends TraceBase {
+  category: 'reputation_lost_encounter_settled';
+  actionId: string;
+  templateId: string;
+  outcome: string;
+  /** The earlier steps' folded net, before the ending step. */
+  priorNet: number;
+  /** The ending step's own measured movement. */
+  stepNet: number;
+  /** The correction applied to `reputationScore` (≤ 0), after the [0, 1] clamp. */
+  correction: number;
+  /** The net the ending's reputation row reports. */
+  settledNet: number;
+}
+
 /** Trace: apply_condition effect succeeded — has_trait edge added to graph */
 export interface ConditionAppliedTrace extends TraceBase {
   category: 'condition_applied';
@@ -5972,6 +5997,7 @@ export type TraceEntry =
   | ReputationWithChangedTrace
   | ReputationWithPrunedTrace
   | ReputationSetAppliedTrace
+  | ReputationLostEncounterSettledTrace
   | ConditionAppliedTrace
   | LocationConditionAppliedTrace
   | ConditionRemovedTrace

@@ -969,7 +969,8 @@ function buildAftermath(
   };
 }
 
-function buildFalloutPreview(
+/** Exported for THR-2257's agreement test: the "At Stake" line against the applied total. */
+export function buildFalloutPreview(
   args: BuildUnifiedEncounterStageModelArgs,
 ): EncounterStageFalloutModel[] {
   const { template, activeAction } = args;

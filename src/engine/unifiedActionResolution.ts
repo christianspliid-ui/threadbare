@@ -38,7 +38,10 @@ import { resolveSceneHere } from './sceneHere';
 import { MORTAL_MEANS_ENABLED, COMMISSION_CAUSE_LINE } from '../data/mortal-means-constants';
 import {
   foldActorReputation,
+  isLostActionOutcome,
+  REPUTATION_FOLD_EPSILON,
   reputationFoldId,
+  settleLostEncounterReputation,
   stepReputationParts,
 } from './reputationAftermathFold';
 import {
@@ -3115,15 +3118,47 @@ export function executeStepResult(
     total: reputationDelta,
   });
   let supersededReputationIds: readonly string[] = [];
-  if (reputationParts.net !== 0) {
-    const fold = foldActorReputation({
+  // THR-2257 — a lost ending settles the row to its final band: the earlier
+  // steps' gains are forfeited, so "lost" never sits over "rose". Runs even on
+  // an ending step that moved nothing, since an earlier step's gain may stand.
+  const lostEnding = finalAction.resolved && isLostActionOutcome(finalAction.outcome);
+  if (reputationParts.net !== 0 || lostEnding) {
+    const foldArgs = {
       prior: action.aftermathChanges,
       actionId: action.actionId,
       actorId: action.actorId,
-      stepNet: reputationParts.net,
-    });
+    };
+    const fold = foldActorReputation({ ...foldArgs, stepNet: reputationParts.net });
     supersededReputationIds = fold.supersededIds;
-    if (fold.net !== 0) {
+    let rowNet = fold.net;
+    if (lostEnding) {
+      const priorNet = foldActorReputation({ ...foldArgs, stepNet: 0 }).net;
+      const settle = settleLostEncounterReputation({ priorNet, stepNet: reputationParts.net });
+      if (settle.correction !== 0) {
+        const scoreOf = () => (state.graph.getNode(action.actorId)?.properties?.reputationScore as number | undefined)
+          ?? DEFAULT_REPUTATION;
+        const scoreBefore = scoreOf();
+        applyReputationScoreDelta(state, action.actorId, settle.correction);
+        // The [0, 1] clamp may swallow part of the correction: the row reports what the score did.
+        const applied = scoreOf() - scoreBefore;
+        const settled = priorNet + reputationParts.net + applied;
+        rowNet = Math.abs(settled) > REPUTATION_FOLD_EPSILON ? settled : 0;
+        emitTrace({
+          tick,
+          category: 'reputation_lost_encounter_settled',
+          agentId: action.actorId,
+          actionId: action.actionId,
+          templateId: action.templateId,
+          outcome: finalAction.outcome ?? 'failure',
+          priorNet,
+          stepNet: reputationParts.net,
+          correction: applied,
+          settledNet: rowNet,
+          summary: `${action.templateId} lost: reputation settled ${(priorNet + reputationParts.net).toFixed(3)} → ${rowNet.toFixed(3)}`,
+        } as unknown as Parameters<typeof emitTrace>[0]);
+      }
+    }
+    if (rowNet !== 0) {
       // The checkpoint's clause is true only when its judgement is the whole
       // movement the row reports.
       const branchOnly = !fold.hadPrior
@@ -3133,7 +3168,7 @@ export function executeStepResult(
       const sentence = reputationSentence({
         actorName: currentActorName,
         actorId: action.actorId,
-        delta: fold.net,
+        delta: rowNet,
         flavour: branchOnly ? 'branch' : 'authored',
       });
       aftermathChanges.push({
@@ -3143,7 +3178,7 @@ export function executeStepResult(
         detail: sentence.detail,
         concepts: sentence.concepts,
         ...derivedFields(sentence),
-        polarity: fold.net > 0 ? 'gain' : 'loss',
+        polarity: rowNet > 0 ? 'gain' : 'loss',
         actorId: action.actorId,
         actorName: currentActorName,
       });
