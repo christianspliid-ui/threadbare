@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-20 21:57 local (20:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-20 22:57 local (21:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
 
@@ -58,6 +58,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-20: the Doom dialog now fits on one screen: each Doom card shows once, in the stage that dealt it, and passed stages fold to their names. It is live** ([THR-2269](https://linear.app/threadbare/issue/THR-2269)). Merged via [#2882](https://github.com/christianspliid-ui/threadbare/pull/2882).
 - **2026-11-20: when your Mandate is behind, the game now points at a place you hold and says "Tend it to raise your Mandate." It is live** ([THR-2254](https://linear.app/threadbare/issue/THR-2254)). Merged via [#2878](https://github.com/christianspliid-ui/threadbare/pull/2878).
 - **2026-11-20: the agency census now checks the race forecast, so a world where the Doom always wins shows up in testing. It is live** ([THR-2253](https://linear.app/threadbare/issue/THR-2253)). Merged via [#2877](https://github.com/christianspliid-ui/threadbare/pull/2877).
 - **2026-11-20: popups now wait for your moment: a gift or an arrival holds while a chapter card or an armed card is open. It is live** ([THR-2259](https://linear.app/threadbare/issue/THR-2259)). Merged via [#2875](https://github.com/christianspliid-ui/threadbare/pull/2875) and [#2876](https://github.com/christianspliid-ui/threadbare/pull/2876).
@@ -67,7 +68,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-20: a failed chapter now feeds the Doom at a place; ground you tend starves it, and Rebuke can hold a place it fed. It is live** ([THR-2255](https://linear.app/threadbare/issue/THR-2255)). Merged via [#2871](https://github.com/christianspliid-ui/threadbare/pull/2871).
 - **2026-11-20: the engine now reads the race between your Mandate and the Doom: which clock lands first at the current pace. The screen and census pieces built on it are in the build queue** ([THR-2251](https://linear.app/threadbare/issue/THR-2251)). Merged via [#2869](https://github.com/christianspliid-ui/threadbare/pull/2869).
 - **2026-11-20: a spell your god casts on a place now fills the Mandate by what it cost, credited to the sphere it was paid from. It is live** ([THR-2249](https://linear.app/threadbare/issue/THR-2249)). Merged via [#2868](https://github.com/christianspliid-ui/threadbare/pull/2868).
-- **2026-11-20: the Twilight's closing screen now says what the Mandate came to and where your hand raised it. It is live** ([THR-2250](https://linear.app/threadbare/issue/THR-2250)). Merged via [#2867](https://github.com/christianspliid-ui/threadbare/pull/2867).
 
 ---
 
