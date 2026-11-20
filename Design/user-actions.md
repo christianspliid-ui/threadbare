@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-20 11:00 local (10:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-20 12:00 local (11:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
 
@@ -58,6 +58,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-20: the engine now reads the race between your Mandate and the Doom: which clock lands first at the current pace. The screen and census pieces built on it are in the build queue** ([THR-2251](https://linear.app/threadbare/issue/THR-2251)). Merged via [#2869](https://github.com/christianspliid-ui/threadbare/pull/2869).
 - **2026-11-20: a spell your god casts on a place now fills the Mandate by what it cost, credited to the sphere it was paid from. It is live** ([THR-2249](https://linear.app/threadbare/issue/THR-2249)). Merged via [#2868](https://github.com/christianspliid-ui/threadbare/pull/2868).
 - **2026-11-20: the Twilight's closing screen now says what the Mandate came to and where your hand raised it. It is live** ([THR-2250](https://linear.app/threadbare/issue/THR-2250)). Merged via [#2867](https://github.com/christianspliid-ui/threadbare/pull/2867).
 - **2026-11-19: the agency census now plays the whole game: essence spent on a chapter fills the Mandate, and the census checks whether an age can be won** ([THR-2248](https://linear.app/threadbare/issue/THR-2248)). Merged via [#2866](https://github.com/christianspliid-ui/threadbare/pull/2866).
@@ -67,7 +68,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-19: when a town rises, it now sacks its costliest building (or plunders one it did not build), and the Chronicle names it. It is live** ([THR-2033](https://linear.app/threadbare/issue/THR-2033)). Merged via [#2860](https://github.com/christianspliid-ui/threadbare/pull/2860).
 - **2026-11-18: the Flawed Steel encounter no longer calls Maren, Dalla or Torve "she" whatever they are. It is live** ([THR-2150](https://linear.app/threadbare/issue/THR-2150)). Merged via [#2859](https://github.com/christianspliid-ui/threadbare/pull/2859).
 - **2026-11-18: "What should the design lane plan next?" answered in chat: make the ending a game. The first of three tickets, [a well-played age can be won](https://linear.app/threadbare/issue/THR-2245), is with the design lane.**
-- **2026-11-18: hovering a card in the god rail's hand now shows the full card beside the rail. It is live** ([THR-1975](https://linear.app/threadbare/issue/THR-1975)). Merged via [#2858](https://github.com/christianspliid-ui/threadbare/pull/2858).
 
 ---
 

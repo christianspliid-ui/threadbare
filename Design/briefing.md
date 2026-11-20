@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-20 11:00 local (10:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-20 12:00 local (11:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,7 +23,9 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Queue
 
-**Thin: 1 in Ready for Dev, 1 being built.** [A place you tend fills the Mandate by what it cost](https://linear.app/threadbare/issue/THR-2249/a-place-you-tend-fills-the-mandate-by-what-it-cost-a-gods-place-cast) has merged and is live. The builder is now on [the engine reads the race](https://linear.app/threadbare/issue/THR-2251/the-engine-reads-the-race-a-daily-pace-sample-a-forecast-of-which): it is built and set to merge once its checks pass ([PR #2869](https://github.com/christianspliid-ui/threadbare/pull/2869)), and the run is still active. Next up is [Doom feeds at a place](https://linear.app/threadbare/issue/THR-2255/the-doom-feeds-at-a-place-ground-you-tend-starves-it-rebuke-answers-it), the last ticket of the "make the ending a game" work. When that one is claimed the shelf is empty. The orchestrator and the design lane refill it, so this is not yours to act on.
+**Healthy: 7 in Ready for Dev, 1 being built.** [The engine reads the race](https://linear.app/threadbare/issue/THR-2251/the-engine-reads-the-race-a-daily-pace-sample-a-forecast-of-which) has merged ([PR #2869](https://github.com/christianspliid-ui/threadbare/pull/2869)). The builder is now on [Doom feeds at a place](https://linear.app/threadbare/issue/THR-2255/the-doom-feeds-at-a-place-ground-you-tend-starves-it-rebuke-answers-it), and its runs are active. The shelf refilled: [the player can read the race](https://linear.app/threadbare/issue/THR-2252/the-player-can-read-the-race-the-mandate-row-says-which-clock-lands) and [the census checks the race forecast](https://linear.app/threadbare/issue/THR-2253/the-agency-census-checks-the-race-forecast-it-turns-at-most-three) are ready, plus five bug fixes from playtest round 8.
+
+Playtest round 8, for your reading, not a decision: the opening holds for the seventh round. Round 7's goal wall is down, but two of three players never saw the Mandate bar ([THR-2262](https://linear.app/threadbare/issue/THR-2262), for design). The new wall is pace: chapters arrive back to back, "like clearing a notification inbox" ([THR-2263](https://linear.app/threadbare/issue/THR-2263), for design). A lost chapter still shows reputation rising ([THR-2257](https://linear.app/threadbare/issue/THR-2257)). *— from [cold playtest round 8](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-8.md)*
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (31 days; last touched 8 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
@@ -31,6 +33,5 @@ Items for agents, not you:
 ## Health
 
 - Weekend quiet, not an ask: the lanes were silent for about 12 hours on Sunday 15 Nov (09:57 to 21:48). Per your ruling, weekend quiet is normal.
-- Overnight, for the record: the builder hit the 5-hour usage limit at 23:29 local and did not run again until 09:19. The limit reset at 04:30, so the builder lost about five hours of the night.
-- Engine speed (for the builder): tick cost 217 ms/tick steady, 39% above the 7-day median (155, 140 rows since 80720d45); top phase agent_decision, 638 agents. Name the merges between 80720d45 and 6d8e94fc: git log --oneline --merges 80720d45..6d8e94fc. A builder run was working beside this measurement too, so machine load may explain part of it.
-- Everything else green: main is live on 6d8e94fc (the Mandate cast-credit merge); CI and scheduled jobs green; one PR armed and waiting on checks; every enabled lane on schedule. No UX contact sheet this week yet (the newest, 12 Nov, is over a week old).
+- Engine speed (for the builder): tick cost 212 ms/tick steady, 36% above the 7-day median (155, 140 rows since 35e7db7d); top phase agent_decision, 638 agents. Name the merges between 35e7db7d and 4afe6241: git log --oneline --merges 35e7db7d..4afe6241. Two builder runs were working beside this measurement, so machine load may explain part of it.
+- Everything else green: the live site is up to date (only docs merged since the last publish); CI and scheduled jobs green; no PRs waiting to merge; every enabled lane on schedule. No UX contact sheet this week yet (the newest, 12 Nov, is over a week old; the next review runs Monday).
