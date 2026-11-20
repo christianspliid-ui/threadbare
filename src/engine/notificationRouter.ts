@@ -103,7 +103,7 @@ export function eventTypeToCategory(type: TickEvent['type']): NotificationCatego
   if (type.startsWith('faction_') || type.startsWith('trust_') || type === 'bond_formed'
     || type === 'social_encounter' || type === 'dilemma_resolved_social'
     || type === 'faction_rank_changed') return 'social';
-  if (type === 'doom_escalation') return 'doom';
+  if (type === 'doom_escalation' || type === 'doom_feeding') return 'doom'; // THR-2255: the feeding alert mutes with Doom
   if (type.startsWith('journey_')) return 'journeys';
   if (type.startsWith('ambition_')) return 'ambitions';
   if (type === 'intervention_effect' || type.startsWith('control_effect_')) return 'divine';

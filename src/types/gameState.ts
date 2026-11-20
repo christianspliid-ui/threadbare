@@ -87,6 +87,8 @@ export interface TickEvent {
   id: string;
   tick: number;
   type: 'agent_action' | 'agent_action_resolved' | 'doom_escalation' | 'rival_action'
+    // THR-2255: the last-stage daily alert — the Doom fed at a place the god can Rebuke
+    | 'doom_feeding'
     | 'essence_gain' | 'mandate_progress' | 'narrative' | 'phase_change' | 'stealth_alert' | 'dilemma_resolved' | 'intervention_effect' | 'sublocation_dissolved' | 'agent_movement' | 'agent_encounter'
     | 'ambition_completed' | 'ambition_abandoned' | 'ambition_milestone' | 'ambition_assigned'
     | 'backstory_unlock'
@@ -240,6 +242,19 @@ export interface CardPlayTallyEntry {
    * needs. Refine when the chronicle carries card provenance.
    */
   peakSignificance: number;
+}
+
+/**
+ * THR-2255 — the Doom's feedings at one top-level place. `recentTicks` keeps the
+ * feedings younger than `DOOM_REBUKE_WINDOW_DAYS` (the record, the panel and the Rebuke
+ * offer share one window). `heldUntil` is set when a doom Rebuke lands there: a feeding
+ * from before it is answered and is not offered again.
+ */
+export interface DoomFeeding {
+  lastTick: number;
+  lastActorId: string;
+  recentTicks: number[];
+  heldUntil?: number;
 }
 
 // ─── Game State ─────────────────────────────────────────────────
@@ -452,6 +467,14 @@ export interface GameState {
   // rebuke stops tending them. Written by a landed Rebuke cast; read by
   // `buildTendingIndex` (`rebukeTendingOf`). Absent on old saves = none.
   rebukedPlaces?: Record<string, number>;
+
+  // THR-2255: where the Doom fed, keyed by top-level place id. Written by a failure's
+  // `doom_micro_tick` on untended ground (complicationEffects.ts) and by a doom Rebuke
+  // landing (`heldUntil`); read by Rebuke's target filter and the last-stage alert.
+  // Absent on old saves = none fed.
+  doomFeedings?: Record<string, DoomFeeding>;
+  // THR-2255: the tick the last-stage doom-feeding alert last fired (once a day at most).
+  doomFeedAlertTick?: number;
 
   // Pending quintessence events — accumulated by overchannel/encounter failure phases, consumed by phaseQuintessence
   pendingQuintessenceEvents?: QuintessenceEvent[];

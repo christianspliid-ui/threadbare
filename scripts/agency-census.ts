@@ -47,7 +47,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { spawn } from 'child_process';
-import { agencyReport, agencyWinPredicate, agencyWinLine, AGENCY_COMPARE_TICK, AGENCY_WIN_TICKS, type AgencyArmResult } from './agency-verdict';
+import { agencyReport, agencyWinPredicate, agencyWinLine, lastStageLine, lastStagePredicate, AGENCY_COMPARE_TICK, AGENCY_WIN_TICKS, type AgencyArmResult } from './agency-verdict';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -166,18 +166,20 @@ const [
   { SPHERE_NAMES },
   { recordJourneyChoice },
   { spendAuthoredChoiceEssence },
-  { enableTracing, disableTracing, isTracingEnabled, getTraces },
+  { enableTracing, disableTracing, isTracingEnabled, getTraces, clearTraces },
   { readLuckState },
   { resolvePendingBeat, getBeatDefinitionById },
   { preparePlayerCast, commitPlayerCast },
   { findHeldNonStackingEffect, findPendingNonStackingCast },
-  { rebukablePlaceIds, rebukeTargetFor },
+  { rebukablePlaceIds, rebukeTargetFor, rebukeAnswerFor },
   { DOOM_STAY_TEMPLATE_ID },
   { RIVAL_REBUKE_TEMPLATE_ID },
   { MILESTONE_FIRST_STAGE_BEAT_ID, MILESTONE_FIRST_REBUKE_BEAT_ID },
   { UNIFIED_ACTION_TEMPLATES },
   { getPlaceNodes, getLocationNodes },
   { addMandateSphereSpend },
+  { DOOM_FEED_ALERT_FROM_STAGE, LAST_STAGE_DECISION_SHARE },
+  { TICKS_PER_DAY },
 ] = await Promise.all([
   import('../src/engine/gameInit'),
   import('../src/engine/orchestrator'),
@@ -212,6 +214,8 @@ const [
   import('../src/data/unified-action-templates'),
   import('../src/engine/sublocationShape'),
   import('../src/engine/mandateLedger'),
+  import('../src/data/game-config'),
+  import('../src/data/attention-constants'),
 ]);
 
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
@@ -240,6 +244,18 @@ if (WARM > 0) {
 const firstId: string | null = getFirstId(state.graph, state.ascendantId);
 
 let heldSteps = 0; let heldWithCards = 0; let cardsPlayed = 0; let essenceSpent = 0;
+// THR-2255 — the decisions the world offered the god (a held step with a hand, a vision with
+// choices, a gift beat), the Doom's feedings and absorptions (from the doom.* traces), the
+// last-stage alert days, and the doom Rebukes the answer arm cast.
+const decisionTicks: number[] = [];
+let doomPushTicks = 0; let doomPushAbsorbed = 0; let doomPushEvents = 0; let doomAbsorbEvents = 0;
+let doomRebukesCast = 0;
+const doomAlertDaySet = new Set<number>();
+const doomRebukeDaySet = new Set<number>();
+let lastStageFrom: number | null = null;
+const beatSeen = new Set<string>();
+const alertedThisTick = new Set<string>(); // places the last-stage alert named this tick
+const dayOf = (t: number) => Math.floor(t / TICKS_PER_DAY);
 const apotheosisSteps: any[] = [];
 function handleHeldSteps(): void {
   for (const a0 of [...(state.unifiedActions ?? [])]) {
@@ -255,7 +271,7 @@ function handleHeldSteps(): void {
       let phase: any;
       try { phase = buildNudgePhaseModel({ template, activeAction: live, step, graph: state.graph, gameState: state, allowEmptyHand: true } as any); } catch { phase = undefined; }
       const cards: any[] = phase?.cards ?? [];
-      if (cards.length) heldWithCards++;
+      if (cards.length) { heldWithCards++; decisionTicks.push(state.tick); } // THR-2255: a held step with a hand is a decision
       // THR-2227 — each held Apotheosis step: its hand size and the bare chance it opens on.
       if (/apotheosis/.test(String(live.templateId))) {
         apotheosisSteps.push({
@@ -410,6 +426,19 @@ function answerClocks(): void {
       if (rebuked.has(key)) continue;
       if (tryCast(RIVAL_REBUKE_TEMPLATE_ID, placeId)) { rebukeCasts++; rebuked.add(key); }
     }
+    // THR-2255 — and each place where the Doom fed, untended, once per feeding. In the last
+    // stage the arm answers the daily alert instead (the place it names, the tick it fires), as
+    // a player who reads it would: answering every feeding the tick it lands would leave the
+    // alert nothing to name, and the predicate measures whether the alert is a choice.
+    const inLastStage = lastStageFrom !== null;
+    for (const placeId of [...rebukablePlaceIds(state)].sort()) {
+      if (inLastStage && !alertedThisTick.has(placeId)) continue;
+      const t: any = rebukeAnswerFor(state, placeId);
+      if (!t || t.kind !== 'doom') continue;
+      const key = `doom|${placeId}|${t.fedAt}`;
+      if (rebuked.has(key)) continue;
+      if (tryCast(RIVAL_REBUKE_TEMPLATE_ID, placeId)) { doomRebukesCast++; rebuked.add(key); doomRebukeDaySet.add(dayOf(state.tick)); }
+    }
   }
 }
 
@@ -538,7 +567,22 @@ for (let i = 0; i < TICKS; i++) {
     if (e) toggleAttentionMode(state.graph, e.id, state.ascendantId, state.tick);
     restored = true;
   }
+  // THR-2255 — the doom.* traces of this tick only (read after it, cleared before the next).
+  if (!warming && !isTracingEnabled()) enableTracing();
+  clearTraces();
+  alertedThisTick.clear();
   state = runTick(state, [], runtime);
+  if (!warming) {
+    for (const tr of getTraces() as any[]) {
+      if (tr.category === 'doom.fed') { doomPushTicks += tr.magnitude ?? 0; doomPushEvents++; }
+      else if (tr.category === 'doom.feed_absorbed') { doomPushAbsorbed += tr.magnitude ?? 0; doomAbsorbEvents++; }
+      else if (tr.category === 'doom.feed_alert') { doomAlertDaySet.add(dayOf(tr.tick ?? state.tick)); alertedThisTick.add(tr.placeId); }
+    }
+    if (lastStageFrom === null && (state.doomClock?.currentStage ?? 0) >= DOOM_FEED_ALERT_FROM_STAGE) lastStageFrom = state.tick;
+    const pb: any = state.ascendantBeats?.pending;
+    if (pb && !beatSeen.has(pb.beatId)) { beatSeen.add(pb.beatId); decisionTicks.push(state.tick); }
+    for (const v of (state.pendingVignettes ?? []) as any[]) if ((v?.data?.choices ?? []).length) decisionTicks.push(state.tick);
+  }
   if (warming) state = unattended(state);
   else handleHeldSteps();
   answerVisions(PLAYS && !warming);
@@ -558,8 +602,28 @@ const clockVerbs = {
   stayGiftLostAt: giftLostAt(DOOM_STAY_TEMPLATE_ID, MILESTONE_FIRST_STAGE_BEAT_ID),
   rebukeGiftLostAt: giftLostAt(RIVAL_REBUKE_TEMPLATE_ID, MILESTONE_FIRST_REBUKE_BEAT_ID),
 };
-const result = { placeCasts, placeEssence: Math.round(placeEssence), placeAttempts, placeRefused, seed: SEED, arm: ARM, warm: WARM, ranTo: state.tick, seconds: Math.round(ms / 1000), stopReason, heldSteps, heldWithCards, cardsPlayed, essenceSpent: Math.round(essenceSpent), apotheosisSteps, visionsAnswered, visionChoices, ordealRolls, ...clockVerbs, end, snaps };
+// THR-2255 — the last stage: decisions per in-game day before it and in it, the Doom's feedings.
+const perDay = (from: number, to: number, extra = 0) => (to > from
+  ? (decisionTicks.filter((t) => t >= from && t < to).length + extra) / ((to - from) / TICKS_PER_DAY) : null);
+const lastEnd = state.tick + 1;
+const alertDaysInLast = lastStageFrom === null ? 0 : [...doomAlertDaySet].filter((d) => d >= dayOf(lastStageFrom!)).length;
+const lastStage = {
+  lastStageFrom,
+  decisionsPerDayBeforeLastStage: lastStageFrom === null ? null : perDay(WARM, lastStageFrom),
+  decisionsPerDayLastStage: lastStageFrom === null ? null : perDay(lastStageFrom, lastEnd),
+  decisionsPerDayLastStageWithAlerts: lastStageFrom === null ? null : perDay(lastStageFrom, lastEnd, alertDaysInLast),
+  doomAlertDays: doomAlertDaySet.size,
+  doomAlertDaysAnswered: [...doomAlertDaySet].filter((d) => doomRebukeDaySet.has(d)).length,
+};
+const lastStageVerdict = lastStagePredicate(lastStage, LAST_STAGE_DECISION_SHARE);
+const doomFeeds = {
+  doomPushTicks: Number(doomPushTicks.toFixed(2)), doomPushEvents, doomPushAbsorbed: Number(doomPushAbsorbed.toFixed(2)), doomAbsorbEvents,
+  doomRebukesCast, ...lastStage, lastStageVerdict,
+};
+const result = { placeCasts, placeEssence: Math.round(placeEssence), placeAttempts, placeRefused, seed: SEED, arm: ARM, warm: WARM, ranTo: state.tick, seconds: Math.round(ms / 1000), stopReason, heldSteps, heldWithCards, cardsPlayed, essenceSpent: Math.round(essenceSpent), apotheosisSteps, visionsAnswered, visionChoices, ordealRolls, ...clockVerbs, ...doomFeeds, end, snaps };
 const { firstChapterIds, ...endShort } = end;
 console.log(JSON.stringify({ ...result, end: endShort, snaps: undefined }));
 console.log(`  first chapters: ${firstChapterIds.join(' · ')}`);
+console.log(`  doom feeds: pushed ${doomFeeds.doomPushTicks} clock ticks in ${doomPushEvents} feedings · absorbed ${doomFeeds.doomPushAbsorbed} in ${doomAbsorbEvents} · doom Rebukes cast ${doomRebukesCast}`);
+console.log(`  ${lastStageLine(SEED, lastStage, lastStageVerdict, LAST_STAGE_DECISION_SHARE)}`);
 if (OUT) { fs.mkdirSync(path.dirname(OUT), { recursive: true }); fs.writeFileSync(OUT, JSON.stringify(result, null, 1)); }

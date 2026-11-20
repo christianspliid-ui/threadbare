@@ -148,6 +148,12 @@ export interface ComplicationTemplate {
    * {possessive} (his/her/their), {omen_atmosphere}
    */
   proseTemplates: string[];
+  /**
+   * THR-2255 — for a `doom_micro_tick` complication: the lines used instead of
+   * `proseTemplates` when the failure lands on ground the god tends (the doom fed
+   * nothing). Placeholders `{name}` and `{place}` (the top-level place).
+   */
+  heldProse?: string[];
   /** Significance boost added to the resulting TickEvent */
   significanceBoost: number;
 }
@@ -170,6 +176,8 @@ export interface ComplicationResult {
   significanceBoost: number;
   /** Name of the complication (copied from template for toasts) */
   name: string;
+  /** THR-2255 — the template's raw `heldProse` (unfilled), when it has any. */
+  heldProse?: string[];
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────

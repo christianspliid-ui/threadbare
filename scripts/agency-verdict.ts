@@ -305,3 +305,48 @@ export function agencyWinLine(v: AgencyWinVerdict): string {
     + ` (${c.purseBite.share === null ? 'none attempted' : c.purseBite.share.toFixed(2)}, min ${AGENCY_PURSE_BITE_MIN_SHARE}) ${mark(c.purseBite.holds)}`
     + ` → ${v.holds ? 'HOLDS' : 'NOT MET'}`;
 }
+
+// ─── THR-2255 — the last stage gives the god something to decide ─────
+// Plan Docs/plans/2026-11-19-thr-2247-dooms-last-stage-is-a-stand.md, Decision 5. Per seed, in
+// the answer arm: decisions offered per in-game day in Doom's last stage are at least
+// LAST_STAGE_DECISION_SHARE of the rate before it (an alert counts, at most one a day), AND the arm
+// casts a doom Rebuke on at least half of the alert days (each alert was answerable and paid for).
+
+export const LAST_STAGE_ANSWERED_MIN_SHARE = 0.5; // share of alert days that must end in a doom Rebuke
+
+export interface LastStageMeasure {
+  lastStageFrom: number | null;
+  decisionsPerDayBeforeLastStage: number | null;
+  decisionsPerDayLastStage: number | null;            // without alerts
+  decisionsPerDayLastStageWithAlerts: number | null;  // alerts counted, one a day
+  doomAlertDays: number;
+  doomAlertDaysAnswered: number;
+}
+
+export function lastStagePredicate(m: LastStageMeasure, minShare: number) {
+  const before = m.decisionsPerDayBeforeLastStage;
+  const ratio = (x: number | null) => (before && before > 0 && x !== null ? x / before : null);
+  const share = ratio(m.decisionsPerDayLastStageWithAlerts);
+  const shareWithoutAlerts = ratio(m.decisionsPerDayLastStage);
+  const answeredShare = m.doomAlertDays > 0 ? m.doomAlertDaysAnswered / m.doomAlertDays : null;
+  const shareOk = share !== null && share >= minShare;
+  // No alert day means no alert to answer: the second half holds vacuously only if the share
+  // held without alerts (an alert-free pass is not the alert's doing).
+  const answeredOk = answeredShare === null ? shareWithoutAlerts !== null && shareWithoutAlerts >= minShare
+    : answeredShare >= LAST_STAGE_ANSWERED_MIN_SHARE;
+  return { measured: m.lastStageFrom !== null && before !== null, share, shareWithoutAlerts, answeredShare, shareOk, answeredOk, holds: shareOk && answeredOk };
+}
+
+export type LastStageVerdict = ReturnType<typeof lastStagePredicate>;
+
+/** The one printed line per seed, naming each half. */
+export function lastStageLine(seed: number | string, m: LastStageMeasure, v: LastStageVerdict, minShare: number): string {
+  const f = (x: number | null) => (x === null ? 'n/a' : x.toFixed(2));
+  const mark = (h: boolean) => (h ? '✓' : '✗');
+  if (!v.measured) return `last-stage predicate seed ${seed}: not measured (the run never reached the last stage)`;
+  return `last-stage predicate seed ${seed}: from t${m.lastStageFrom} · decisions/day before ${f(m.decisionsPerDayBeforeLastStage)}`
+    + ` · in last stage ${f(m.decisionsPerDayLastStage)} (with alerts ${f(m.decisionsPerDayLastStageWithAlerts)})`
+    + ` · share ${f(v.share)} (without alerts ${f(v.shareWithoutAlerts)}, min ${minShare}) ${mark(v.shareOk)}`
+    + ` · alert days answered ${m.doomAlertDaysAnswered}/${m.doomAlertDays} (min ${LAST_STAGE_ANSWERED_MIN_SHARE}) ${mark(v.answeredOk)}`
+    + ` → ${v.holds ? 'HOLDS' : 'NOT MET'}`;
+}

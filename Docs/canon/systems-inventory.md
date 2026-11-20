@@ -282,7 +282,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `climax` (1) | `climaxFit.ts` | `THR-2204`, `THR-2227` |
 | `coastline` (1) | `coastline.ts` | — |
 | `companions` (1) | `companions.ts` | `THR-1096` |
-| `complication` (2) | `complicationEffects.ts`, `complicationSelection.ts` | `THR-20` |
+| `complication` (2) | `complicationEffects.ts`, `complicationSelection.ts` | `THR-20`, `THR-2255` |
 | `condition` (2) | `conditionDecay.ts`, `conditionOverflow.ts` | `THR-1143`, `THR-761` |
 | `content` (6) | `contentCatalogView.ts`, `contentEntryResolver.ts`, `contentPageGenerator.ts`, `contentPageResolvers.ts`, `contentQuery.ts`, `contentQueryBearer.ts` | `THR-1481`, `THR-1482`, `THR-1485`, `THR-1486`, `THR-1487`, `THR-1491`, `THR-1520`, `THR-1876`, `THR-786` |
 | `content-eval` (6) | `content-eval/collectAuthoredProse.ts`, `content-eval/detectors.ts`, `content-eval/proseQualityScore.ts`, `content-eval/registerCompliance.ts`, `content-eval/surfaceFragmentReport.ts`, `content-eval/unreachableActions.ts` | `THR-472`, `THR-490`, `THR-501`, `THR-523`, `THR-573`, `THR-609`, `THR-659` |
@@ -315,7 +315,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `division` (1) | `divisionRule.ts` | `THR-1398`, `THR-1403` |
 | `domain` (1) | `domainCapability.ts` | `TB-056`, `THR-1580`, `THR-1581` |
 | `dominion` (3) | `dominion.ts`, `dominionProjection.ts`, `dominionViewModels.ts` | `THR-1748`, `THR-1750`, `THR-1822` |
-| `doom` (3) | `doomArchetypeSelection.ts`, `doomClock.ts`, `doomIdentityMilestones.ts` | `THR-1774` |
+| `doom` (5) | `doomArchetypeSelection.ts`, `doomClock.ts`, `doomFeedProse.ts`, `doomFeedings.ts`, `doomIdentityMilestones.ts` | `THR-1774`, `THR-2255` |
 | `dream` (1) | `dream.ts` | — |
 | `echo` (1) | `echo.ts` | — |
 | `economic` (2) | `economicChronicle.ts`, `economicContext.ts` | `THR-725` |
@@ -490,4 +490,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 115 tick phases · 243 engine domains · 820 modules._
+_Counts: 28 registered subsystems (2 dormant) · 115 tick phases · 243 engine domains · 822 modules._

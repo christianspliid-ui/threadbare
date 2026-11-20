@@ -502,6 +502,10 @@ export type TraceCategory =
   | 'doom.expiry_held'
   // Stay the Unmaking slows the clock (THR-2207)
   | 'doom.stay_applied'
+  // The Doom feeds at a place (THR-2255)
+  | 'doom.fed'
+  | 'doom.feed_absorbed'
+  | 'doom.feed_alert'
   | 'rival.grace_hold'
   | 'action.unlock.granted'
   // Ascendant expression cards (THR-508)
@@ -1217,6 +1221,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'doom.archetype_drawn',
   'doom.expiry_held',
   'doom.stay_applied',
+  'doom.fed',
+  'doom.feed_absorbed',
+  'doom.feed_alert',
   'rival.grace_hold',
   'action.unlock.granted',
   // Ascendant expression cards (THR-508)
@@ -6207,6 +6214,9 @@ export type TraceEntry =
   | DoomArchetypeDrawnTrace
   | DoomExpiryHeldTrace
   | DoomStayTrace
+  | DoomFedTrace
+  | DoomFeedAbsorbedTrace
+  | DoomFeedAlertTrace
   | RivalGraceHoldTrace
   | ActionUnlockGrantedTrace
   // Encounter chapter archive (THR-603)
@@ -6973,6 +6983,37 @@ export interface DoomStayTrace extends TraceBase {
 }
 
 /**
+ * Trace (THR-2255): a failure fed the Doom at an untended place. `magnitude` is the
+ * clock ticks it pushed; `placeId` the top-level place it is recorded at.
+ */
+export interface DoomFedTrace extends TraceBase {
+  category: 'doom.fed';
+  placeId: string;
+  actorId: string;
+  complicationId: string;
+  magnitude: number;
+}
+
+/**
+ * Trace (THR-2255): a failure on ground the god tends fed the Doom nothing (or only
+ * `1 − DOOM_FEED_ABSORB_SHARE` of it). `magnitude` is what was absorbed.
+ */
+export interface DoomFeedAbsorbedTrace extends TraceBase {
+  category: 'doom.feed_absorbed';
+  placeId: string;
+  actorId: string;
+  magnitude: number;
+  tendedBy: string[];
+}
+
+/** Trace (THR-2255): the last-stage daily alert named a doom-fed place to Rebuke. */
+export interface DoomFeedAlertTrace extends TraceBase {
+  category: 'doom.feed_alert';
+  placeId: string;
+  stage: number;
+}
+
+/**
  * Trace: the rivals held their hand this tick (THR-1646 S2) — the doom clock is
  * asleep or inside its post-bond grace window. Once per cycle, on the first held tick.
  */
@@ -7655,6 +7696,8 @@ export interface RivalRebukedTrace extends TraceBase {
   pushed: number;
   temperBefore?: number;
   temperAfter?: number;
+  /** THR-2255: what the Rebuke answered — a rival's landing or a Doom feeding. */
+  targetKind?: 'rival' | 'doom';
 }
 
 // ─── Economic scheme family traces (THR-619) ─────────────────────
