@@ -159,7 +159,7 @@ export function naturePoleWord(pair: ValuePair, pole: 'a' | 'b'): string {
   return poleWordsFor(pair)[pole];
 }
 
-/** One lean the threading meeting wrote, in the axis's own word. */
+/** One lean the threading meeting wrote, in the meeting's own pole word (THR-2261). */
 export interface MeetingLean {
   readonly pair: ValuePair;
   readonly word: string;
@@ -177,7 +177,9 @@ export function meetingLeans(graph: WorldGraph, agentId: string): MeetingLean[] 
   const byPair = new Map<ValuePair, string>();
   for (const o of record?.formativeOutcomes ?? []) {
     if (!o?.valuePair || (o.writtenPole !== 'a' && o.writtenPole !== 'b') || !o.shift) continue;
-    byPair.set(o.valuePair, naturePoleWord(o.valuePair, o.writtenPole));
+    // THR-2261: the meeting's own word (`poleWordsFor`), so the chip echoes the fate line
+    // and the card tag word for word. The Nature row beside it keeps the axis words.
+    byPair.set(o.valuePair, poleWordsFor(o.valuePair)[o.writtenPole]);
   }
   return [...byPair].map(([pair, word]) => ({ pair, word }));
 }

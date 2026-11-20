@@ -106,10 +106,10 @@ function splitValuePairWords(valuePair: ValuePair): PoleWords {
  * (THR-545) and Stone's reads Careful / Reckless (THR-1135), so a card authored
  * as "a fair structure" was tagged "Misleading" and "Other people exist" was
  * tagged "Reckless" — labels that contradicted the card's own words. The pair
- * words name what the test actually weighs. The fate line and the card tag both
- * read this one function, so they still agree with each other. The agent sheet's
- * Nature row keeps the axis words (`naturePoleWord`, THR-2149), since its lean chip
- * must match the row beside it.
+ * words name what the test actually weighs. The fate line, the card tag and the
+ * agent sheet's meeting-lean chip (`meetingLeans`) all read this one function, so
+ * they agree word for word (THR-2149). The sheet's Nature row beside that chip
+ * keeps the reach axis words (`naturePoleWord`).
  */
 export function poleWordsFor(valuePair: ValuePair): PoleWords {
   return splitValuePairWords(valuePair);
