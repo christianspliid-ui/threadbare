@@ -3155,7 +3155,7 @@ export function executeStepResult(
           correction: applied,
           settledNet: rowNet,
           summary: `${action.templateId} lost: reputation settled ${(priorNet + reputationParts.net).toFixed(3)} → ${rowNet.toFixed(3)}`,
-        } as unknown as Parameters<typeof emitTrace>[0]);
+        });
       }
     }
     if (rowNet !== 0) {
