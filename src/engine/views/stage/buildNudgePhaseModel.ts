@@ -111,6 +111,7 @@ import { ESSENCE_REFILL_WORDS, type EssenceRefillBand } from '../../../data/esse
 import { sphereWord } from '../../../data/essence-format';
 import { readEssenceRefill } from '../essenceRefill';
 import { mandateDeedSpheres } from '../../mandateLedger';
+import { mandateNamed } from '../../mandateNamed';
 import { MANDATE_CARD_HINT } from '../../../data/ascendant-bar-content';
 import { SPHERE_NAMES } from '../../../types/index';
 import { getSpherePoints, rankSpherePoints } from '../../spherePoints';
@@ -1016,7 +1017,11 @@ export function buildNudgePhaseModel(
   // THR-2208 — a card paid in a Mandate sphere, for a mortal bound to the god, counts
   // toward the Mandate when the chapter closes. Every band credits something, so the
   // hint never promises what the close will not do (Law 56).
-  const mandateSpheres = mandateDeedSpheres(gameState, graph, actorId);
+  // THR-2265 — and only once the game has named the Mandate (the rail row's own
+  // trigger), so the card never speaks of a goal the screen has not shown.
+  const mandateSpheres = !gameState || mandateNamed(gameState)
+    ? mandateDeedSpheres(gameState, graph, actorId)
+    : new Set<SphereName>();
   const pricedCards = cards.map((card) => {
     const payingSphere = card.sphere ?? budgetSphere;
     if (!payingSphere) return card;

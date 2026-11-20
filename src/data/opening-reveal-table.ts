@@ -59,7 +59,12 @@ export type OpeningRevealTrigger =
   /** THR-2060: once any rival has acted (an intervention landed or a scheme launched). */
   | { readonly kind: 'rival_acted' }
   /** THR-2060: only the ceiling brings it. */
-  | { readonly kind: 'ceiling' };
+  | { readonly kind: 'ceiling' }
+  /**
+   * THR-2265: once the game has named the Mandate — the Seat gift, or the first
+   * chapter that credits it (`mandateNamed`, `src/engine/mandateNamed.ts`).
+   */
+  | { readonly kind: 'mandate_named' };
 
 export interface OpeningRevealRow {
   readonly surface: OpeningRevealSurfaceId;
@@ -71,6 +76,13 @@ export interface OpeningRevealRow {
    * An unknown id is ignored: the row arrives on its own.
    */
   readonly arrivesWith?: OpeningRevealSurfaceId;
+  /**
+   * THR-2265: a ready row with this flag arrives on the render it becomes ready,
+   * ahead of the queue and whether or not an arrival is due. It counts as that
+   * chapter's arrival (sets `lastArrivalTick`), so the rows behind it keep their
+   * one-per-chapter pacing measured from it.
+   */
+  readonly jumpsQueue?: boolean;
 }
 
 /**
@@ -106,7 +118,10 @@ export const OPENING_REVEAL_TABLE: readonly OpeningRevealRow[] = [
   { surface: 'dominion', trigger: gift('beat.spine.a_path_opens'), newLabel: 'Dominion', arrivesWith: 'reaches' },
   { surface: 'doom', trigger: gift('beat.spine.the_seat'), newLabel: 'Doom' },
   { surface: 'rivals', trigger: { kind: 'rival_acted' }, newLabel: 'Rivals' },
-  { surface: 'mandate', trigger: gift('beat.spine.the_seat'), newLabel: 'Mandates' },
+  // THR-2265: the Mandate arrives with its first mention — the Seat gift or the first
+  // Aftermath that credits it — and jumps the queue, so the row is on screen when the
+  // words "raised your Mandate" are.
+  { surface: 'mandate', trigger: { kind: 'mandate_named' }, newLabel: 'Mandates', jumpsQueue: true },
   { surface: 'investiture', trigger: gift('beat.spine.the_seat'), newLabel: 'Investiture' },
   { surface: 'lens_threads', trigger: gift('beat.spine.the_seat'), newLabel: 'the Threads lens' },
   { surface: 'world_soul', trigger: gift('beat.spine.a_path_opens'), newLabel: 'the World-Soul' },

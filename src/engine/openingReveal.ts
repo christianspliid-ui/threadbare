@@ -48,6 +48,7 @@ import { getFirstId } from './meetingEncounter';
 import { resolveDoomWokeAtTick } from './doomClock';
 import { isEncounterAction, isRoutineChapter } from './chapterArchive';
 import { isRoutineTemplate } from './attentionCadence';
+import { mandateNamed } from './mandateNamed';
 
 export type OpeningRevealReason =
   | 'not_staged'
@@ -57,6 +58,8 @@ export type OpeningRevealReason =
   | 'spine_done'
   | 'first_chapter'
   | 'rival_acted'
+  /** THR-2265: the game has named the Mandate (`mandateNamed`). */
+  | 'mandate_named'
   /** THR-2060: ready and released by the arrival ledger. */
   | 'queued'
   | 'no_beat_state'
@@ -181,6 +184,12 @@ function rowState(
   }
   if (ctx.ceilingPassed) return { revealed: true, reason: 'ceiling' };
   if (t.kind === 'ceiling') return { revealed: false, reason: 'waiting:ceiling' };
+  if (t.kind === 'mandate_named') {
+    // THR-2265: the same predicate gates the card hint, so row and words agree.
+    return mandateNamed(state)
+      ? { revealed: true, reason: 'mandate_named' }
+      : { revealed: false, reason: 'waiting:mandate_named' };
+  }
   if (t.kind === 'first_chapter') {
     return ctx.firstChapter
       ? { revealed: true, reason: 'first_chapter' }
@@ -264,6 +273,11 @@ export function revealTriggerKey(reason: OpeningRevealReason, surface?: OpeningR
 
 // ─── THR-2060: the arrival queue ────────────────────────────────────
 
+/** THR-2265: surfaces that arrive the render they become ready. */
+const JUMPS_QUEUE: ReadonlySet<OpeningRevealSurfaceId> = new Set(
+  OPENING_REVEAL_TABLE.filter(r => r.jumpsQueue).map(r => r.surface),
+);
+
 /** The queued rows that are ready on this reveal (read without a ledger), in table order. */
 export function readyQueuedSurfaces(reveal: OpeningReveal): OpeningRevealSurfaceId[] {
   if (!reveal.staged || reveal.showAll) return [];
@@ -304,6 +318,9 @@ export function applyArrivalLedger(reveal: OpeningReveal, ledger: OpeningArrival
  * same inputs, same ledger. A row arrives when nothing has arrived yet, when
  * `OPENING_REVEAL_CHAPTERS_PER_ARRIVAL` First chapters have closed since the last
  * arrival, or when `OPENING_REVEAL_ARRIVAL_IDLE_TICKS` ticks have run since it.
+ *
+ * THR-2265: a waiting row flagged `jumpsQueue` arrives at once, due or not, and
+ * alone — it is this step's arrival, so no second toast lands with it.
  */
 export function releaseOpeningArrivals(
   ledger: OpeningArrivalLedger,
@@ -312,6 +329,10 @@ export function releaseOpeningArrivals(
 ): OpeningArrivalLedger {
   const waiting = ready.filter(s => ledger.arrived[s] === undefined);
   if (waiting.length === 0) return ledger;
+  const jumper = waiting.find(s => JUMPS_QUEUE.has(s));
+  if (jumper !== undefined) {
+    return { arrived: { ...ledger.arrived, [jumper]: ctx.tick }, lastArrivalTick: ctx.tick };
+  }
   const last = ledger.lastArrivalTick;
   const due = last === null
     || ctx.chaptersClosedSince(last) >= OPENING_REVEAL_CHAPTERS_PER_ARRIVAL
