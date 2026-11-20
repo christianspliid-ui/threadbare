@@ -295,7 +295,11 @@ export type EncounterAftermathDirection = 'gain' | 'loss' | 'opens';
  * of being thrown away once the sentence was assembled.
  */
 export interface EncounterAftermathMagnitude {
-  readonly ladder: 'growth' | 'reputation' | 'tally';
+  /**
+   * THR-2258 — `mandate` is the two-rung deed ladder (0 ordinary, 1 strong at
+   * `MANDATE_DEED_STRONG_POINTS`), so the row's "far" and its cluster read one value.
+   */
+  readonly ladder: 'growth' | 'reputation' | 'tally' | 'mandate';
   readonly band: number;
   /**
    * THR-1467 — the raw quantity `band` was computed from. **Designer data: it

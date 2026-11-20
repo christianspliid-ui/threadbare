@@ -207,7 +207,7 @@ import {
   findActionableIntelligence,
   reliabilityDescriptor,
 } from './intelligence';
-import { REWARD_POSITIVE_TAG, drawSeededReward, isHarmfulRewardTemplate } from './rewardPool';
+import { REWARD_POSITIVE_TAG, drawSeededReward, isHarmfulRewardTemplate, rewardLinkTarget } from './rewardPool';
 import { drawLuckRoll } from './luck';
 import { recordReward } from './rewardHistory';
 import { mulberry32 } from '../lib/prng';
@@ -3084,12 +3084,17 @@ export function executeStepResult(
     // THR-2095 — a harmful draw is a scar on any band: never "gained", never a boon,
     // and it says why, so a won step that still scars reads as a cost of winning.
     const harmful = resolvedReward.harmful === true;
-    const gained = isStepSuccess(outcome) && !harmful;
+    // THR-2258 — harm decides gain, not the band: a harmless draw on a lost step is
+    // a consolation BOON ("still came away with"), never a scar.
+    const gained = !harmful;
+    const link = rewardLinkTarget(state.graph, resolvedReward.instanceId);
     const sentence = rewardSentence({
       actorName: currentActorName,
       rewardName: resolvedReward.displayName,
-      rewardId: resolvedReward.instanceId,
+      rewardId: link.entityId,
+      visualKind: link.visualKind,
       gained,
+      consolation: gained && !isStepSuccess(outcome),
       ...(resolvedReward.taughtSpellName ? { learnedSpellName: resolvedReward.taughtSpellName } : {}),
     });
     aftermathChanges.push({
@@ -3431,7 +3436,8 @@ export function mandateDeedForChapter(
   if (credits.length === 0) return undefined;
   const top = credits.reduce((best, c) => (c.points > best.points ? c : best), credits[0]);
   const total = credits.reduce((sum, c) => sum + c.points, 0);
-  const detail = mandateDeedLine(actorName, sphereWord(top.sphere), total >= MANDATE_DEED_STRONG_POINTS);
+  const strong = total >= MANDATE_DEED_STRONG_POINTS;
+  const detail = mandateDeedLine(actorName, sphereWord(top.sphere), strong);
   const change: EncounterAftermathChange = {
     id: `${action.actionId}:mandate_deed`,
     kind: 'shell_state',
@@ -3440,6 +3446,8 @@ export function mandateDeedForChapter(
     polarity: 'gain',
     category: 'boon',
     direction: 'gain',
+    // THR-2258 — the cluster reads the same threshold as the "far" in `detail`.
+    magnitude: { ladder: 'mandate', band: strong ? 1 : 0, raw: total },
     stateNoun: { text: 'Mandate', tooltipId: 'ui.mandate_tracker' },
     storyWeight: 'beat',
     actorId: action.actorId,

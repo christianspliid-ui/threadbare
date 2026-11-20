@@ -92,6 +92,7 @@ import type {
   EncounterAftermathChangeKind,
   EncounterAftermathChangePolarity,
   EncounterAftermathConceptRef,
+  EncounterAftermathMagnitude,
   EncounterAftermathReaction,
 } from '../../../types/unifiedAction';
 // The bound lives with the component that draws the marks, so the adapter's
@@ -170,13 +171,15 @@ export const CONSEQUENCE_CATEGORY_ORDER: readonly EncounterStageConsequenceCateg
  * (other systems band against them) and only the drawn cluster is coarsened.
  * Index is the **ascending** rung `magnitudeBandIndex` returns — 0 is faintest.
  */
-export const DELTA_CLUSTER_BAND_MAP: Record<'growth' | 'reputation' | 'tally', readonly number[]> = {
+export const DELTA_CLUSTER_BAND_MAP: Record<EncounterAftermathMagnitude['ladder'], readonly number[]> = {
   // THR-1451: sourced from the constant beside the ladder, because the mandate
   // sheet now draws clusters off the same growth rungs. Two literal copies of a
   // collapse are two things to retune and one to forget.
   growth: GROWTH_DELTA_CLUSTER_COLLAPSE,
   reputation: [1, 1, 2, 3, 3],
   tally: [1, 1, 2, 3],
+  // THR-2258 — a Mandate deed: ordinary reads ▲ "slight", strong ("far") reads ▲▲ "clear".
+  mandate: [1, 2],
 };
 
 /** Law 51 — the legend's dismissal outlives the session. */

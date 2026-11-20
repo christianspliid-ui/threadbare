@@ -905,19 +905,33 @@ export function rewardSentence(args: {
   readonly rewardName: string;
   readonly rewardId?: string;
   readonly gained: boolean;
+  /**
+   * THR-2258 — a gain drawn on a lost step: a consolation, so it reads
+   * "still came away with", never "gained" against the band's "went wrong".
+   */
+  readonly consolation?: boolean;
+  /**
+   * THR-2258 — what the link opens. A condition or blessing is an `attachment`
+   * (and `rewardId` its template); only a held item is an `artifact`. Default
+   * `artifact`, the pre-THR-2258 route.
+   */
+  readonly visualKind?: 'artifact' | 'attachment' | 'companion';
   /** THR-1672 — a book that taught its new holder a spell on the way in. */
   readonly learnedSpellName?: string;
 }): DerivedChange {
   const noun: EncounterAftermathConceptRef = {
     text: args.rewardName,
     entityId: args.rewardId,
-    visualKind: 'artifact',
+    visualKind: args.visualKind ?? 'artifact',
     visualName: args.rewardName,
   };
+  const learned = args.learnedSpellName ? `, and learned ${args.learnedSpellName}` : '';
   return {
-    detail: args.gained
-      ? `${args.actorName} gained ${args.rewardName}${args.learnedSpellName ? `, and learned ${args.learnedSpellName}` : ''}.`
-      : `${args.actorName} came away marked by ${args.rewardName}.`,
+    detail: !args.gained
+      ? `${args.actorName} came away marked by ${args.rewardName}.`
+      : args.consolation
+        ? `${args.actorName} still came away with ${args.rewardName}${learned}.`
+        : `${args.actorName} gained ${args.rewardName}${learned}.`,
     concepts: [noun],
     stateNoun: noun,
     direction: args.gained ? 'gain' : 'loss',

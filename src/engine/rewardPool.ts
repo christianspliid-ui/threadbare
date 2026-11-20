@@ -1090,6 +1090,33 @@ function applyServiceReward(
  * - trait (subcategory: 'condition') → `has_trait` edge with ticksRemaining
  * - trait (subcategory: 'bestowed') → `has_trait` edge, permanent (no expiry)
  */
+/** THR-2258 — the clone property naming its reward template node. */
+export const REWARD_TEMPLATE_ID_PROPERTY = 'rewardTemplateId';
+
+/**
+ * THR-2258 — what an Aftermath row about a granted reward should link to.
+ *
+ * An item is held, so it links its own instance as an `artifact`. A trait-shaped
+ * grant (condition, blessing, bestowed power, spell) is an `attachment`, and links
+ * the template it was cloned from: the clone is removed when a condition runs out,
+ * and a link to it would then open "no longer in the world". A companion keeps its
+ * own kind. Fail-soft: an id with no node keeps the `artifact` route it always had.
+ */
+export function rewardLinkTarget(
+  graph: WorldGraph,
+  instanceId: string,
+): { readonly visualKind: 'artifact' | 'attachment' | 'companion'; readonly entityId: string } {
+  const node = graph.getNode(instanceId);
+  if (!node) return { visualKind: 'artifact', entityId: instanceId };
+  if (node.type === 'companion') return { visualKind: 'companion', entityId: instanceId };
+  if (node.type === 'trait') {
+    const templateId = node.properties[REWARD_TEMPLATE_ID_PROPERTY];
+    const target = typeof templateId === 'string' && graph.getNode(templateId) ? templateId : instanceId;
+    return { visualKind: 'attachment', entityId: target };
+  }
+  return { visualKind: 'artifact', entityId: instanceId };
+}
+
 export function instantiateReward(
   graph: WorldGraph,
   templateNodeId: string,
@@ -1170,6 +1197,9 @@ function instantiateRewardInternal(
       ...template.properties,
       source: REWARD_EDGE_SOURCE,
       acquiredTick: tick,
+      // THR-2258 — the template this clone came from. A condition's clone is removed
+      // when it expires; the Aftermath row links the template, which stays.
+      [REWARD_TEMPLATE_ID_PROPERTY]: templateNodeId,
     },
   });
 
