@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-19 22:58 local (21:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-20 09:35 local (08:35 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
 
@@ -58,6 +58,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-19: the agency census now plays the whole game: essence spent on a chapter fills the Mandate, and the census checks whether an age can be won** ([THR-2248](https://linear.app/threadbare/issue/THR-2248)). Merged via [#2866](https://github.com/christianspliid-ui/threadbare/pull/2866).
 - **2026-11-19: the design lane planned "Doom's last stage is a stand" ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-19-thr-2247-dooms-last-stage-is-a-stand.md)). A failure feeds the Doom at a place, ground you tend starves it, and Rebuke can hold a place it fed. The build ticket can start after 01:00 local tonight** ([THR-2247](https://linear.app/threadbare/issue/THR-2247)).
 - **2026-11-19: the design lane planned "a well-played age can be won" ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-19-thr-2245-a-well-played-age-can-be-won.md)). Spells cast on a place in the Mandate's spheres will fill the Mandate; the closing screen will say what it came to. Two build tickets can start after 22:30 local today** ([THR-2245](https://linear.app/threadbare/issue/THR-2245)).
 - **2026-11-19: a faction's sheet now names the commission it has open, so you can see it before you act. It is live** ([THR-2043](https://linear.app/threadbare/issue/THR-2043)). Merged via [#2861](https://github.com/christianspliid-ui/threadbare/pull/2861).
@@ -67,7 +68,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-18: hovering a card in the god rail's hand now shows the full card beside the rail. It is live** ([THR-1975](https://linear.app/threadbare/issue/THR-1975)). Merged via [#2858](https://github.com/christianspliid-ui/threadbare/pull/2858).
 - **2026-11-18: a sheet's Story rows now say when the deed was done to the mortal ("done to them", "set upon", "defending", "fell in it"). It is live** ([THR-2191](https://linear.app/threadbare/issue/THR-2191)). Merged via [#2856](https://github.com/christianspliid-ui/threadbare/pull/2856).
 - **2026-11-17: Stay the Unmaking can now land clean for a god with no star affinity; its card reads "uncertain". It is live** ([THR-2244](https://linear.app/threadbare/issue/THR-2244)). Merged via [#2855](https://github.com/christianspliid-ui/threadbare/pull/2855).
-- **2026-11-16: the agency census now plays the Doom and rival answers; answering Doom barely slows it** ([THR-2243](https://linear.app/threadbare/issue/THR-2243)). Merged via [#2852](https://github.com/christianspliid-ui/threadbare/pull/2852).
 
 ---
 

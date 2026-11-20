@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-19 22:58 local (21:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-20 09:35 local (08:35 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -21,22 +21,15 @@
 
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
-## Decided for you
-
-- [The player can read the race](https://linear.app/threadbare/issue/THR-2246/the-player-can-read-the-race-at-any-moment-the-screen-says-which-clock) — from Doom's Signs stage onward, the Mandate row says which clock lands first at the last fifteen days' pace ("Goal · Doom lands first"). The Mandate block says it in one sentence ("At this pace, Doom ends the age before your Mandate is fulfilled."). The Mandate and Doom dialogs name the one move ("Spend Order essence on Kael Thornweaver's chapters to raise your Mandate.", or Stay the Unmaking when no mortal is bound). A shift is a non-pausing alert plus a "While you were away" line. No numbers, and nothing new in the top bar. [Plan doc](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-19-thr-2246-the-player-can-read-the-race.md). Veto in chat. The build tickets hold until 22:00Z for that. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-19b.md)*
-- [Doom's last stage is a stand](https://linear.app/threadbare/issue/THR-2247/dooms-last-stage-is-a-stand-not-a-wait-what-pushes-the-clock-besides) — when a mortal fails and feeds the Doom, the game now remembers where. Ground your god tends starves the Doom, so a failure there feeds it nothing. Rebuke can be played on a place where the Doom fed, and it holds that place for a few days. In the last stage, the stage notice says "From here a failure can feed the doom. Ground you tend starves it.", a daily alert that does not pause names one place to Rebuke, and the Doom panel lists where it fed. There is no new card, and Doom's speed, Stay and the end of the age are unchanged. [Plan doc](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-19-thr-2247-dooms-last-stage-is-a-stand.md). Veto in chat. The build tickets wait until 00:00Z (01:00 local) for that. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-19c.md)*
-
-Say "veto <title>" to reverse any of these. The "well-played age can be won" decisions have passed their veto window and are now being built.
-
 ## Queue
 
-**Healthy: 3 in Ready for Dev, 1 being built.** The builder claimed [the census that plays the whole game](https://linear.app/threadbare/issue/THR-2248/the-agency-census-plays-the-whole-game-chapter-spend-credits-the) at 22:35 local and its run is still going. Waiting: [the Twilight line on what the Mandate came to](https://linear.app/threadbare/issue/THR-2250/the-twilight-says-what-the-mandate-came-to-where-your-hand-raised-it) (veto window closed at 22:30), [engine reads the race](https://linear.app/threadbare/issue/THR-2251/the-engine-reads-the-race-a-daily-pace-sample-a-forecast-of-which) (from 23:00 local) and [Doom feeds at a place](https://linear.app/threadbare/issue/THR-2255/the-doom-feeds-at-a-place-ground-you-tend-starves-it-rebuke-answers-it) (from 01:00 local).
+**Healthy: 2 in Ready for Dev, 1 being built.** The builder is on [the Twilight line on what the Mandate came to](https://linear.app/threadbare/issue/THR-2250/the-twilight-says-what-the-mandate-came-to-where-your-hand-raised-it). Last night's run built it and pushed it, then hit the usage limit during review. This morning's run picked it up again and is on its second review round. Waiting: [engine reads the race](https://linear.app/threadbare/issue/THR-2251/the-engine-reads-the-race-a-daily-pace-sample-a-forecast-of-which) and [Doom feeds at a place](https://linear.app/threadbare/issue/THR-2255/the-doom-feeds-at-a-place-ground-you-tend-starves-it-rebuke-answers-it). Both veto windows have passed.
 
 Items for agents, not you:
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (30 days; last touched 8 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (31 days; last touched 8 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- Engine speed (for the builder): tick cost 257 ms/tick steady, 66% above the 7-day median (155, 141 rows since fe0d09ef); top phase agent_decision, 638 agents. Name the merges between fe0d09ef and 85a4030e: git log --oneline --merges fe0d09ef..85a4030e. Last hour measured 166 on the same commit, and a builder run was working beside this measurement, so machine load is the likely cause; the next measurement will tell.
-- Lane silence: the newest unrecorded gap is Sunday 15 Nov, 09:57 to 21:48 local (12 hours on a weekend). Per your ruling weekend quiet is normal, so it is not an ask.
-- Everything else green: main is live on 6ba8d579 (later commits are docs only); CI and scheduled jobs green; no PRs waiting; every enabled lane on schedule; the worktree reaper last ran at 22:40 local. This week's UX contact sheet is not out yet (the newest, 12 Nov, is over a week old).
+- Overnight quiet, not an ask: nothing was written from 23:33 Thursday to 09:19 this morning. The builder hit the 5-hour usage limit at about 23:50, and the computer then seems to have slept (the worktree reaper's last run was 01:40). Lanes came back at 09:19. Per your ruling, overnight quiet is normal.
+- Engine speed (for the builder): tick cost 240 ms/tick steady, 55% above the 7-day median (155, 139 rows since 1e32e9f6); top phase agent_decision, 638 agents. Name the merges between 1e32e9f6 and 7415c30f: git log --oneline --merges 1e32e9f6..7415c30f. A builder run was again working beside this measurement, so machine load may still explain part of it.
+- Everything else green: main is live on 7415c30f (the census merge); CI and scheduled jobs green; no PRs waiting; every enabled lane on schedule. No UX contact sheet this week yet (the newest, 12 Nov, is over a week old).
