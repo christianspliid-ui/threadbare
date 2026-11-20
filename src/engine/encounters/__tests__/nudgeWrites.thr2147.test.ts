@@ -140,7 +140,7 @@ describe('THR-2147 — a played card’s write reaches the Aftermath', () => {
       kind: 'plant_compulsion', targetId: ACTOR, refId: 'explore',
     })]);
     const [chip] = buildNudgeWriteChanges(result.nudgeWrites, buildFightChipWorld(result.state.graph));
-    expect(chip.detail).toBe('An urge toward the open road takes root in Elara.');
+    expect(chip.detail).toBe('An urge toward far places takes root in Elara.');
   });
 
   it('Omen plants an omen the chip names on the mortal', () => {

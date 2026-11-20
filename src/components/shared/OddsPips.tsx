@@ -20,7 +20,7 @@ import { DOMINION_GHOST_PIP_OPACITY } from '../../data/dominion-ui-content';
 import { memo } from 'react';
 import {
   ESSENCE_PIP_GLYPH,
-  COST_OVERFLOW_GLYPH,
+  COST_OVERFLOW_LABEL,
   MAX_COST_PIPS,
 } from '../../data/nudge-card-display';
 import { NUDGE_FREE_COST_LABEL } from '../../data/nudge-stage-content';
@@ -248,7 +248,11 @@ export const CostPips = memo(function CostPips({
         {dearPips > 0 && (
           <span data-cost-dear={dearPips} style={{ color: 'var(--negative)' }}>{ESSENCE_PIP_GLYPH.repeat(dearPips)}</span>
         )}
-        {overflowed ? COST_OVERFLOW_GLYPH : ''}
+        {overflowed && (
+          <span data-cost-overflow={rounded - shown} style={{ marginLeft: '0.15em', letterSpacing: '0' }}>
+            {COST_OVERFLOW_LABEL.replace('{n}', String(rounded - shown))}
+          </span>
+        )}
         {ghostPips > 0 && (
           <span data-cost-ghost={ghostPips} style={{ opacity: DOMINION_GHOST_PIP_OPACITY, textDecoration: 'line-through' }}>
             {ESSENCE_PIP_GLYPH.repeat(ghostPips)}

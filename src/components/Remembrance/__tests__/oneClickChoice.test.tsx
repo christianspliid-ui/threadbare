@@ -166,6 +166,16 @@ describe('TransformationBeat — one click, Continue still needed (THR-1716)', (
     expect(onSelect.mock.calls[0][2]).toEqual({ [hungers[0].sphereAlignment.primary]: 3, [hungers[0].sphereAlignment.secondary]: 2 });
   });
 
+  it('THR-2261: the hunger hold shows the "Moving on" cue beside Choose again', () => {
+    render(<TransformationBeat hungers={[...hungers]} driveFragment={drive} onSelect={vi.fn()} />);
+    revealCards();
+    expect(screen.queryByTestId('remembrance-hold-cue')).toBeNull();
+    fireEvent.click(screen.getByTestId(`hunger-${hungers[0].id}`));
+    const cue = screen.getByTestId('remembrance-hold-cue');
+    expect(cue.textContent).toMatch(/Moving on/i);
+    expect(screen.getByTestId('remembrance-choose-again')).toBeTruthy();
+  });
+
   it('THR-1989: a click during the sphere reveal moves on at once, and only once', () => {
     const onSelect = vi.fn();
     render(<TransformationBeat hungers={[...hungers]} driveFragment={drive} onSelect={onSelect} />);

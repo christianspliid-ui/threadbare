@@ -136,6 +136,17 @@ describe('THR-2147 — every card says what it buys', () => {
     expect(line).toBe('Ends one of Elara’s conditions.');
   });
 
+  it('THR-2261: the Compulsion names a want, not a place in the scene', () => {
+    const compulsion = PLAY_PROFILES['card.compulsion.signature.mind'];
+    const line = nudgeResultLine(
+      { id: 'compulsion', grants: compulsion.grants, forecastDelta: compulsion.forecastDelta },
+      new WorldGraph(),
+      'Elara',
+    );
+    expect(line).toBe('Plants an urge in Elara toward far places.');
+    expect(line).not.toMatch(/open road/);
+  });
+
   it('every library card that does not move the odds has a result line, within the line cap', () => {
     const graph = buildGraph(true);
     for (const [id, profile] of Object.entries(PLAY_PROFILES)) {

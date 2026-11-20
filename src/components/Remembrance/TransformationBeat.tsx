@@ -7,6 +7,7 @@ import {
   useRemembranceChoice,
   handleChoiceRowKeyDown,
   ChooseAgainButton,
+  ChoiceHoldCue,
   CHOICE_ATTR,
   TRANSFORMATION_COURT_REVEAL_MS,
 } from './remembranceChoice';
@@ -302,6 +303,8 @@ export function TransformationBeat({ hungers, driveFragment, courtsFor, onSelect
                 }}>
                   {selectHungerProse(selectedHunger, driveFragment)}
                 </p>
+                {/* THR-2261: the same "Moving on" cue the Stirring and Drive holds show. */}
+                <ChoiceHoldCue key={selectedHunger.id} holdMs={TRANSFORMATION_COURT_REVEAL_MS} />
                 <ChooseAgainButton onClick={chooseHungerAgain} />
               </div>
             </>
