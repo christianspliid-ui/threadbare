@@ -10,6 +10,7 @@ import { DoomClockDetail } from '../DoomClockDetail';
 import type { DoomClockDefinition, DoomClockState } from '../../../types/doomClock';
 import type { DoomFeedingsView } from '../../../engine/views/doomFeedings';
 import { DOOM_FEED_WORDS } from '../../../engine/views/doomFeedings';
+import { DOOM_DIALOG_CLIMAX_FEED_ROWS } from '../../../data/game-config';
 
 const definition: DoomClockDefinition = {
   archetype: 'breach',
@@ -50,7 +51,7 @@ const view: DoomFeedingsView = {
 
 describe('DoomClockDetail — Where it feeds (THR-2256)', () => {
   it('lists each place with its word, under the current stage', () => {
-    render(<DoomClockDetail open onClose={() => {}} definition={definition} state={state} feedings={view} onOpenPlace={() => {}} />);
+    render(<DoomClockDetail open onClose={() => {}} definition={definition} state={{ ...state, currentStage: 4, progress: 0.7 }} feedings={view} onOpenPlace={() => {}} />);
     const rows = screen.getAllByTestId('doom-feed-row');
     expect(rows.map(r => r.textContent)).toEqual([
       'Riverford · fed here oftenRebuke',
@@ -58,6 +59,16 @@ describe('DoomClockDetail — Where it feeds (THR-2256)', () => {
       'Dunhallow · no longer held',
     ]);
     expect(screen.getByText(DOOM_FEED_WORDS.sectionLabel)).toBeTruthy();
+  });
+
+  it('THR-2269 — at the climax (stage 5) the dialog keeps the newest DOOM_DIALOG_CLIMAX_FEED_ROWS rows', () => {
+    render(<DoomClockDetail open onClose={() => {}} definition={definition} state={state} feedings={view} onOpenPlace={() => {}} />);
+    const rows = screen.getAllByTestId('doom-feed-row');
+    expect(rows).toHaveLength(DOOM_DIALOG_CLIMAX_FEED_ROWS);
+    expect(rows.map(r => r.textContent)).toEqual([
+      'Riverford · fed here oftenRebuke',
+      'Ashmoor · held',
+    ]);
   });
 
   it('offers Rebuke only on the row a Rebuke answers, and both the name and the button open the place', () => {

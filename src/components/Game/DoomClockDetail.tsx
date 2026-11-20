@@ -4,13 +4,13 @@ import { Tooltip } from '../shared/Tooltip';
 import { Icon } from '../shared/Icon';
 import { Button } from '../shared/Button';
 import { DOOM_ARCHETYPE_COLORS } from '../../data/uiColorPalette';
-import { DOOM_CLIMAX_START } from '../../data/game-config';
+import { DOOM_CLIMAX_START, DOOM_DIALOG_CLIMAX_FEED_ROWS } from '../../data/game-config';
 import { durationLabel } from '../../engine/aftermathWords';
 // THR-2103 (decision 8, Law 58): the doom marks live in one list; this file kept a second copy.
 import { DOOM_ARCHETYPE_FALLBACK_GLYPH, DOOM_ARCHETYPE_GLYPHS } from '../../data/doom-archetype-presentation';
 import type { RaceLeverView, RaceView } from '../../engine/views/subjects/godSheet';
 import { RaceForecastLine, RaceLeverLine } from './RaceForecast';
-import { useCallback } from 'react';
+import { useCallback, useState, type ReactNode } from 'react';
 import { ListRow } from '../shared/ListRow';
 import { useRefRouterContext } from '../../contexts/RefRouterContext';
 import { EntityLink } from '../shared/EntityLink';
@@ -88,6 +88,43 @@ function formatEffectType(effectType: string | undefined): string {
   }
 }
 
+/**
+ * THR-2269 — which passed stages the player has opened. View state that survives the
+ * dialog closing and reopening within the session (sessionStorage), keyed by archetype
+ * and stage. Fail-soft (NFP 4): a storage that throws reads as "all folded".
+ */
+export const DOOM_STAGE_FOLD_STORE_KEY = 'threadbare.doom.openStages';
+
+function readOpenStages(): string[] {
+  try {
+    const parsed: unknown = JSON.parse(sessionStorage.getItem(DOOM_STAGE_FOLD_STORE_KEY) ?? '[]');
+    return Array.isArray(parsed) ? parsed.filter((key): key is string => typeof key === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeOpenStages(keys: string[]): void {
+  try {
+    sessionStorage.setItem(DOOM_STAGE_FOLD_STORE_KEY, JSON.stringify(keys));
+  } catch {
+    // Fail-soft: the fold still works for this mount; it just won't survive a reopen.
+  }
+}
+
+function useOpenStages(): [ReadonlySet<string>, (key: string) => void] {
+  const [open, setOpen] = useState<ReadonlySet<string>>(() => new Set(readOpenStages()));
+  const toggle = useCallback((key: string) => {
+    setOpen((cur) => {
+      const next = new Set(cur);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      writeOpenStages([...next]);
+      return next;
+    });
+  }, []);
+  return [open, toggle];
+}
+
 export function DoomClockDetail({
   open,
   onClose,
@@ -113,7 +150,8 @@ export function DoomClockDetail({
   const flavor = DOOM_ARCHETYPE_FLAVOR[definition.archetype] ?? '';
   const ticksRemaining = Math.max(0, state.totalTicks - state.currentTick);
   const nextBeatLabel = getNextBeatLabel(definition, state);
-  const recentResolved = [...(state.resolvedEvents ?? [])].slice(-4).reverse();
+  // THR-2269 — each card shows once, inside the stage that dealt it; passed stages fold.
+  const [openStages, toggleStage] = useOpenStages();
   // THR-2240 — the answer sits under the current stage (Who → Now → Act); before the
   // first stage, or once the doom has landed, it sits under the list (or not at all).
   const hasCurrentStage = definition.stages.some((_, idx) => idx === state.currentStage - 1);
@@ -132,7 +170,14 @@ export function DoomClockDetail({
     : null;
   // THR-2256 — where the Doom fed, under the Stay line (the Act slot).
   const feedBlock = !state.expired && feedings
-    ? <DoomFeedList view={feedings} color={color} onOpenPlace={openPlace} />
+    ? (
+      <DoomFeedList
+        view={feedings}
+        color={color}
+        onOpenPlace={openPlace}
+        maxRows={state.currentStage >= 5 ? DOOM_DIALOG_CLIMAX_FEED_ROWS : undefined}
+      />
+    )
     : null;
   const answer = raceBlock || stayAnswer || feedBlock ? <>{raceBlock}{stayAnswer}{feedBlock}</> : null;
 
@@ -219,7 +264,7 @@ export function DoomClockDetail({
                   `${pct}% / elapsed`, a third rendering of a quantity this surface already
                   states twice — the ring arc itself, and `Current Chapter N of 5` below.
                   A unitless proportion is DROPPED where the surface already renders it
-                  non-numerically; it is not translated into a word ladder, because the Law 13
+                  non-numerically (the row is `Current stage` since THR-2269); it is not translated into a word ladder, because the Law 13
                   amendment of 2026-08-12 rules an adverb the wrong answer to "how much?".
                   The center now carries only the terminal state, which is not a proportion. */}
               {state.expired && (
@@ -248,7 +293,7 @@ export function DoomClockDetail({
 
             <div style={{ width: '100%' }}>
               <StatRow
-                label="Current chapter"
+                label="Current stage"
                 value={state.progress >= DOOM_CLIMAX_START ? `${state.currentStage} of 5 (Climax)` : `${state.currentStage} of 5`}
                 color={color}
               />
@@ -317,16 +362,43 @@ export function DoomClockDetail({
                 const isPast = idx < state.currentStage - 1;
                 const isCurrent = idx === state.currentStage - 1;
                 const isFuture = idx > state.currentStage - 1;
-                const resolvedStageEvents = state.resolvedEvents.filter((event) => event.stage === stage.stage);
+                // THR-2269 — the cards come from `resolvedEvents` only: a stage deals its
+                // authored events 1:1 on entry (phaseDoom), so the authored title list was a copy.
+                const resolvedStageEvents = isFuture
+                  ? []
+                  : (state.resolvedEvents ?? []).filter((event) => event.stage === stage.stage);
+                const foldKey = `${definition.archetype}:${stage.stage}`;
+                const foldable = isPast && resolvedStageEvents.length > 0;
+                const showCards = resolvedStageEvents.length > 0 && (isCurrent || (foldable && openStages.has(foldKey)));
+                const cardsId = `doom-stage-cards-${stage.stage}`;
+
+                const nameRowContent = (
+                  <>
+                    {foldable && (
+                      <span
+                        data-testid="doom-stage-disclosure"
+                        data-open={showCards ? 'true' : 'false'}
+                        style={{ color: 'var(--text-tertiary)', display: 'inline-flex', flexShrink: 0 }}
+                      >
+                        <Icon name="disclosure" size="floor" decorative style={{ transform: showCards ? 'rotate(180deg)' : 'rotate(90deg)' }} />
+                      </span>
+                    )}
+                  </>
+                );
 
                 return (
-                  <div key={stage.stage} style={{
+                  <div key={stage.stage} data-testid="doom-stage" data-stage={stage.stage} style={{
                     padding: '8px 10px',
                     borderRadius: '6px',
                     backgroundColor: isCurrent ? `${color}10` : 'transparent',
                     border: isCurrent ? `1px solid ${color}30` : '1px solid transparent',
                   }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <StageNameRow
+                      foldable={foldable}
+                      expanded={showCards}
+                      controls={cardsId}
+                      onToggle={() => toggleStage(foldKey)}
+                    >
                       <div style={{
                         width: '18px',
                         height: '18px',
@@ -355,6 +427,8 @@ export function DoomClockDetail({
                         {stage.name}
                       </span>
 
+                      {nameRowContent}
+
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
                         {stage.stage === 5 && (
                           <span style={{
@@ -369,29 +443,12 @@ export function DoomClockDetail({
                             surface's existing non-numeric rendering of where each stage sits,
                             so the numeral is dropped rather than banded (Law 15 ruling). */}
                       </div>
-                    </div>
+                    </StageNameRow>
 
-                    {!isFuture && stage.events.length > 0 && (
-                      <div style={{ marginTop: '8px', marginLeft: '26px' }}>
-                        {stage.events.map((event, eventIdx) => (
-                          <div key={`${stage.stage}-${eventIdx}`} style={{
-                            fontSize: 'var(--text-xs)',
-                            color: 'var(--text-secondary)',
-                            lineHeight: 1.5,
-                            marginBottom: '4px',
-                            paddingLeft: '10px',
-                            borderLeft: `2px solid ${color}40`,
-                          }}>
-                            {event.title ?? event.description}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {resolvedStageEvents.length > 0 && (
-                      <div style={{ marginTop: '8px', marginLeft: '26px' }}>
+                    {showCards && (
+                      <div id={cardsId} data-testid="doom-stage-cards" style={{ marginTop: '8px', marginLeft: '26px' }}>
                         {resolvedStageEvents.map((event) => (
-                          <div key={event.id} style={{
+                          <div key={`${event.id}-${event.resolvedTick}`} data-testid="doom-stage-card" style={{
                             fontSize: 'var(--text-xs)',
                             color: isCurrent ? color : 'var(--text-secondary)',
                             lineHeight: 1.5,
@@ -401,12 +458,12 @@ export function DoomClockDetail({
                             backgroundColor: `${color}10`,
                             border: `1px solid ${color}25`,
                           }}>
+                            {/* THR-2269 — title, then what it did; the `1.23x` severity is gone (Law 13). */}
                             <div style={{ fontWeight: 600 }}>
-                              {event.title} · {event.severity.toFixed(2)}x
+                              {event.title}
                             </div>
                             <div style={{ color: 'var(--text-muted)' }}>
-                              {formatEffectType(event.effectType)}
-                              {event.effectSummary ? ` — ${event.effectSummary}` : ''}
+                              {event.effectSummary || formatEffectType(event.effectType)}
                             </div>
                           </div>
                         ))}
@@ -420,37 +477,6 @@ export function DoomClockDetail({
             </div>
 
             {!hasCurrentStage && answer}
-
-            {recentResolved.length > 0 && (
-              <div style={{ marginTop: '16px' }}>
-                <div style={{
-                  fontFamily: 'var(--font-body)',
-                  fontWeight: 700,
-                  fontSize: 'var(--text-xs)',
-                  color: 'var(--text-tertiary)',
-                  marginBottom: '8px',
-                }}>
-                  Recent consequences
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {recentResolved.map((event) => (
-                    <div key={`${event.id}-${event.resolvedTick}`} style={{
-                      padding: '8px 10px',
-                      borderRadius: '6px',
-                      backgroundColor: 'rgba(255,255,255,0.02)',
-                      border: '1px solid var(--border-subtle)',
-                    }}>
-                      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)', fontWeight: 600 }}>
-                        {event.title}
-                      </div>
-                      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: '2px' }}>
-                        Chapter {event.stage} · severity {event.severity.toFixed(2)}x
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </Modal.Body>
@@ -464,7 +490,7 @@ export function DoomClockDetail({
           fontStyle: 'italic',
           opacity: 0.7,
         }}>
-          Chapters 1-4 tighten the omen. Chapter 5 is the climax window where the world-scale fallout lands.
+          Stages 1–4 tighten the omen. Stage 5 is the climax, where the world-scale fallout lands.
         </div>
       </Modal.Footer>
     </Modal>
@@ -476,15 +502,17 @@ export function DoomClockDetail({
  * link (Law 21) and its word. A Rebuke button only while the card is held and a Rebuke
  * there answers the Doom (Law 25); the row otherwise reads the place only.
  */
-function DoomFeedList({ view, color, onOpenPlace }: { view: DoomFeedingsView; color: string; onOpenPlace?: (placeId: string) => void }) {
+function DoomFeedList({ view, color, onOpenPlace, maxRows }: { view: DoomFeedingsView; color: string; onOpenPlace?: (placeId: string) => void; maxRows?: number }) {
+  // THR-2269 — at the climax the dialog keeps the newest `maxRows` (rows arrive newest first).
+  const rows = maxRows === undefined ? view.rows : view.rows.slice(0, maxRows);
   return (
     <div data-testid="doom-feed-list" style={{ marginTop: '8px', marginLeft: '26px' }}>
       <div style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-tertiary)', marginBottom: '4px' }}>
         {DOOM_FEED_WORDS.sectionLabel}
       </div>
-      {view.rows.length === 0
+      {rows.length === 0
         ? <div data-testid="doom-feed-empty" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>{DOOM_FEED_WORDS.empty}</div>
-        : view.rows.map((row) => (
+        : rows.map((row) => (
           <div key={row.placeId} data-testid="doom-feed-row" data-place-id={row.placeId} data-feed-status={row.status}>
             <ListRow
               accentColor={`${color}60`}
@@ -504,6 +532,36 @@ function DoomFeedList({ view, color, onOpenPlace }: { view: DoomFeedingsView; co
           </div>
         ))}
     </div>
+  );
+}
+
+/**
+ * THR-2269 — a stage's name row. A passed stage with cards is a disclosure button
+ * (the Chronicle/Rival chevron pattern: right when shut, down when open); every other
+ * row is plain.
+ */
+function StageNameRow({ foldable, expanded, controls, onToggle, children }: {
+  foldable: boolean;
+  expanded: boolean;
+  controls: string;
+  onToggle: () => void;
+  children: ReactNode;
+}) {
+  const rowStyle = { display: 'flex', alignItems: 'center', gap: '8px', width: '100%' } as const;
+  if (!foldable) return <div style={rowStyle}>{children}</div>;
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      type="button"
+      data-testid="doom-stage-toggle"
+      aria-expanded={expanded}
+      aria-controls={expanded ? controls : undefined}
+      onClick={onToggle}
+      style={{ ...rowStyle, justifyContent: 'flex-start', height: 'auto', padding: 0, textAlign: 'left', color: 'inherit' }}
+    >
+      {children}
+    </Button>
   );
 }
 
