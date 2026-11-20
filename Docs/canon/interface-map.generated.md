@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 123 |
-| **Total** | **369** |
+| 🔵 UNVERIFIED-OK | 124 |
+| **Total** | **370** |
 
 ## Contracts by producing subsystem
 
@@ -252,6 +252,7 @@ remediation ticket or the build fails.
 | `fights-leave-a-record-on-the-ground` | A fight where blows were actually exchanged leaves its history on the ground it was fought on, so a lair where the beast is fought again and again reads Blood-soaked, and a mortal who fled at the sight of the beast leaves no mark. | function: `fightRecordBranch`, `recordFightFought`, `readBloodshed`, `latestBloodshedRecord`, `describeBattleRecords` | Personality & Emergent Traits | 🟢 LIVE | — |
 | `first-bond-wakes-doom` | The Unmaking starts counting when you first reach down: the doom clock does not move until The First is bonded, and the tick it wakes is recorded as the start of the run. | function: `isFirstBonded` | Doom Clock & Journey | 🔵 UNVERIFIED-OK | — |
 | `first-mark-raises-reach` | The First carries the god's mark: one blessing in their spark's reach, granted at the bond on either route, worth a companion's skill in that reach and shown on their sheet. | function: `grantFirstMark`, `getFirstMarkDisplay` | Personality & Emergent Traits | 🔵 UNVERIFIED-OK | — |
+| `god-place-cast-credits-mandate` | A place the god tends fills the Mandate by what it cost (THR-2249). When the ascendant's own `source === "player"` cast on a place (either location tier) resolves, `mandateCastForPlace` (in `executeStepResult` and the no-roll end, on the resolving step, beside `mandateDeedForChapter`, which never credits the ascendant) credits the sphere the cast was charged from (`castSphere`, stamped by `preparePlayerCast`; else the template's `sphereAffinity`), when it is a Mandate sphere, `essencePaid × MANDATE_CAST_POINTS_PER_ESSENCE × MANDATE_DEED_BAND_FACTOR[band]`, keyed to the place, as `mandateDeedCredits` with one aftermath row (`source: "cast"`). It rides the deed pipe: `phaseUnifiedActionProgress` queues it on `pendingMandateCredits` and `phaseMandate` folds it once, the same tick. The pressure level-up credit is unchanged; casts never join `recentDeeds`. | function: `mandateCastForPlace`, `mandateCastCredit`, `pendingMandateCredits` | Mandate | 🔵 UNVERIFIED-OK | — |
 | `journey-keeps-encounter-target` | A mortal who sets out for an encounter keeps it as the goal of the trip: the journey records the pull that chose it, a reroute has to beat that pull and carries its own target, and on arrival the encounter it came for is still on the board. The goal is the encounter *here* (THR-1674): a copy of the template in another town never carries the commitment. | node-prop: `targetEncounterId`, `motivationPull`, `journeyGoal`, `JOURNEY_GOAL_CAP_RESERVE`, `ARRIVAL_GOAL_COMMITMENT_MULTIPLIER` | Movement & Colocation | 🟢 LIVE | — |
 | `location-condition-taxes-movement-and-gates-templates` | A place can be in a state — a pass shut for the season, a town under a plague scare — and that state is something other systems act on, not scenery. | function: `isLocationCarrier`, `LOCATION_CONDITION_MOVEMENT_TAX`, `buildLocationTargetContext`, `LocationProfileModal`, `conditionEffectLine`, `LOCATION_CONDITION_STEP_MODIFIER`, `collectLocationConditionContributions`, `phaseLocationTraits` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `meeting-bond-writes-the-first` | Meeting The First ends in a bond: the chosen mortal gets a `thread` edge at court position `the_first`, and from then on the game treats them as the player's First — the meeting stops offering itself, and their encounters are raised to shaping attention. Since THR-1644 the Agent Thread card writes the same position when the god holds no First, so the meeting is the first route to a First, not the only one. | edge-prop: `the_first` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
@@ -2606,6 +2607,18 @@ exit
 - **Other hits:** `src/components/Game/hooks/useCrossroadsActs.ts`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/data/crossroads-content.ts`, `src/data/premonition-constants.ts`, `src/engine/crossroads.ts` +4 more
 - **Verdict:** Verified 2026-11-06: THR-1926. crossroads.integration.test.ts (seed 42, generated world, the bonded First): a lean placed on The First's written snapshot resolves at the next full decision with exactly one crossroads_lean_outcome trace and one divine_crossroads toast, and the property is cleared. crossroadsBoard.test.ts: the board multiplies only the exact instance of either family and records `crossroadsLean` on the entry; an unleaned board is byte-identical; toward the second road of a leaning mortal → followed, toward the third of a set mortal → resisted, past the hold → lapsed_expired.
 
+### `god-place-cast-credits-mandate` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A place the god tends fills the Mandate by what it cost (THR-2249). When the ascendant's own `source === "player"` cast on a place (either location tier) resolves, `mandateCastForPlace` (in `executeStepResult` and the no-roll end, on the resolving step, beside `mandateDeedForChapter`, which never credits the ascendant) credits the sphere the cast was charged from (`castSphere`, stamped by `preparePlayerCast`; else the template's `sphereAffinity`), when it is a Mandate sphere, `essencePaid × MANDATE_CAST_POINTS_PER_ESSENCE × MANDATE_DEED_BAND_FACTOR[band]`, keyed to the place, as `mandateDeedCredits` with one aftermath row (`source: "cast"`). It rides the deed pipe: `phaseUnifiedActionProgress` queues it on `pendingMandateCredits` and `phaseMandate` folds it once, the same tick. The pressure level-up credit is unchanged; casts never join `recentDeeds`.
+- **Producer → Consumer:** Encounters & Dilemmas → Mandate
+- **UL terms:** *Victory Mandate*, *Sphere*, *Place*, *Essence*
+- **Module:** `src/engine/mandateLedger.ts`
+- **Production hits:** 7 total — 1 write, 1 read, 5 unclassified
+- **Write sites:** `src/engine/unifiedActionResolution.ts`
+- **Read sites:** `src/engine/phaseMandate.ts`
+- **Other hits:** `src/engine/mandateLedger.ts`, `src/engine/orchestrator.ts`, `src/engine/phaseSpherePressure.ts`, `src/types/gameState.ts`, `src/types/unifiedAction.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `god-reads-mortal-intention` — 🟢 LIVE
 
 - **Intent:** The god reads what a mortal is set on — the ambition and the work it heads toward — through one rule everywhere: having watched them, or a followed mortal’s mark on them, or a followed network’s people near them. A mortal’s intelligence work counts as the god’s own knowledge, so running a ring or digging up a secret changes what the player can see on a sheet; and a secret work (the plot) is never read by watching alone.
@@ -4567,10 +4580,10 @@ exit
 - **Intent:** What the player sees of a mortal’s work, on three surfaces that never list capability on a person: the Undertakings codex page (one card per live cell, generated from the registry and the grid’s dispositions — who tends to do it derived under the division rule), the roster’s doing-line (what each mortal is in the middle of, in words), and the ledger that names each finished deed by verb and object with the object linked.
 - **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
 - **Module:** `src/engine/undertakingDeed.ts`
-- **Production hits:** 59 total — 5 write, 5 read, 49 unclassified
+- **Production hits:** 60 total — 5 write, 5 read, 50 unclassified
 - **Write sites:** `src/data/division-rule-tables.ts`, `src/data/undertaking-verb-prose.ts`, `src/engine/strategicActionLifecycle.ts`, `src/engine/strategicPresentation.ts`, `src/engine/undertakingDeed.ts`
 - **Read sites:** `src/components/Codex/codexRegistry.ts`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/ThreadsPanel.tsx`, `src/debug-bridge.ts`, `src/engine/agentArc.ts`
-- **Other hits:** `src/components/Game/inspector/lab/stressFixture.ts`, `src/components/Game/inspector/SubjectHeader.tsx`, `src/components/Game/MandateDetail.tsx`, `src/data/ascendant-bar-content.ts`, `src/data/builders-fellowship-encounter-content.ts` +44 more
+- **Other hits:** `src/components/Game/inspector/lab/stressFixture.ts`, `src/components/Game/inspector/SubjectHeader.tsx`, `src/components/Game/MandateDetail.tsx`, `src/data/ascendant-bar-content.ts`, `src/data/builders-fellowship-encounter-content.ts` +45 more
 - **Verdict:** Verified 2026-09-07: THR-1434. The codex builds one card per live cell from `UNDERTAKING_CELL_TEMPLATES` and `LIVE_CELL_NOTES` (49 = 49 on the shipped grid, `validateUndertakingCodex` fails by name on a cell without a phrase, glyph, lexicon line or note); the roster reads `activeProject.doingLine` composed in `getAgentStrategicSummary`; the lifecycle names the deed once (`describeDeed`) on the history entry and the completion event’s `refs`, and the arc strip renders it with the object linked. Non-vacuous by `codexUndertakings.test.ts` (count equals live cells, game words only, derivation reversible, the guard falsified on an injected template), `ThreadsPanelDoingLine.test.tsx` (phrase + progress word, trouble word, "and more", nothing when idle), `JourneyTabDeed.test.tsx` (verb tooltip, linked object, plain object with no page) and `undertakingDeed.test.ts` (the namer’s branches and the real pipeline: an instant cell through the review lever writes its deed). Browser proof on the closing PR: the codex section open on a card, a roster with three mortals mid-work, Ashara’s ledger with two linked deeds.
 
 ### `undertow-card-drifts-mortal-values` — 🔴 LEAKED

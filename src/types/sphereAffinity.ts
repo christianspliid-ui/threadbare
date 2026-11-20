@@ -92,9 +92,10 @@ export interface MandateCredit {
   sources: PressureSource[];
   /**
    * THR-2208 — where the credit came from. Absent = `pressure` (a score the god's push
-   * raised, `phaseSpherePressure`); `deed` = a threaded mortal's chapter closing.
+   * raised, `phaseSpherePressure`); `deed` = a threaded mortal's chapter closing;
+   * `cast` = the god's own cast on a place in a Mandate sphere, by its cost (THR-2249).
    */
-  source?: 'pressure' | 'deed';
+  source?: 'pressure' | 'deed' | 'cast';
 }
 
 // ─── Scale Constants (NFP #1: Tunability) ────────────────────────

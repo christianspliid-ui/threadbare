@@ -101,9 +101,9 @@ import { revealBestSecret } from './secretsFavorsConsequences';
 import { SCHISM_PENDING_DURATION_TICKS } from '../data/game-config';
 import { GATE_DUTY_NUDGE_IDS } from '../data/civic-guard-encounter-content';
 import { emitTrace } from './traceBuffer';
-import { deedBandOf, mandateDeedCredit, mandateDeedSpheres } from './mandateLedger';
+import { deedBandOf, mandateCastCredit, mandateDeedCredit, mandateDeedSpheres } from './mandateLedger';
 import { MANDATE_DEED_STRONG_POINTS } from '../data/game-config';
-import { MANDATE_DEED_TITLE, mandateDeedLine } from '../data/ascendant-bar-content';
+import { MANDATE_DEED_TITLE, mandateCastDeedLine, mandateDeedLine } from '../data/ascendant-bar-content';
 import { sphereWord } from '../data/essence-format';
 import type { MandateCredit } from '../types/sphereAffinity';
 import { progressActionsWithPlayerHolds } from './playerStepHold';
@@ -264,7 +264,7 @@ import { finalizeFightEnd } from './fights/fightOutcome';
 import { raiseFightEnded } from './fights/fightEvents';
 import type { ReachDomain } from '../types/traits';
 import type { FightStepTrace } from '../types/traces/fight-traces';
-import { resolveToParentLocation } from './sublocationShape';
+import { isLocationNode, isPlaceNode, resolveToParentLocation } from './sublocationShape';
 import {
   PLAYER_CAST_VARIANCE_ENABLED,
   PLAYER_CAST_PUSH_ENABLED,
@@ -3226,7 +3226,8 @@ export function executeStepResult(
   // THR-2208 — a bound mortal's closed chapter credits the Mandate, and says so in its
   // aftermath (one row). Once per chapter: only on the step that resolves it.
   if (finalAction.resolved && !action.resolved) {
-    const deed = mandateDeedForChapter(state, finalAction, template, currentActorName, tick);
+    const deed = mandateDeedForChapter(state, finalAction, template, currentActorName, tick)
+      ?? mandateCastForPlace(state, finalAction, template, tick);
     if (deed) {
       aftermathChanges.push(deed.change);
       finalAction = { ...finalAction, mandateDeedCredits: deed.credits };
@@ -3369,6 +3370,75 @@ export function mandateDeedForChapter(
 }
 
 /**
+ * THR-2249 (plan 2026-11-19-thr-2245 Decision 3) — the Mandate credit the god's own cast
+ * on a place earns by what it cost, and the aftermath row that tells the player.
+ *
+ * `undefined` unless the action is a `source === 'player'` cast by the ascendant on a
+ * place (either location tier), the run has a sphere-growth Mandate, and the cast's
+ * sphere is one of its two with essence paid. Never overlaps {@link mandateDeedForChapter},
+ * which credits nothing for the ascendant's own actions. Fail-soft: a graph read that
+ * throws credits nothing.
+ */
+export function mandateCastForPlace(
+  state: GameState,
+  action: UnifiedAction,
+  template: Pick<UnifiedActionTemplate, 'sphereAffinity'>,
+  tick: number,
+): { credits: MandateCredit[]; change: EncounterAftermathChange } | undefined {
+  const def = state.mandateDefinition;
+  if (!def || def.runtimeKind !== 'sphere_growth' || !def.primarySphere || !def.secondarySphere) return undefined;
+  if (action.source !== 'player' || !state.ascendantId || action.actorId !== state.ascendantId) return undefined;
+  if (!action.targetId) return undefined;
+  let place: ReturnType<typeof state.graph.getNode>;
+  try {
+    place = state.graph.getNode(action.targetId);
+  } catch {
+    return undefined;
+  }
+  if (!isLocationNode(place) && !isPlaceNode(place)) return undefined;
+  const band = deedBandOf(action.outcome);
+  const credits = mandateCastCredit({
+    targetId: action.targetId,
+    sphere: action.castSphere ?? template.sphereAffinity,
+    essencePaid: action.essencePaid,
+    band,
+    primary: def.primarySphere,
+    secondary: def.secondarySphere,
+  });
+  if (credits.length === 0) return undefined;
+  const placeName = place?.name;
+  const change: EncounterAftermathChange = {
+    id: `${action.actionId}:mandate_cast`,
+    kind: 'shell_state',
+    title: MANDATE_DEED_TITLE,
+    detail: mandateCastDeedLine(placeName, sphereWord(credits[0].sphere)),
+    polarity: 'gain',
+    category: 'boon',
+    direction: 'gain',
+    stateNoun: { text: 'Mandate', tooltipId: 'ui.mandate_tracker' },
+    storyWeight: 'beat',
+    actorId: action.actorId,
+  };
+  emitTrace({
+    category: 'mandate.deed_credit',
+    tick,
+    agentId: action.actorId,
+    summary: `mandate.deed_credit: cast ${action.templateId} on ${action.targetId} (${band}) credits ${credits
+      .map(c => `${c.sphere} +${c.points.toFixed(2)}`).join(', ')}`,
+    actorId: action.actorId,
+    encounterId: action.templateId,
+    actionId: action.actionId,
+    band,
+    source: 'cast',
+    targetId: action.targetId,
+    essencePaid: action.essencePaid,
+    spend: { [credits[0].sphere]: action.essencePaid },
+    credits: credits.map(c => ({ sphere: c.sphere, points: c.points })),
+  });
+  return { credits, change };
+}
+
+/**
  * THR-1538 (plan doc §1) — the fight's **no-roll end**: a route through the
  * resolution tail, not around it. Taken when `resolveUncontestedStep` found the
  * fight's opponent unbound, dead, or gone from the fighter's hex before the roll.
@@ -3430,7 +3500,8 @@ function executeFightNoRollEnd(
   // threaded mortal's deed credits the Mandate here too (the rolled route does it in
   // `executeStepResult`).
   if (finalAction.resolved && !action.resolved) {
-    const deed = mandateDeedForChapter(state, finalAction, template, state.graph.getNode(action.actorId)?.name, tick);
+    const deed = mandateDeedForChapter(state, finalAction, template, state.graph.getNode(action.actorId)?.name, tick)
+      ?? mandateCastForPlace(state, finalAction, template, tick);
     if (deed) {
       aftermathChanges.push(deed.change);
       finalAction = { ...finalAction, mandateDeedCredits: deed.credits };

@@ -139,7 +139,7 @@ export function preparePlayerCast(params: PreparePlayerCastParams): PreparedPlay
 
   const rng = mulberry32(seed + tick * PLAYER_CAST_RNG_TICK_STRIDE);
   const resolvedScale = scale ?? template.scale;
-  const action = createUnifiedAction({
+  const created = createUnifiedAction({
     actorId: ascendantId,
     templateId,
     targetId,
@@ -157,6 +157,9 @@ export function preparePlayerCast(params: PreparePlayerCastParams): PreparedPlay
       ? { effectiveRarityTier: buffResult.effectiveRarityTier }
       : {}),
   });
+  // THR-2249 — remember the sphere the cast was charged from, so the Mandate credits
+  // what was actually paid (a card with no sphereAffinity pays from the primary).
+  const action = sphere && essenceCost > 0 ? { ...created, castSphere: sphere } : created;
 
   // Causal trail for every player cast, from every surface (NFP #2). The
   // non-agent drawer and the debug bridge gained this at THR-739 — the agent

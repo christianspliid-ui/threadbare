@@ -145,6 +145,21 @@ export const MANDATE_RECENT_DEEDS_HEADING = 'Last deeds';
 /** One small line on a nudge card's face, shown only when the card's spend will credit the Mandate. */
 export const MANDATE_CARD_HINT = 'Counts toward your Mandate.';
 
+// THR-2249 — the god's own cast on a place in a Mandate sphere. No strong form: a place
+// cast is one fixed-cost act (plan 2026-11-19-thr-2245 § Player-facing text).
+/** The aftermath row and the "last deeds" line for a place cast. */
+export const MANDATE_CAST_DEED_LINE = 'Your hand on {place} raised your Mandate in {Sphere}.';
+/** An empty `{place}` slot reads this. */
+export const MANDATE_CAST_PLACE_FALLBACK = 'a place you hold';
+
+/** Render a place-cast deed line. `sphereWord` is the display word ("Order"). */
+export function mandateCastDeedLine(placeName: string | undefined, sphereWord: string): string {
+  const place = placeName && placeName.trim() ? placeName.trim() : MANDATE_CAST_PLACE_FALLBACK;
+  return MANDATE_CAST_DEED_LINE
+    .replace('{place}', () => place)
+    .replace('{Sphere}', () => sphereWord);
+}
+
 /** Render a deed line. `sphereWord` is the display word ("Mind"); `strong` picks the "far" line. */
 export function mandateDeedLine(mortalName: string | undefined, sphereWord: string, strong: boolean): string {
   const mortal = mortalName && mortalName.trim() ? mortalName.trim() : MANDATE_DEED_MORTAL_FALLBACK;

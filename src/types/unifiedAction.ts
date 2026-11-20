@@ -3456,6 +3456,13 @@ export interface UnifiedAction {
    */
   readonly mandateSphereSpend?: Partial<Record<SphereName, number>>;
   /**
+   * THR-2249 — the sphere a god's player cast was charged from (`preparePlayerCast`),
+   * which for a card with no `sphereAffinity` is the god's primary. Read once at
+   * resolution by `mandateCastForPlace`. Absent (an old save, a free cast) ⇒ the
+   * template's `sphereAffinity`.
+   */
+  readonly castSphere?: SphereName;
+  /**
    * THR-2208 — the Mandate credits this chapter's close earned (`mandateDeedCredit`),
    * set once on the resolving step. `phaseUnifiedActionProgress` queues them on
    * `pendingMandateCredits`. Absent on any chapter that credited nothing.
