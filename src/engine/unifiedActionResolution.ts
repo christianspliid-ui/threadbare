@@ -3432,6 +3432,7 @@ export function mandateCastForPlace(
     source: 'cast',
     targetId: action.targetId,
     essencePaid: action.essencePaid,
+    spend: { [credits[0].sphere]: action.essencePaid },
     credits: credits.map(c => ({ sphere: c.sphere, points: c.points })),
   });
   return { credits, change };
