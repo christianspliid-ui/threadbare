@@ -3770,13 +3770,20 @@ export const CONTRACTS: readonly Contract[] = [
     ulTerms: ['Mandate', 'Doom Clock', 'Run'],
     mechanism: { kind: 'state-field', symbols: ['doomClock', 'mandateState'] },
     writeSites: ['src/engine/phaseDoom.ts', 'src/engine/phaseMandate.ts'],
-    readSites: ['src/engine/raceForecast.ts', 'src/debug-bridge.ts'],
+    readSites: [
+      'src/engine/raceForecast.ts',
+      'src/debug-bridge.ts',
+      'src/engine/views/subjects/godSheet.ts',
+      'src/engine/views/godRail.ts',
+      'src/engine/views/warmRecap.ts',
+    ],
     // THR-2251 (plan 2026-11-19-thr-2246, ticket 1). `phaseMandate` reads `doomClock.progress`
     // and `wokeAtTick` (through `doomFloorMetAtTick`) beside the Mandate's `progress`, and
     // `sampleRace` / `projectRace` / `settleRace` write `mandateState.raceWatch`. A turn or
     // the first sight pushes one `mandate_progress` alert and traces `mandate.race_turned`.
-    // Ticket 2 adds the view readers (godSheet, godRail, the Mandate and Doom dialogs,
-    // warm recap); today's readers are the checkpoint line and `window.__DEBUG.getRace()`.
+    // THR-2252 (ticket 2) adds the view readers: `selectRaceView` / `selectRaceLever` (godSheet)
+    // feed the folded rail word (godRail), the Mandate block, the Mandate and Doom dialogs
+    // (through DialogHost), and `warmRecap`'s `race` line kind.
   },
   {
     id: 'age-end-writes-resonance-memories',

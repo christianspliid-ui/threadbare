@@ -58,7 +58,7 @@ const row = (race: MandateRowView['race'], trend: MandateRowView['trend'] = 'ste
 describe('THR-2252 — selectRaceView', () => {
   it('is null while the race is hidden, so the surfaces keep their text', () => {
     expect(selectRaceView(world())).toBeNull();
-    expect(selectRaceView({ mandateState: undefined } as GameState)).toBeNull();
+    expect(selectRaceView({ mandateState: undefined } as unknown as GameState)).toBeNull();
   });
 
   it('reads the shown state as the plan\'s sentence and rail word', () => {
