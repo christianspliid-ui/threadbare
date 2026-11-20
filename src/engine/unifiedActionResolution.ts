@@ -2684,9 +2684,15 @@ export function executeStepResult(
   // Accumulate per-step complication result (THR-20)
   if (consequence.complication !== undefined) {
     const prevComplications = action.stepComplications ?? [];
+    // THR-2255 — the Stage and the chapter archive read this entry's `prose`, so it carries
+    // the line the player was shown (the held line on tended ground, the fed line with its
+    // Rebuke sentence), never the raw template line beside a contradicting tick event.
+    const shownComplication = complicationProseShown !== undefined && complicationProseShown !== consequence.complication.prose
+      ? { ...consequence.complication, prose: complicationProseShown }
+      : consequence.complication;
     finalAction = {
       ...finalAction,
-      stepComplications: [...prevComplications, consequence.complication],
+      stepComplications: [...prevComplications, shownComplication],
     };
   }
 
