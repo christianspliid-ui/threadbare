@@ -77,6 +77,11 @@ export const ALERT_CHRONICLE_POLICY: Readonly<Record<string, AlertChroniclePolic
   narrative: CHRONICLE,
   // orchestrator phaseDoomExpiry — doom ended the age (THR-1381: was a popup).
   phase_change: CHRONICLE,
+  // phaseDoom — THR-2255's last-stage daily prompt to Rebuke where the Doom fed.
+  doom_feeding: {
+    chronicle: false,
+    exemption: 'a daily prompt about a standing choice, not news: the feeding itself reaches the Chronicle on its complication line',
+  },
 };
 
 export interface AlertChronicleResult {

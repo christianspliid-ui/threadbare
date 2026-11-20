@@ -25,9 +25,17 @@ import type { TraceEntry } from '../types/trace';
 import { getProsperityTier } from './phaseProsperity';
 import {
   DOOM_COUNTER_OMEN_SOFTENING,
+  DOOM_FEED_ALERT_EVERY_DAYS,
+  DOOM_FEED_ALERT_FROM_STAGE,
   DOOM_MIN_SEVERITY,
   DOOM_RATE_FLOOR,
 } from '../data/game-config';
+import { TICKS_PER_DAY } from '../data/attention-constants';
+import { DOOM_FEED_ALERT_LINE, DOOM_FEED_LAST_STAGE_LINE, fillDoomFeedLine } from '../data/doom-feed-content';
+import { RIVAL_REBUKE_TEMPLATE_ID } from '../data/rival-rebuke-content';
+import { RIVAL_REBUKE_COST } from '../data/rival-scheme-config';
+import { doomRebukablePlaceIds, latestAnswerableFeeding } from './doomFeedings';
+import { castTargetBand, dominionScaledCost } from './dominion';
 
 const SETTLEMENT_SUBTYPES = new Set(['hamlet', 'town', 'city', 'capital']);
 const HEX_TARGET_EXCLUDED_TERRAINS = new Set(['ocean', 'coastal_shallows']);
@@ -50,6 +58,42 @@ export function doomStageCardLine(card: DoomEscalationEvent): string {
     .filter((part): part is string => Boolean(part));
   if (!head) return sentences.join(' ');
   return sentences.length > 0 ? `${head}. ${sentences.join(' ')}` : head;
+}
+
+/**
+ * THR-2255 — the last-stage alert (plan Decision 4). From Doom stage
+ * `DOOM_FEED_ALERT_FROM_STAGE`, at most once per `DOOM_FEED_ALERT_EVERY_DAYS`, while the
+ * god holds Rebuke and can pay for it at a place where the Doom fed and which it does
+ * not tend: one non-pausing alert naming the place fed most recently. Null otherwise.
+ * Deterministic (no rng). Fail-soft: any gap reads as "no alert".
+ */
+export function doomFeedAlert(
+  state: Pick<GameState, 'tick' | 'graph' | 'ascendantId'>
+    & Partial<Pick<GameState, 'doomFeedings' | 'doomFeedAlertTick' | 'unlockedActionIds' | 'essencePool' | 'controlEffects' | 'rebukedPlaces' | 'unifiedActions'>>,
+  stage: number,
+): { placeId: string; placeName?: string } | null {
+  if (stage < DOOM_FEED_ALERT_FROM_STAGE) return null;
+  if (!(state.unlockedActionIds ?? []).includes(RIVAL_REBUKE_TEMPLATE_ID)) return null;
+  const last = state.doomFeedAlertTick;
+  if (typeof last === 'number' && state.tick - last < DOOM_FEED_ALERT_EVERY_DAYS * TICKS_PER_DAY) return null;
+  if (!state.doomFeedings || Object.keys(state.doomFeedings).length === 0) return null;
+  const god = state.graph.getNode(state.ascendantId);
+  const primary = (god?.properties.sphereAlignment as { primary?: string } | undefined)?.primary;
+  const purse = primary ? state.essencePool?.[primary as keyof NonNullable<GameState['essencePool']>] ?? 0 : 0;
+  const inFlight = new Set((state.unifiedActions ?? [])
+    .filter(a => a && !a.resolved && a.templateId === RIVAL_REBUKE_TEMPLATE_ID && a.targetId)
+    .map(a => a.targetId as string));
+  let best: { placeId: string; fedAt: number } | null = null;
+  for (const placeId of [...doomRebukablePlaceIds(state)].sort()) {
+    if (inFlight.has(placeId)) continue;
+    const price = dominionScaledCost(RIVAL_REBUKE_COST, castTargetBand(state.graph, state.ascendantId, placeId));
+    if (purse < price) continue;
+    const fedAt = latestAnswerableFeeding(state, placeId);
+    if (fedAt !== null && (!best || fedAt > best.fedAt)) best = { placeId, fedAt };
+  }
+  if (!best) return null;
+  const name = state.graph.getNode(best.placeId)?.name;
+  return { placeId: best.placeId, ...(name ? { placeName: name } : {}) };
 }
 
 function nextEventId(tick: number): string {
@@ -404,6 +448,39 @@ export function phaseDoom(state: GameState): Partial<GameState> {
   const resolvedEvents: DoomResolvedEvent[] = [...(state.doomClock.resolvedEvents ?? [])];
   let runningEffectStates = new Map(state.effectStates ?? new Map());
 
+  // THR-2255 — the last stage's daily alert: the Doom fed at a place the god can Rebuke.
+  let feedAlert: { placeId: string; placeName?: string } | null = null;
+  try {
+    feedAlert = doomFeedAlert(state, newStage);
+  } catch {
+    feedAlert = null; // fail-soft: no alert this tick
+  }
+  if (feedAlert) {
+    const place = state.graph.getNode(feedAlert.placeId);
+    const col = place?.properties.hexCol as number | undefined;
+    const row = place?.properties.hexRow as number | undefined;
+    // alert-chronicle: doom_feeding
+    events.push({
+      id: nextEventId(state.tick),
+      tick: state.tick,
+      type: 'doom_feeding',
+      message: fillDoomFeedLine(DOOM_FEED_ALERT_LINE, feedAlert.placeName),
+      significance: 0.7,
+      // It reports, it never pauses (UI Law 39).
+      notification: { channel: 'alert', icon: 'doom' },
+      refs: [{ kind: 'location', id: feedAlert.placeId, ...(feedAlert.placeName ? { name: feedAlert.placeName } : {}) }],
+      ...(typeof col === 'number' && typeof row === 'number' ? { hexCoords: { col, row } } : {}),
+    });
+    emitTrace({
+      category: 'doom.feed_alert',
+      tick: state.tick,
+      placeId: feedAlert.placeId,
+      stage: newStage,
+      summary: `doom.feed_alert: the doom fed at ${feedAlert.placeName ?? feedAlert.placeId} — Rebuke it there (stage ${newStage})`,
+    });
+  }
+  const alertWrite = feedAlert ? { doomFeedAlertTick: state.tick } : {};
+
   if (newStage > oldStage) {
     const { severity, counterOmensSpent } = computeEscalationSeverity(state);
 
@@ -426,9 +503,11 @@ export function phaseDoom(state: GameState): Partial<GameState> {
             // THR-2219: the body used to carry only each card's title ("Barrier Thinning"),
             // so the stage arrived as two words with no account of what it does. Each card
             // now reads title, what is happening, then the plain "what it does" line.
-            body: stageCards.length > 0
+            body: (stageCards.length > 0
               ? stageCards.map(doomStageCardLine).join('\n\n')
-              : `The ${doomName} intensifies — ${stageName}`,
+              : `The ${doomName} intensifies — ${stageName}`)
+              // THR-2255: the last stage says what the stand is.
+              + (stage === DOOM_FEED_ALERT_FROM_STAGE ? `\n\n${DOOM_FEED_LAST_STAGE_LINE}` : ''),
           },
         },
       });
@@ -474,6 +553,7 @@ export function phaseDoom(state: GameState): Partial<GameState> {
       prosperityShocks,
       pendingHexMutations: hexMutations,
       effectStates: runningEffectStates,
+      ...alertWrite,
     };
   }
 
@@ -487,6 +567,7 @@ export function phaseDoom(state: GameState): Partial<GameState> {
     pendingSpherePressures: pressures,
     prosperityShocks,
     pendingHexMutations: hexMutations,
+    ...alertWrite,
   };
 }
 

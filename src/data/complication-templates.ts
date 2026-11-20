@@ -582,6 +582,12 @@ export const COMPLICATION_TEMPLATES: ComplicationTemplate[] = [
       '{omen_atmosphere} thickened as {name} failed, and the doom gained ground. Your mandates, kept well, can blunt its next blow.',
       'One more failure for the doom to feed on. It grows by such moments; mandates kept well soften its coming.',
     ],
+    // THR-2255 — the line when the failure lands on ground the god tends: the doom fed
+    // nothing there. {place} is the top-level place. Picked by tick, no rng draw.
+    heldProse: [
+      '{name} failed at {place}, but the ground is yours. The doom found nothing to feed on.',
+      '{name} stumbled at {place}, and the doom reached for it. The ground is yours; it found nothing there.',
+    ],
     significanceBoost: 0.2,
   },
 
@@ -603,6 +609,11 @@ export const COMPLICATION_TEMPLATES: ComplicationTemplate[] = [
       '{omen_atmosphere} arrives in the room where the failure happened. Not literally — but {name} feels it: the characteristic quality of something that has been growing in the dark and has just decided this place is interesting.',
       'The ward didn\'t hold. The attempt to hold it created a new weakness. The breach is learning the shape of {location}\'s vulnerabilities in real time.',
     ],
+    // THR-2255 — the line when the failure lands on ground the god tends: the doom fed
+    // nothing there. {place} is the top-level place. Picked by tick, no rng draw.
+    heldProse: [
+      'The failure at {place} opened a way for the doom, but the ground is yours. It found nothing to feed on.',
+    ],
     significanceBoost: 0.4,
   },
 
@@ -622,6 +633,11 @@ export const COMPLICATION_TEMPLATES: ComplicationTemplate[] = [
       '{name} failed under {omen_atmosphere}. These things resonate when they align. The resonance is costly.',
       'The doom agenda doesn\'t wait for climax — it takes these small offerings too. A failure under an active omen is weighted differently.',
       'The omen amplified the failure\'s signal. Something heard it. Something always hears when the signal is strong enough.',
+    ],
+    // THR-2255 — the line when the failure lands on ground the god tends: the doom fed
+    // nothing there. {place} is the top-level place. Picked by tick, no rng draw.
+    heldProse: [
+      '{name} failed at {place} under the omen, but the ground is yours. The doom found nothing to feed on.',
     ],
     significanceBoost: 0.2,
   },

@@ -45,6 +45,29 @@ export const DEFAULT_DOOM_TICKS = 1080;
 export const DOOM_RATE_FLOOR = 0.1;
 
 /**
+ * THR-2255 — the Doom feeds at a place (plan `2026-11-19-thr-2247-dooms-last-stage-is-a-stand.md`).
+ * A failure's `doom_micro_tick` is written to the top-level place it happened at
+ * (`GameState.doomFeedings`). Ground the god tends absorbs it; an untended place fed
+ * within the window can be Rebuked, which tends it and starves the Doom there.
+ *
+ * - `DOOM_REBUKE_WINDOW_DAYS`: days a feeding stays on the record and Rebukable (the rival window).
+ * - `DOOM_FEED_ABSORB_SHARE`: share of a feeding absorbed on tended ground (1 = all of it).
+ * - `DOOM_REBUKE_TENDS_RING`: hex rings around a doom-Rebuked place whose places it also tends (0 = the place only).
+ * - `DOOM_FEED_ALERT_FROM_STAGE`: first Doom stage (1-based `currentStage`) that raises the daily alert.
+ * - `DOOM_FEED_ALERT_EVERY_DAYS`: fewest days between two alerts.
+ * - `DOOM_FEED_LIST_MAX` / `DOOM_FEED_OFTEN_COUNT`: the Doom panel's list (slice 2, THR-2256).
+ * - `LAST_STAGE_DECISION_SHARE`: the census predicate — last-stage decisions per day ÷ the rate before it.
+ */
+export const DOOM_REBUKE_WINDOW_DAYS = 3;
+export const DOOM_FEED_ABSORB_SHARE = 1.0;
+export const DOOM_REBUKE_TENDS_RING = 0;
+export const DOOM_FEED_ALERT_FROM_STAGE = 5;
+export const DOOM_FEED_ALERT_EVERY_DAYS = 1;
+export const DOOM_FEED_LIST_MAX = 3;
+export const DOOM_FEED_OFTEN_COUNT = 3;
+export const LAST_STAGE_DECISION_SHARE = 0.5;
+
+/**
  * THR-2207 — Stay the Unmaking (`divine.self.stay_the_unmaking`), the god's one
  * answer to the Doom clock. A sustained self card: an up-front price and per-tick
  * upkeep, both from the primary pool (the same purse the nudge cards draw on,

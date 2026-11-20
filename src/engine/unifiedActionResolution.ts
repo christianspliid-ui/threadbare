@@ -174,7 +174,8 @@ import { isEncounterAction } from './chapterArchive';
 import { RARITY_TO_THREAT } from './encounterCache';
 import { computeOutcomeConsequence } from './outcomeConsequences';
 import type { ComplicationContext } from '../types/complication';
-import { applyComplicationEffects } from './complicationEffects';
+import { applyComplicationEffects, type ComplicationEffectsOutcome } from './complicationEffects';
+import { doomFeedProse } from './doomFeedProse';
 import { getAgentLocationId, getAgentsAtLocation } from './graphQueries';
 import { computeStandingModifierTotal } from './resolutionModifiers';
 import { stepCastRecordFor, traceStepCastDecided } from './stepCast';
@@ -2397,15 +2398,29 @@ export function executeStepResult(
   }
 
   // Phase 3: Apply complication effects and generate complication tick event (THR-20)
+  let complicationProseShown = consequence.complication?.prose;
   if (consequence.complication) {
+    const complicationOutcome: ComplicationEffectsOutcome = {};
     const complicationEvents = applyComplicationEffects(
       consequence.complication.effects,
       complicationContext,
       state,
       tick,
       consequence.complication.name,
+      complicationOutcome,
+      consequence.complication.templateId,
     );
     events.push(...complicationEvents);
+    // THR-2255 — the Doom feeds at a place. On tended ground the complication says the
+    // ground held (its `heldProse`, picked by tick — no rng draw); on untended ground,
+    // while the god holds Rebuke, the fed line names the answer.
+    const complicationProse = complicationProseShown = doomFeedProse(
+      consequence.complication,
+      complicationOutcome,
+      state,
+      tick,
+      state.graph.getNode(action.actorId)?.name,
+    );
 
     // Emit a 'complication' tick event for narrative visibility
     const severity = consequence.complication.severity;
@@ -2420,7 +2435,7 @@ export function executeStepResult(
       id: `complication_${tick}_${action.actionId}`,
       tick,
       type: 'complication',
-      message: `${consequence.complication.name} — ${consequence.complication.prose}`,
+      message: `${consequence.complication.name} — ${complicationProse}`,
       significance: 0.3 + consequence.complication.significanceBoost,
       actorId: action.actorId,
       sphere: undefined,
@@ -2747,7 +2762,7 @@ export function executeStepResult(
       reach: (resolutionStats?.reach ?? step.reach),
       choiceId: choiceMemory?.choiceId,
       choiceText: choiceMemory?.choiceText,
-      complicationProse: consequence.complication?.prose,
+      complicationProse: complicationProseShown,
       tick,
       // THR-2180 — freeze the odds word only for a step that actually rolled.
       ...(resolutionStats && !resolutionStats.fightEnd && Number.isFinite(resolutionStats.probability)
@@ -4716,6 +4731,9 @@ export function phaseUnifiedActionProgress(
         if (rebuke) {
           rebukedPlaces = rebuke.rebukedPlaces;
           if (rebuke.rivalStates) rebukeRivalStates = rebuke.rivalStates;
+          // THR-2255: written in place, as the step path writes a feeding (`complicationEffects`),
+          // so a feeding later this tick and this hold land on one record.
+          if (rebuke.doomFeedings) state.doomFeedings = rebuke.doomFeedings;
           if (rebuke.pressure) spherePressures.push(rebuke.pressure);
           updatedAction = appendAftermathChanges(updatedAction, [rebuke.change]);
         }

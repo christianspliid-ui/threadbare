@@ -31,9 +31,14 @@ import {
   RIVAL_REBUKE_TEMPER_RISE,
   RIVAL_REBUKE_WINDOW_DAYS,
 } from '../data/rival-scheme-config';
-import { RIVAL_REBUKE_RECEIPT_TITLE, RIVAL_REBUKE_TEMPLATE_ID, rivalRebukeReply } from '../data/rival-rebuke-content';
+import { RIVAL_REBUKE_RECEIPT_TITLE, RIVAL_REBUKE_TEMPLATE_ID, doomRebukeReply, rivalRebukeReply } from '../data/rival-rebuke-content';
 import { emitTrace } from './traceBuffer';
 import { placeOf } from './dominion';
+import { doomRebukablePlaceIds, holdDoomFeeding, latestAnswerableFeeding } from './doomFeedings';
+import { getLocationNodes } from './sublocationShape';
+import { hexDistance } from '../lib/hexMath';
+import { DOOM_REBUKE_TENDS_RING } from '../data/game-config';
+import type { DoomFeeding } from '../types/gameState';
 import { getSpherePoints, rankSpherePoints } from './spherePoints';
 
 /**
@@ -85,7 +90,16 @@ export interface RebukeTarget {
   readonly pressedAt: number;
 }
 
-type RebukeReadState = Pick<GameState, 'rivalStates' | 'tick'> & Partial<Pick<GameState, 'unifiedActions'>>;
+/**
+ * THR-2255 — what a Rebuke on a place answers: a rival's landing, or the Doom's feeding
+ * there. The rival wins when both apply (its behaviour is unchanged).
+ */
+export type RebukeAnswer =
+  | ({ readonly kind: 'rival' } & RebukeTarget)
+  | { readonly kind: 'doom'; readonly fedAt: number };
+
+type RebukeReadState = Pick<GameState, 'rivalStates' | 'tick'> & Partial<Pick<GameState, 'unifiedActions'>>
+  & Partial<Pick<GameState, 'doomFeedings' | 'graph' | 'ascendantId' | 'controlEffects' | 'rebukedPlaces'>>;
 
 /**
  * The rival a Rebuke on `placeId` answers: the most recent active rival whose last
@@ -107,18 +121,53 @@ export function rebukeTargetFor(state: RebukeReadState, placeId: string | undefi
 }
 
 /**
- * Every place a Rebuke can be played on right now (the card's target filter). A place
- * with a Rebuke cast still in flight is left out: that cast already answers it.
+ * THR-2255 — what a Rebuke on `placeId` answers now: the rival target (`rebukeTargetFor`)
+ * when one applies, else the Doom when it fed there inside `DOOM_REBUKE_WINDOW_DAYS` on
+ * ground the god does not tend. Null otherwise.
  */
-export function rebukablePlaceIds(state: RebukeReadState): Set<string> {
+export function rebukeAnswerFor(state: RebukeReadState, placeId: string | undefined): RebukeAnswer | null {
+  const rival = rebukeTargetFor(state, placeId);
+  if (rival) return { kind: 'rival', ...rival };
+  if (!placeId || !doomRebukablePlaceIds(state).has(placeId)) return null;
+  const fedAt = latestAnswerableFeeding(state, placeId);
+  return fedAt === null ? null : { kind: 'doom', fedAt };
+}
+
+function rebukesInFlight(state: RebukeReadState): Set<string> {
   const inFlight = new Set<string>();
   for (const a of state.unifiedActions ?? []) {
     if (a && !a.resolved && a.templateId === RIVAL_REBUKE_TEMPLATE_ID && a.targetId) inFlight.add(a.targetId);
   }
+  return inFlight;
+}
+
+/**
+ * The places a Rebuke can answer a *rival* on right now (THR-2209's set, unchanged). The
+ * first-rebuke gift keys on this: its line is about a rival's hand.
+ */
+export function rivalRebukablePlaceIds(state: RebukeReadState): Set<string> {
+  const inFlight = rebukesInFlight(state);
   const out = new Set<string>();
   for (const rs of state.rivalStates ?? []) {
     const placeId = rs?.lastPressed?.placeId;
     if (placeId && !inFlight.has(placeId) && rebukeTargetFor(state, placeId)) out.add(placeId);
+  }
+  return out;
+}
+
+/**
+ * Every place a Rebuke can be played on right now (the card's target filter): a rival's
+ * rebukable landing, or (THR-2255) an untended place where the Doom fed inside the window.
+ * A place with a Rebuke cast still in flight is left out: that cast already answers it.
+ */
+export function rebukablePlaceIds(state: RebukeReadState): Set<string> {
+  const out = rivalRebukablePlaceIds(state);
+  if (!state.doomFeedings) return out;
+  const inFlight = rebukesInFlight(state);
+  try {
+    for (const placeId of doomRebukablePlaceIds(state)) if (!inFlight.has(placeId)) out.add(placeId);
+  } catch {
+    // fail-soft: the rival set stands alone
   }
   return out;
 }
@@ -129,6 +178,28 @@ export interface RebukeResolution {
   readonly rivalStates?: RivalState[];
   readonly pressure?: SpherePressureEvent;
   readonly change: EncounterAftermathChange;
+  /** THR-2255: the feeding record with the doom Rebuke's hold, when it answered the Doom. */
+  readonly doomFeedings?: Record<string, DoomFeeding>;
+}
+
+/**
+ * THR-2255 — the top-level places within `ring` hex rings of `place` (the place itself
+ * excluded), for a doom Rebuke's `DOOM_REBUKE_TENDS_RING`. Empty at ring 0 or with no hex.
+ */
+function placesInRing(graph: GameState['graph'], placeId: string, ring: number): string[] {
+  if (ring <= 0) return [];
+  const node = graph.getNode(placeId);
+  const col = node?.properties.hexCol as number | undefined;
+  const row = node?.properties.hexRow as number | undefined;
+  if (typeof col !== 'number' || typeof row !== 'number') return [];
+  const out: string[] = [];
+  for (const p of getLocationNodes(graph)) {
+    if (p.id === placeId) continue;
+    const c = p.properties.hexCol as number | undefined;
+    const r = p.properties.hexRow as number | undefined;
+    if (typeof c === 'number' && typeof r === 'number' && hexDistance({ col, row }, { col: c, row: r }) <= ring) out.push(p.id);
+  }
+  return out.sort();
 }
 
 /**
@@ -138,7 +209,8 @@ export interface RebukeResolution {
  * raises that rival's temper. Returns null with no place to hold.
  */
 export function resolveRebuke(
-  state: Pick<GameState, 'graph' | 'ascendantId' | 'rivalStates' | 'rivalDefinitions' | 'rebukedPlaces' | 'tick'>,
+  state: Pick<GameState, 'graph' | 'ascendantId' | 'rivalStates' | 'rivalDefinitions' | 'rebukedPlaces' | 'tick'>
+    & Partial<Pick<GameState, 'doomFeedings'>>,
   input: { actorId: string; targetId: string | undefined; outcome: StepOutcome; actionId: string },
 ): RebukeResolution | null {
   const place = placeOf(state.graph, input.targetId);
@@ -157,10 +229,21 @@ export function resolveRebuke(
   const target = rebukeTargetFor(state, place.id);
   const rival = target ? (state.rivalDefinitions ?? []).find(r => r.id === target.rivalId) : undefined;
   const placeName = place.name || undefined;
+  // THR-2255 — no rival to answer here, but the Doom fed: the Rebuke answers the Doom.
+  // The tending check was the offer's; a landing answers the feeding whatever tends it now.
+  const doomFedAt = target ? null : latestAnswerableFeeding(state, place.id);
+  const doom = doomFedAt !== null;
+  let doomFeedings: Record<string, DoomFeeding> | undefined;
+  if (doom) {
+    doomFeedings = holdDoomFeeding(state.doomFeedings, place.id, heldUntil, tick);
+    for (const near of placesInRing(state.graph, place.id, DOOM_REBUKE_TENDS_RING)) {
+      rebukedPlaces[near] = Math.max(rebukedPlaces[near] ?? 0, heldUntil);
+    }
+  }
 
   let pressure: SpherePressureEvent | undefined;
   let pushed = 0;
-  if (!crooked && target) {
+  if (!crooked && (target || doom)) {
     const primary = rankSpherePoints(getSpherePoints(state.graph.getNode(input.actorId)?.properties))[0] as SphereName | undefined;
     if (primary) {
       pushed = RIVAL_REBUKE_PUSH;
@@ -203,12 +286,15 @@ export function resolveRebuke(
     pushed,
     ...(temperBefore !== undefined ? { temperBefore } : {}),
     ...(temperAfter !== undefined ? { temperAfter } : {}),
-    summary: `Rebuke at ${placeName ?? place.id}${rival ? ` against ${rival.name}` : ''}: held until ${heldUntil}`
+    targetKind: doom ? 'doom' : 'rival',
+    summary: `Rebuke at ${placeName ?? place.id}${rival ? ` against ${rival.name}` : ''}${doom ? ' against the doom' : ''}: held until ${heldUntil}`
       + `${pushed ? `, pushed back ${pushed}` : ''}${crooked ? ' (crooked)' : ''}`,
   };
   emitTrace(trace);
 
-  const detail = rivalRebukeReply(crooked || !target ? 'crooked' : 'landed', rival?.name, placeName);
+  const detail = doom
+    ? doomRebukeReply(crooked ? 'crooked' : 'landed', placeName)
+    : rivalRebukeReply(crooked || !target ? 'crooked' : 'landed', rival?.name, placeName);
   const change: EncounterAftermathChange = {
     id: `${input.actionId}:rebuke`,
     kind: 'future_hook',
@@ -222,5 +308,11 @@ export function resolveRebuke(
     } : {}),
   };
 
-  return { rebukedPlaces, ...(rivalStates ? { rivalStates } : {}), ...(pressure ? { pressure } : {}), change };
+  return {
+    rebukedPlaces,
+    ...(rivalStates ? { rivalStates } : {}),
+    ...(pressure ? { pressure } : {}),
+    change,
+    ...(doomFeedings ? { doomFeedings } : {}),
+  };
 }
