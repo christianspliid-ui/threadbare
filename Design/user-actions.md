@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-20 12:00 local (11:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-20 12:57 local (11:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
 
@@ -58,6 +58,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-20: the screen now says which clock lands first, your Mandate or the Doom, and names the one move that changes it. It is live** ([THR-2252](https://linear.app/threadbare/issue/THR-2252)). Merged via [#2872](https://github.com/christianspliid-ui/threadbare/pull/2872).
+- **2026-11-20: a failed chapter now feeds the Doom at a place; ground you tend starves it, and Rebuke can hold a place it fed. It is live** ([THR-2255](https://linear.app/threadbare/issue/THR-2255)). Merged via [#2871](https://github.com/christianspliid-ui/threadbare/pull/2871).
 - **2026-11-20: the engine now reads the race between your Mandate and the Doom: which clock lands first at the current pace. The screen and census pieces built on it are in the build queue** ([THR-2251](https://linear.app/threadbare/issue/THR-2251)). Merged via [#2869](https://github.com/christianspliid-ui/threadbare/pull/2869).
 - **2026-11-20: a spell your god casts on a place now fills the Mandate by what it cost, credited to the sphere it was paid from. It is live** ([THR-2249](https://linear.app/threadbare/issue/THR-2249)). Merged via [#2868](https://github.com/christianspliid-ui/threadbare/pull/2868).
 - **2026-11-20: the Twilight's closing screen now says what the Mandate came to and where your hand raised it. It is live** ([THR-2250](https://linear.app/threadbare/issue/THR-2250)). Merged via [#2867](https://github.com/christianspliid-ui/threadbare/pull/2867).
@@ -66,8 +68,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-19: the design lane planned "a well-played age can be won" ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-19-thr-2245-a-well-played-age-can-be-won.md)). Spells cast on a place in the Mandate's spheres will fill the Mandate; the closing screen will say what it came to. Two build tickets can start after 22:30 local today** ([THR-2245](https://linear.app/threadbare/issue/THR-2245)).
 - **2026-11-19: a faction's sheet now names the commission it has open, so you can see it before you act. It is live** ([THR-2043](https://linear.app/threadbare/issue/THR-2043)). Merged via [#2861](https://github.com/christianspliid-ui/threadbare/pull/2861).
 - **2026-11-19: when a town rises, it now sacks its costliest building (or plunders one it did not build), and the Chronicle names it. It is live** ([THR-2033](https://linear.app/threadbare/issue/THR-2033)). Merged via [#2860](https://github.com/christianspliid-ui/threadbare/pull/2860).
-- **2026-11-18: the Flawed Steel encounter no longer calls Maren, Dalla or Torve "she" whatever they are. It is live** ([THR-2150](https://linear.app/threadbare/issue/THR-2150)). Merged via [#2859](https://github.com/christianspliid-ui/threadbare/pull/2859).
-- **2026-11-18: "What should the design lane plan next?" answered in chat: make the ending a game. The first of three tickets, [a well-played age can be won](https://linear.app/threadbare/issue/THR-2245), is with the design lane.**
 
 ---
 

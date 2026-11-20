@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-20 12:00 local (11:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-20 12:57 local (11:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -21,11 +21,15 @@
 
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
+## Decided for you
+
+- [The goal is named before it is shown](https://linear.app/threadbare/issue/THR-2262/the-goal-is-named-before-it-is-shown-aftermaths-and-cards-say-raised) — the Mandate now arrives with its first mention. The first time Kael's deeds raise the Mandate (or the Seat comes, if that is first), the Mandate row appears beside the map in that same moment, ahead of anything else waiting. Before that, cards no longer say "Counts toward your Mandate." The rest of the new panels still arrive one per chapter. Veto in chat. The build ticket waits until 23:30Z (00:30 local) for that. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-20a.md)*
+
+Say "veto <title>" to reverse any of these.
+
 ## Queue
 
-**Healthy: 7 in Ready for Dev, 1 being built.** [The engine reads the race](https://linear.app/threadbare/issue/THR-2251/the-engine-reads-the-race-a-daily-pace-sample-a-forecast-of-which) has merged ([PR #2869](https://github.com/christianspliid-ui/threadbare/pull/2869)). The builder is now on [Doom feeds at a place](https://linear.app/threadbare/issue/THR-2255/the-doom-feeds-at-a-place-ground-you-tend-starves-it-rebuke-answers-it), and its runs are active. The shelf refilled: [the player can read the race](https://linear.app/threadbare/issue/THR-2252/the-player-can-read-the-race-the-mandate-row-says-which-clock-lands) and [the census checks the race forecast](https://linear.app/threadbare/issue/THR-2253/the-agency-census-checks-the-race-forecast-it-turns-at-most-three) are ready, plus five bug fixes from playtest round 8.
-
-Playtest round 8, for your reading, not a decision: the opening holds for the seventh round. Round 7's goal wall is down, but two of three players never saw the Mandate bar ([THR-2262](https://linear.app/threadbare/issue/THR-2262), for design). The new wall is pace: chapters arrive back to back, "like clearing a notification inbox" ([THR-2263](https://linear.app/threadbare/issue/THR-2263), for design). A lost chapter still shows reputation rising ([THR-2257](https://linear.app/threadbare/issue/THR-2257)). *— from [cold playtest round 8](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-8.md)*
+**Healthy: 7 in Ready for Dev, 1 being built.** Two more pieces of the Mandate-and-Doom race are live: [the player can read the race](https://linear.app/threadbare/issue/THR-2252/the-player-can-read-the-race-the-mandate-row-says-which-clock-lands) ([PR #2872](https://github.com/christianspliid-ui/threadbare/pull/2872)) and [the Doom feeds at a place](https://linear.app/threadbare/issue/THR-2255/the-doom-feeds-at-a-place-ground-you-tend-starves-it-rebuke-answers-it) ([PR #2871](https://github.com/christianspliid-ui/threadbare/pull/2871)). The builder is now on [a lost chapter still raises reputation](https://linear.app/threadbare/issue/THR-2257/a-lost-chapter-still-raises-reputation-two-step-chapters-net-a-step-1), and its run is active. Next on the shelf: [the Doom panel shows where it feeds](https://linear.app/threadbare/issue/THR-2256/the-doom-panel-shows-where-it-feeds-a-place-list-with-rebuke-a-bar), [the census checks the race forecast](https://linear.app/threadbare/issue/THR-2253/the-agency-census-checks-the-race-forecast-it-turns-at-most-three), four playtest-round-8 bug fixes, and [the Mandate arrives with its first mention](https://linear.app/threadbare/issue/THR-2265/the-mandate-arrives-with-its-first-mention-the-rail-row-lands-with-the) (held for the veto window above).
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (31 days; last touched 8 Nov). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
@@ -33,5 +37,4 @@ Items for agents, not you:
 ## Health
 
 - Weekend quiet, not an ask: the lanes were silent for about 12 hours on Sunday 15 Nov (09:57 to 21:48). Per your ruling, weekend quiet is normal.
-- Engine speed (for the builder): tick cost 212 ms/tick steady, 36% above the 7-day median (155, 140 rows since 35e7db7d); top phase agent_decision, 638 agents. Name the merges between 35e7db7d and 4afe6241: git log --oneline --merges 35e7db7d..4afe6241. Two builder runs were working beside this measurement, so machine load may explain part of it.
-- Everything else green: the live site is up to date (only docs merged since the last publish); CI and scheduled jobs green; no PRs waiting to merge; every enabled lane on schedule. No UX contact sheet this week yet (the newest, 12 Nov, is over a week old; the next review runs Monday).
+- All green otherwise: the live site serves the latest main (eea25c04); CI, heavy tests and scheduled jobs green; no PRs waiting to merge; every enabled lane on schedule; engine speed back within range (181 ms/tick, +16% vs the 7-day median). No UX contact sheet this week yet (the newest, 12 Nov, is over a week old; the next review runs Monday).
