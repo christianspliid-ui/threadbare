@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-20 18:57 local (17:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-20 19:56 local (18:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -30,7 +30,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Thin and on hold: 2 in Ready for Dev, nothing being built.** New since last hour: [five small round-8 faults](https://linear.app/threadbare/issue/THR-2261/five-small-faults-from-cold-playtest-round-8-a-card-price-that-shows) merged ([PR #2881](https://github.com/christianspliid-ui/threadbare/pull/2881)) and are live. Both tickets on the shelf, [the Mandate arrives with its first mention](https://linear.app/threadbare/issue/THR-2265/the-mandate-arrives-with-its-first-mention-the-rail-row-lands-with-the) and [a quiet day on the map between chapters](https://linear.app/threadbare/issue/THR-2266/a-quiet-day-on-the-map-between-chapters-after-a-chapters-aftermath), wait for their veto windows (23:30Z and 02:30Z). So the builder's short runs right now are by design, not a stall.
+**Thin and on hold: 2 in Ready for Dev, nothing being built.** Nothing new since last hour. Both tickets on the shelf, [the Mandate arrives with its first mention](https://linear.app/threadbare/issue/THR-2265/the-mandate-arrives-with-its-first-mention-the-rail-row-lands-with-the) and [a quiet day on the map between chapters](https://linear.app/threadbare/issue/THR-2266/a-quiet-day-on-the-map-between-chapters-after-a-chapters-aftermath), wait for their veto windows (23:30Z and 02:30Z). So the builder's short runs right now are by design, not a stall.
 
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (31 days; last touched 8 Nov). No branch or local worktree holds work for it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
@@ -38,4 +38,4 @@ Items for agents, not you:
 ## Health
 
 - Weekend quiet, not an ask: the lanes were silent for about 12 hours on Sunday 15 Nov (09:57 to 21:48). Per your ruling, weekend quiet is normal.
-- All green otherwise: the live site serves the latest main (651e44a6); CI and scheduled jobs green; no PRs waiting to merge; every enabled lane on schedule; the worktree reaper ran at 18:40 local. Engine speed is back to normal (160 ms/tick, +2% vs the 7-day median), so last hour's spike was machine load. No UX contact sheet this week yet (the newest, 12 Nov, is over a week old; the next review runs Monday).
+- All green otherwise: the live site serves the latest main (651e44a6); CI and scheduled jobs green; no PRs waiting to merge; every enabled lane on schedule; the worktree reaper ran at 19:46 local. Engine speed is normal (145 ms/tick, 7% under the 7-day median). No UX contact sheet this week yet (the newest, 12 Nov, is over a week old; the next review runs Monday).
