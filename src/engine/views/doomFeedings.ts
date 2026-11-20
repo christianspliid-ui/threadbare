@@ -25,6 +25,9 @@ export const DOOM_FEED_WORDS = {
   sectionLabel: 'Where it feeds',
   empty: 'The doom has not fed anywhere lately.',
   once: 'fed here once',
+  /** Not in the plan's table (two words only): 2 feedings, and 3..OFTEN-1 when OFTEN_COUNT is raised — "once" would be false. */
+  twice: 'fed here twice',
+  more: 'fed here more than once',
   often: 'fed here often',
   held: 'held',
   noLongerHeld: 'no longer held',
@@ -40,7 +43,7 @@ export const DOOM_FEED_WORDS = {
   leadAnswerTend: 'Ground you tend here starves it.',
 } as const;
 
-export type DoomFeedStatus = 'once' | 'often' | 'held' | 'no_longer_held';
+export type DoomFeedStatus = 'once' | 'more' | 'often' | 'held' | 'no_longer_held';
 
 export interface DoomFeedRowView {
   readonly placeId: string;
@@ -120,14 +123,16 @@ export function selectDoomFeedings(state: DoomFeedReadState): DoomFeedingsView {
       if (isTended(index, placeId)) {
         status = 'held';
       } else if (latestAnswerableFeeding(read, placeId) !== null) {
-        status = answerableCount(read, placeId) >= DOOM_FEED_OFTEN_COUNT ? 'often' : 'once';
+        const n = answerableCount(read, placeId);
+        status = n >= DOOM_FEED_OFTEN_COUNT ? 'often' : n >= 2 ? 'more' : 'once';
       } else if (typeof f.heldUntil === 'number' && f.heldUntil <= state.tick && state.tick - f.heldUntil <= windowTicks) {
         status = 'no_longer_held';
         at = f.heldUntil;
       }
       if (!status) continue;
       let rebukable = false;
-      if (holdsRebuke && (status === 'once' || status === 'often')) {
+      const feeding = status === 'once' || status === 'more' || status === 'often';
+      if (holdsRebuke && feeding) {
         try {
           // The card's own target set (it drops a place with a Rebuke still in flight), so
           // the button never promises a card the Act row does not offer (review gate).
@@ -138,6 +143,7 @@ export function selectDoomFeedings(state: DoomFeedReadState): DoomFeedingsView {
         }
       }
       const word = status === 'once' ? DOOM_FEED_WORDS.once
+        : status === 'more' ? (answerableCount(read, placeId) === 2 ? DOOM_FEED_WORDS.twice : DOOM_FEED_WORDS.more)
         : status === 'often' ? DOOM_FEED_WORDS.often
           : status === 'held' ? DOOM_FEED_WORDS.held
             : DOOM_FEED_WORDS.noLongerHeld;
@@ -145,7 +151,7 @@ export function selectDoomFeedings(state: DoomFeedReadState): DoomFeedingsView {
     }
     all.sort((a, b) => b.at - a.at || a.placeId.localeCompare(b.placeId));
     const fed = all
-      .filter(r => r.status === 'once' || r.status === 'often')
+      .filter(r => r.status === 'once' || r.status === 'more' || r.status === 'often')
       .map(r => ({ placeId: r.placeId, placeName: r.placeName }));
     return { rows: all.slice(0, DOOM_FEED_LIST_MAX), total: all.length, fed, holdsRebuke };
   } catch {

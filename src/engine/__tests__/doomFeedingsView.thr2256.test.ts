@@ -86,6 +86,12 @@ describe('THR-2256 — selectDoomFeedings (the Where it feeds list)', () => {
     expect(view.rows.every(r => r.rebukable)).toBe(true);
   });
 
+  it('two feedings read "fed here twice", never "once" (review gate)', () => {
+    const view = selectDoomFeedings(makeState({ t1: fed([NOW - 9, NOW - 5]) }));
+    expect(view.rows[0]).toMatchObject({ status: 'more', word: DOOM_FEED_WORDS.twice, rebukable: true });
+    expect(view.fed).toHaveLength(1);
+  });
+
   it('a place with a Rebuke still in flight offers no Rebuke on the panel or the lead (the card is not offered)', () => {
     const inFlight = { unifiedActions: [{ templateId: RIVAL_REBUKE_TEMPLATE_ID, targetId: 't1', resolved: false }] } as unknown as Partial<GameState>;
     const state = makeState({ t1: fed([NOW - 5]) }, inFlight);
