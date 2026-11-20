@@ -60,7 +60,7 @@ import { mandateTrendOf } from '../../mandateLedger';
 import { sphereWord } from '../../../data/essence-format';
 import type { RaceState } from '../../../types/mandate';
 import { raceLever, shownRaceState } from '../../raceForecast';
-import { raceChapterLeverRuns, raceForecastLine, raceRailWord, RACE_LEVER_STAY, type RaceLeverRun } from '../../../data/race-content';
+import { raceChapterLeverRuns, racePlaceLeverRuns, raceForecastLine, raceRailWord, RACE_LEVER_STAY, type RaceLeverRun } from '../../../data/race-content';
 import { DOOM_STAY_ACTIVE_LINE, DOOM_STAY_BUTTON } from '../../../data/doom-stay-content';
 import { godsPeopleIds } from '../knowledge';
 import { REACH_SIGNATURE_CONTENT_TEMPLATES } from '../../../data/reach-signature-content';
@@ -458,6 +458,8 @@ export interface RaceView {
  */
 export type RaceLeverView =
   | { kind: 'chapter'; runs: RaceLeverRun[]; line: string; mortalId: string; sphere: SphereName }
+  /** THR-2254 — tend the god's strongest place in the short sphere (an `EntityLink`, Law 21). */
+  | { kind: 'place'; runs: RaceLeverRun[]; line: string; placeId: string; sphere: SphereName }
   | { kind: 'stay'; line: string; button?: string };
 
 /** THR-2252 — the shown race as words, or `null` while hidden or unreadable (fail-soft). */
@@ -478,6 +480,12 @@ export function selectRaceLever(gameState: GameState): RaceLeverView | null {
     if (!lever) return null;
     if (lever.kind === 'stay') {
       return lever.held ? { kind: 'stay', line: DOOM_STAY_ACTIVE_LINE } : { kind: 'stay', line: RACE_LEVER_STAY, button: DOOM_STAY_BUTTON };
+    }
+    if (lever.kind === 'place') {
+      let placeName: string | undefined;
+      try { placeName = gameState.graph.getNode(lever.placeId)?.name; } catch { placeName = undefined; }
+      const placeRuns = racePlaceLeverRuns(sphereWord(lever.sphere), placeName);
+      return { kind: 'place', runs: placeRuns, line: placeRuns.map(r => r.text).join(''), placeId: lever.placeId, sphere: lever.sphere };
     }
     let name: string | undefined;
     try { name = gameState.graph.getNode(lever.mortalId)?.name; } catch { name = undefined; }

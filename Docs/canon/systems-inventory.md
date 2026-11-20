@@ -407,7 +407,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `prose` (5) | `proseComposer.ts`, `proseEnrichment.ts`, `proseGenerator.ts`, `proseResolvers.ts`, `proseSelection.ts` | `Phase 5`, `TB-035`, `THR-1522`, `THR-1545`, `THR-1656`, `THR-1810`, `THR-1982`, `THR-456` |
 | `quest` (1) | `questVisibility.ts` | `TB-061` |
 | `quintessence` (1) | `quintessenceActions.ts` | `Phase 2`, `Phase 3` |
-| `race` (1) | `raceForecast.ts` | `THR-2251` |
+| `race` (1) | `raceForecast.ts` | `THR-2251`, `THR-2254` |
 | `rarity` (2) | `rarity.ts`, `raritySeeding.ts` | — |
 | `reach` (2) | `reachPractice.ts`, `reachSignatureMarkers.ts` | `THR-1811`, `THR-550`, `THR-551`, `THR-552`, `THR-554`, `THR-613` |
 | `realm` (4) | `realmBorderMap.ts`, `realmHolder.ts`, `realmProjection.ts`, `realmSeat.ts` | `THR-1155`, `THR-1955` |

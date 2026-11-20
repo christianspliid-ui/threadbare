@@ -12,7 +12,7 @@ import { DoomClockDetail } from '../DoomClockDetail';
 import type { MandateRowView, RaceLeverView, RaceView } from '../../../engine/views/subjects/godSheet';
 import type { DoomClockDefinition, DoomClockState } from '../../../types/doomClock';
 import type { MandateDefinition, MandateState } from '../../../types/mandate';
-import { RACE_FORECAST_LINES, RACE_LEVER_STAY, raceChapterLeverRuns } from '../../../data/race-content';
+import { RACE_FORECAST_LINES, RACE_LEVER_STAY, raceChapterLeverRuns, racePlaceLeverRuns } from '../../../data/race-content';
 
 const race: RaceView = { state: 'doom_first', sentence: RACE_FORECAST_LINES.doom_first, word: 'Doom lands first' };
 const runs = raceChapterLeverRuns('Order', 'Kael Thornweaver');
@@ -72,6 +72,19 @@ describe('THR-2252 — MandateDetail', () => {
     expect(l).toBeGreaterThan(f);
     expect(d).toBeGreaterThan(l);
     expect(baseElement.querySelector('[data-tooltip-id="sphere.order"]')).toBeTruthy();
+  });
+
+  it('THR-2254 — shows the place lever with the place as a link and the sphere hover', () => {
+    const placeRuns = racePlaceLeverRuns('Order', 'Ashford');
+    const place: RaceLeverView = { kind: 'place', runs: placeRuns, line: placeRuns.map(r => r.text).join(''), placeId: 'shrine_a', sphere: 'order' };
+    const { baseElement } = render(
+      <MandateDetail open onClose={() => {}} definition={mandateDef} state={mandateState} race={race} lever={place} />,
+    );
+    const el = screen.getByTestId('race-lever');
+    expect(el.getAttribute('data-lever-kind')).toBe('place');
+    expect(el.textContent).toBe('Tend Ashford in Order to raise your Mandate.');
+    expect(baseElement.querySelector('[data-tooltip-id="sphere.order"]')).toBeTruthy();
+    expect(screen.getByText('Ashford')).toBeTruthy();
   });
 
   it('wires the Stay lever button to onStay', () => {
