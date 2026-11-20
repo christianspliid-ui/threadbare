@@ -200,7 +200,19 @@ export function deriveContributionLines(
   const lines: DerivedFactorLine[] = [];
   const seen = new Set<string>();
 
+  // THR-2258 — one source, one line. An attachment with two effects on the step's
+  // reach (a passive and a conditional) contributes twice under one id; summed here,
+  // it reads once instead of as two identical lines. First-seen order is kept.
+  const merged = new Map<string, NamedModifierContribution>();
   for (const contribution of contributions) {
+    const key = `${contribution.kind}:${contribution.sourceId}`;
+    const prior = merged.get(key);
+    merged.set(key, prior
+      ? { ...prior, value: (Number.isFinite(prior.value) ? prior.value : 0) + (Number.isFinite(contribution.value) ? contribution.value : 0) }
+      : contribution);
+  }
+
+  for (const contribution of merged.values()) {
     const { kind, sourceId, sourceName, value } = contribution;
     if (!Number.isFinite(value) || Math.abs(value) < FACTOR_LINE_EPSILON) continue;
 
