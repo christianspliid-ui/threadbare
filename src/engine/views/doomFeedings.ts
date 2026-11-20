@@ -38,7 +38,10 @@ export const DOOM_FEED_WORDS = {
   otherOne: 'one other place',
   otherMany: '{count} other places',
   /** The place page lead. `{name}` is the mortal who failed. */
-  leadHeadline: 'The doom fed here when {name} failed.',
+  /** The headline names no one (a headline is a plain string); the name links in the body (Law 21). */
+  leadHeadline: 'The doom fed here.',
+  /** Split at `{name}` so the mortal's name renders as a link. */
+  leadWho: 'It fed when {name} failed.',
   leadAnswerRebuke: 'Rebuke it here, or tend it.',
   leadAnswerTend: 'Ground you tend here starves it.',
 } as const;
@@ -177,7 +180,15 @@ export function doomFeedHoverLine(view: DoomFeedingsView): string | null {
  * unless the Doom fed here inside the window on ground the god does not tend, and null when
  * a rival's landing here is the Rebuke's target (the rival lead wins, as Rebuke's target does).
  */
-export function doomFedLead(state: DoomFeedReadState, placeId: string): { headline: string; answer: string } | null {
+export interface DoomFedLead {
+  readonly headline: string;
+  /** "It fed when {name} failed." — `actor` is the mortal to link, null when unknown. */
+  readonly who: string;
+  readonly actor: { id: string; name: string } | null;
+  readonly answer: string;
+}
+
+export function doomFedLead(state: DoomFeedReadState, placeId: string): DoomFedLead | null {
   try {
     const f = state.doomFeedings?.[placeId];
     if (!f || latestAnswerableFeeding(state, placeId) === null) return null;
@@ -185,12 +196,15 @@ export function doomFedLead(state: DoomFeedReadState, placeId: string): { headli
     const answer = rebukeAnswerFor(state as RebukeRead, placeId);
     if (answer?.kind === 'rival') return null;
     const actorName = f.lastActorId ? state.graph?.getNode(f.lastActorId)?.name : undefined;
-    const name = actorName && actorName.trim() ? actorName : DOOM_FEED_NAME_FALLBACK.toLowerCase();
+    const known = Boolean(f.lastActorId && actorName && actorName.trim());
+    const name = known ? (actorName as string) : DOOM_FEED_NAME_FALLBACK.toLowerCase();
     const holds = godHoldsRebuke({ unlockedActionIds: state.unlockedActionIds }) && answer?.kind === 'doom'
       && rebukablePlaceIds(state as RebukeRead).has(placeId); // in flight → the card is not offered
 
     return {
-      headline: DOOM_FEED_WORDS.leadHeadline.replace('{name}', name),
+      headline: DOOM_FEED_WORDS.leadHeadline,
+      who: DOOM_FEED_WORDS.leadWho.replace('{name}', name),
+      actor: known ? { id: f.lastActorId, name: actorName as string } : null,
       answer: holds ? DOOM_FEED_WORDS.leadAnswerRebuke : DOOM_FEED_WORDS.leadAnswerTend,
     };
   } catch {

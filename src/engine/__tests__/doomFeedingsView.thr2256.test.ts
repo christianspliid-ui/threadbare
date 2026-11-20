@@ -149,11 +149,15 @@ describe('THR-2256 — the Doom bar hover line', () => {
 describe('THR-2256 — the place page doom lead', () => {
   it('reads the Rebuke answer while the card is held, the tending answer otherwise', () => {
     expect(doomFedLead(makeState({ t1: fed([NOW - 5]) }), 't1')).toEqual({
-      headline: 'The doom fed here when Mira failed.',
+      headline: 'The doom fed here.',
+      who: 'It fed when Mira failed.',
+      actor: { id: 'agent.mira', name: 'Mira' },
       answer: 'Rebuke it here, or tend it.',
     });
     expect(doomFedLead(makeState({ t1: fed([NOW - 5]) }, { unlockedActionIds: [] }), 't1')).toEqual({
-      headline: 'The doom fed here when Mira failed.',
+      headline: 'The doom fed here.',
+      who: 'It fed when Mira failed.',
+      actor: { id: 'agent.mira', name: 'Mira' },
       answer: 'Ground you tend here starves it.',
     });
   });
@@ -170,7 +174,9 @@ describe('THR-2256 — the place page doom lead', () => {
     const node = state.graph.getNode('t1')!;
     const section = PLACE_ROW_RESOLVERS.doom_fed({ state, graph: state.graph, nodeId: node.id } as never);
     expect(section).not.toBeNull();
-    expect(JSON.stringify(section)).toContain('The doom fed here when Mira failed.');
+    expect(JSON.stringify(section)).toContain('The doom fed here.');
+    // Law 21: the mortal is a link in the parts.
+    expect((section as { parts?: unknown[] }).parts).toContainEqual({ text: 'Mira', ref: { kind: 'agent', id: 'agent.mira', name: 'Mira' } });
     expect(JSON.stringify(section)).toContain('Rebuke it here, or tend it.');
   });
 });

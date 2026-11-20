@@ -605,7 +605,12 @@ const doomFed: SectionResolver = (ctx) => {
   if (!p) return null;
   const lead = doomFedLead(p.state, p.node.id);
   if (!lead) return null;
-  return sentenceSection('doom_fed', SUBJECT_ROW_LABELS.doomFed, [[lead.answer]], 'doomFeedings.doomFedLead', {
+  // Law 21: the mortal who failed is a link, so the name lives in the parts, not the headline.
+  const at = lead.actor ? lead.who.indexOf(lead.actor.name) : -1;
+  const who: SentencePart[] = lead.actor && at >= 0
+    ? [lead.who.slice(0, at), { text: lead.actor.name, ref: { kind: 'agent', id: lead.actor.id, name: lead.actor.name } }, lead.who.slice(at + lead.actor.name.length)]
+    : [lead.who];
+  return sentenceSection('doom_fed', SUBJECT_ROW_LABELS.doomFed, [who, [lead.answer]], 'doomFeedings.doomFedLead', {
     labelTooltipId: 'ui.doom.fed_row',
     icon: 'doom',
     highlight: { icon: 'doom', headline: lead.headline },
