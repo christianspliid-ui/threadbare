@@ -23,6 +23,25 @@ export const RIVAL_REBUKE_REPLY = {
   crooked: 'The place holds against {rival} for a few days, but what it took stays taken.',
 } as const;
 
+/**
+ * THR-2255 — a Rebuke on a place where the Doom fed (no rival is answered). `{place}`
+ * is the place. `landed`: tended and the ground leans back. `crooked` (Law 26): tended, nothing restored.
+ */
+export const DOOM_REBUKE_REPLY = {
+  landed: 'You rebuked the doom at {place}. Failures there feed it nothing for a few days, and the ground leans back toward you.',
+  crooked: 'You rebuked the doom at {place}, but crookedly. Failures there feed it nothing for a few days; the ground did not lean back.',
+} as const;
+
+/** THR-2255 — the Rebuke card's face on a doom-fed place (wired to the card in slice 2, THR-2256). */
+export const DOOM_REBUKE_CARD_FACE = 'The doom fed here. Rebuke it, and failures here feed it nothing for a while.';
+
+/** Fill a doom Rebuke reply's place slot; an empty slot reads its fallback. */
+export function doomRebukeReply(kind: keyof typeof DOOM_REBUKE_REPLY, placeName: string | undefined): string {
+  const place = placeName && placeName.trim() ? placeName : RIVAL_REBUKE_PLACE_FALLBACK;
+  const line = DOOM_REBUKE_REPLY[kind].replace('{place}', place);
+  return line.charAt(0).toUpperCase() + line.slice(1);
+}
+
 /** Empty-slot fallbacks (PC-3: never a raw slot). */
 export const RIVAL_REBUKE_RIVAL_FALLBACK = 'a rival god';
 export const RIVAL_REBUKE_PLACE_FALLBACK = 'the place';

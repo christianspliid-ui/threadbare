@@ -44,7 +44,7 @@ import type { ChronicleEntry } from '../types/narrative';
 import type { SphereName } from '../types/index';
 import { computeReachShare, computeTier } from './domainCapability';
 import { rankedAffinityReaches } from './reachPractice';
-import { rebukablePlaceIds } from './rivalRebuke';
+import { rivalRebukablePlaceIds } from './rivalRebuke';
 import { emitTrace } from './traceBuffer';
 import {
   DEEPENING_BEAT_MAX_PER_TICK,
@@ -554,7 +554,8 @@ export function phaseAscendantProgression(state: GameState): Partial<GameState> 
     const landed = !!doom && resolveDoomWokeAtTick(doom) !== null
       // Only while some place is rebukable (window, active, unabsorbed, unanswered), so the
       // gift's "go and rebuke it there" always has a place to go (review gate round 2).
-      && rebukablePlaceIds(state).size > 0;
+      // THR-2255: rival landings only — a Doom feeding is not "a rival's hand".
+      && rivalRebukablePlaceIds(state).size > 0;
     if (landed) {
       pending = {
         beatId: MILESTONE_FIRST_REBUKE_BEAT_ID,

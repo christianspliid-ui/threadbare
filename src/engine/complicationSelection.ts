@@ -371,5 +371,6 @@ export function selectComplication(
     narrativeTag: `complication_${selected.template.category}`,
     significanceBoost: selected.template.significanceBoost,
     name: selected.template.name,
+    ...(selected.template.heldProse?.length ? { heldProse: selected.template.heldProse } : {}),
   };
 }

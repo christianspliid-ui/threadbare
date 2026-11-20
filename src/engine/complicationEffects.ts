@@ -12,6 +12,8 @@
  * | Witness/faction target not found      | Skip edge/trust effects, continue     |
  * | Attachment template not found         | Skip attachment effect, continue      |
  * | doom state absent                     | Skip doom_micro_tick, continue        |
+ * | doom_micro_tick with no place         | Push as before, no record (THR-2255)  |
+ * | tending index throws                  | Push as before (THR-2255)             |
  * | Partial progress > 1                  | Clamp to 1.0                          |
  */
 
@@ -20,6 +22,19 @@ import type { GameState, TickEvent } from '../types/gameState';
 import { IDENTITY_TRUST_DECAY_MODIFIER } from '../types/doomIdentity';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import { getFactionMembershipEdges } from './graphQueries';
+import { isTended, placeOf } from './dominion';
+import type { TendedBy } from './dominion';
+import { doomTendingIndex, recordDoomFeeding } from './doomFeedings';
+import { emitTrace } from './traceBuffer';
+import { DOOM_FEED_ABSORB_SHARE } from '../data/game-config';
+
+/**
+ * THR-2255 — what a `doom_micro_tick` did, for the caller to choose the line: `fed`
+ * (recorded at the place) or `held` (the god tends it; the doom fed nothing there).
+ */
+export interface ComplicationEffectsOutcome {
+  doomFeed?: { kind: 'fed' | 'held'; placeId: string; placeName?: string };
+}
 
 // ─── Effect application ───────────────────────────────────────────────────────
 
@@ -34,12 +49,14 @@ export function applyComplicationEffects(
   state: GameState,
   tick: number,
   complicationName: string,
+  outcome?: ComplicationEffectsOutcome,
+  complicationId?: string,
 ): TickEvent[] {
   const events: TickEvent[] = [];
 
   for (const effect of effects) {
     try {
-      applyEffect(effect, ctx, state, tick, complicationName, events);
+      applyEffect(effect, ctx, state, tick, complicationName, events, outcome, complicationId);
     } catch {
       // Fail-soft: each effect is independent; one failure doesn't block others
     }
@@ -55,6 +72,8 @@ function applyEffect(
   tick: number,
   complicationName: string,
   events: TickEvent[],
+  outcome?: ComplicationEffectsOutcome,
+  complicationId?: string,
 ): void {
   // Actor-independent effects first — these must not be gated by actorNode presence
   if (effect.type === 'sphere_pressure') {
@@ -178,11 +197,54 @@ function applyEffect(
 
     case 'doom_micro_tick': {
       if (!state.doomClock) break;
-      // Advance doom clock by a fractional tick amount
-      state.doomClock = {
-        ...state.doomClock,
-        currentTick: state.doomClock.currentTick + effect.magnitude,
-      };
+      // THR-2255 — the Doom feeds at a place: the failure's top-level place. Ground the
+      // god tends absorbs the push (DOOM_FEED_ABSORB_SHARE); untended ground records it.
+      // No place → push as before with no record (fail-soft).
+      const place = placeOf(state.graph, ctx.locationId ?? undefined);
+      let tendedBy: TendedBy[] | null = null;
+      if (place) {
+        try {
+          tendedBy = isTended(doomTendingIndex(state), place.id);
+        } catch {
+          tendedBy = null; // fail-soft: push as before
+        }
+      }
+      const pushed = tendedBy ? effect.magnitude * (1 - DOOM_FEED_ABSORB_SHARE) : effect.magnitude;
+      if (pushed > 0) {
+        // Advance doom clock by a fractional tick amount
+        state.doomClock = {
+          ...state.doomClock,
+          currentTick: state.doomClock.currentTick + pushed,
+        };
+      }
+      if (!place) break;
+      const actorId = ctx.action.actorId;
+      const who = actorNode.name ?? actorId;
+      const where = place.name ?? place.id;
+      if (tendedBy) {
+        emitTrace({
+          category: 'doom.feed_absorbed',
+          tick,
+          placeId: place.id,
+          actorId,
+          magnitude: effect.magnitude - pushed,
+          tendedBy,
+          summary: `doom.feed_absorbed: ${who} failed at ${where}, tended (${tendedBy.join(', ')}) — absorbed ${(effect.magnitude - pushed).toFixed(2)}`,
+        });
+        if (outcome) outcome.doomFeed = { kind: 'held', placeId: place.id, ...(place.name ? { placeName: place.name } : {}) };
+      } else {
+        state.doomFeedings = recordDoomFeeding(state.doomFeedings, place.id, actorId, tick);
+        emitTrace({
+          category: 'doom.fed',
+          tick,
+          placeId: place.id,
+          actorId,
+          complicationId: complicationId ?? complicationName,
+          magnitude: effect.magnitude,
+          summary: `doom.fed: ${who} failed at ${where} — the doom fed ${effect.magnitude.toFixed(2)}`,
+        });
+        if (outcome) outcome.doomFeed = { kind: 'fed', placeId: place.id, ...(place.name ? { placeName: place.name } : {}) };
+      }
       break;
     }
 
