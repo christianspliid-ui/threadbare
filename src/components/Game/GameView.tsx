@@ -401,7 +401,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // ── Use simulation hook ──
   const {
     gameState, setGameState, tiles, riverPaths, lakeIds, areaProjection, realmProjection,
-    running, speed, harvestResult, doTick, runTicksSync, getLiveState, handleWakeNewWorld,
+    running, speed, harvestResult, doTick, runTicksSync, getLiveState, commitLiveState, handleWakeNewWorld,
     concludedRun, baseAccount, endAgeNow, previewRunEnd,
     twilightBeats, completeTwilightNow, beginTwilightNow,
     handleToggleRunning, setRunning, setSpeed, seasonName, year, maxEssence, COLS, ROWS,
@@ -4458,7 +4458,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // `?testavatar` URL levers live in `useGameDebugLevers`. Called last so every value
   // it reads is already defined; each lever keeps the deps it had inline.
   useGameDebugLevers({
-    gameState, setGameState, runtime, tiles, hexMapRef,
+    gameState, setGameState, commitLiveState, runtime, tiles, hexMapRef,
     handleAgentSelect, openAgentProfileForId: openAgentSheetForId, fogDisabled, setFogDisabled, _gameStateRef,
     viewSource, avatarNodeId, threadedAgentIdsForActivity, activityActionsVersion,
     needsYouSources, needsYouStamp: needsYouStamp(needsYouSources),

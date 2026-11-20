@@ -237,6 +237,9 @@ if (import.meta.env.DEV) {
   let _omniscienceToggle: ((enabled?: boolean) => boolean) | null = null;
   // AscendantBar debug: GameView registers a callback to set ascendant quintessence
   let _setQuintessenceCb: ((ratio: number) => void) | null = null;
+  let _setMandateProgressCb:
+    | ((fraction: number, heldAt?: string) => import('./debug-bridge.d').DebugSetMandateProgressResult)
+    | null = null;
 
   /** THR-1414 — stage a premonition from the debug bridge. Registered by GameView. */
   let _forcePremonitionCb:
@@ -1799,6 +1802,14 @@ if (import.meta.env.DEV) {
       _setQuintessenceCb?.(ratio);
     },
     _registerSetQuintessence: (fn: (ratio: number) => void) => { _setQuintessenceCb = fn; },
+
+    // ── THR-2250 — the Mandate at a share of its targets (debug-only) ─────
+    setMandateProgress: async (fraction: number, heldAt?: string) => {
+      if (!_setMandateProgressCb) return { error: 'Game not loaded' };
+      const clamped = Math.max(0, Math.min(1, Number.isFinite(fraction) ? fraction : 0));
+      return _setMandateProgressCb(clamped, heldAt);
+    },
+    _registerSetMandateProgress: (fn) => { _setMandateProgressCb = fn; },
 
     // ── Spawn / world-spawn commands (delegated to encounter bridge) ──────
     spawnEncounter: (agentQuery: string, templateId: string, options?: Record<string, unknown>) =>

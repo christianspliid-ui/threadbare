@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 122 |
-| **Total** | **368** |
+| 🔵 UNVERIFIED-OK | 123 |
+| **Total** | **369** |
 
 ## Contracts by producing subsystem
 
@@ -87,6 +87,7 @@ remediation ticket or the build fails.
 | `delivery-beat-plays-its-encounter` | A vision you witness is a scene you see. A delivery beat ("A Vision — …") wraps a branching encounter; pressing Witness mints that encounter on The First, where The First stands, and opens it in the encounter veil — so its own aftermath runs against the mortal the scene is about (THR-1650). The Director offers only a vision that can bind The First (one is bonded, stands somewhere, and stands at the kind of place the encounter is set in); one that cannot is withheld and traced `beat.delivery_skipped`, never shown and then failed. **Retired:** `resolvePendingBeat` no longer runs a delivery template's fallback reactions — it used to run them against the god, writing a mortal scene's consequences on the wrong actor (the THR-1526 untrue-scene class). | function: `prepareDeliveryEncounter`, `bindDeliverySubject` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `hunger-resonance-weighs-the-meeting-deal` | The Hunger you chose in remembrance decides which formative tests your First is put through — the god you said you were shows up in what the world asks of them, instead of only in how the prose is framed. | function: `buildLensFromIdentity`, `scoreDilemmaResonance`, `selectDilemmasScored` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `mandate-completion-ends-age` | Finishing the Mandate ends the age in triumph, at once, instead of play running on until doom ends it anyway. | state-field: `mandateState` | Doom Clock & Journey | 🔵 UNVERIFIED-OK | — |
+| `mandate-ledger-reckons-twilight` | The end of the age says what the Mandate came to: a fulfilled one names the place or mortal where the god's hand raised it most, and a Doom ending says in a word how near it stood. | state-field: `mandateState` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `milestone-grants-unlock-repertoire-cards` | Earning something as a god changes what you can play as a god — a milestone hands you a new way to use a power you already had, not a bigger number on the one you have. | function: `buildRepertoire`, `isMemberUnlocked`, `memberAccess` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `offering-take-up-unlocks-card` | The world offers three cards each day; the card the god takes up is in its hand. `resolvePendingBeat` (offering branch) adds the chosen card to `unlockedActionIds` — the one list the drawer reads through `isActionRevealed` — and pays the price into `offeringSpentBySphere`, never the earned counter (THR-1811). A choice not offered, or no longer affordable, resolves as passed and moves nothing. | function: `unlockedActionIds` | Essence & Divine Economy | 🟢 LIVE | — |
 | `player-acts-pace-spine-gifts` | The god's gifts arrive between the player's own acts: after one opening gift resolves, the next waits until the player has cast, moved the avatar or followed a mortal — or until an idle fallback has run — so the opening never stacks popups before the player has acted. | state-field: `playerActCount` | Ascendant Beats & Progression | 🔵 UNVERIFIED-OK | — |
@@ -3042,10 +3043,21 @@ exit
 - **Intent:** Finishing the Mandate ends the age in triumph, at once, instead of play running on until doom ends it anyway.
 - **Producer → Consumer:** Ascendant Beats & Progression → Doom Clock & Journey
 - **UL terms:** *Mandate*, *Doom Clock*, *Run*
-- **Production hits:** 17 total — 1 write, 1 read, 15 unclassified
+- **Production hits:** 19 total — 1 write, 1 read, 17 unclassified
 - **Write sites:** `src/engine/phaseMandate.ts`
 - **Read sites:** `src/engine/orchestrator.ts`
-- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/hosts/DialogHost.tsx`, `src/data/ia-manifest.ts`, `src/debug-bridge.ts`, `src/engine/cycleEnd.ts` +10 more
+- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/Game/hosts/DialogHost.tsx`, `src/data/ia-manifest.ts`, `src/data/twilight-content.ts` +12 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `mandate-ledger-reckons-twilight` — 🔵 UNVERIFIED-OK
+
+- **Intent:** The end of the age says what the Mandate came to: a fulfilled one names the place or mortal where the god's hand raised it most, and a Doom ending says in a word how near it stood.
+- **Producer → Consumer:** Ascendant Beats & Progression → Attention, Chronicle & Narrative
+- **UL terms:** *Mandate*, *Doom Clock*, *Run*
+- **Production hits:** 19 total — 1 write, 1 read, 17 unclassified
+- **Write sites:** `src/engine/phaseMandate.ts`
+- **Read sites:** `src/engine/twilight.ts`
+- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/Game/hosts/DialogHost.tsx`, `src/data/ia-manifest.ts`, `src/data/twilight-content.ts` +12 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mandate-milestone-prose-narrates-transitions` — 🟢 LIVE
@@ -3333,10 +3345,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **UL terms:** *Undertaking*
 - **Module:** `src/engine/naming/workNames.ts`
-- **Production hits:** 33 total — 3 write, 1 read, 29 unclassified
+- **Production hits:** 34 total — 3 write, 1 read, 30 unclassified
 - **Write sites:** `src/engine/binding/creationEffects.ts`, `src/engine/naming/workNames.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/groups/groupNames.ts`
-- **Other hits:** `src/data/ascendant-bar-content.ts`, `src/data/backstory-content.ts`, `src/data/complication-templates.ts`, `src/data/content-eval/nudgeAuditDetectors.ts`, `src/data/first-use-captions.ts` +24 more
+- **Other hits:** `src/data/ascendant-bar-content.ts`, `src/data/backstory-content.ts`, `src/data/complication-templates.ts`, `src/data/content-eval/nudgeAuditDetectors.ts`, `src/data/first-use-captions.ts` +25 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 4. `groupNames.ts` becomes the first caller: its local `hashSeed` / `pick` / `possessive` are deleted and imported from the shared module. The group *grammar* is deliberately NOT folded in — folding companies onto the work patterns would have re-rolled every company name in every existing world, a player-facing rename with no ticket behind it, so this row guards shared primitives and two grammars rather than one namer with two callers. Pinned by `groups/__tests__/groupNameStability.test.ts`, a DIFFERENTIAL against a byte-copy of origin/main's implementation (a captured-literal golden would agree with itself the moment anyone regenerated it) across 17 contexts chosen to hit every pattern fork; falsified twice — stubbing `possessive` to always add `'s` went 2-of-20 red, and offsetting `pickFrom` by one went 12-of-20 red. The possessive rule reaches the strategic packs for the first time: `renderNameTemplate` matches `{actor}'s` as a unit so all seven shipped possessive templates render "Silas' Workshop" instead of "Silas's Workshop", and the two legacy hand-rolled name strings in `executeInstantMutation` now share it (falsified 9-of-22 red by restoring raw substitution). Christening is live: 93 firings in a 150-tick seed-42 run, producing "The Deepset Granary of Thornhaven", "Miriel's Surveyed Research Circle", "Elior's Auspice Shrine". Two defects the live run caught and unit tests could not: a concatenating `{root}{noun}` pattern produced "The StandingHouse" (removed; a legibility guard over a 200-name sample now falsifies at 55 offenders), and christening initially replaced a specific noun with a generic family one ("Rill's Research Circle at Ardenmor Keep" became "The Ardenmor Keep House") because `createSublocation` stamps `sublocationTypeId`, not `locationSubtype`. Names outlive owners: `transferHolding` never renames, `razeHolding` retires the name into the site's `nameEchoes`, and `refreshHoldingFaceNames` closes the stale-face gap slice 3's checkpoint predicted. The christened name rides the existing completion trace rather than an emission of its own — a separate trace measurably evicted `decision_board_comparison` entries from the per-tick ring buffer and reddened `decisionBoardLiveness`'s frozen-desire pin on a diff that authored no `motivations`. Full suite 18683 green ×2; ratchet 2973 unchanged; 30-tick seed-42 smoke reached tick 30, 377 agents.
 
 ### `opened-markets-draw-a-thieves-guild` — 🟢 LIVE
@@ -4555,10 +4567,10 @@ exit
 - **Intent:** What the player sees of a mortal’s work, on three surfaces that never list capability on a person: the Undertakings codex page (one card per live cell, generated from the registry and the grid’s dispositions — who tends to do it derived under the division rule), the roster’s doing-line (what each mortal is in the middle of, in words), and the ledger that names each finished deed by verb and object with the object linked.
 - **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
 - **Module:** `src/engine/undertakingDeed.ts`
-- **Production hits:** 57 total — 5 write, 5 read, 47 unclassified
+- **Production hits:** 59 total — 5 write, 5 read, 49 unclassified
 - **Write sites:** `src/data/division-rule-tables.ts`, `src/data/undertaking-verb-prose.ts`, `src/engine/strategicActionLifecycle.ts`, `src/engine/strategicPresentation.ts`, `src/engine/undertakingDeed.ts`
 - **Read sites:** `src/components/Codex/codexRegistry.ts`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/ThreadsPanel.tsx`, `src/debug-bridge.ts`, `src/engine/agentArc.ts`
-- **Other hits:** `src/components/Game/inspector/lab/stressFixture.ts`, `src/components/Game/inspector/SubjectHeader.tsx`, `src/components/Game/MandateDetail.tsx`, `src/data/ascendant-bar-content.ts`, `src/data/builders-fellowship-encounter-content.ts` +42 more
+- **Other hits:** `src/components/Game/inspector/lab/stressFixture.ts`, `src/components/Game/inspector/SubjectHeader.tsx`, `src/components/Game/MandateDetail.tsx`, `src/data/ascendant-bar-content.ts`, `src/data/builders-fellowship-encounter-content.ts` +44 more
 - **Verdict:** Verified 2026-09-07: THR-1434. The codex builds one card per live cell from `UNDERTAKING_CELL_TEMPLATES` and `LIVE_CELL_NOTES` (49 = 49 on the shipped grid, `validateUndertakingCodex` fails by name on a cell without a phrase, glyph, lexicon line or note); the roster reads `activeProject.doingLine` composed in `getAgentStrategicSummary`; the lifecycle names the deed once (`describeDeed`) on the history entry and the completion event’s `refs`, and the arc strip renders it with the object linked. Non-vacuous by `codexUndertakings.test.ts` (count equals live cells, game words only, derivation reversible, the guard falsified on an injected template), `ThreadsPanelDoingLine.test.tsx` (phrase + progress word, trouble word, "and more", nothing when idle), `JourneyTabDeed.test.tsx` (verb tooltip, linked object, plain object with no page) and `undertakingDeed.test.ts` (the namer’s branches and the real pipeline: an instant cell through the review lever writes its deed). Browser proof on the closing PR: the codex section open on a card, a roster with three mortals mid-work, Ashara’s ledger with two linked deeds.
 
 ### `undertow-card-drifts-mortal-values` — 🔴 LEAKED

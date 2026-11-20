@@ -12,10 +12,10 @@
  * Mounted by `CeremonyHost` for kind `age-twilight`, on the same Overlay home as
  * `HarvestScreen`. Escape and the backdrop do nothing: the age cannot be resumed.
  */
-import { useEffect, useRef, type CSSProperties } from 'react';
+import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
 import type { GameState } from '../../types/gameState';
 import type { SphereName } from '../../types/index';
-import type { TwilightBeats } from '../../engine/twilight';
+import type { AgeEnding, TwilightBeats } from '../../engine/twilight';
 import { TWILIGHT_WORDS } from '../../data/twilight-content';
 import { SPHERE_COLORS_BASE } from '../icons/constants';
 import { Tooltip } from '../shared/Tooltip';
@@ -50,6 +50,41 @@ interface AgeTwilightScreenProps {
   remembered: boolean;
   /** *See what the age leaves* — `completeTwilight`, and the harvest opens. */
   onContinue: () => void;
+}
+
+/**
+ * THR-2250 — the reckon line under the ending line. A Mandate ending links the place or
+ * mortal it names (Law 21) through its hover card (Law 17); a Doom ending's Mandate name
+ * keeps the `ui.mandate` tooltip. A name the line does not contain renders as plain text.
+ */
+function reckonContent(ending: AgeEnding): ReactNode {
+  const text = ending.reckon ?? '';
+  if (ending.kind === 'mandate') {
+    const entity = ending.reckonEntity;
+    const at = entity && entity.present ? text.indexOf(entity.name) : -1;
+    if (!entity || at < 0) return text;
+    return (
+      <>
+        {text.slice(0, at)}
+        <EntityLink
+          id={entity.id}
+          name={entity.name}
+          entityRef={{ kind: entity.kind === 'place' ? 'location' : 'agent', id: entity.id }}
+        />
+        {text.slice(at + entity.name.length)}
+      </>
+    );
+  }
+  const name = ending.reckonMandateName;
+  if (!name || !text.startsWith(name)) return text;
+  return (
+    <>
+      <Tooltip id="ui.mandate">
+        <span className="cursor-help" data-testid="age-twilight-reckon-mandate">{name}</span>
+      </Tooltip>
+      {text.slice(name.length)}
+    </>
+  );
 }
 
 function tintOf(sphere: SphereName | undefined): string {
@@ -124,6 +159,11 @@ export function AgeTwilightScreen({ beats, gameState, primarySphere, remembered,
             </h2>
           )}
           {ending.line && <p className="text-base text-amber-100/90 leading-relaxed mb-2">{ending.line}</p>}
+          {ending.reckon && (
+            <p className="text-base text-amber-100/90 leading-relaxed mb-2" data-testid="age-twilight-reckon">
+              {reckonContent(ending)}
+            </p>
+          )}
           <p className="text-sm text-amber-200/75 italic leading-relaxed">{ending.close}</p>
         </section>
 

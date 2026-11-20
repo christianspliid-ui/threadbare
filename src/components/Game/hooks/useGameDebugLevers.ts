@@ -81,6 +81,7 @@ import { resolveAftermathContextForAgent } from '../../../engine/encounterAfterm
 import { type BeatDismissalRecord, type BeatInterruptSurface, selectDefaultBeatChoice } from '../beatDismissal';
 import type { WorldRef } from '../../../types/worldRef';
 import { isHexTargetId } from '../../../engine/hexActionBridge';
+import { MANDATE_PRIMARY_TARGET_POINTS, MANDATE_SECONDARY_TARGET_POINTS } from '../../../data/game-config';
 
 /** The argument a bridge's `_register*` method takes. */
 type Registered<K extends keyof DebugBridge> =
@@ -104,6 +105,8 @@ export interface DebugOpenedEncounter {
 export interface GameDebugLeverContext {
   gameState: GameState;
   setGameState: Dispatch<SetStateAction<GameState>>;
+  /** THR-2250: useSimulation's ref-syncing commit — what `beginTwilightNow` reads. */
+  commitLiveState: (next: GameState) => void;
   runtime: SimulationRuntime;
   tiles: HexTile[];
   hexMapRef: RefObject<HexMapV2Handle>;
@@ -171,7 +174,7 @@ export interface GameDebugLeverContext {
 
 export function useGameDebugLevers(ctx: GameDebugLeverContext): void {
   const {
-    gameState, setGameState, runtime, tiles, hexMapRef,
+    gameState, setGameState, commitLiveState, runtime, tiles, hexMapRef,
     handleAgentSelect, openAgentProfileForId, fogDisabled, setFogDisabled, _gameStateRef,
     viewSource, avatarNodeId, threadedAgentIdsForActivity, activityActionsVersion, needsYouSources, needsYouStamp,
     dominionLensBase, dominionLensOn, dominionProjectionNow, dominionDrops, setDominionLens,
@@ -468,6 +471,39 @@ export function useGameDebugLevers(ctx: GameDebugLeverContext): void {
         props.quintessenceCurrent = Math.round(ratio * max);
         return { ...prev, worldVersion: (prev.worldVersion ?? 0) + 1 };
       });
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Debug bridge: setMandateProgress (THR-2250) ───────────────────────────
+  // Writes the god ledger to `fraction` of both targets and the progress the bar and the
+  // Twilight read; 1 completes the Mandate. With `heldAt`, that entity holds the whole
+  // ledger, so the Mandate ending's reckon line has a place or mortal to name.
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerSetMandateProgress((fraction: number, heldAt?: string) => {
+      const live = _gameStateRef.current;
+      const def = live?.mandateDefinition;
+      const ms = live?.mandateState;
+      if (!def || !ms) return { error: 'This world has no Mandate' };
+      // Before the settle the definition carries no point targets yet; the configured
+      // targets are what `phaseMandate` writes there at the settle.
+      const godLedger = {
+        primary: (def.primaryTargetPoints ?? MANDATE_PRIMARY_TARGET_POINTS) * fraction,
+        secondary: (def.secondaryTargetPoints ?? MANDATE_SECONDARY_TARGET_POINTS) * fraction,
+      };
+      const godHeld = heldAt
+        ? {
+            ...(def.primarySphere ? { [`${heldAt}|${def.primarySphere}`]: godLedger.primary } : {}),
+            ...(def.secondarySphere ? { [`${heldAt}|${def.secondarySphere}`]: godLedger.secondary } : {}),
+          }
+        : ms.godHeld;
+      const completed = fraction >= 1;
+      const next = { ...live, mandateState: { ...ms, godLedger, godHeld, progress: fraction, completed } };
+      // Both refs before the render, so a `beginTwilight()` in the same turn reads the
+      // written Mandate: `beginTwilightNow` reads useSimulation's ref, not GameView's.
+      _gameStateRef.current = next;
+      commitLiveState(next);
+      return { progress: fraction, completed, godLedger };
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
