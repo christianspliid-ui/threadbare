@@ -65,6 +65,13 @@ export const DOOM_FEED_ALERT_FROM_STAGE = 5;
 export const DOOM_FEED_ALERT_EVERY_DAYS = 1;
 export const DOOM_FEED_LIST_MAX = 3;
 export const DOOM_FEED_OFTEN_COUNT = 3;
+/**
+ * THR-2269 (item 6, the design lane's fallback) — the Doom dialog's Where it feeds shows its
+ * newest this-many rows once the current stage is the climax (stage 5), where the stage's
+ * two cards plus race, Stay line and three rows ran 9px past the 1920×1080 dialog body.
+ * Earlier stages keep all `DOOM_FEED_LIST_MAX`.
+ */
+export const DOOM_DIALOG_CLIMAX_FEED_ROWS = 2;
 export const LAST_STAGE_DECISION_SHARE = 0.5;
 
 /**

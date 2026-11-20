@@ -4,7 +4,7 @@ import { Tooltip } from '../shared/Tooltip';
 import { Icon } from '../shared/Icon';
 import { Button } from '../shared/Button';
 import { DOOM_ARCHETYPE_COLORS } from '../../data/uiColorPalette';
-import { DOOM_CLIMAX_START } from '../../data/game-config';
+import { DOOM_CLIMAX_START, DOOM_DIALOG_CLIMAX_FEED_ROWS } from '../../data/game-config';
 import { durationLabel } from '../../engine/aftermathWords';
 // THR-2103 (decision 8, Law 58): the doom marks live in one list; this file kept a second copy.
 import { DOOM_ARCHETYPE_FALLBACK_GLYPH, DOOM_ARCHETYPE_GLYPHS } from '../../data/doom-archetype-presentation';
@@ -170,7 +170,14 @@ export function DoomClockDetail({
     : null;
   // THR-2256 — where the Doom fed, under the Stay line (the Act slot).
   const feedBlock = !state.expired && feedings
-    ? <DoomFeedList view={feedings} color={color} onOpenPlace={openPlace} />
+    ? (
+      <DoomFeedList
+        view={feedings}
+        color={color}
+        onOpenPlace={openPlace}
+        maxRows={state.currentStage >= 5 ? DOOM_DIALOG_CLIMAX_FEED_ROWS : undefined}
+      />
+    )
     : null;
   const answer = raceBlock || stayAnswer || feedBlock ? <>{raceBlock}{stayAnswer}{feedBlock}</> : null;
 
@@ -495,15 +502,17 @@ export function DoomClockDetail({
  * link (Law 21) and its word. A Rebuke button only while the card is held and a Rebuke
  * there answers the Doom (Law 25); the row otherwise reads the place only.
  */
-function DoomFeedList({ view, color, onOpenPlace }: { view: DoomFeedingsView; color: string; onOpenPlace?: (placeId: string) => void }) {
+function DoomFeedList({ view, color, onOpenPlace, maxRows }: { view: DoomFeedingsView; color: string; onOpenPlace?: (placeId: string) => void; maxRows?: number }) {
+  // THR-2269 — at the climax the dialog keeps the newest `maxRows` (rows arrive newest first).
+  const rows = maxRows === undefined ? view.rows : view.rows.slice(0, maxRows);
   return (
     <div data-testid="doom-feed-list" style={{ marginTop: '8px', marginLeft: '26px' }}>
       <div style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-tertiary)', marginBottom: '4px' }}>
         {DOOM_FEED_WORDS.sectionLabel}
       </div>
-      {view.rows.length === 0
+      {rows.length === 0
         ? <div data-testid="doom-feed-empty" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>{DOOM_FEED_WORDS.empty}</div>
-        : view.rows.map((row) => (
+        : rows.map((row) => (
           <div key={row.placeId} data-testid="doom-feed-row" data-place-id={row.placeId} data-feed-status={row.status}>
             <ListRow
               accentColor={`${color}60`}
@@ -541,16 +550,18 @@ function StageNameRow({ foldable, expanded, controls, onToggle, children }: {
   const rowStyle = { display: 'flex', alignItems: 'center', gap: '8px', width: '100%' } as const;
   if (!foldable) return <div style={rowStyle}>{children}</div>;
   return (
-    <button
+    <Button
+      variant="ghost"
+      size="sm"
       type="button"
       data-testid="doom-stage-toggle"
       aria-expanded={expanded}
       aria-controls={expanded ? controls : undefined}
       onClick={onToggle}
-      style={{ ...rowStyle, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', font: 'inherit', color: 'inherit' }}
+      style={{ ...rowStyle, justifyContent: 'flex-start', height: 'auto', padding: 0, textAlign: 'left', color: 'inherit' }}
     >
       {children}
-    </button>
+    </Button>
   );
 }
 
