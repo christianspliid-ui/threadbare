@@ -1693,10 +1693,10 @@ exit
 - **Intent:** The game can say which clock ends the age at the current pace: once a day the Mandate phase samples both clocks and reads which lands first, holding a new reading two days before it shows.
 - **Producer → Consumer:** Doom Clock & Journey → Ascendant Beats & Progression
 - **UL terms:** *Mandate*, *Doom Clock*, *Run*
-- **Production hits:** 63 total — 2 write, 5 read, 56 unclassified
+- **Production hits:** 64 total — 2 write, 5 read, 57 unclassified
 - **Write sites:** `src/engine/phaseDoom.ts`, `src/engine/phaseMandate.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/raceForecast.ts`, `src/engine/views/godRail.ts`, `src/engine/views/subjects/godSheet.ts`, `src/engine/views/warmRecap.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/DoomBar.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView/openingReveal.ts` +51 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/DoomBar.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView/openingReveal.ts` +52 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `doom-feeds-at-a-place` — 🟢 LIVE
@@ -3081,10 +3081,10 @@ exit
 - **Intent:** Finishing the Mandate ends the age in triumph, at once, instead of play running on until doom ends it anyway.
 - **Producer → Consumer:** Ascendant Beats & Progression → Doom Clock & Journey
 - **UL terms:** *Mandate*, *Doom Clock*, *Run*
-- **Production hits:** 21 total — 1 write, 1 read, 19 unclassified
+- **Production hits:** 23 total — 1 write, 1 read, 21 unclassified
 - **Write sites:** `src/engine/phaseMandate.ts`
 - **Read sites:** `src/engine/orchestrator.ts`
-- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/Game/hosts/DialogHost.tsx`, `src/data/ia-manifest.ts`, `src/data/twilight-content.ts` +14 more
+- **Other hits:** `src/components/Game/GameView/openingReveal.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/Game/hosts/DialogHost.tsx`, `src/data/ia-manifest.ts` +16 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mandate-ledger-reckons-twilight` — 🔵 UNVERIFIED-OK
@@ -3092,10 +3092,10 @@ exit
 - **Intent:** The end of the age says what the Mandate came to: a fulfilled one names the place or mortal where the god's hand raised it most, and a Doom ending says in a word how near it stood.
 - **Producer → Consumer:** Ascendant Beats & Progression → Attention, Chronicle & Narrative
 - **UL terms:** *Mandate*, *Doom Clock*, *Run*
-- **Production hits:** 21 total — 1 write, 2 read, 18 unclassified
+- **Production hits:** 23 total — 1 write, 2 read, 20 unclassified
 - **Write sites:** `src/engine/phaseMandate.ts`
 - **Read sites:** `src/engine/raceForecast.ts`, `src/engine/twilight.ts`
-- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/Game/hosts/DialogHost.tsx`, `src/data/ia-manifest.ts`, `src/data/twilight-content.ts` +13 more
+- **Other hits:** `src/components/Game/GameView/openingReveal.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/Game/hosts/DialogHost.tsx`, `src/data/ia-manifest.ts` +15 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mandate-milestone-prose-narrates-transitions` — 🟢 LIVE
@@ -4605,10 +4605,10 @@ exit
 - **Intent:** What the player sees of a mortal’s work, on three surfaces that never list capability on a person: the Undertakings codex page (one card per live cell, generated from the registry and the grid’s dispositions — who tends to do it derived under the division rule), the roster’s doing-line (what each mortal is in the middle of, in words), and the ledger that names each finished deed by verb and object with the object linked.
 - **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
 - **Module:** `src/engine/undertakingDeed.ts`
-- **Production hits:** 62 total — 5 write, 5 read, 52 unclassified
+- **Production hits:** 64 total — 5 write, 5 read, 54 unclassified
 - **Write sites:** `src/data/division-rule-tables.ts`, `src/data/undertaking-verb-prose.ts`, `src/engine/strategicActionLifecycle.ts`, `src/engine/strategicPresentation.ts`, `src/engine/undertakingDeed.ts`
 - **Read sites:** `src/components/Codex/codexRegistry.ts`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/ThreadsPanel.tsx`, `src/debug-bridge.ts`, `src/engine/agentArc.ts`
-- **Other hits:** `src/components/Game/inspector/lab/stressFixture.ts`, `src/components/Game/inspector/SubjectHeader.tsx`, `src/components/Game/MandateDetail.tsx`, `src/data/ascendant-bar-content.ts`, `src/data/builders-fellowship-encounter-content.ts` +47 more
+- **Other hits:** `src/components/Game/inspector/lab/stressFixture.ts`, `src/components/Game/inspector/SubjectHeader.tsx`, `src/components/Game/MandateDetail.tsx`, `src/data/ascendant-bar-content.ts`, `src/data/builders-fellowship-encounter-content.ts` +49 more
 - **Verdict:** Verified 2026-09-07: THR-1434. The codex builds one card per live cell from `UNDERTAKING_CELL_TEMPLATES` and `LIVE_CELL_NOTES` (49 = 49 on the shipped grid, `validateUndertakingCodex` fails by name on a cell without a phrase, glyph, lexicon line or note); the roster reads `activeProject.doingLine` composed in `getAgentStrategicSummary`; the lifecycle names the deed once (`describeDeed`) on the history entry and the completion event’s `refs`, and the arc strip renders it with the object linked. Non-vacuous by `codexUndertakings.test.ts` (count equals live cells, game words only, derivation reversible, the guard falsified on an injected template), `ThreadsPanelDoingLine.test.tsx` (phrase + progress word, trouble word, "and more", nothing when idle), `JourneyTabDeed.test.tsx` (verb tooltip, linked object, plain object with no page) and `undertakingDeed.test.ts` (the namer’s branches and the real pipeline: an instant cell through the review lever writes its deed). Browser proof on the closing PR: the codex section open on a card, a roster with three mortals mid-work, Ashara’s ledger with two linked deeds.
 
 ### `undertow-card-drifts-mortal-values` — 🔴 LEAKED
