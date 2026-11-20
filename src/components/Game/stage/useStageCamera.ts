@@ -29,16 +29,28 @@
  *   put it. A frame only happens for a place outside the window, and the frame puts it
  *   inside, so the next chapter at the same place stays: the map cannot drift (THR-2056).
  * `closeCamera` still records the place and whether the player moved the camera.
+ *
+ * THR-2260 narrows THR-2221's close (cold playtest round 8, 3/3 testers: "the map sits off
+ * to one side, half the screen empty parchment"). The Stage's window is the map's right
+ * edge, so a framed place stayed far right of the canvas, and an edge place left half the
+ * canvas bare. The open rule above is unchanged. On close, once the rails settle:
+ * - the player moved the camera after the frame (THR-2166): it stays;
+ * - else a place outside the visible map's middle third (`STAGE_CLOSE_CENTRE_BAND_FRACTION`)
+ *   is eased to the visible map's centre, once (`chooseCloseRecentre`);
+ * - either way the camera is then held inside the pan bound (`settlePanClamp`, THR-2260):
+ *   the grid never covers less than `PAN_MIN_GRID_COVER` of the canvas.
  */
 import { useEffect, useRef, type Dispatch, type RefObject, type SetStateAction } from 'react';
 import type { HexMapV2Handle } from '../../HexMapV2/HexMapV2';
-import { chooseStageFrame, chooseStageZoom, hexScreenWidth } from '../../HexMapV2/camera/stageCamera';
+import { chooseStageFrame, chooseStageZoom, hexScreenWidth, recentreOnClose } from '../../HexMapV2/camera/stageCamera';
 import { hexToWorld } from '../../../lib/worldPosition';
 import { HEX_CONSTANTS } from '../../HexMapV2/scene/HexFillMesh';
 import {
+  STAGE_CLOSE_CENTRE_BAND_FRACTION,
   STAGE_CLOSE_PLAYER_MOVED_PX,
   STAGE_CLOSE_PLAYER_MOVED_ZOOM_RATIO,
   STAGE_DIM_FADE_MS,
+  STAGE_LAYOUT_SETTLE_FRAMES,
 } from '../../../data/stage-content';
 import type { MapCameraState } from '../../HexMapV2/camera/mapCamera';
 import { isStageOpen, type StageCameraMode, type StageRect, type StageScreenState } from './stageState';
@@ -80,6 +92,21 @@ export function frameAlreadyInWindow(
   return points.every(p => p !== null
     && p.x >= window.x + inset && p.x <= window.x + window.w - inset
     && p.y >= window.y + inset && p.y <= window.y + window.h - inset);
+}
+
+/**
+ * THR-2260 — the close's decision, pure. `point` is the lit place on screen (projected
+ * whether or not it is on the canvas), `rect` the visible map once the rails settle.
+ * Returns where to put the place (the visible map's centre), or null to leave it.
+ */
+export function chooseCloseRecentre(
+  point: { x: number; y: number } | null,
+  rect: { left: number; top: number; right: number; bottom: number } | null,
+  playerMoved: boolean,
+  fraction: number = STAGE_CLOSE_CENTRE_BAND_FRACTION,
+): { x: number; y: number } | null {
+  if (playerMoved || !point || !rect) return null;
+  return recentreOnClose(point, rect, fraction);
 }
 
 export function useStageCamera(
@@ -151,7 +178,7 @@ export function useStageCamera(
     hexMapRef.current?.setStageOptionHover(hoveredOption);
   }, [focus, hoveredOption, hexMapRef]);
 
-  // ── Close: the dim goes; the camera never moves (THR-2221). ──
+  // ── Close: the dim goes; an off-centre place comes back to the middle, once (THR-2260). ──
   const open = isStageOpen(stage);
   useEffect(() => {
     if (open) return;
@@ -164,11 +191,31 @@ export function useStageCamera(
     const framed = framedView.current;
     framedView.current = null;
     if (!last) return;
-    // THR-2166 — kept as a record only: did the player move the map after the Stage framed it?
+    // THR-2166 — did the player move the map after the Stage framed it? Read now, before
+    // the rails' return can resize the canvas.
     const playerMoved = cameraMovedSince(framed, viewOf(map.getCameraState()));
-    setStage(prev => (isStageOpen(prev) ? prev : {
-      ...prev,
-      closeCamera: playerMoved ? { hex: last.key, recentred: false, playerMoved: true } : { hex: last.key, recentred: false },
-    }));
+    const at = parseKey(last.key);
+    let frames = STAGE_LAYOUT_SETTLE_FRAMES;
+    let id = 0;
+    const step = () => {
+      if (--frames > 0) {
+        id = requestAnimationFrame(step);
+        return;
+      }
+      const target = chooseCloseRecentre(at ? map.projectHex(at.col, at.row) : null, map.getCanvasRect(), playerMoved);
+      setStage(prev => (isStageOpen(prev) ? prev : {
+        ...prev,
+        closeCamera: playerMoved
+          ? { hex: last.key, recentred: false, playerMoved: true }
+          : { hex: last.key, recentred: target !== null },
+      }));
+      if (target) {
+        void map.centerHexesAt([last.key], target, { zoom: map.getCameraState().k, instant: last.instant, clamp: true });
+      } else {
+        void map.settlePanClamp({ instant: last.instant });
+      }
+    };
+    id = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(id);
   }, [open, hexMapRef, setStage]);
 }

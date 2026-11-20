@@ -21,8 +21,8 @@
  * | STAGE_LAYOUT_SETTLE_FRAMES | 2 | animation frames the camera waits after the rails move |
  * | STAGE_MAP_HINT_MS | 2000 | how long the hold line shows after an input on the map |
  * | STAGE_LIT_HEX_MIN_HIT_PX | 24 | the lit-hex button's smallest hit area (Law 46) |
- * | STAGE_CLOSE_CENTRE_BAND_FRACTION | 1/3 | debug read only since THR-2221: `__DEBUG.getStage().afterClose.inMiddleThird` (the close no longer re-centres) |
- * | STAGE_CLOSE_PLAYER_MOVED_PX | 4 | on close, a camera moved more than this (screen px) since the Stage framed it is recorded as moved by the player (THR-2166; a record only since THR-2221) |
+ * | STAGE_CLOSE_CENTRE_BAND_FRACTION | 1/3 | on close, a place outside the visible map's middle third is eased to its centre, unless the player moved the camera (THR-2056, restored by THR-2260) |
+ * | STAGE_CLOSE_PLAYER_MOVED_PX | 4 | on close, a camera moved more than this (screen px) since the Stage framed it is recorded as moved by the player and stays (THR-2166; restored by THR-2260) |
  * | STAGE_CLOSE_PLAYER_MOVED_ZOOM_RATIO | 0.01 | the same, for a zoom change (THR-2166) |
  * | STAGE_OPTION_RING_DASH | { dash: 0.18, gap: 0.12 } | a premonition option ring's dashes, as shares of an edge (S4) |
  * | STAGE_OPTION_RING_COLOR_VAR | whisper / compulsion text rgb | an option ring's colour, the premonition's dream tone (S4) |
@@ -70,13 +70,15 @@ export const STAGE_MAP_HINT_MS = 2000;
 export const STAGE_LIT_HEX_MIN_HIT_PX = 24;
 /**
  * THR-2056 — the middle third of the visible map. THR-2221 retired the close re-centre that
- * used it (the camera never moves on close); only the debug bridge's `inMiddleThird` reads it.
+ * used it; THR-2260 restored it (cold playtest round 8: the map sat off to one side after
+ * every chapter). On close a place outside it is eased to the visible map's centre, once,
+ * unless the player moved the camera. The debug bridge's `inMiddleThird` reads it too.
  */
 export const STAGE_CLOSE_CENTRE_BAND_FRACTION = 1 / 3;
 /**
  * THR-2166 — on close, a camera that moved more than this many screen px (or changed zoom
  * by more than `STAGE_CLOSE_PLAYER_MOVED_ZOOM_RATIO`) since the Stage framed the place was
- * moved by the player. Since THR-2221 the close never moves the camera; this only sets
+ * moved by the player: the close leaves it there (THR-2166, restored by THR-2260) and sets
  * `closeCamera.playerMoved`.
  */
 export const STAGE_CLOSE_PLAYER_MOVED_PX = 4;

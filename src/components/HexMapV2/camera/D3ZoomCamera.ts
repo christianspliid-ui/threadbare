@@ -2,6 +2,7 @@ import * as d3 from 'd3';
 import * as THREE from 'three';
 import { hexToPixel, HEX_SCALE_X, HEX_SCALE_Y } from '../../../lib/hexMath';
 import { HEX_CONSTANTS } from '../scene/HexFillMesh';
+import { clampPanTransform, gridPixelBounds } from './panClamp';
 
 /**
  * Camera zoom and animation constants.
@@ -115,6 +116,13 @@ export interface D3ZoomResult {
   setZoomTarget: (worldX: number, worldY: number) => void;
   /** Clear the zoom target — reverts to default mouse-pointer zoom behavior. */
   clearZoomTarget: () => void;
+  /**
+   * THR-2260 — turn the pan clamp on or off. On by default; HexMapV2 turns it off while
+   * the Stage holds the map (its frame may put an edge place in the right-hand window).
+   */
+  setPanClamp: (enabled: boolean) => void;
+  /** THR-2260 — a transform pulled inside the pan bound (unchanged when inside, or when the clamp is off). */
+  clampTransform: (t: d3.ZoomTransform) => d3.ZoomTransform;
   destroy: () => void;
 }
 
@@ -135,6 +143,15 @@ export function setupD3Zoom(
     : null;
   const minZoom = computeMinZoom(fitK);
 
+  // THR-2260 — the pan clamp: the grid always covers at least PAN_MIN_GRID_COVER of the canvas.
+  const bounds = gridCols != null && gridRows != null ? gridPixelBounds(gridCols, gridRows, HEX_CONSTANTS.HEX_SIZE) : null;
+  let clampEnabled = true;
+  const clampTransform = (t: d3.ZoomTransform): d3.ZoomTransform => {
+    if (!clampEnabled) return t;
+    const c = clampPanTransform(t, bounds, { w: canvas.clientWidth, h: canvas.clientHeight });
+    return c === t ? t : d3.zoomIdentity.translate(c.x, c.y).scale(c.k);
+  };
+
   const zoom = d3.zoom<HTMLCanvasElement, unknown>()
     .scaleExtent([minZoom, CAMERA_CONSTANTS.MAX_ZOOM])
     // Block double-click zoom and ALL wheel events — we handle wheel manually
@@ -142,6 +159,9 @@ export function setupD3Zoom(
     // screen↔data mapping, but our syncCameraToZoom uses a custom mapping
     // (cx = -tx/k, cy = ty/k with Y-flip). Manual handling gives us correct
     // zoom-toward-cursor AND zoom-toward-selected-hex.
+    // d3 applies `constrain` to drags and its own scale/translate helpers, never to
+    // `zoom.transform` — so the Stage's frame and the camera commands pass untouched.
+    .constrain((t) => clampTransform(t))
     .filter((event: Event) => {
       if (event.type === 'dblclick') return false;
       if (event.type === 'wheel') return false;
@@ -210,9 +230,9 @@ export function setupD3Zoom(
       newTy =  worldY * newK - (canvasH / 2 - sy);
     }
 
-    const newTransform = d3.zoomIdentity
+    const newTransform = clampTransform(d3.zoomIdentity
       .translate(newTx, newTy)
-      .scale(newK);
+      .scale(newK));
 
     selection.call(zoom.transform, newTransform);
   };
@@ -264,6 +284,10 @@ export function setupD3Zoom(
     clearZoomTarget: () => {
       zoomTarget = null;
     },
+    setPanClamp: (enabled: boolean) => {
+      clampEnabled = enabled;
+    },
+    clampTransform,
     destroy,
   };
 }
