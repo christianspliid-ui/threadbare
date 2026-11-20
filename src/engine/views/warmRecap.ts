@@ -37,6 +37,9 @@ import { getChapterTemplateName, isRoutineChapter } from '../chapterArchive';
 import { countWord, outcomeSentence } from '../aftermathWords';
 import { resolveTooltip } from '../tooltipResolver';
 import { DOOM_STAY_TEMPLATE_ID } from '../../data/doom-stay-content';
+import type { RaceState } from '../../types/mandate';
+import { shownRaceState } from '../raceForecast';
+import { raceForecastLine, RACE_RECAP_CAME_INTO_VIEW_LEAD, RACE_RECAP_SHIFTED_LEAD } from '../../data/race-content';
 
 // ── Constants (NFP #1) ──────────────────────────────────────────────────────
 
@@ -46,7 +49,7 @@ export const WARM_RECAP_MAX_LINES = 5;
 export const WARM_RECAP_FIRST_CHAPTERS = 2;
 /** Which lines survive the cap, most important first. Shown in story order regardless. */
 export const WARM_RECAP_KEEP_ORDER: readonly WarmRecapSlot[] = [
-  'first_finished#1', 'doom', 'slipped', 'first_now', 'first_finished#2', 'grew', 'first_more',
+  'first_finished#1', 'doom', 'race', 'slipped', 'first_now', 'first_finished#2', 'grew', 'first_more',
 ];
 /** Place names listed before "and others". */
 export const WARM_RECAP_LIST_NAMES = 3;
@@ -55,7 +58,7 @@ export const WARM_RECAP_SLIPPED_FROM_BAND: DominionBand = 'touched';
 
 /** Story order: the order lines are shown in. */
 const WARM_RECAP_SHOW_ORDER: readonly WarmRecapSlot[] = [
-  'first_finished#1', 'first_finished#2', 'first_more', 'first_now', 'slipped', 'grew', 'doom',
+  'first_finished#1', 'first_finished#2', 'first_more', 'first_now', 'slipped', 'grew', 'doom', 'race',
 ];
 
 // ── Types ───────────────────────────────────────────────────────────────────
@@ -66,10 +69,12 @@ export interface WarmRecapSnapshot {
   bands: Readonly<Record<string, DominionBand>>;
   /** THR-2240 — the Doom stage before the warm-up; absent = no Doom line. */
   doomStage?: number;
+  /** THR-2252 — the race state shown before the warm-up; absent = no Mandate, no race line. */
+  raceShown?: RaceState;
 }
 
-export type WarmRecapLineKind = 'first_finished' | 'first_more' | 'first_now' | 'slipped' | 'grew' | 'doom' | 'empty';
-type WarmRecapSlot = 'first_finished#1' | 'first_finished#2' | 'first_more' | 'first_now' | 'slipped' | 'grew' | 'doom';
+export type WarmRecapLineKind = 'first_finished' | 'first_more' | 'first_now' | 'slipped' | 'grew' | 'doom' | 'race' | 'empty';
+type WarmRecapSlot = 'first_finished#1' | 'first_finished#2' | 'first_more' | 'first_now' | 'slipped' | 'grew' | 'doom' | 'race';
 
 /** A recap run: a `ChronicleSegment`, plus the concept hover a band word carries. */
 export interface WarmRecapSegment extends ChronicleSegment {
@@ -189,6 +194,7 @@ export function snapshotWarmRecap(state: GameState, firstId: string | null, opts
     firstId,
     bands: (opts.readBands ?? readWarmRecapBands)(state),
     ...(state.doomClock ? { doomStage: state.doomClock.currentStage } : {}),
+    ...(state.mandateState ? { raceShown: shownRaceState(state.mandateState.raceWatch) } : {}),
   };
 }
 
@@ -272,6 +278,21 @@ function withRivalPressed(
     ...(place ? { place: [place] } : {}),
   });
   return extra ? [...segs, { text: ' ' }, ...extra] : segs;
+}
+
+/**
+ * THR-2252 — "While you were away, how the age ends came into view." (the snapshot showed
+ * no race) or "… shifted." (it showed another state), then the forecast sentence. No line
+ * when the race is hidden now, unchanged, or there is no Mandate snapshot.
+ */
+function raceRecapLine(state: GameState, before: WarmRecapSnapshot): WarmRecapLine | null {
+  if (before.raceShown === undefined || !state.mandateState) return null;
+  const now = shownRaceState(state.mandateState.raceWatch);
+  if (now === 'hidden' || now === before.raceShown) return null;
+  const forecast = raceForecastLine(now);
+  if (!forecast) return null;
+  const lead = before.raceShown === 'hidden' ? RACE_RECAP_CAME_INTO_VIEW_LEAD : RACE_RECAP_SHIFTED_LEAD;
+  return { kind: 'race', segments: [{ text: `${lead} ${forecast}` }] };
 }
 
 /**
@@ -390,6 +411,10 @@ export function buildWarmRecap(state: GameState, before: WarmRecapSnapshot, opts
   // that Stay the Unmaking slows it when the god already holds the card.
   const doomLine = doomStepLine(state, before);
   if (doomLine) slots.set('doom', doomLine);
+
+  // THR-2252 — how the age ends came into view, or shifted, during the warm-up.
+  const raceLine = raceRecapLine(state, before);
+  if (raceLine) slots.set('race', raceLine);
 
   // Keep by priority, show in story order.
   const kept = new Set<WarmRecapSlot>();
