@@ -20,3 +20,6 @@ round	date	briefVersion	deployedCommit	persona	verdict	metFirst	firstQuitAtActio
 7	2026-11-12	1	0a999d5b	story	maybe	y	61	11	6	61	8	4.17
 7	2026-11-12	1	0a999d5b	veteran	maybe	y	none	13	9	50	7	3.43
 7	2026-11-12	1	0a999d5b	skimmer	maybe	y	none	15	8	75	8	4.76
+8	2026-11-20	1	6d8e94fc	story	maybe	y	none	12	8	62	8	4.28
+8	2026-11-20	1	6d8e94fc	veteran	maybe	y	58	15	9	58	10	4.53
+8	2026-11-20	1	6d8e94fc	skimmer	maybe	y	none	13	8	57	8	4.01
