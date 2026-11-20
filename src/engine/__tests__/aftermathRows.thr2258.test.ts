@@ -15,6 +15,7 @@ import { buildAftermathConsequences } from '../views/stage/buildAftermathConsequ
 import { buildSubjectPage } from '../views/subjects/subjectPage';
 import { deriveContributionLines } from '../encounters/stepFactorLines';
 import { mandateDeedForChapter } from '../unifiedActionResolution';
+import { fromConceptRef, toNavigationTarget } from '../../types/worldRefAdapters';
 import { generateRememberedMandate } from '../mandateGenerator';
 import { createMandateStateWith } from '../mandate';
 import { ANOMALY_CONDITIONS } from '../../data/anomaly-reward-catalog';
@@ -134,6 +135,15 @@ describe('THR-2258 — a condition reward links a page that outlives the conditi
     const page = buildSubjectPage(pageState(graph), { kind: link.visualKind, id: link.entityId, name: 'Fossil Whispers' } as never);
     expect(page.pageKind).not.toBe('missing');
     expect(page.header.name).toBe('Fossil Whispers');
+  });
+
+  it('the chip\'s concept routes to the attachment sheet of the template (the UI path)', () => {
+    const graph = rewardGraph();
+    const grant = instantiateReward(graph, FOSSIL, 'seren', 40)!;
+    const row = rewardRow({ harmful: false, stepWon: false, graph, instanceId: grant.instanceId });
+    const ref = fromConceptRef(row.concepts![0]);
+    expect(ref).toMatchObject({ kind: 'attachment', id: FOSSIL });
+    expect(toNavigationTarget(ref!)).toEqual({ kind: 'attachment', templateNodeId: FOSSIL });
   });
 
   it('falsifying arm: the old artifact route to the clone opens the missing page', () => {
