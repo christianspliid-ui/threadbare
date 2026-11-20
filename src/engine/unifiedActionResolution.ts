@@ -40,8 +40,9 @@ import {
   foldActorReputation,
   isLostActionOutcome,
   reputationFoldId,
+  lostEndingGainCap,
+  nextReputationGainGap,
   settleLostEncounterReputation,
-  standingGainCap,
   stepReputationParts,
 } from './reputationAftermathFold';
 import {
@@ -3131,12 +3132,31 @@ export function executeStepResult(
     const fold = foldActorReputation({ ...foldArgs, stepNet: reputationParts.net });
     supersededReputationIds = fold.supersededIds;
     let rowNet = fold.net;
+    const priorNet = foldActorReputation({ ...foldArgs, stepNet: 0 }).net;
+    if (!lostEnding) {
+      // Review round 2 — record how much of the chapter's gain stands on the
+      // score, so a later lost ending can forfeit it exactly, even after decay
+      // has carried the score across neutral.
+      finalAction = {
+        ...finalAction,
+        reputationGainGap: nextReputationGainGap({
+          prior: action.reputationGainGap,
+          tick,
+          score: finalSnapshot.reputationScore,
+          priorNet,
+          stepNet: reputationParts.net,
+        }),
+      };
+    }
     if (lostEnding) {
-      const priorNet = foldActorReputation({ ...foldArgs, stepNet: 0 }).net;
       const settle = settleLostEncounterReputation({
         priorNet,
         stepNet: reputationParts.net,
-        gainCap: standingGainCap(beforeSnapshot.reputationScore),
+        gainCap: lostEndingGainCap({
+          record: action.reputationGainGap,
+          tick,
+          scoreBeforeEndingStep: beforeSnapshot.reputationScore,
+        }),
       });
       rowNet = settle.settledNet;
       if (settle.correction !== 0) {

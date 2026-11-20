@@ -18,10 +18,15 @@ import { createUnifiedAction, resetUnifiedActionCounter } from '../unifiedAction
 import { WorldGraph } from '../graph';
 import { clearTraces, disableTracing, enableTracing, getTraces } from '../traceBuffer';
 import {
+  decayReputationOver,
+  gainGapAt,
   isLostActionOutcome,
+  lostEndingGainCap,
+  nextReputationGainGap,
   settleLostEncounterReputation,
   standingGainCap,
 } from '../reputationAftermathFold';
+import { decayReputation } from '../disposition';
 import { buildFalloutPreview, type BuildUnifiedEncounterStageModelArgs } from '../views/stage/buildUnifiedEncounterStageModel';
 import type {
   ActionStep,
@@ -96,17 +101,25 @@ function run(
   template: UnifiedActionTemplate,
   state: GameState,
   outcomes: readonly StepOutcome[],
-  betweenSteps?: () => void,
+  /** Ticks of real `decayReputation` between steps; the tick advances with them. */
+  decayTicksBetween = 0,
 ) {
   let action: UnifiedAction = createUnifiedAction({
     actorId: 'actor-1', templateId: template.id, targetId: 'loc-1',
     scale: 'local', source: 'agent', tick: 0, template, rng: fixedRng,
   });
   let beforeLast = action;
+  let tick = 10;
   for (const [i, outcome] of outcomes.entries()) {
-    if (i > 0) betweenSteps?.();
+    if (i > 0) {
+      for (let k = 0; k < decayTicksBetween; k++) {
+        const node = state.graph.getNode('actor-1')!;
+        node.properties.reputationScore = decayReputation(node.properties.reputationScore as number);
+        tick += 1;
+      }
+    }
     beforeLast = action;
-    action = executeStepResult(action, template, outcome, [], state, fixedRng, 10).updatedAction;
+    action = executeStepResult(action, template, outcome, [], state, fixedRng, tick).updatedAction;
   }
   return { action, beforeLast };
 }
@@ -197,14 +210,32 @@ describe('THR-2257 — a lost two-step encounter never nets a rise', () => {
     const state = createMinimalGameState();
     // Step 1 lifts 0.50 → 0.52; four ticks of decay (0.005 a tick) bring it back to 0.50.
     const { action } = run(
-      makeTemplate([step('fail_action'), step('fail_action')]), state, ['success', 'failure'],
-      () => { state.graph.getNode('actor-1')!.properties.reputationScore = START_SCORE; },
+      makeTemplate([step('fail_action'), step('fail_action')]), state, ['success', 'failure'], 4,
     );
     // An outright loss would have ended at 0.49; so does this.
     expect(scoreOf(state)).toBeCloseTo(START_SCORE - 0.01, 6);
     const rows = reputationRows(action);
     expect(rows).toHaveLength(1);
     expect(rows[0].magnitude?.raw).toBeCloseTo(-0.01, 6);
+  });
+
+  it('a gain that lifted the score across neutral is forfeited exactly after decay (review round 2)', () => {
+    // 0.48 + 0.04 → 0.52; one decay tick → 0.515. Without the gain the score
+    // would be 0.485 by then, so 0.03 of the gain stands (the old cap saw 0.015).
+    const state = createMinimalGameState(0.48);
+    const { action } = run(
+      makeTemplate([step('fail_action', 0.04), step('fail_action')]), state, ['success', 'failure'], 1,
+    );
+    // An outright loss from the same start: 0.48 → 0.485 (decay) → 0.475.
+    expect(scoreOf(state)).toBeCloseTo(0.475, 6);
+    expect(reputationRows(action)[0].magnitude?.raw).toBeCloseTo(-0.01, 6);
+  });
+
+  it('a gain held partly across neutral by several decay ticks is forfeited exactly', () => {
+    // 0.49 + 0.04 → 0.53; three ticks → 0.515. No-gain path: 0.49 → 0.50 (clamped).
+    const state = createMinimalGameState(0.49);
+    run(makeTemplate([step('fail_action', 0.04), step('fail_action')]), state, ['success', 'failure'], 3);
+    expect(scoreOf(state)).toBeCloseTo(0.49, 6);
   });
 
   it('below neutral the whole earlier gain still stands, and is forfeited', () => {
@@ -268,6 +299,39 @@ describe('THR-2257 — the settle arithmetic', () => {
     expect(standingGainCap(0.3)).toBe(Number.POSITIVE_INFINITY);
     expect(standingGainCap(0.5)).toBe(0);
     expect(standingGainCap(0.52)).toBeCloseTo(0.02, 6);
+  });
+
+  it('decays in closed form exactly as repeated decayReputation does', () => {
+    for (const start of [0.3, 0.48, 0.5, 0.503, 0.52, 0.9]) {
+      let x = start;
+      for (let n = 0; n <= 6; n++) {
+        expect(decayReputationOver(start, n)).toBeCloseTo(x, 9);
+        x = decayReputation(x);
+      }
+    }
+  });
+
+  it('the gain gap survives decay on one side of neutral and shrinks across it', () => {
+    expect(gainGapAt({ tick: 0, score: 0.6, gap: 0.04 }, 3)).toBeCloseTo(0.04, 9);
+    expect(gainGapAt({ tick: 0, score: 0.52, gap: 0.04 }, 1)).toBeCloseTo(0.03, 9);
+    expect(gainGapAt({ tick: 0, score: 0.52, gap: 0.02 }, 4)).toBeCloseTo(0, 9);
+  });
+
+  it('the gap moves by the change in max(0, net), on top of what decay left', () => {
+    const first = nextReputationGainGap({ prior: undefined, tick: 0, score: 0.52, priorNet: 0, stepNet: 0.02 });
+    expect(first.gap).toBeCloseTo(0.02, 9);
+    // A loss smaller than the gain eats into it; a loss on a loss leaves the gap.
+    const second = nextReputationGainGap({ prior: first, tick: 0, score: 0.51, priorNet: 0.02, stepNet: -0.01 });
+    expect(second.gap).toBeCloseTo(0.01, 9);
+    const third = nextReputationGainGap({ prior: second, tick: 0, score: 0.49, priorNet: 0.01, stepNet: -0.02 });
+    expect(third.gap).toBeCloseTo(0, 9);
+  });
+
+  it('the lost-ending cap reads the record, and falls back to the old cap without one', () => {
+    expect(lostEndingGainCap({ record: { tick: 0, score: 0.52, gap: 0.04 }, tick: 1, scoreBeforeEndingStep: 0.515 }))
+      .toBeCloseTo(0.03, 9);
+    expect(lostEndingGainCap({ record: undefined, tick: 1, scoreBeforeEndingStep: 0.515 })).toBeCloseTo(0.015, 9);
+    expect(lostEndingGainCap({ record: { tick: 0, score: 0.5, gap: -0.02 }, tick: 0, scoreBeforeEndingStep: 0.5 })).toBe(0);
   });
 
   it('names exactly the outcomes the ending sentence calls lost', () => {

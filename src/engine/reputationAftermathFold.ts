@@ -15,7 +15,7 @@
  */
 
 import type { EncounterAftermathChange, UnifiedActionOutcome } from '../types/unifiedAction';
-import { DEFAULT_REPUTATION } from '../types/disposition';
+import { DEFAULT_REPUTATION, REPUTATION_DECAY_PER_TICK } from '../types/disposition';
 
 /** Below this, a reputation movement is rounding noise and draws no row. */
 export const REPUTATION_FOLD_EPSILON = 0.0001;
@@ -108,6 +108,78 @@ export function standingGainCap(scoreBeforeEndingStep: number): number {
   return scoreBeforeEndingStep < DEFAULT_REPUTATION
     ? Number.POSITIVE_INFINITY
     : scoreBeforeEndingStep - DEFAULT_REPUTATION;
+}
+
+/**
+ * `ticks` runs of `decayReputation` (`disposition.ts`) in closed form. The
+ * decay is linear toward `DEFAULT_REPUTATION` and stops there, so it never
+ * crosses neutral and n runs equal one step of n × the rate, clamped.
+ */
+export function decayReputationOver(score: number, ticks: number): number {
+  const drift = Math.max(0, ticks) * REPUTATION_DECAY_PER_TICK;
+  if (score > DEFAULT_REPUTATION) return Math.max(DEFAULT_REPUTATION, score - drift);
+  if (score < DEFAULT_REPUTATION) return Math.min(DEFAULT_REPUTATION, score + drift);
+  return score;
+}
+
+/**
+ * THR-2257 review round 2 — the gap between the actor's real score and the
+ * score it would hold if no earlier step's gain had landed, as of `tick`.
+ * `score` is the real score then. Stored on the action after each step that
+ * moves reputation, and read by the lost ending to forfeit exactly the gain
+ * still standing.
+ */
+export interface ReputationGainGap {
+  readonly tick: number;
+  readonly score: number;
+  readonly gap: number;
+}
+
+/**
+ * Carry a {@link ReputationGainGap} forward to `tick`. Both the real score and
+ * the no-gain score decay on the same rule, so the gap survives decay intact
+ * while both sit on one side of neutral and shrinks as the clamp at neutral
+ * closes it. That crossing case is what {@link standingGainCap} cannot see.
+ */
+export function gainGapAt(record: ReputationGainGap, tick: number): number {
+  const ticks = tick - record.tick;
+  return decayReputationOver(record.score, ticks) - decayReputationOver(record.score - record.gap, ticks);
+}
+
+/**
+ * The gap after a step that moved the encounter's net from `priorNet` to
+ * `priorNet + stepNet`. The no-gain score moves only by the change in
+ * `min(0, net)`, so the gap moves by the change in `max(0, net)`, on top of what
+ * decay left of the earlier gap. Signed: a loss paid against a gain decay had
+ * already erased leaves the no-gain score above the real one.
+ */
+export function nextReputationGainGap(args: {
+  readonly prior: ReputationGainGap | undefined;
+  readonly tick: number;
+  /** The real score after this step. */
+  readonly score: number;
+  readonly priorNet: number;
+  readonly stepNet: number;
+}): ReputationGainGap {
+  const carried = args.prior ? gainGapAt(args.prior, args.tick) : 0;
+  const delta = Math.max(0, args.priorNet + args.stepNet) - Math.max(0, args.priorNet);
+  return { tick: args.tick, score: args.score, gap: carried + delta };
+}
+
+/**
+ * The forfeit cap for a lost ending. With a recorded gap, the gain still
+ * standing is exactly that gap decayed to now. It is deliberately not bounded
+ * by {@link standingGainCap}: across neutral that bound is the undercount this
+ * record exists to fix. Without a record (an action from a save made before
+ * it), {@link standingGainCap} is the fallback.
+ */
+export function lostEndingGainCap(args: {
+  readonly record: ReputationGainGap | undefined;
+  readonly tick: number;
+  readonly scoreBeforeEndingStep: number;
+}): number {
+  if (!args.record) return standingGainCap(args.scoreBeforeEndingStep);
+  return Math.max(0, gainGapAt(args.record, args.tick));
 }
 
 /**
