@@ -30,8 +30,21 @@ import {
   MANDATE_RECENT_DEEDS_KEPT,
 } from '../data/game-config';
 import { applyMandateCredits, rollLedgerWindow, type AppliedMandateCredit } from './mandateLedger';
-import type { MandateDeedRecord } from '../types/mandate';
+import type { MandateDeedRecord, RaceState, RaceWatch } from '../types/mandate';
 import type { SphereName } from '../types/index';
+import { mandateTrendOf } from './mandateLedger';
+import { emptyRaceWatch, projectRace, raceLever, sampleRace, settleRace, shownRaceState } from './raceForecast';
+import {
+  RACE_FIRST_SIGHT_LEAD,
+  RACE_LEVER_STAY,
+  RACE_TURN_LEAD,
+  raceChapterLeverLine,
+  raceForecastLine,
+} from '../data/race-content';
+import { sphereWord } from '../data/essence-format';
+
+/** THR-2251 — a race turn or first sight is an alert-channel Chronicle row, like a checkpoint. */
+const MANDATE_RACE_EVENT_SIGNIFICANCE = 0.65;
 
 /**
  * THR-2208 — one record per mortal whose chapter credited the Mandate this tick: the
@@ -66,6 +79,76 @@ function deedRecordsFrom(
   }
   return records;
 }
+/**
+ * THR-2251 — one tick of the race: sample, project, settle. On a turn or the first sight
+ * it returns one `mandate_progress` alert (no pause, Law 39) and emits
+ * `mandate.race_turned`. Fail-soft: a throw keeps the previous watch and owes nothing.
+ */
+function readRace(
+  state: GameState,
+  mandateState: MandateState,
+  definition: MandateDefinition,
+  progress: number,
+): { watch: RaceWatch; event?: TickEvent } {
+  const previous = mandateState.raceWatch ?? emptyRaceWatch();
+  try {
+    const doomProgress = state.doomClock?.progress;
+    const sampled = sampleRace(previous, state.tick, progress, doomProgress ?? Number.NaN);
+    const trendRising = mandateTrendOf(mandateState.recentLedgerDelta) === 'rising';
+    const projection = projectRace(sampled, state.doomClock, state.tick, { mandateProgress: progress, trendRising });
+    const settled = settleRace(sampled, projection.state, state.tick);
+    if (!settled.turned) return { watch: settled.watch };
+
+    emitTrace({
+      category: 'mandate.race_turned',
+      tick: state.tick,
+      agentId: state.ascendantId,
+      summary: settled.firstSight
+        ? `The race comes into view: ${settled.turned}.`
+        : `The race turns: ${settled.from} → ${settled.turned}.`,
+      from: settled.from,
+      to: settled.turned,
+      firstSight: settled.firstSight,
+      mandateProgress: progress,
+      doomProgress: doomProgress ?? 0,
+      mandateEndTick: projection.mandateEndTick,
+      doomEndTick: projection.doomEndTick,
+    });
+
+    const forecast = raceForecastLine(settled.turned);
+    if (!forecast) return { watch: settled.watch };
+    const lead = settled.firstSight ? RACE_FIRST_SIGHT_LEAD : RACE_TURN_LEAD;
+    const leverLine = raceLeverLine(state, definition, settled.turned, mandateState);
+    const event: TickEvent = {
+      id: nextEventId(state.tick),
+      tick: state.tick,
+      type: 'mandate_progress',
+      message: [lead, forecast, leverLine].filter(Boolean).join(' '),
+      significance: MANDATE_RACE_EVENT_SIGNIFICANCE,
+      // alert-chronicle: mandate_progress
+      notification: { channel: 'alert', icon: 'mandate' },
+    };
+    return { watch: settled.watch, event };
+  } catch {
+    return { watch: previous };
+  }
+}
+
+/** THR-2251 — the lever's sentence for the turn alert, or undefined when none is offered. */
+function raceLeverLine(
+  state: GameState,
+  definition: MandateDefinition,
+  shown: RaceState,
+  mandateState: MandateState,
+): string | undefined {
+  const lever = raceLever(shown, { ...state, mandateDefinition: definition, mandateState });
+  if (!lever) return undefined;
+  if (lever.kind === 'stay') return lever.held ? undefined : RACE_LEVER_STAY;
+  let name: string | undefined;
+  try { name = state.graph.getNode(lever.mortalId)?.name; } catch { name = undefined; }
+  return raceChapterLeverLine(sphereWord(lever.sphere), name);
+}
+
 import {
   resolveMilestoneProse,
   transitionForStageChange,
@@ -341,7 +424,8 @@ function evaluateSphereGrowthMandate(state: GameState): Partial<GameState> {
         ledgerAfter: credit.ledgerAfter,
       });
     }
-    // THR-2208 — the trend reads the ledger's last day, and a bound mortal's deeds
+    // THR-2208 — the trend reads the ledger's last three days (`MANDATE_TREND_WINDOW_TICKS`,
+    // THR-2236), and a bound mortal's deeds
     // join the Mandate block's "last deeds" list (one record per mortal per tick).
     const net = folded.applied.reduce((sum, c) => sum + c.applied, 0);
     const window = rollLedgerWindow(mandateState.recentLedgerMoves, state.tick, net);
@@ -367,6 +451,12 @@ function evaluateSphereGrowthMandate(state: GameState): Partial<GameState> {
   const primaryRatio = primaryTargetDelta > 0 ? primaryDelta / primaryTargetDelta : 0;
   const secondaryRatio = secondaryTargetDelta > 0 ? secondaryDelta / secondaryTargetDelta : 0;
   const progress = clamp01((clamp01(primaryRatio) + clamp01(secondaryRatio)) / 2);
+
+  // THR-2251 — the race: sample both clocks once a day, project which lands first at the
+  // window's pace, and settle it through the two-day hold. Pure; see raceForecast.ts.
+  const race = readRace(state, mandateState, definition, progress);
+  mandateState = { ...mandateState, raceWatch: race.watch };
+  const raceLine = raceForecastLine(shownRaceState(race.watch));
 
   // THR-2081 review: the counter-omen margin keeps its share of the target when the
   // targets are rescaled to points, so a big or sparse sphere neither forbids nor gifts
@@ -436,7 +526,8 @@ function evaluateSphereGrowthMandate(state: GameState): Partial<GameState> {
       message: passed
         ? exceeded
           ? `${checkpoint.label} held. A counter-omen gathers around your mandate.`
-          : `${checkpoint.label} held. Your mandate stays on pace.`
+          // THR-2251 (PC-6) — never "on pace" beside a forecast that says Doom comes first.
+          : raceLine ? `${checkpoint.label} held. ${raceLine}` : `${checkpoint.label} held.`
         : `${checkpoint.label} missed. Doom will strike harder at the next escalation.`,
       significance: passed ? 0.65 : 0.8,
       // alert-chronicle: mandate_progress
@@ -446,6 +537,8 @@ function evaluateSphereGrowthMandate(state: GameState): Partial<GameState> {
       },
     });
   }
+
+  if (race.event) events.push(race.event);
 
   const secondaryObjectiveCurrent = getSecondaryObjectiveProgress(state, definition.secondaryObjective);
   const secondaryObjectiveCompleted = definition.secondaryObjective

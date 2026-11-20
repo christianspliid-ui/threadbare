@@ -282,7 +282,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `climax` (1) | `climaxFit.ts` | `THR-2204`, `THR-2227` |
 | `coastline` (1) | `coastline.ts` | — |
 | `companions` (1) | `companions.ts` | `THR-1096` |
-| `complication` (2) | `complicationEffects.ts`, `complicationSelection.ts` | `THR-20` |
+| `complication` (2) | `complicationEffects.ts`, `complicationSelection.ts` | `THR-20`, `THR-2255` |
 | `condition` (2) | `conditionDecay.ts`, `conditionOverflow.ts` | `THR-1143`, `THR-761` |
 | `content` (6) | `contentCatalogView.ts`, `contentEntryResolver.ts`, `contentPageGenerator.ts`, `contentPageResolvers.ts`, `contentQuery.ts`, `contentQueryBearer.ts` | `THR-1481`, `THR-1482`, `THR-1485`, `THR-1486`, `THR-1487`, `THR-1491`, `THR-1520`, `THR-1876`, `THR-786` |
 | `content-eval` (6) | `content-eval/collectAuthoredProse.ts`, `content-eval/detectors.ts`, `content-eval/proseQualityScore.ts`, `content-eval/registerCompliance.ts`, `content-eval/surfaceFragmentReport.ts`, `content-eval/unreachableActions.ts` | `THR-472`, `THR-490`, `THR-501`, `THR-523`, `THR-573`, `THR-609`, `THR-659` |
@@ -315,7 +315,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `division` (1) | `divisionRule.ts` | `THR-1398`, `THR-1403` |
 | `domain` (1) | `domainCapability.ts` | `TB-056`, `THR-1580`, `THR-1581` |
 | `dominion` (3) | `dominion.ts`, `dominionProjection.ts`, `dominionViewModels.ts` | `THR-1748`, `THR-1750`, `THR-1822` |
-| `doom` (3) | `doomArchetypeSelection.ts`, `doomClock.ts`, `doomIdentityMilestones.ts` | `THR-1774` |
+| `doom` (5) | `doomArchetypeSelection.ts`, `doomClock.ts`, `doomFeedProse.ts`, `doomFeedings.ts`, `doomIdentityMilestones.ts` | `THR-1774`, `THR-2255` |
 | `dream` (1) | `dream.ts` | — |
 | `echo` (1) | `echo.ts` | — |
 | `economic` (2) | `economicChronicle.ts`, `economicContext.ts` | `THR-725` |
@@ -393,7 +393,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `pacing` (1) | `pacingGovernor.ts` | — |
 | `pathfinding` (1) | `pathfinding.ts` | `THR-1389` |
 | `personality` (2) | `personality/originBaseline.ts`, `personality/originConstants.ts` | `THR-539`, `THR-561` |
-| `phase` (41) | `phaseAgentDecision.ts`, `phaseAscendantProgression.ts`, `phaseAttention.ts`, `phaseColocationDetection.ts`, `phaseComposition.ts`, `phaseControlEffects.ts`, `phaseDivinePremonition.ts`, `phaseDominion.ts`, `phaseDoom.ts`, `phaseEconomicChronicle.ts`, `phaseEconomicTraits.ts`, `phaseEffectShells.ts`, `phaseEssenceSources.ts`, `phaseFactionActions.ts`, `phaseFactionSuccession.ts`, `phaseHexState.ts`, `phaseHiddenMarkDecay.ts`, `phaseInfluenceMaintenance.ts`, `phaseIntelligenceDecay.ts`, `phaseInteractionDepth.ts`, `phaseLocationTraits.ts`, `phaseMagicalSaturation.ts`, `phaseMandate.ts`, `phaseMovement.ts`, `phaseOmenAgenda.ts`, `phaseProsperity.ts`, `phaseQuintessence.ts`, `phaseRegistry.ts`, `phaseReputationDecay.ts`, `phaseReputationTraits.ts`, `phaseSchismResolution.ts`, `phaseSecretsFavors.ts`, `phaseSettlementPromotion.ts`, `phaseSettlementReassessment.ts`, `phaseSlotCaps.ts`, `phaseSphereAggregation.ts`, `phaseSpherePressure.ts`, `phaseStrategicProjects.ts`, `phaseSublocations.ts`, `phaseTradeRouteDecay.ts`, `phaseUnrest.ts` | `Phase 1`, `Phase 12`, `Phase 2`, `Phase 4`, `Phase 6`, `Phase 7`, `TB-045`, `TB-075`, `THR-1206`, `THR-1292`, `THR-132`, `THR-1320`, `THR-137`, `THR-1528`, `THR-1530`, `THR-1539`, `THR-1558`, `THR-1580`, `THR-1636`, `THR-1645`, `THR-1652`, `THR-1748`, `THR-1762`, `THR-1763`, `THR-19`, `THR-1923`, `THR-1934`, `THR-1957`, `THR-2208`, `THR-238`, `THR-30`, `THR-430`, `THR-432`, `THR-469`, `THR-481`, `THR-53`, `THR-611`, `THR-613`, `THR-618`, `THR-790` |
+| `phase` (41) | `phaseAgentDecision.ts`, `phaseAscendantProgression.ts`, `phaseAttention.ts`, `phaseColocationDetection.ts`, `phaseComposition.ts`, `phaseControlEffects.ts`, `phaseDivinePremonition.ts`, `phaseDominion.ts`, `phaseDoom.ts`, `phaseEconomicChronicle.ts`, `phaseEconomicTraits.ts`, `phaseEffectShells.ts`, `phaseEssenceSources.ts`, `phaseFactionActions.ts`, `phaseFactionSuccession.ts`, `phaseHexState.ts`, `phaseHiddenMarkDecay.ts`, `phaseInfluenceMaintenance.ts`, `phaseIntelligenceDecay.ts`, `phaseInteractionDepth.ts`, `phaseLocationTraits.ts`, `phaseMagicalSaturation.ts`, `phaseMandate.ts`, `phaseMovement.ts`, `phaseOmenAgenda.ts`, `phaseProsperity.ts`, `phaseQuintessence.ts`, `phaseRegistry.ts`, `phaseReputationDecay.ts`, `phaseReputationTraits.ts`, `phaseSchismResolution.ts`, `phaseSecretsFavors.ts`, `phaseSettlementPromotion.ts`, `phaseSettlementReassessment.ts`, `phaseSlotCaps.ts`, `phaseSphereAggregation.ts`, `phaseSpherePressure.ts`, `phaseStrategicProjects.ts`, `phaseSublocations.ts`, `phaseTradeRouteDecay.ts`, `phaseUnrest.ts` | `Phase 1`, `Phase 12`, `Phase 2`, `Phase 4`, `Phase 6`, `Phase 7`, `TB-045`, `TB-075`, `THR-1206`, `THR-1292`, `THR-132`, `THR-1320`, `THR-137`, `THR-1528`, `THR-1530`, `THR-1539`, `THR-1558`, `THR-1580`, `THR-1636`, `THR-1645`, `THR-1652`, `THR-1748`, `THR-1762`, `THR-1763`, `THR-19`, `THR-1923`, `THR-1934`, `THR-1957`, `THR-238`, `THR-30`, `THR-430`, `THR-432`, `THR-469`, `THR-481`, `THR-53`, `THR-611`, `THR-613`, `THR-618`, `THR-790` |
 | `phases` (29) | `phases/ambitionProgress.ts`, `phases/armySupply.ts`, `phases/clueDecay.ts`, `phases/clueRumors.ts`, `phases/corePersonality.ts`, `phases/delveAdmission.ts`, `phases/delveEmergence.ts`, `phases/delveProgression.ts`, `phases/doom.ts`, `phases/economicPower.ts`, `phases/emittedOmenDecay.ts`, `phases/factionActions.ts`, `phases/factionAmbitions.ts`, `phases/factionSuccession.ts`, `phases/index.ts`, `phases/mandate.ts`, `phases/personalityOriginSeed.ts`, `phases/personalityTraitEmerge.ts`, `phases/phaseAutonomousAftermath.ts`, `phases/plantedCompulsionDecay.ts`, `phases/popStreams.ts`, `phases/regionalMonopolies.ts`, `phases/reputationDecay.ts`, `phases/resourceStockTiers.ts`, `phases/routeEvents.ts`, `phases/ruinQuestHooks.ts`, `phases/schismResolution.ts`, `phases/secretsFavors.ts`, `phases/settlementEconomy.ts` | `THR-1506`, `THR-1923`, `THR-1955`, `THR-238`, `THR-430`, `THR-432`, `THR-527`, `THR-530`, `THR-539`, `THR-542`, `THR-544`, `THR-559`, `THR-561`, `THR-615`, `THR-617`, `THR-626`, `THR-669`, `THR-686`, `THR-815`, `THR-886` |
 | `pilgrim` (1) | `pilgrimWays.ts` | `THR-1632`, `THR-1660` |
 | `place` (1) | `placeConditions.ts` | `THR-1143`, `THR-1910`, `THR-790` |
@@ -407,6 +407,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `prose` (5) | `proseComposer.ts`, `proseEnrichment.ts`, `proseGenerator.ts`, `proseResolvers.ts`, `proseSelection.ts` | `Phase 5`, `TB-035`, `THR-1522`, `THR-1545`, `THR-1656`, `THR-1810`, `THR-1982`, `THR-456` |
 | `quest` (1) | `questVisibility.ts` | `TB-061` |
 | `quintessence` (1) | `quintessenceActions.ts` | `Phase 2`, `Phase 3` |
+| `race` (1) | `raceForecast.ts` | `THR-2251` |
 | `rarity` (2) | `rarity.ts`, `raritySeeding.ts` | — |
 | `reach` (2) | `reachPractice.ts`, `reachSignatureMarkers.ts` | `THR-1811`, `THR-550`, `THR-551`, `THR-552`, `THR-554`, `THR-613` |
 | `realm` (4) | `realmBorderMap.ts`, `realmHolder.ts`, `realmProjection.ts`, `realmSeat.ts` | `THR-1155`, `THR-1955` |
@@ -489,4 +490,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 115 tick phases · 242 engine domains · 819 modules._
+_Counts: 28 registered subsystems (2 dormant) · 115 tick phases · 243 engine domains · 822 modules._
