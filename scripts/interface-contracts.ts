@@ -1397,9 +1397,9 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: ENCOUNTERS,
     consumerSystem: 'Mandate',
     intent:
-      'A place the god tends fills the Mandate by what it cost (THR-2249). When the ascendant\x27s own `source === "player"` cast on a place (either location tier) resolves, `mandateCastForPlace` (in `executeStepResult` and the no-roll end, on the resolving step, beside `mandateDeedForChapter`, which never credits the ascendant) credits the cast\x27s `sphereAffinity`, when it is a Mandate sphere, `essencePaid × MANDATE_CAST_POINTS_PER_ESSENCE × MANDATE_DEED_BAND_FACTOR[band]`, keyed to the place, as `mandateDeedCredits` with one aftermath row (`source: "cast"`). It rides the deed pipe: `phaseUnifiedActionProgress` queues it on `pendingMandateCredits` and `phaseMandate` folds it once, the same tick. The pressure level-up credit is unchanged; casts never join `recentDeeds`.',
+      'A place the god tends fills the Mandate by what it cost (THR-2249). When the ascendant\x27s own `source === "player"` cast on a place (either location tier) resolves, `mandateCastForPlace` (in `executeStepResult` and the no-roll end, on the resolving step, beside `mandateDeedForChapter`, which never credits the ascendant) credits the sphere the cast was charged from (`castSphere`, stamped by `preparePlayerCast`; else the template\x27s `sphereAffinity`), when it is a Mandate sphere, `essencePaid × MANDATE_CAST_POINTS_PER_ESSENCE × MANDATE_DEED_BAND_FACTOR[band]`, keyed to the place, as `mandateDeedCredits` with one aftermath row (`source: "cast"`). It rides the deed pipe: `phaseUnifiedActionProgress` queues it on `pendingMandateCredits` and `phaseMandate` folds it once, the same tick. The pressure level-up credit is unchanged; casts never join `recentDeeds`.',
     ulTerms: ['Victory Mandate', 'Sphere', 'Place', 'Essence'],
-    mechanism: { kind: 'function', symbols: ['mandateCastForPlace', 'mandateCastCredit'], module: 'src/engine/mandateLedger.ts' },
+    mechanism: { kind: 'function', symbols: ['mandateCastForPlace', 'mandateCastCredit', 'pendingMandateCredits'], module: 'src/engine/mandateLedger.ts' },
     writeSites: ['src/engine/unifiedActionResolution.ts'],
     readSites: ['src/engine/phaseMandate.ts'],
   },

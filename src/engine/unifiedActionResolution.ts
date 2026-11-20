@@ -3399,7 +3399,7 @@ export function mandateCastForPlace(
   const band = deedBandOf(action.outcome);
   const credits = mandateCastCredit({
     targetId: action.targetId,
-    sphere: template.sphereAffinity,
+    sphere: action.castSphere ?? template.sphereAffinity,
     essencePaid: action.essencePaid,
     band,
     primary: def.primarySphere,

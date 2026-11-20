@@ -125,6 +125,14 @@ describe('THR-2249 — mandateCastForPlace', () => {
     expect(out?.change.detail).not.toMatch(/\d/);
   });
 
+  it('credits the sphere the cast was charged from, so a card with no sphere of its own counts', () => {
+    // Claim Dominion has no sphereAffinity and pays from the god's primary.
+    const out = mandateCastForPlace(makeState(), cast({ castSphere: 'mind' }), {}, 40);
+    expect(out?.credits[0]).toMatchObject({ entityId: 'shrine', sphere: 'mind', points: 3 });
+    expect(mandateCastForPlace(makeState(), cast(), {}, 40)).toBeUndefined();
+    expect(mandateCastForPlace(makeState(), cast({ castSphere: 'force' }), { sphereAffinity: 'mind' }, 40)).toBeUndefined();
+  });
+
   it('a place-tier location counts as a place too', () => {
     const out = mandateCastForPlace(makeState(), cast({ targetId: 'town' }), { sphereAffinity: 'spirit' }, 40);
     expect(out?.credits[0]).toMatchObject({ entityId: 'town', sphere: 'spirit' });

@@ -92,6 +92,8 @@ describe('preparePlayerCast', () => {
     expect(cast.action.actorId).toBe(ASCENDANT_ID);
     expect(cast.action.targetId).toBe(TARGET_ID);
     expect(cast.action.scale).toBe('personal');
+    // THR-2249 — the charged sphere rides the action for the Mandate cast credit.
+    expect(cast.action.castSphere).toBe('force');
     expect(cast.action.startTick).toBe(12);
     expect(cast.essenceCost).toBe(6);
     expect(cast.buffsConsumed).toBe(false);
