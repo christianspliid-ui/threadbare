@@ -507,6 +507,25 @@ export function useGameDebugLevers(ctx: GameDebugLeverContext): void {
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Debug bridge: forceRace (THR-2251) ────────────────────────────────────
+  // Writes the debug-only override the race surfaces read (`raceWatch.forced`); null
+  // clears it. The phase keeps the field as it finds it and never writes it.
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerForceRace((raceState) => {
+      const live = _gameStateRef.current;
+      const ms = live?.mandateState;
+      if (!live || !ms) return { error: 'This world has no Mandate' };
+      const watch = ms.raceWatch ?? { samples: [], shown: 'hidden' as const, seen: false };
+      const { forced: _forced, ...rest } = watch;
+      const raceWatch = raceState === null ? rest : { ...rest, forced: raceState };
+      const next = { ...live, mandateState: { ...ms, raceWatch } };
+      _gameStateRef.current = next;
+      commitLiveState(next);
+      return { ok: true as const };
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Debug bridge: forcePremonition (THR-1414) ─────────────────────────────
   // The whisper arm queues a real premonition visible immediately; the compulsion
   // arm arms the decision phase, because a compulsion is composed from candidates

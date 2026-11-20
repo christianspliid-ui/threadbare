@@ -3751,6 +3751,23 @@ export const CONTRACTS: readonly Contract[] = [
     // AgeTwilightScreen renders it under the ending line.
   },
   {
+    id: 'doom-clock-paces-mandate-race',
+    producerSystem: DOOM,
+    consumerSystem: PROGRESSION,
+    intent:
+      'The game can say which clock ends the age at the current pace: once a day the Mandate phase samples both clocks and reads which lands first, holding a new reading two days before it shows.',
+    ulTerms: ['Mandate', 'Doom Clock', 'Run'],
+    mechanism: { kind: 'state-field', symbols: ['doomClock', 'mandateState'] },
+    writeSites: ['src/engine/phaseDoom.ts', 'src/engine/phaseMandate.ts'],
+    readSites: ['src/engine/raceForecast.ts', 'src/debug-bridge.ts'],
+    // THR-2251 (plan 2026-11-19-thr-2246, ticket 1). `phaseMandate` reads `doomClock.progress`
+    // and `wokeAtTick` (through `doomFloorMetAtTick`) beside the Mandate's `progress`, and
+    // `sampleRace` / `projectRace` / `settleRace` write `mandateState.raceWatch`. A turn or
+    // the first sight pushes one `mandate_progress` alert and traces `mandate.race_turned`.
+    // Ticket 2 adds the view readers (godSheet, godRail, the Mandate and Doom dialogs,
+    // warm recap); today's readers are the checkpoint line and `window.__DEBUG.getRace()`.
+  },
+  {
     id: 'age-end-writes-resonance-memories',
     producerSystem: NARRATIVE,
     consumerSystem: WORLDGEN,

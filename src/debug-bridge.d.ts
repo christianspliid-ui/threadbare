@@ -60,6 +60,22 @@ export interface DebugActionInfo {
  * `error` is set — and the tick fields absent — when the call was rejected
  * (no game loaded, or n was not a finite number >= 1).
  */
+/** THR-2251 — `getRace()` / `forceRace()`: the race reading (`src/engine/raceForecast.ts`). */
+export interface DebugRaceReading {
+  shown: import('./types/mandate').RaceState;
+  settled: import('./types/mandate').RaceState;
+  forced: import('./types/mandate').RaceState | null;
+  computed: import('./types/mandate').RaceState;
+  mandateEndTick: number | null;
+  doomEndTick: number | null;
+  samples: import('./types/mandate').RaceSample[];
+  pending: { state: import('./types/mandate').RaceState; since: number } | null;
+  seen: boolean;
+  lever: import('./engine/raceForecast').RaceLever | null;
+  /** The forecast sentence for `shown`, or null while hidden. */
+  sentence: string | null;
+}
+
 /** THR-2250 — what `setMandateProgress` wrote, or why it could not. */
 export type DebugSetMandateProgressResult =
   | { progress: number; completed: boolean; godLedger: { primary: number; secondary: number } }
@@ -2207,7 +2223,7 @@ export interface DebugBridge {
    */
   /**
    * THR-2208 — the Mandate's deed credits: the trend word's key (read off the ledger's
-   * last day), `recentLedgerDelta`, the god ledger, the last deeds (records and the
+   * last three days, THR-2236), `recentLedgerDelta`, the god ledger, the last deeds (records and the
    * lines the player reads), and the Mandate-sphere spend open chapters carry so far.
    */
   getMandateDeeds: () => Promise<
@@ -2221,6 +2237,14 @@ export interface DebugBridge {
       }
     | { error: string }
   >;
+
+  /**
+   * THR-2251 — the race: `shown` (what the surfaces read — the debug override when
+   * `forceRace` set one), `settled` (the phase's shown state), `computed` (this tick's
+   * projection before the hold), both projected end ticks, the daily samples, the
+   * pending state under the hold, and the lever for the shown state.
+   */
+  getRace: () => Promise<DebugRaceReading | { error: string }>;
 
   getEssenceRefill: () => Promise<
     | (Omit<import('./engine/views/essenceRefill').EssenceRefillReading, 'spheres'> & {
@@ -2899,6 +2923,17 @@ export interface DebugBridge {
   /** @internal useGameDebugLevers registers the writer here */
   _registerSetMandateProgress(
     fn: (fraction: number, heldAt?: string) => DebugSetMandateProgressResult,
+  ): void;
+
+  /**
+   * THR-2251 (debug-only) — override the race state the surfaces show, for evidence;
+   * `null` clears it. Written to `mandateState.raceWatch.forced`, which the phase never
+   * writes and keeps as it finds it. Returns the reading after the write.
+   */
+  forceRace(state: import('./types/mandate').RaceState | null): Promise<DebugRaceReading | { error: string }>;
+  /** @internal useGameDebugLevers registers the writer here */
+  _registerForceRace(
+    fn: (state: import('./types/mandate').RaceState | null) => { ok: true } | { error: string },
   ): void;
 
   // ── Spawn / world-spawn commands ────────────────────────────────────────
