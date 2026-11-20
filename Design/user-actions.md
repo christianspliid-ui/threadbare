@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-20 13:56 local (12:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-20 14:58 local (13:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
 
@@ -58,6 +58,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-20: popups now wait for your moment: a gift or an arrival holds while a chapter card or an armed card is open. It is live** ([THR-2259](https://linear.app/threadbare/issue/THR-2259)). Merged via [#2875](https://github.com/christianspliid-ui/threadbare/pull/2875) and [#2876](https://github.com/christianspliid-ui/threadbare/pull/2876).
+- **2026-11-20: Aftermath rows say the right thing: a gift won on a lost step no longer reads as a scar. It is live** ([THR-2258](https://linear.app/threadbare/issue/THR-2258)). Merged via [#2874](https://github.com/christianspliid-ui/threadbare/pull/2874).
 - **2026-11-20: a lost chapter no longer shows reputation rising: a lost group contest is settled, and the row stays on the sheet at the floor. It is live** ([THR-2257](https://linear.app/threadbare/issue/THR-2257)). Merged via [#2873](https://github.com/christianspliid-ui/threadbare/pull/2873).
 - **2026-11-20: the screen now says which clock lands first, your Mandate or the Doom, and names the one move that changes it. It is live** ([THR-2252](https://linear.app/threadbare/issue/THR-2252)). Merged via [#2872](https://github.com/christianspliid-ui/threadbare/pull/2872).
 - **2026-11-20: a failed chapter now feeds the Doom at a place; ground you tend starves it, and Rebuke can hold a place it fed. It is live** ([THR-2255](https://linear.app/threadbare/issue/THR-2255)). Merged via [#2871](https://github.com/christianspliid-ui/threadbare/pull/2871).
@@ -66,8 +68,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-20: the Twilight's closing screen now says what the Mandate came to and where your hand raised it. It is live** ([THR-2250](https://linear.app/threadbare/issue/THR-2250)). Merged via [#2867](https://github.com/christianspliid-ui/threadbare/pull/2867).
 - **2026-11-19: the agency census now plays the whole game: essence spent on a chapter fills the Mandate, and the census checks whether an age can be won** ([THR-2248](https://linear.app/threadbare/issue/THR-2248)). Merged via [#2866](https://github.com/christianspliid-ui/threadbare/pull/2866).
 - **2026-11-19: the design lane planned "Doom's last stage is a stand" ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-19-thr-2247-dooms-last-stage-is-a-stand.md)). A failure feeds the Doom at a place, ground you tend starves it, and Rebuke can hold a place it fed. The build ticket can start after 01:00 local tonight** ([THR-2247](https://linear.app/threadbare/issue/THR-2247)).
-- **2026-11-19: the design lane planned "a well-played age can be won" ([the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-19-thr-2245-a-well-played-age-can-be-won.md)). Spells cast on a place in the Mandate's spheres will fill the Mandate; the closing screen will say what it came to. Two build tickets can start after 22:30 local today** ([THR-2245](https://linear.app/threadbare/issue/THR-2245)).
-- **2026-11-19: a faction's sheet now names the commission it has open, so you can see it before you act. It is live** ([THR-2043](https://linear.app/threadbare/issue/THR-2043)). Merged via [#2861](https://github.com/christianspliid-ui/threadbare/pull/2861).
 
 ---
 
