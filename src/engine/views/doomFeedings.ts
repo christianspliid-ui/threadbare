@@ -15,7 +15,7 @@ import type { TendedBy } from '../dominion';
 import { isTended } from '../dominion';
 import { DOOM_FEED_LIST_MAX, DOOM_FEED_OFTEN_COUNT } from '../../data/game-config';
 import { doomFeedWindowTicks, doomTendingIndex, latestAnswerableFeeding, pruneDoomFeedings } from '../doomFeedings';
-import { rebukeAnswerFor } from '../rivalRebuke';
+import { rebukablePlaceIds, rebukeAnswerFor } from '../rivalRebuke';
 import { godHoldsRebuke } from './rivalEntry';
 import { countWord } from '../aftermathWords';
 import { DOOM_FEED_NAME_FALLBACK } from '../../data/doom-feed-content';
@@ -111,6 +111,7 @@ export function selectDoomFeedings(state: DoomFeedReadState): DoomFeedingsView {
     const index = safeTendingIndex(read);
     const windowTicks = doomFeedWindowTicks();
     const all: DoomFeedRowView[] = [];
+    let offered: Set<string> | undefined;
     for (const [placeId, f] of Object.entries(feedings)) {
       const placeName = placeNameOf(read, placeId);
       if (!placeName) continue; // a place that no longer exists, or has no name to show
@@ -128,7 +129,10 @@ export function selectDoomFeedings(state: DoomFeedReadState): DoomFeedingsView {
       let rebukable = false;
       if (holdsRebuke && (status === 'once' || status === 'often')) {
         try {
-          rebukable = rebukeAnswerFor(read as RebukeRead, placeId)?.kind === 'doom';
+          // The card's own target set (it drops a place with a Rebuke still in flight), so
+          // the button never promises a card the Act row does not offer (review gate).
+          offered ??= rebukablePlaceIds(read as RebukeRead);
+          rebukable = offered.has(placeId) && rebukeAnswerFor(read as RebukeRead, placeId)?.kind === 'doom';
         } catch {
           rebukable = false;
         }
@@ -176,7 +180,9 @@ export function doomFedLead(state: DoomFeedReadState, placeId: string): { headli
     if (answer?.kind === 'rival') return null;
     const actorName = f.lastActorId ? state.graph?.getNode(f.lastActorId)?.name : undefined;
     const name = actorName && actorName.trim() ? actorName : DOOM_FEED_NAME_FALLBACK.toLowerCase();
-    const holds = godHoldsRebuke({ unlockedActionIds: state.unlockedActionIds }) && answer?.kind === 'doom';
+    const holds = godHoldsRebuke({ unlockedActionIds: state.unlockedActionIds }) && answer?.kind === 'doom'
+      && rebukablePlaceIds(state as RebukeRead).has(placeId); // in flight → the card is not offered
+
     return {
       headline: DOOM_FEED_WORDS.leadHeadline.replace('{name}', name),
       answer: holds ? DOOM_FEED_WORDS.leadAnswerRebuke : DOOM_FEED_WORDS.leadAnswerTend,

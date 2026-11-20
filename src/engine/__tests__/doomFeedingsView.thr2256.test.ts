@@ -86,6 +86,13 @@ describe('THR-2256 — selectDoomFeedings (the Where it feeds list)', () => {
     expect(view.rows.every(r => r.rebukable)).toBe(true);
   });
 
+  it('a place with a Rebuke still in flight offers no Rebuke on the panel or the lead (the card is not offered)', () => {
+    const inFlight = { unifiedActions: [{ templateId: RIVAL_REBUKE_TEMPLATE_ID, targetId: 't1', resolved: false }] } as unknown as Partial<GameState>;
+    const state = makeState({ t1: fed([NOW - 5]) }, inFlight);
+    expect(selectDoomFeedings(state).rows[0]).toMatchObject({ placeId: 't1', rebukable: false });
+    expect(doomFedLead(state, 't1')?.answer).toBe('Ground you tend here starves it.');
+  });
+
   it('a tended place reads "held", and offers no Rebuke', () => {
     const view = selectDoomFeedings(makeState({ t1: fed([NOW - 5]) }, { rebukedPlaces: { t1: NOW + 4 * DAY } }));
     expect(view.rows[0]).toMatchObject({ placeId: 't1', status: 'held', word: DOOM_FEED_WORDS.held, rebukable: false });
