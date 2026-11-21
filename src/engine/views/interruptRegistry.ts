@@ -195,8 +195,44 @@ export interface InterruptSurface {
   stopsTime?: boolean;
 }
 
-/** Why an arrival is not on screen yet (THR-1853). */
-export type ArrivalHoldReason = 'interrupt' | 'player_surface' | 'recent_input' | 'card_armed';
+/**
+ * Why an arrival is not on screen yet (THR-1853). `breather` (THR-2266): a chapter the
+ * world would open waits out the quiet day after another chapter's Aftermath closed.
+ */
+export type ArrivalHoldReason = 'interrupt' | 'player_surface' | 'recent_input' | 'card_armed' | 'breather';
+
+/**
+ * THR-2266 — the quiet day on the map between chapters. After the player dismisses a
+ * chapter's Aftermath, the world opens no *new* chapter on its own for this many running
+ * ticks (one game day, `TICKS_PER_DAY`; 12 s at speed 1). Ticks, not wall-clock: a paused
+ * player is taking their turn, so the day does not run down while paused. A later step or
+ * the Aftermath of a chapter already opened, a chapter the player opens, and the live
+ * answer run are never held. Lower it if chapters thin out below four per ten minutes.
+ */
+export const CHAPTER_BREATHER_TICKS = 12;
+
+/**
+ * THR-2266 — running ticks left in the quiet day, 0 when none is running. `closedAtTick`
+ * is the tick the last Aftermath was dismissed at (null = none yet). Pure.
+ */
+export function chapterBreatherTicksLeft(closedAtTick: number | null, currentTick: number): number {
+  if (closedAtTick === null || !Number.isFinite(closedAtTick) || !Number.isFinite(currentTick)) return 0;
+  return Math.max(0, CHAPTER_BREATHER_TICKS - Math.max(0, currentTick - closedAtTick));
+}
+
+/**
+ * THR-2266 — the chapter a notification belongs to: its action when pinned, else the
+ * agent and encounter. A chapter counts as already opened once any of its beats mounted.
+ */
+export function chapterKeyOf(notif: { actionId?: string; agentId: string; encounterId: string }): string {
+  return notif.actionId ? `action:${notif.actionId}` : `chapter:${notif.agentId}|${notif.encounterId}`;
+}
+
+/** THR-2266 — opened chapters remembered for the breather's "already opened" test (oldest dropped first). */
+export const OPENED_CHAPTER_MEMORY_MAX = 200;
+
+/** THR-2266 — the hold reasons that list a chapter as waiting in Needs you (never the 2.5 s `recent_input`). */
+export const CHAPTER_WAITING_HOLD_REASONS: readonly ArrivalHoldReason[] = ['breather', 'card_armed'];
 
 export interface HeldArrival {
   id: string;
@@ -211,6 +247,12 @@ export interface WorldOpenedEncounterHoldInput {
   recentInput: boolean;
   /** THR-2259 — a card is armed. Optional: absent = no card armed. */
   cardArmed?: boolean;
+  /**
+   * THR-2266 — running ticks left in the quiet day after another chapter's Aftermath
+   * closed (`chapterBreatherTicksLeft`). Optional: absent = no breather. The caller
+   * passes 0 for a later beat of a chapter already opened, which is never held.
+   */
+  breatherTicksLeft?: number;
 }
 
 /**
@@ -225,6 +267,7 @@ export function worldOpenedEncounterHeldBy(input: WorldOpenedEncounterHoldInput)
   if (input.playerSurfaceOpen) heldBy.push('player_surface');
   if (input.recentInput) heldBy.push('recent_input');
   if (input.cardArmed === true) heldBy.push('card_armed');
+  if ((input.breatherTicksLeft ?? 0) > 0) heldBy.push('breather');
   return heldBy;
 }
 

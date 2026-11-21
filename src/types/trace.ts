@@ -482,6 +482,8 @@ export type TraceCategory =
   // Delivery-beat playback — Witness opens the scene on The First (THR-1650)
   | 'beat.delivery_played'
   | 'beat.delivery_skipped'
+  // The quiet day between chapters — a world-opened chapter waits (THR-2266)
+  | 'encounter.auto_open_held'
   // The opening — the meeting comes to the player (THR-1605 S1)
   | 'meeting.location_picked'
   | 'meeting.essence_spent'
@@ -1205,6 +1207,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Delivery-beat playback (THR-1650)
   'beat.delivery_played',
   'beat.delivery_skipped',
+  // The quiet day between chapters (THR-2266)
+  'encounter.auto_open_held',
   // The opening (THR-1605 S1)
   'meeting.location_picked',
   'meeting.essence_spent',
@@ -6234,6 +6238,7 @@ export type TraceEntry =
   | BeatResolvedTrace
   | BeatSeededTrace
   | BeatDeliveryTrace
+  | EncounterAutoOpenHeldTrace
   | MeetingLocationPickedTrace
   | MeetingEssenceSpentTrace
   | DoomWakeTrace
@@ -6926,6 +6931,23 @@ export interface BeatDeliveryTrace extends TraceBase {
   reason?: 'no_first' | 'no_anchor' | 'ineligible' | 'template_missing' | 'open_failed';
   /** Offer-time withholding only: how many delivery beats were filtered out this draw. */
   filteredCount?: number;
+}
+
+/**
+ * Trace: a chapter the world would open waits (THR-2266). Emitted once per hold, when the
+ * auto-open scan holds the first beat of a new chapter for the quiet day after another
+ * chapter's Aftermath closed (`CHAPTER_BREATHER_TICKS`). `ticksLeft` is the running ticks
+ * before it opens on its own; Needs you offers it early.
+ */
+export interface EncounterAutoOpenHeldTrace extends TraceBase {
+  category: 'encounter.auto_open_held';
+  turn: number;
+  notificationId: string;
+  agentId: string;
+  encounterId: string;
+  reason: 'breather';
+  heldBy: string[];
+  ticksLeft: number;
 }
 
 /**
