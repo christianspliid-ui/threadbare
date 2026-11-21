@@ -387,13 +387,15 @@ export interface DebugInterruptState {
    * card, popup) that want the screen but wait: behind another interrupt, a surface the
    * player opened, or the `INTERRUPT_QUIET_AFTER_INPUT_MS` window after a click.
    */
-  heldArrivals: Array<{ id: string; heldBy: Array<'interrupt' | 'player_surface' | 'recent_input' | 'card_armed'> }>;
+  heldArrivals: Array<{ id: string; heldBy: Array<'interrupt' | 'player_surface' | 'recent_input' | 'card_armed' | 'breather'> }>;
   /**
    * THR-2053 — a chapter the world would open, held while the player is mid-click
    * (`INTERRUPT_QUIET_AFTER_INPUT_MS`) or has a surface open (the ledger and court included).
    * `null` when no chapter waits. Badge-, row- and Needs-you-opened chapters never wait.
+   * THR-2266 — `breather`: the quiet day after another chapter's Aftermath closed;
+   * `ticksLeft` is the running ticks before it opens on its own.
    */
-  heldEncounter: { notificationId: string; heldBy: Array<'interrupt' | 'player_surface' | 'recent_input' | 'card_armed'> } | null;
+  heldEncounter: { notificationId: string; heldBy: Array<'interrupt' | 'player_surface' | 'recent_input' | 'card_armed' | 'breather'>; ticksLeft?: number } | null;
   /**
    * THR-1877 — every homed surface rendering now, stopping or not, by kind
    * (`HomedSurfaceKind`, `src/data/homed-surfaces.ts`). The hosts render exactly these.

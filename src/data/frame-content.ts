@@ -200,6 +200,13 @@ export const NEEDS_YOU_GROUP_TITLES = {
 /** The fold row at the end of a group it shortens. */
 export const NEEDS_YOU_FOLD_ROW: CountPair = { one: 'and {n} more', other: 'and {n} more' };
 export const NEEDS_YOU_LIST_ARIA = 'Things that need you';
+/**
+ * THR-2266 — a chapter the world holds back (the quiet day after an Aftermath, or a card
+ * in hand): "{mortal} — {title} waits for you". The row opens it at once.
+ */
+export const NEEDS_YOU_CHAPTER_WAITING_LINE = '{mortal} — {title} waits for you';
+/** THR-2266 — the same row when the chapter has no title to name. */
+export const NEEDS_YOU_CHAPTER_WAITING_UNTITLED = '{mortal} — a chapter waits for you';
 
 /**
  * `ui.needs_you_news`'s description, built at render from `NEEDS_YOU_NEWS_KEEP_DAYS` so a

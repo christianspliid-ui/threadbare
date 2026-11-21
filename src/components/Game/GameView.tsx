@@ -80,7 +80,7 @@ import { HEX_CONSTANTS } from '../HexMapV2/scene/HexFillMesh';
 import { EssencePanel } from './EssencePanel';
 import { GameViewTopBar, type TopBarFrameFixture } from './GameView/GameViewTopBar';
 import { beatOfferWords } from './AscendantBeatModal';
-import { buildNeedsYou, withNeedsYouFaces, needsYouFixtureSubject, needsYouStamp, type NeedsYouNamedPause, type NeedsYouRowVM, type NeedsYouSources } from '../../engine/views/needsYou';
+import { buildNeedsYou, withNeedsYouFaces, needsYouFixtureSubject, needsYouStamp, type NeedsYouHeldChapter, type NeedsYouNamedPause, type NeedsYouRowVM, type NeedsYouSources } from '../../engine/views/needsYou';
 import type { AlertItem } from '../../types/notification';
 import { shouldCenterOnAgentMove } from './cameraInteractionGate';
 import { REACH_TO_SPHERE, SPHERE_COLORS } from '../icons/constants';
@@ -179,7 +179,10 @@ import { useNotifications } from './hooks/useNotifications';
 import { useActionToasts } from './hooks/useActionToasts';
 import { useInterruptAutoPause, releaseClockOnBond, clockHoldOpen, type InterruptAutoPauseHandle } from './hooks/useInterruptAutoPause';
 import { useChapterAnswerRun, type ChapterAnswerRunHandle } from './hooks/useChapterAnswerRun';
-import { resolveInterrupts, worldOpenedEncounterHeldBy, INTERRUPT_QUIET_AFTER_INPUT_MS, type ArrivalHoldReason } from './interruptRegistry';
+import {
+  resolveInterrupts, worldOpenedEncounterHeldBy, INTERRUPT_QUIET_AFTER_INPUT_MS, type ArrivalHoldReason,
+  chapterBreatherTicksLeft, chapterKeyOf, OPENED_CHAPTER_MEMORY_MAX,
+} from './interruptRegistry';
 import { HOMED_SURFACES, type HomedSurfaceKind, type StageHomedKind } from '../../data/homed-surfaces';
 import { selectEncounterBadges, type EncounterBadgeModel } from './encounterBadgeModel';
 import { selectEncounterStakesLines, stakesLineForNotification } from './encounterStakesRows';
@@ -1368,6 +1371,31 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
    * auto-open hold share it, so the hold waits on the chapter the scan would open,
    * never on a spent step record.
    */
+  /**
+   * THR-2266 — the quiet day between chapters. The tick the last Aftermath was dismissed
+   * at (null = none yet), and the chapters whose beats have mounted: a later beat of an
+   * opened chapter is never held, only the first beat of a new one.
+   */
+  const [breatherClosedAtTick, setBreatherClosedAtTick] = useState<number | null>(null);
+  const openedChapterKeysRef = useRef<Set<string>>(new Set());
+  const rememberOpenedChapter = useCallback((notif: EncounterNotification) => {
+    const keys = openedChapterKeysRef.current;
+    const key = chapterKeyOf(notif);
+    keys.delete(key);
+    keys.add(key);
+    while (keys.size > OPENED_CHAPTER_MEMORY_MAX) {
+      const oldest = keys.values().next().value;
+      if (oldest === undefined) break;
+      keys.delete(oldest);
+    }
+  }, []);
+  /** THR-2266 — Needs you's "‹Mortal› — ‹chapter› waits for you" row source. */
+  const [heldChapter, setHeldChapter] = useState<NeedsYouHeldChapter | null>(null);
+  /** THR-2266 — running ticks left in the quiet day; changes only while one runs, so the scan re-runs per tick then. */
+  const breatherTicksLeft = chapterBreatherTicksLeft(breatherClosedAtTick, gameState.tick);
+  /** THR-2266 — the last breather hold traced, so the trail gets one line per hold, not one per tick. */
+  const lastBreatherTraceKeyRef = useRef<string | null>(null);
+
   const canOpenEncounterNotification = useCallback((notif: EncounterNotification): boolean => {
     if (!getUnifiedTemplateById(notif.encounterId)) return false;
     const { encounter, activeAction } = selectEncounterRuntimeForNotification(
@@ -1418,8 +1446,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       activeActionSnapshot: activeAction,
       clearanceGateStateSnapshot,
     });
+    rememberOpenedChapter(notif);
     return true;
-  }, [canOpenEncounterNotification, gameState.clearanceGateStates, gameState.encounterNotifications, gameState.encounterProgress, gameState.tick, gameState.unifiedActions]);
+  }, [canOpenEncounterNotification, rememberOpenedChapter, gameState.clearanceGateStates, gameState.encounterNotifications, gameState.encounterProgress, gameState.tick, gameState.unifiedActions]);
 
   // THR-664: encounter activity is anchored to the entity it concerns. Pending
   // notifications become badges on the agent's thread row instead of toasts in
@@ -2173,6 +2202,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (tieredEncounterState?.notification?.id && tieredEncounterState.notification.kind === 'aftermath') {
       suppressedEncounterNotificationId.current = tieredEncounterState.notification.id;
       setInterruptSuppressedUntilTick(gameState.tick + 1);
+      // THR-2266 — leaving an Aftermath starts the quiet day as "Return to the world" does.
+      setBreatherClosedAtTick(gameState.tick);
       setGameState(prev => ({
         ...prev,
         encounterNotifications: resolveNotificationsOnVeilLeave(
@@ -2298,6 +2329,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (tieredEncounterState?.notification?.id) {
       suppressedEncounterNotificationId.current = tieredEncounterState.notification.id;
       setInterruptSuppressedUntilTick(gameState.tick + 1);
+      // THR-2266 — the quiet day on the map: the next chapter the world opens waits it out.
+      setBreatherClosedAtTick(gameState.tick);
       // THR-1778: resolve every record this aftermath discharges, not only the one
       // on screen — a leftover step notification otherwise re-opens the aftermath.
       setGameState(prev => ({
@@ -3022,11 +3055,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     // THR-2151 D3 — while a live answer waits on the Stage, the chapter's own answer
     // opens first, through the answer run (`open_answer`), with no quiet window. Other
     // chapters' beats wait until it has opened (or the card has yielded).
-    if (liveAnswerPending) return;
+    // THR-2266 — no scan, no waiting row (the one-tick suppression window keeps the last one).
+    const clearHeldChapter = () => setHeldChapter(prev => (prev === null ? prev : null));
+    if (liveAnswerPending) { clearHeldChapter(); return; }
     if (isEncounterAutoOpenSuppressed(interruptsSuppressed, running)) return;
     // Don't auto-open tiered encounters while a premonition modal is active —
     // compulsion handles encounter selection for that agent
-    if (activePremonition) return;
+    if (activePremonition) { clearHeldChapter(); return; }
     const notifications = gameState.encounterNotifications ?? [];
     if (suppressedEncounterNotificationId.current) {
       const suppressedStillPending = notifications.some(
@@ -3052,15 +3087,58 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     const waitingId = runEncounterAutoOpenScan(candidates, suppressedEncounterNotificationId.current, canOpenEncounterNotification);
     const waiting = waitingId ? candidates.find(n => n.id === waitingId) : undefined;
     const msSinceInput = Date.now() - lastInputAtRef.current;
+    // THR-2266 — only the first beat of a chapter not yet opened waits out the quiet day.
+    const waitingBreather = waiting && !openedChapterKeysRef.current.has(chapterKeyOf(waiting))
+      ? breatherTicksLeft
+      : 0;
     const heldBy = waiting
       ? worldOpenedEncounterHeldBy({
           playerSurfaceOpen: encounterSurfaceHoldRef.current,
           recentInput: lastInputAtRef.current > 0 && msSinceInput < INTERRUPT_QUIET_AFTER_INPUT_MS,
           cardArmed: cardArmedHoldRef.current,
+          breatherTicksLeft: waitingBreather,
         })
       : [];
+    const nextHeldChapter: NeedsYouHeldChapter | null = waiting && heldBy.length > 0
+      ? {
+          notificationId: waiting.id,
+          agentId: waiting.agentId,
+          agentName: waiting.agentName,
+          title: waiting.encounterName || null,
+          heldBy,
+          tick: waiting.createdTick,
+        }
+      : null;
+    setHeldChapter(prev => (
+      prev?.notificationId === nextHeldChapter?.notificationId
+      && prev?.heldBy.join('+') === nextHeldChapter?.heldBy.join('+')
+      && prev?.title === nextHeldChapter?.title
+        ? prev
+        : nextHeldChapter));
     if (waiting && heldBy.length > 0) {
-      heldEncounterRef.current = { notificationId: waiting.id, heldBy };
+      heldEncounterRef.current = {
+        notificationId: waiting.id,
+        heldBy,
+        ...(heldBy.includes('breather') ? { ticksLeft: waitingBreather } : {}),
+      };
+      // THR-2266 — the causal trail says why the chapter waited (once per hold, not per tick).
+      const traceKey = `${waiting.id}:${heldBy.join('+')}`;
+      if (heldBy.includes('breather') && lastBreatherTraceKeyRef.current !== traceKey) {
+        lastBreatherTraceKeyRef.current = traceKey;
+        emitTrace({
+          tick: gameState.tick,
+          category: 'encounter.auto_open_held',
+          turn: gameState.tick,
+          notificationId: waiting.id,
+          agentId: waiting.agentId,
+          encounterId: waiting.encounterId,
+          reason: 'breather',
+          heldBy,
+          ticksLeft: waitingBreather,
+          summary: `encounter.auto_open_held: ${waiting.encounterName || waiting.encounterId} waits ${waitingBreather} tick(s) — the quiet day after an Aftermath`,
+        } as unknown as Parameters<typeof emitTrace>[0]);
+      }
+      // A breather hold looks again on the next tick (`breatherTicksLeft` is a dep).
       if (!heldBy.includes('recent_input')) return;
       const timer = setTimeout(
         () => setEncounterHoldRecheck(n => n + 1),
@@ -3074,7 +3152,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       suppressedEncounterNotificationId.current,
       handleOpenEncounterFromNotification,
     );
-  }, [gameState.encounterNotifications, handleOpenEncounterFromNotification, interruptsSuppressed, running, activePremonition, encounterHoldRecheck, canOpenEncounterNotification, liveAnswerPending]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- gameState.tick is read for the trace/row stamp only; breatherTicksLeft re-runs the scan each tick of a quiet day
+  }, [gameState.encounterNotifications, handleOpenEncounterFromNotification, interruptsSuppressed, running, activePremonition, encounterHoldRecheck, canOpenEncounterNotification, liveAnswerPending, breatherTicksLeft]);
 
   // THR-1724 (review gate) — a minimised step the world resolved without the
   // player must not leave a badge that opens nothing. Since THR-1730 a
@@ -4092,10 +4171,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       } : null,
       receipts,
       namedPause,
+      heldChapter,
       held,
       alerts: [...notificationState.alerts, ...needsYouFixtureAlerts],
     };
-  }, [pendingBeat, beatEntered, interruptsSuppressed, gameState.playerActionReceipts, gameState.tick, gameState.doomDefinition,
+  }, [pendingBeat, beatEntered, interruptsSuppressed, gameState.playerActionReceipts, gameState.tick, gameState.doomDefinition, heldChapter,
     notificationState.popupQueue, notificationState.alerts, interruptResolution.held, beatProseOverride, namedPause,
     needsYouFixtureAlerts, needsYouFixtureHeld, giftOtherInterrupts.length]);
   // THR-2099 — rows about a mortal carry their face; sources change every tick, so the memo refreshes with them.
@@ -4124,10 +4204,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         for (const id of row.alertIds ?? []) handleDismissAlert(id);
         setNeedsYouFixtureAlerts(prev => prev.filter(a => !(row.alertIds ?? []).includes(a.id)));
         return;
+      case 'chapter': {
+        // THR-2266 — the player asks for the held chapter: it opens at once, as from its badge.
+        const notif = (gameState.encounterNotifications ?? []).find(n => n.id === row.notificationId && !n.resolved);
+        if (notif) handleOpenEncounterFromNotification(notif);
+        return;
+      }
       default:
         return;
     }
-  }, [giftOtherInterrupts.length, hexMapRef, handleNotificationNavigate, handleDismissAlert]);
+  }, [giftOtherInterrupts.length, hexMapRef, handleNotificationNavigate, handleDismissAlert, gameState.encounterNotifications, handleOpenEncounterFromNotification]);
   // N answers only while the pill is on the bar (its reveal gate holds and something waits).
   needsYouKeyRef.current = () => {
     if (needsYouVM.total > 0 && document.querySelector('[data-testid="needs-you-pill"] button')) setNeedsYouOpen(o => !o);

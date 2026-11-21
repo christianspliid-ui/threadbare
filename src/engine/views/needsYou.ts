@@ -31,11 +31,13 @@ import type { GameState } from '../../types/gameState';
 import type { WorldGraph } from '../graph';
 import type { FamiliarityMap } from '../../types/familiarity';
 import { mortalFace, type EntityVisualDescriptor } from './entityVisualResolver';
+import { CHAPTER_WAITING_HOLD_REASONS, type ArrivalHoldReason } from './interruptRegistry';
+import { NEEDS_YOU_CHAPTER_WAITING_LINE, NEEDS_YOU_CHAPTER_WAITING_UNTITLED } from '../../data/frame-content';
 
 export type NeedsYouGroup = 'waiting' | 'held' | 'news';
-export type NeedsYouProducerId = 'beat_offer' | 'receipt_unacked' | 'named_pause' | 'held_moment' | 'alert';
+export type NeedsYouProducerId = 'beat_offer' | 'receipt_unacked' | 'named_pause' | 'chapter_waiting' | 'held_moment' | 'alert';
 /** What a row's press opens. `none` rows are not buttons. */
-export type NeedsYouOpens = 'beatOffer' | 'receipt' | 'place' | 'subject' | 'none';
+export type NeedsYouOpens = 'beatOffer' | 'receipt' | 'place' | 'subject' | 'chapter' | 'none';
 
 /** The three groups, in the order the list draws them. */
 export const NEEDS_YOU_GROUP_ORDER: readonly NeedsYouGroup[] = ['waiting', 'held', 'news'];
@@ -70,6 +72,8 @@ export interface NeedsYouRowVM {
   tick: number;
   /** `opens: 'receipt'` — the receipt to open. */
   receiptId?: string;
+  /** THR-2266 — `opens: 'chapter'`: the encounter notification the press opens. */
+  notificationId?: string;
   /** `opens: 'subject'` — where the alert routes. */
   navigationTarget?: NavigationTarget;
   /** `opens: 'place'` — the hex to centre on. */
@@ -181,11 +185,28 @@ export interface NeedsYouNamedPause {
   tick: number;
 }
 
+/**
+ * THR-2266 — the chapter the world's auto-open scan is holding back, and why. The host
+ * passes the scan's `heldEncounter` resolved to words; the producer lists it only for a
+ * hold the player waits out (`CHAPTER_WAITING_HOLD_REASONS`), never the 2.5 s click hold.
+ */
+export interface NeedsYouHeldChapter {
+  notificationId: string;
+  agentId: string;
+  agentName: string;
+  /** The chapter's title; null when none resolves. */
+  title: string | null;
+  heldBy: readonly ArrivalHoldReason[];
+  tick: number;
+}
+
 export interface NeedsYouSources {
   currentTick: number;
   beatOffer: NeedsYouBeatOffer | null;
   receipts: readonly NeedsYouReceipt[];
   namedPause: NeedsYouNamedPause | null;
+  /** THR-2266 — optional: absent = no chapter held back. */
+  heldChapter?: NeedsYouHeldChapter | null;
   /** Held surfaces, in the order they will open (the registry's `held`). */
   held: readonly NeedsYouHeld[];
   alerts: readonly AlertItem[];
@@ -217,6 +238,20 @@ export function beatOfferLine(offer: NeedsYouBeatOffer): string {
   if (offer.kind === 'gift') return offer.eyebrow ? `${NEEDS_YOU_WORDS.giftWaits}: ${offer.eyebrow}` : NEEDS_YOU_WORDS.giftWaits;
   if (offer.eyebrow && offer.title) return `${offer.eyebrow}: ${offer.title}`;
   return offer.title ?? offer.eyebrow ?? NEEDS_YOU_WORDS.beatFallback;
+}
+
+/** THR-2266 — does this hold list a chapter as waiting? Only a hold the player waits out. */
+export function chapterHoldIsWaiting(heldBy: readonly ArrivalHoldReason[]): boolean {
+  return heldBy.some(r => CHAPTER_WAITING_HOLD_REASONS.includes(r));
+}
+
+/** THR-2266 — the waiting chapter's line: the mortal and the chapter's title, never an id. */
+export function chapterWaitingLine(chapter: Pick<NeedsYouHeldChapter, 'agentName' | 'title'>): string {
+  const mortal = chapter.agentName.trim() || 'A mortal';
+  const title = chapter.title?.trim();
+  return title
+    ? NEEDS_YOU_CHAPTER_WAITING_LINE.replace('{mortal}', mortal).replace('{title}', title)
+    : NEEDS_YOU_CHAPTER_WAITING_UNTITLED.replace('{mortal}', mortal);
 }
 
 /** A held row's line: the home list's held line, its slots filled, never a raw id. */
@@ -343,6 +378,24 @@ export const NEEDS_YOU_PRODUCERS: readonly NeedsYouProducer[] = [
         // No hex: the row still names the pause, but has nothing to show (Law 25).
         opens: p.hex ? 'place' : 'none', action: p.hex ? NEEDS_YOU_WORDS.show : null, after: false, tick: p.tick,
         ...(p.hex ? { hex: p.hex } : {}),
+      }];
+    },
+  },
+  {
+    // THR-2266 — a chapter the world holds back (the quiet day after an Aftermath, a card
+    // in hand). The row opens it at once; a press is the player asking for it.
+    id: 'chapter_waiting',
+    group: 'waiting',
+    order: 4,
+    rows: (src) => {
+      const c = src.heldChapter;
+      if (!c || !chapterHoldIsWaiting(c.heldBy)) return [];
+      const line = chapterWaitingLine(c);
+      return [{
+        id: `chapter_waiting:${c.notificationId}`, producer: 'chapter_waiting', group: 'waiting', icon: 'needs-you',
+        line, tooltip: line, opens: 'chapter', action: NEEDS_YOU_WORDS.open, after: false, tick: c.tick,
+        notificationId: c.notificationId,
+        navigationTarget: { kind: 'agent', agentId: c.agentId },
       }];
     },
   },
@@ -476,6 +529,7 @@ export function needsYouStamp(src: NeedsYouSources): string {
     src.beatOffer ? `${src.beatOffer.kind}:${src.beatOffer.beatId}:${src.beatOffer.title ?? ''}:${src.beatOffer.blocked ? 'blocked' : ''}` : '',
     src.receipts.map(r => r.id).join(','),
     src.namedPause ? `${src.namedPause.tick}:${src.namedPause.line}` : '',
+    src.heldChapter ? `${src.heldChapter.notificationId}:${src.heldChapter.heldBy.join('+')}:${src.heldChapter.title ?? ''}` : '',
     src.held.map(h => `${h.kind}:${h.subject ?? ''}:${h.title ?? ''}`).join(','),
     src.alerts.map(a => a.id).join(','),
   ].join('|');
