@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-21 07:00 local (06:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-21 07:58 local (06:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
 
@@ -11,6 +11,8 @@ About 1 in 4 of Kael's chapters is "Theirs alone": it plays out without you and 
 ### What should the design lane plan next? (21 Nov)
 
 "The build queue is almost empty again. Overnight the builders finished most of "make the ending a game". One fix is waiting to be built: [the Doom panel's raw numbers](https://linear.app/threadbare/issue/THR-2270). The design lane is working on the last open problem: [the race forecast tells a chapters-only player the Mandate wins when Doom actually ends the age](https://linear.app/threadbare/issue/THR-2267). After that, no agreed work is left to design. You can reply to the brief's standing question, "what should the design lane plan next?", at any time. If you say nothing, the lanes wait for warm round 5 to check these fixes." *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-21.md)*
+
+Update 21 Nov, 06:58 UTC: the design lane finished the race-forecast fix ([its report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-21b.md)), so no agreed design work is left now.
 
 ### Pick the carved icon shapes (reserved for you)
 
