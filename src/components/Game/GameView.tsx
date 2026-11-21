@@ -3057,11 +3057,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     // chapters' beats wait until it has opened (or the card has yielded).
     // THR-2266 — no scan, no waiting row (the one-tick suppression window keeps the last one).
     const clearHeldChapter = () => setHeldChapter(prev => (prev === null ? prev : null));
-    if (liveAnswerPending) { clearHeldChapter(); return; }
+    if (liveAnswerPending || activePremonition) clearHeldChapter();
+    if (liveAnswerPending) return;
     if (isEncounterAutoOpenSuppressed(interruptsSuppressed, running)) return;
     // Don't auto-open tiered encounters while a premonition modal is active —
     // compulsion handles encounter selection for that agent
-    if (activePremonition) { clearHeldChapter(); return; }
+    if (activePremonition) return;
     const notifications = gameState.encounterNotifications ?? [];
     if (suppressedEncounterNotificationId.current) {
       const suppressedStillPending = notifications.some(
@@ -3133,10 +3134,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           agentId: waiting.agentId,
           encounterId: waiting.encounterId,
           reason: 'breather',
-          heldBy,
+          heldBy: [...heldBy],
           ticksLeft: waitingBreather,
           summary: `encounter.auto_open_held: ${waiting.encounterName || waiting.encounterId} waits ${waitingBreather} tick(s) — the quiet day after an Aftermath`,
-        } as unknown as Parameters<typeof emitTrace>[0]);
+        });
       }
       // A breather hold looks again on the next tick (`breatherTicksLeft` is a dep).
       if (!heldBy.includes('recent_input')) return;
