@@ -3156,6 +3156,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // eslint-disable-next-line react-hooks/exhaustive-deps -- gameState.tick is read for the trace/row stamp only; breatherTicksLeft re-runs the scan each tick of a quiet day
   }, [gameState.encounterNotifications, handleOpenEncounterFromNotification, interruptsSuppressed, running, activePremonition, encounterHoldRecheck, canOpenEncounterNotification, liveAnswerPending, breatherTicksLeft]);
 
+  // THR-2266 (review gate) — every route that mounts a chapter (the scan, a badge, Needs
+  // you, the Witness delivery, a debug lever) marks it opened, so its later beats never wait
+  // out a quiet day. Effects run in order, so this lands before the next scan reads the set.
+  const mountedChapterNotification = tieredEncounterState?.notification;
+  useEffect(() => {
+    if (mountedChapterNotification) rememberOpenedChapter(mountedChapterNotification);
+  }, [mountedChapterNotification, rememberOpenedChapter]);
+
   // THR-1724 (review gate) — a minimised step the world resolved without the
   // player must not leave a badge that opens nothing. Since THR-1730 a
   // minimised pause-tier unified-action step is held and does not resolve, so
