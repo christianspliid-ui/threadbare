@@ -1,0 +1,3 @@
+ending (hands-off vs played): beat 2 differs on 3/3 seeds; H6 or H7 differs on 2 (H6 moved by 7:bag) → predicate HOLDS
+win predicate: hands-off finishes 0/3 (max 0) ✓ · full finishes before Doom 0.8 3/3 (min 2) ✓ · chapters-only finishes before Doom 0.8 0/3 (max 0) ✓ · chapters-only ≥0.1 above hands-off 3/3 (min 2) ✓ · purse refused 832/965 place casts (0.86, min 0.25) ✓ → HOLDS
+race predicate: turns ≤3 per age on 8/9 seed-arms (max 6; over 7/greedy:6) ✗ · greedy names the ending at Doom 0.8 0/3 (min 2; 42:mandate_first/doom✗ 99:mandate_first/doom✗ 7:mandate_first/doom✗) ✗ · full names the ending at Doom 0.8 3/3 (min 2; 42:mandate_first@end/mandate✓ 99:mandate_first@end/mandate✓ 7:mandate_first@end/mandate✓) ✓ → NOT MET

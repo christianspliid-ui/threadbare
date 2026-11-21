@@ -1,0 +1,254 @@
+######## HOLD 2 days
+
+agency-42-full.json: sphere fit kP=1.289e-2 kS=4.346e-2 max |progress err| 0.053; at end primary share 1.071 secondary share 1.760
+
+agency-42-full.json  snaps=53  end t636 mandate 0.978 doom 0.704 → neither(t636)  census: climax null@tnull turns 1
+  V0_line          climax null                     turns 1 t336:doom_first->mandate_first  [ending mismatch vs census 0/53]
+  V1_min_recent5   climax null                     turns 1 t336:doom_first->mandate_first
+  V1_min_recent7   climax null                     turns 1 t336:doom_first->mandate_first
+  V2_decay         climax null                     turns 3 t336:doom_first->mandate_first t420:mandate_first->doom_first t504:doom_first->mandate_first
+  V3_per_sphere    climax null                     turns 1 t336:doom_first->mandate_first
+  V4_sphere_slower5 climax null                     turns 1 t336:doom_first->mandate_first
+  V5_sphere_decay  climax null                     turns 3 t336:doom_first->mandate_first t420:mandate_first->doom_first t504:doom_first->mandate_first
+  V6_sphere_recent_half climax null                     turns 1 t336:doom_first->mandate_first
+  V7_sphere_decay_lt05 climax null                     turns 3 t336:doom_first->mandate_first t420:mandate_first->doom_first t504:doom_first->mandate_first
+  V8_sphere_decay_lt033 climax null                     turns 3 t336:doom_first->mandate_first t420:mandate_first->doom_first t504:doom_first->mandate_first
+
+agency-42-greedy.json: sphere fit kP=1.151e-2 kS=4.339e-2 max |progress err| 0.001; at end primary share 0.832 secondary share 1.419
+
+agency-42-greedy.json  snaps=74  end t888 mandate 0.915 doom 0.992 → neither(t888)  census: climax mandate_first@t693 turns 2
+  V0_line          climax mandate_first@t696       turns 2 t480:doom_first->mandate_first t792:mandate_first->doom_first  [ending mismatch vs census 0/74]
+  V1_min_recent5   climax mandate_first@t696       turns 2 t480:doom_first->mandate_first t768:mandate_first->doom_first
+  V1_min_recent7   climax mandate_first@t696       turns 2 t480:doom_first->mandate_first t768:mandate_first->doom_first
+  V2_decay         climax doom_first@t696          turns 2 t480:doom_first->mandate_first t564:mandate_first->doom_first
+  V3_per_sphere    climax doom_first@t696          turns 6 t480:doom_first->mandate_first t564:mandate_first->close t648:close->doom_first t708:doom_first->mandate_first t744:mandate_first->close t792:close->doom_first
+  V4_sphere_slower5 climax doom_first@t696          turns 4 t480:doom_first->mandate_first t540:mandate_first->doom_first t708:doom_first->mandate_first t768:mandate_first->doom_first
+  V5_sphere_decay  climax doom_first@t696          turns 2 t708:doom_first->mandate_first t768:mandate_first->doom_first
+  V6_sphere_recent_half climax mandate_first@t696       turns 4 t480:doom_first->mandate_first t564:mandate_first->doom_first t684:doom_first->mandate_first t768:mandate_first->doom_first
+  V7_sphere_decay_lt05 climax doom_first@t696          turns 5 t480:doom_first->mandate_first t564:mandate_first->doom_first t708:doom_first->mandate_first t744:mandate_first->close t792:close->doom_first
+  V8_sphere_decay_lt033 climax doom_first@t696          turns 5 t480:doom_first->mandate_first t564:mandate_first->doom_first t708:doom_first->mandate_first t744:mandate_first->close t792:close->doom_first
+
+agency-42-none.json: sphere fit kP=1.289e-2 kS=4.346e-2 max |progress err| 0.000; at end primary share 0.003 secondary share 0.304
+
+agency-42-none.json  snaps=73  end t876 mandate 0.153 doom 0.999 → neither(t876)  census: climax doom_first@t684 turns 0
+  V0_line          climax doom_first@t684          turns 0   [ending mismatch vs census 0/73]
+  V1_min_recent5   climax doom_first@t684          turns 0 
+  V1_min_recent7   climax doom_first@t684          turns 0 
+  V2_decay         climax doom_first@t684          turns 0 
+  V3_per_sphere    climax doom_first@t684          turns 0 
+  V4_sphere_slower5 climax doom_first@t684          turns 0 
+  V5_sphere_decay  climax doom_first@t684          turns 0 
+  V6_sphere_recent_half climax doom_first@t684          turns 0 
+  V7_sphere_decay_lt05 climax doom_first@t684          turns 0 
+  V8_sphere_decay_lt033 climax doom_first@t684          turns 0 
+
+agency-7-full.json: sphere fit kP=1.189e-2 kS=4.200e-2 max |progress err| 0.017; at end primary share 1.007 secondary share 2.360
+
+agency-7-full.json  snaps=52  end t624 mandate 0.987 doom 0.768 → neither(t624)  census: climax null@tnull turns 1
+  V0_line          climax null                     turns 1 t336:doom_first->mandate_first  [ending mismatch vs census 1/52]
+  V1_min_recent5   climax null                     turns 1 t336:doom_first->mandate_first
+  V1_min_recent7   climax null                     turns 1 t336:doom_first->mandate_first
+  V2_decay         climax null                     turns 3 t336:doom_first->mandate_first t420:mandate_first->doom_first t516:doom_first->mandate_first
+  V3_per_sphere    climax null                     turns 1 t348:doom_first->mandate_first
+  V4_sphere_slower5 climax null                     turns 1 t348:doom_first->mandate_first
+  V5_sphere_decay  climax null                     turns 3 t348:doom_first->mandate_first t432:mandate_first->doom_first t516:doom_first->mandate_first
+  V6_sphere_recent_half climax null                     turns 1 t336:doom_first->mandate_first
+  V7_sphere_decay_lt05 climax null                     turns 3 t348:doom_first->mandate_first t432:mandate_first->doom_first t516:doom_first->mandate_first
+  V8_sphere_decay_lt033 climax null                     turns 3 t348:doom_first->mandate_first t432:mandate_first->doom_first t492:doom_first->mandate_first
+
+agency-7-greedy.json: sphere fit kP=1.158e-2 kS=4.326e-2 max |progress err| 0.001; at end primary share 0.602 secondary share 0.909
+
+agency-7-greedy.json  snaps=68  end t816 mandate 0.755 doom 0.997 → neither(t816)  census: climax mandate_first@t627 turns 6
+  V0_line          climax mandate_first@t636       turns 6 t360:doom_first->mandate_first t492:mandate_first->close t528:close->doom_first t600:doom_first->mandate_first t648:mandate_first->close t696:close->doom_first  [ending mismatch vs census 4/68]
+  V1_min_recent5   climax mandate_first@t636       turns 4 t360:doom_first->mandate_first t468:mandate_first->doom_first t600:doom_first->mandate_first t660:mandate_first->doom_first
+  V1_min_recent7   climax mandate_first@t636       turns 5 t360:doom_first->mandate_first t468:mandate_first->doom_first t600:doom_first->mandate_first t648:mandate_first->close t684:close->doom_first
+  V2_decay         climax mandate_first@t636       turns 5 t360:doom_first->mandate_first t444:mandate_first->doom_first t600:doom_first->mandate_first t648:mandate_first->close t684:close->doom_first
+  V3_per_sphere    climax doom_first@t636          turns 2 t432:doom_first->close t528:close->doom_first
+  V4_sphere_slower5 climax doom_first@t636          turns 0 
+  V5_sphere_decay  climax doom_first@t636          turns 0 
+  V6_sphere_recent_half climax doom_first@t636          turns 2 t360:doom_first->mandate_first t444:mandate_first->doom_first
+  V7_sphere_decay_lt05 climax doom_first@t636          turns 0 
+  V8_sphere_decay_lt033 climax doom_first@t636          turns 0 
+
+agency-7-none.json: sphere fit kP=1.189e-2 kS=4.200e-2 max |progress err| 0.000; at end primary share 0.062 secondary share 0.042
+
+agency-7-none.json  snaps=68  end t816 mandate 0.052 doom 0.997 → neither(t816)  census: climax stalled@t629 turns 0
+  V0_line          climax doom_first@t636          turns 0   [ending mismatch vs census 0/68]
+  V1_min_recent5   climax doom_first@t636          turns 0 
+  V1_min_recent7   climax doom_first@t636          turns 0 
+  V2_decay         climax doom_first@t636          turns 0 
+  V3_per_sphere    climax doom_first@t636          turns 0 
+  V4_sphere_slower5 climax doom_first@t636          turns 0 
+  V5_sphere_decay  climax doom_first@t636          turns 0 
+  V6_sphere_recent_half climax doom_first@t636          turns 0 
+  V7_sphere_decay_lt05 climax doom_first@t636          turns 0 
+  V8_sphere_decay_lt033 climax doom_first@t636          turns 0 
+
+agency-99-full.json: sphere fit kP=1.114e-2 kS=4.362e-2 max |progress err| 0.016; at end primary share 0.959 secondary share 1.112
+
+agency-99-full.json  snaps=47  end t564 mandate 0.995 doom 0.657 → neither(t564)  census: climax null@tnull turns 1
+  V0_line          climax null                     turns 1 t336:doom_first->mandate_first  [ending mismatch vs census 0/47]
+  V1_min_recent5   climax null                     turns 1 t336:doom_first->mandate_first
+  V1_min_recent7   climax null                     turns 1 t336:doom_first->mandate_first
+  V2_decay         climax null                     turns 3 t336:doom_first->mandate_first t420:mandate_first->doom_first t504:doom_first->mandate_first
+  V3_per_sphere    climax null                     turns 1 t336:doom_first->mandate_first
+  V4_sphere_slower5 climax null                     turns 1 t336:doom_first->mandate_first
+  V5_sphere_decay  climax null                     turns 3 t336:doom_first->mandate_first t420:mandate_first->doom_first t540:doom_first->mandate_first
+  V6_sphere_recent_half climax null                     turns 1 t336:doom_first->mandate_first
+  V7_sphere_decay_lt05 climax null                     turns 3 t336:doom_first->mandate_first t420:mandate_first->doom_first t504:doom_first->mandate_first
+  V8_sphere_decay_lt033 climax null                     turns 3 t336:doom_first->mandate_first t456:mandate_first->doom_first t504:doom_first->mandate_first
+
+agency-99-greedy.json: sphere fit kP=1.152e-2 kS=4.335e-2 max |progress err| 0.001; at end primary share 0.882 secondary share 2.449
+
+agency-99-greedy.json  snaps=71  end t852 mandate 0.94 doom 0.991 → neither(t852)  census: climax mandate_first@t667 turns 3
+  V0_line          climax close@t672               turns 3 t336:doom_first->mandate_first t672:mandate_first->close t720:close->doom_first  [ending mismatch vs census 1/71]
+  V1_min_recent5   climax doom_first@t672          turns 4 t336:doom_first->mandate_first t492:mandate_first->doom_first t552:doom_first->mandate_first t672:mandate_first->doom_first
+  V1_min_recent7   climax close@t672               turns 5 t336:doom_first->mandate_first t516:mandate_first->doom_first t552:doom_first->mandate_first t636:mandate_first->close t684:close->doom_first
+  V2_decay         climax doom_first@t672          turns 2 t336:doom_first->mandate_first t516:mandate_first->doom_first
+  V3_per_sphere    climax mandate_first@t672       turns 3 t360:doom_first->mandate_first t684:mandate_first->close t720:close->doom_first
+  V4_sphere_slower5 climax doom_first@t672          turns 6 t360:doom_first->mandate_first t396:mandate_first->doom_first t432:doom_first->mandate_first t492:mandate_first->doom_first t552:doom_first->mandate_first t672:mandate_first->doom_first
+  V5_sphere_decay  climax doom_first@t672          turns 2 t360:doom_first->mandate_first t444:mandate_first->doom_first
+  V6_sphere_recent_half climax close@t672               turns 5 t336:doom_first->mandate_first t516:mandate_first->doom_first t552:doom_first->mandate_first t648:mandate_first->close t696:close->doom_first
+  V7_sphere_decay_lt05 climax mandate_first@t672       turns 4 t360:doom_first->mandate_first t444:mandate_first->doom_first t552:doom_first->mandate_first t696:mandate_first->doom_first
+  V8_sphere_decay_lt033 climax mandate_first@t672       turns 4 t360:doom_first->mandate_first t444:mandate_first->doom_first t552:doom_first->mandate_first t696:mandate_first->doom_first
+
+agency-99-none.json: sphere fit kP=1.190e-2 kS=4.318e-2 max |progress err| 0.001; at end primary share 0.050 secondary share 0.216
+
+agency-99-none.json  snaps=71  end t852 mandate 0.133 doom 0.995 → neither(t852)  census: climax stalled@t666 turns 0
+  V0_line          climax doom_first@t672          turns 0   [ending mismatch vs census 0/71]
+  V1_min_recent5   climax doom_first@t672          turns 0 
+  V1_min_recent7   climax doom_first@t672          turns 0 
+  V2_decay         climax doom_first@t672          turns 0 
+  V3_per_sphere    climax doom_first@t672          turns 0 
+  V4_sphere_slower5 climax doom_first@t672          turns 0 
+  V5_sphere_decay  climax doom_first@t672          turns 0 
+  V6_sphere_recent_half climax doom_first@t672          turns 0 
+  V7_sphere_decay_lt05 climax doom_first@t672          turns 0 
+  V8_sphere_decay_lt033 climax doom_first@t672          turns 0 
+######## HOLD 4 days
+
+agency-42-full.json: sphere fit kP=1.289e-2 kS=4.346e-2 max |progress err| 0.053; at end primary share 1.071 secondary share 1.760
+
+agency-42-full.json  snaps=53  end t636 mandate 0.978 doom 0.704 → neither(t636)  census: climax null@tnull turns 1
+  V0_line          climax null                     turns 1 t360:doom_first->mandate_first  [ending mismatch vs census 2/53]
+  V1_min_recent5   climax null                     turns 1 t360:doom_first->mandate_first
+  V1_min_recent7   climax null                     turns 1 t360:doom_first->mandate_first
+  V2_decay         climax null                     turns 3 t360:doom_first->mandate_first t444:mandate_first->doom_first t528:doom_first->mandate_first
+  V3_per_sphere    climax null                     turns 1 t360:doom_first->mandate_first
+  V4_sphere_slower5 climax null                     turns 1 t360:doom_first->mandate_first
+  V5_sphere_decay  climax null                     turns 3 t360:doom_first->mandate_first t444:mandate_first->doom_first t528:doom_first->mandate_first
+  V6_sphere_recent_half climax null                     turns 1 t360:doom_first->mandate_first
+  V7_sphere_decay_lt05 climax null                     turns 3 t360:doom_first->mandate_first t444:mandate_first->doom_first t528:doom_first->mandate_first
+  V8_sphere_decay_lt033 climax null                     turns 3 t360:doom_first->mandate_first t444:mandate_first->doom_first t528:doom_first->mandate_first
+
+agency-42-greedy.json: sphere fit kP=1.151e-2 kS=4.339e-2 max |progress err| 0.001; at end primary share 0.832 secondary share 1.419
+
+agency-42-greedy.json  snaps=74  end t888 mandate 0.915 doom 0.992 → neither(t888)  census: climax mandate_first@t693 turns 2
+  V0_line          climax mandate_first@t696       turns 2 t504:doom_first->mandate_first t816:mandate_first->doom_first  [ending mismatch vs census 4/74]
+  V1_min_recent5   climax mandate_first@t696       turns 2 t504:doom_first->mandate_first t792:mandate_first->doom_first
+  V1_min_recent7   climax mandate_first@t696       turns 2 t504:doom_first->mandate_first t792:mandate_first->doom_first
+  V2_decay         climax doom_first@t696          turns 2 t504:doom_first->mandate_first t588:mandate_first->doom_first
+  V3_per_sphere    climax close@t696               turns 3 t504:doom_first->mandate_first t588:mandate_first->close t816:close->doom_first
+  V4_sphere_slower5 climax doom_first@t696          turns 2 t504:doom_first->mandate_first t564:mandate_first->doom_first
+  V5_sphere_decay  climax doom_first@t696          turns 0 
+  V6_sphere_recent_half climax doom_first@t696          turns 4 t504:doom_first->mandate_first t588:mandate_first->doom_first t708:doom_first->mandate_first t792:mandate_first->doom_first
+  V7_sphere_decay_lt05 climax doom_first@t696          turns 2 t504:doom_first->mandate_first t588:mandate_first->doom_first
+  V8_sphere_decay_lt033 climax doom_first@t696          turns 2 t504:doom_first->mandate_first t588:mandate_first->doom_first
+
+agency-42-none.json: sphere fit kP=1.289e-2 kS=4.346e-2 max |progress err| 0.000; at end primary share 0.003 secondary share 0.304
+
+agency-42-none.json  snaps=73  end t876 mandate 0.153 doom 0.999 → neither(t876)  census: climax doom_first@t684 turns 0
+  V0_line          climax doom_first@t684          turns 0   [ending mismatch vs census 0/73]
+  V1_min_recent5   climax doom_first@t684          turns 0 
+  V1_min_recent7   climax doom_first@t684          turns 0 
+  V2_decay         climax doom_first@t684          turns 0 
+  V3_per_sphere    climax doom_first@t684          turns 0 
+  V4_sphere_slower5 climax doom_first@t684          turns 0 
+  V5_sphere_decay  climax doom_first@t684          turns 0 
+  V6_sphere_recent_half climax doom_first@t684          turns 0 
+  V7_sphere_decay_lt05 climax doom_first@t684          turns 0 
+  V8_sphere_decay_lt033 climax doom_first@t684          turns 0 
+
+agency-7-full.json: sphere fit kP=1.189e-2 kS=4.200e-2 max |progress err| 0.017; at end primary share 1.007 secondary share 2.360
+
+agency-7-full.json  snaps=52  end t624 mandate 0.987 doom 0.768 → neither(t624)  census: climax null@tnull turns 1
+  V0_line          climax null                     turns 1 t360:doom_first->mandate_first  [ending mismatch vs census 1/52]
+  V1_min_recent5   climax null                     turns 1 t360:doom_first->mandate_first
+  V1_min_recent7   climax null                     turns 1 t360:doom_first->mandate_first
+  V2_decay         climax null                     turns 3 t360:doom_first->mandate_first t444:mandate_first->doom_first t612:doom_first->mandate_first
+  V3_per_sphere    climax null                     turns 1 t372:doom_first->mandate_first
+  V4_sphere_slower5 climax null                     turns 1 t372:doom_first->mandate_first
+  V5_sphere_decay  climax null                     turns 3 t372:doom_first->mandate_first t456:mandate_first->doom_first t612:doom_first->mandate_first
+  V6_sphere_recent_half climax null                     turns 1 t360:doom_first->mandate_first
+  V7_sphere_decay_lt05 climax null                     turns 3 t372:doom_first->mandate_first t456:mandate_first->doom_first t540:doom_first->mandate_first
+  V8_sphere_decay_lt033 climax null                     turns 3 t372:doom_first->mandate_first t456:mandate_first->doom_first t516:doom_first->mandate_first
+
+agency-7-greedy.json: sphere fit kP=1.158e-2 kS=4.326e-2 max |progress err| 0.001; at end primary share 0.602 secondary share 0.909
+
+agency-7-greedy.json  snaps=68  end t816 mandate 0.755 doom 0.997 → neither(t816)  census: climax mandate_first@t627 turns 6
+  V0_line          climax doom_first@t636          turns 2 t456:doom_first->mandate_first t552:mandate_first->doom_first  [ending mismatch vs census 20/68]
+  V1_min_recent5   climax doom_first@t636          turns 0 
+  V1_min_recent7   climax doom_first@t636          turns 0 
+  V2_decay         climax doom_first@t636          turns 0 
+  V3_per_sphere    climax doom_first@t636          turns 2 t456:doom_first->close t552:close->doom_first
+  V4_sphere_slower5 climax doom_first@t636          turns 0 
+  V5_sphere_decay  climax doom_first@t636          turns 0 
+  V6_sphere_recent_half climax doom_first@t636          turns 2 t384:doom_first->mandate_first t468:mandate_first->doom_first
+  V7_sphere_decay_lt05 climax doom_first@t636          turns 0 
+  V8_sphere_decay_lt033 climax doom_first@t636          turns 0 
+
+agency-7-none.json: sphere fit kP=1.189e-2 kS=4.200e-2 max |progress err| 0.000; at end primary share 0.062 secondary share 0.042
+
+agency-7-none.json  snaps=68  end t816 mandate 0.052 doom 0.997 → neither(t816)  census: climax stalled@t629 turns 0
+  V0_line          climax doom_first@t636          turns 0   [ending mismatch vs census 0/68]
+  V1_min_recent5   climax doom_first@t636          turns 0 
+  V1_min_recent7   climax doom_first@t636          turns 0 
+  V2_decay         climax doom_first@t636          turns 0 
+  V3_per_sphere    climax doom_first@t636          turns 0 
+  V4_sphere_slower5 climax doom_first@t636          turns 0 
+  V5_sphere_decay  climax doom_first@t636          turns 0 
+  V6_sphere_recent_half climax doom_first@t636          turns 0 
+  V7_sphere_decay_lt05 climax doom_first@t636          turns 0 
+  V8_sphere_decay_lt033 climax doom_first@t636          turns 0 
+
+agency-99-full.json: sphere fit kP=1.114e-2 kS=4.362e-2 max |progress err| 0.016; at end primary share 0.959 secondary share 1.112
+
+agency-99-full.json  snaps=47  end t564 mandate 0.995 doom 0.657 → neither(t564)  census: climax null@tnull turns 1
+  V0_line          climax null                     turns 1 t360:doom_first->mandate_first  [ending mismatch vs census 2/47]
+  V1_min_recent5   climax null                     turns 1 t360:doom_first->mandate_first
+  V1_min_recent7   climax null                     turns 1 t360:doom_first->mandate_first
+  V2_decay         climax null                     turns 3 t360:doom_first->mandate_first t444:mandate_first->doom_first t528:doom_first->mandate_first
+  V3_per_sphere    climax null                     turns 1 t360:doom_first->mandate_first
+  V4_sphere_slower5 climax null                     turns 1 t360:doom_first->mandate_first
+  V5_sphere_decay  climax null                     turns 3 t360:doom_first->mandate_first t444:mandate_first->doom_first t564:doom_first->mandate_first
+  V6_sphere_recent_half climax null                     turns 1 t360:doom_first->mandate_first
+  V7_sphere_decay_lt05 climax null                     turns 3 t360:doom_first->mandate_first t444:mandate_first->doom_first t528:doom_first->mandate_first
+  V8_sphere_decay_lt033 climax null                     turns 1 t360:doom_first->mandate_first
+
+agency-99-greedy.json: sphere fit kP=1.152e-2 kS=4.335e-2 max |progress err| 0.001; at end primary share 0.882 secondary share 2.449
+
+agency-99-greedy.json  snaps=71  end t852 mandate 0.94 doom 0.991 → neither(t852)  census: climax mandate_first@t667 turns 3
+  V0_line          climax mandate_first@t672       turns 2 t360:doom_first->mandate_first t744:mandate_first->doom_first  [ending mismatch vs census 8/71]
+  V1_min_recent5   climax mandate_first@t672       turns 4 t360:doom_first->mandate_first t516:mandate_first->doom_first t636:doom_first->mandate_first t696:mandate_first->doom_first
+  V1_min_recent7   climax mandate_first@t672       turns 2 t360:doom_first->mandate_first t708:mandate_first->doom_first
+  V2_decay         climax doom_first@t672          turns 2 t360:doom_first->mandate_first t540:mandate_first->doom_first
+  V3_per_sphere    climax mandate_first@t672       turns 2 t384:doom_first->mandate_first t744:mandate_first->doom_first
+  V4_sphere_slower5 climax mandate_first@t672       turns 4 t456:doom_first->mandate_first t516:mandate_first->doom_first t636:doom_first->mandate_first t696:mandate_first->doom_first
+  V5_sphere_decay  climax doom_first@t672          turns 2 t384:doom_first->mandate_first t468:mandate_first->doom_first
+  V6_sphere_recent_half climax mandate_first@t672       turns 2 t360:doom_first->mandate_first t720:mandate_first->doom_first
+  V7_sphere_decay_lt05 climax mandate_first@t672       turns 4 t384:doom_first->mandate_first t468:mandate_first->doom_first t636:doom_first->mandate_first t720:mandate_first->doom_first
+  V8_sphere_decay_lt033 climax mandate_first@t672       turns 4 t384:doom_first->mandate_first t468:mandate_first->doom_first t636:doom_first->mandate_first t720:mandate_first->doom_first
+
+agency-99-none.json: sphere fit kP=1.190e-2 kS=4.318e-2 max |progress err| 0.001; at end primary share 0.050 secondary share 0.216
+
+agency-99-none.json  snaps=71  end t852 mandate 0.133 doom 0.995 → neither(t852)  census: climax stalled@t666 turns 0
+  V0_line          climax doom_first@t672          turns 0   [ending mismatch vs census 0/71]
+  V1_min_recent5   climax doom_first@t672          turns 0 
+  V1_min_recent7   climax doom_first@t672          turns 0 
+  V2_decay         climax doom_first@t672          turns 0 
+  V3_per_sphere    climax doom_first@t672          turns 0 
+  V4_sphere_slower5 climax doom_first@t672          turns 0 
+  V5_sphere_decay  climax doom_first@t672          turns 0 
+  V6_sphere_recent_half climax doom_first@t672          turns 0 
+  V7_sphere_decay_lt05 climax doom_first@t672          turns 0 
+  V8_sphere_decay_lt033 climax doom_first@t672          turns 0 
