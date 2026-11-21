@@ -5,6 +5,8 @@
  * press asks the host to open that chapter. A 2.5 s click hold shows nothing.
  */
 import { useState } from 'react';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { NeedsYou } from '../frame/NeedsYou';
@@ -36,6 +38,11 @@ describe('THR-2266 — the waiting chapter in Needs you', () => {
     fireEvent.click(row!);
     expect(pressed).toHaveLength(1);
     expect(pressed[0]).toMatchObject({ opens: 'chapter', notificationId: 'n_b1' });
+  });
+
+  it('every mounted chapter is marked opened, whatever route mounted it (review gate)', () => {
+    const src = readFileSync(resolve(__dirname, '../GameView.tsx'), 'utf8');
+    expect(src).toMatch(/const mountedChapterNotification = tieredEncounterState\?\.notification;\s*useEffect\(\(\) => \{\s*if \(mountedChapterNotification\) rememberOpenedChapter\(mountedChapterNotification\);/);
   });
 
   it('shows no row for the 2.5 s click hold', () => {
