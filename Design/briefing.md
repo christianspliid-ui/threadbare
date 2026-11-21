@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-21 04:58 local (03:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-21 05:57 local (04:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -32,12 +32,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy but thin: 2 in Ready for Dev, nothing being built.** [A quiet day on the map between chapters](https://linear.app/threadbare/issue/THR-2266/a-quiet-day-on-the-map-between-chapters-after-a-chapters-aftermath) shipped and is live ([#2884](https://github.com/christianspliid-ui/threadbare/pull/2884)). Both tickets on the shelf are inside their veto windows, so the builder is idle by design: [the Doom panel's raw numbers](https://linear.app/threadbare/issue/THR-2270/the-doom-panels-left-column-shows-raw-numbers-speed-modifier-090-doom) opens at 11:30Z and [the Rebuke card's words](https://linear.app/threadbare/issue/THR-2268/the-rebuke-card-says-it-answers-only-rival-gods-its-words-also-name) at 14:30Z. The design lane is on [the race-forecast fix](https://linear.app/threadbare/issue/THR-2267), the last agreed design work.
+**Healthy but thin: 2 in Ready for Dev, nothing being built.** [A quiet day on the map between chapters](https://linear.app/threadbare/issue/THR-2266/a-quiet-day-on-the-map-between-chapters-after-a-chapters-aftermath) shipped and is live ([#2884](https://github.com/christianspliid-ui/threadbare/pull/2884)). Both tickets on the shelf are inside their veto windows, so the builder is idle by design (its last five runs each stood down for that reason): [the Doom panel's raw numbers](https://linear.app/threadbare/issue/THR-2270/the-doom-panels-left-column-shows-raw-numbers-speed-modifier-090-doom) opens at 11:30Z and [the Rebuke card's words](https://linear.app/threadbare/issue/THR-2268/the-rebuke-card-says-it-answers-only-rival-gods-its-words-also-name) at 14:30Z. The design lane is on [the race-forecast fix](https://linear.app/threadbare/issue/THR-2267), the last agreed design work.
 Items for agents, not you:
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (32 days; last touched 8 Nov, 13 days ago). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- Tick cost is back to normal: 145 ms/tick, 7% under the 7-day median. Last hour's 222 was machine load, not a slower engine.
+- Tick cost is normal: 141 ms/tick, 9% under the 7-day median.
 - Weekend and overnight quiet, not an ask: the lanes were silent for about 12 hours on Sunday 15 Nov (09:57 to 21:48). Per your ruling, that is normal.
 - All green otherwise: the live site serves the latest main (af9c11c1, which includes THR-2266); CI and scheduled jobs green; no PRs waiting to merge; every enabled lane on schedule; the worktree reaper ran within the hour. No UX contact sheet this week yet (the newest, 12 Nov, is over a week old; the next review runs Monday).
