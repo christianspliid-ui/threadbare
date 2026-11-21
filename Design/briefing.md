@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-21 02:00 local (01:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-21 03:00 local (02:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -24,7 +24,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 ## Decided for you
 
 - [The Doom panel's left column shows raw numbers](https://linear.app/threadbare/issue/THR-2270/the-doom-panels-left-column-shows-raw-numbers-speed-modifier-090-doom) — the Doom dialog stops printing engine numbers. "Counter-omens 2" and "Doom debt +1.0" become one row, **"Next Doom card: Lands harder"** or **"Lands softer"**, hidden when the two cancel out or no stage is left. "Speed modifier ×1.05" becomes **"Pace: Hastened"** (or "Slowed"). The Mandate dialog keeps its count of the counter-omens you earned. Veto in chat. The build waits until 11:30Z (12:30 local) for that. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-20d.md)*
-- [Chapters arrive back to back](https://linear.app/threadbare/issue/THR-2263/chapters-arrive-back-to-back-with-no-quiet-beat-on-the-map-the-next) — you now get a quiet day on the map between chapters. When you close a chapter's Aftermath, the world keeps running for one game day (about 12 seconds at normal speed) before it opens the next chapter on its own. While you wait, "Needs you" lists that chapter, and you can open it early. Pausing does not use up the day, and chapters you open yourself never wait. Veto in chat. The build ticket waits until 02:30Z (03:30 local) for that, about an hour and a half from now. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-20b.md)*
+- [Chapters arrive back to back](https://linear.app/threadbare/issue/THR-2263/chapters-arrive-back-to-back-with-no-quiet-beat-on-the-map-the-next) — you now get a quiet day on the map between chapters. When you close a chapter's Aftermath, the world keeps running for one game day (about 12 seconds at normal speed) before it opens the next chapter on its own. While you wait, "Needs you" lists that chapter, and you can open it early. Pausing does not use up the day, and chapters you open yourself never wait. Veto in chat. The build ticket waits until 02:30Z (03:30 local) for that, about half an hour from now. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-20b.md)*
 - [The Doom panel scrolls at its last stage](https://linear.app/threadbare/issue/THR-2269/the-doom-panel-scrolls-at-its-last-stage-at-19201080-the-stage-list) — the Doom dialog now fits on one screen. Each Doom card shows once, in the stage that dealt it; "Recent consequences" goes; passed stages fold to their names. **Already built and live** ([#2882](https://github.com/christianspliid-ui/threadbare/pull/2882)); a veto would undo it. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-20c.md)*
 
 Say "veto <title>" to reverse any of these.
@@ -38,4 +38,4 @@ Items for agents, not you:
 ## Health
 
 - Weekend and overnight quiet, not an ask: the lanes were silent for about 12 hours on Sunday 15 Nov (09:57 to 21:48), and overnight on 18–19 and 19–20 Nov. Per your ruling, that is normal.
-- All green otherwise: the live site serves the latest main (4118b0c2); CI and scheduled jobs green; no PRs waiting to merge; every enabled lane on schedule; the worktree reaper ran within the hour. Tick cost is normal (146 ms/tick, 6% under the 7-day median). No UX contact sheet this week yet (the newest, 12 Nov, is over a week old; the next review runs Monday).
+- All green otherwise: the live site serves the latest main (4118b0c2); CI and scheduled jobs green; no PRs waiting to merge; every enabled lane on schedule; the worktree reaper ran within the hour. Tick cost is normal (161 ms/tick, 4% over the 7-day median). No UX contact sheet this week yet (the newest, 12 Nov, is over a week old; the next review runs Monday).
