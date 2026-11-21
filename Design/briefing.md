@@ -1,12 +1,13 @@
 # Briefing
-**Generated:** 2026-11-21 03:58 local (02:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-21 04:58 local (03:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
 **Should every one of Kael's chapters give you a hand?** About 1 in 4 of The First's chapters is "Theirs alone": it plays out without you. Two of three warm testers asked for cards in every one. Say **"every chapter asks"** or **"keep theirs alone"** ([THR-2174](https://linear.app/threadbare/issue/THR-2174/the-player-cant-tell-which-chapters-wait-for-their-cards-the-gallows)). The design lane leans "every chapter asks". If you say nothing, it stays as it is. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-15b.md)*
 
-## Also waiting (11)
+## Also waiting (12)
 
+- **What should the design lane plan next?** After [the race-forecast fix](https://linear.app/threadbare/issue/THR-2267), no agreed work is left to design. If you say nothing, the lanes wait for warm round 5 to check these fixes. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-21.md)*
 - **Pick the carved icon shapes** for the five open icon classes ([THR-1908](https://linear.app/threadbare/issue/THR-1908/christian-picks-carved-shapes-for-the-five-open-icon-classes-doom), on [the review sheet](https://claude.ai/artifact/X9woLDsYia4iP3uQkk6QjN)) and the Inspector tabs with none yet ([THR-2104](https://linear.app/threadbare/issue/THR-2104/christian-picks-carved-shapes-for-the-inspectors-tabs-with-no-icon-yet)).
 - **Sunday 8 to Thursday 12 Nov:** silent for 103 hours, with no pause recorded. Computer off, app closed, or a pause?
 - **Set the Claude app to open when Windows starts** ([the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)).
@@ -31,12 +32,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 2 in Ready for Dev, 1 being built.** The veto window on [a quiet day on the map between chapters](https://linear.app/threadbare/issue/THR-2266/a-quiet-day-on-the-map-between-chapters-after-a-chapters-aftermath) closed at 02:30Z, and the builder took it straight away; it is in progress now. The two tickets on the shelf are inside their veto windows: [the Doom panel's raw numbers](https://linear.app/threadbare/issue/THR-2270/the-doom-panels-left-column-shows-raw-numbers-speed-modifier-090-doom) until 11:30Z and [the Rebuke card's words](https://linear.app/threadbare/issue/THR-2268/the-rebuke-card-says-it-answers-only-rival-gods-its-words-also-name) until 14:30Z.
+**Healthy but thin: 2 in Ready for Dev, nothing being built.** [A quiet day on the map between chapters](https://linear.app/threadbare/issue/THR-2266/a-quiet-day-on-the-map-between-chapters-after-a-chapters-aftermath) shipped and is live ([#2884](https://github.com/christianspliid-ui/threadbare/pull/2884)). Both tickets on the shelf are inside their veto windows, so the builder is idle by design: [the Doom panel's raw numbers](https://linear.app/threadbare/issue/THR-2270/the-doom-panels-left-column-shows-raw-numbers-speed-modifier-090-doom) opens at 11:30Z and [the Rebuke card's words](https://linear.app/threadbare/issue/THR-2268/the-rebuke-card-says-it-answers-only-rival-gods-its-words-also-name) at 14:30Z. The design lane is on [the race-forecast fix](https://linear.app/threadbare/issue/THR-2267), the last agreed design work.
 Items for agents, not you:
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (32 days; last touched 8 Nov, 13 days ago). No pushed branch or local worktree names it. It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (32 days; last touched 8 Nov, 13 days ago). It needs gate and CI edits that unattended runs may not make, so an agent can un-park it only in a run someone is watching.
 
 ## Health
 
-- **Tick cost is up, for the builder to check, not you:** "tick cost 222 ms/tick steady, 43% above the 7-day median (155, 140 rows since 3f7a04bf); top phase agent_decision, 638 agents. Name the merges between 3f7a04bf and 4118b0c2: git log --oneline --merges 3f7a04bf..4118b0c2". Last hour read 161 ms on the same commit, and two pickup sessions were running on this machine during this measurement, so this may be load rather than a slower engine. Next hour's reading will tell.
-- Weekend and overnight quiet, not an ask: the lanes were silent for about 12 hours on Sunday 15 Nov (09:57 to 21:48), and overnight on 18–19 and 19–20 Nov. Per your ruling, that is normal.
-- All green otherwise: the live site serves the latest main (4118b0c2); CI and scheduled jobs green; no PRs waiting to merge; every enabled lane on schedule; the worktree reaper ran within the hour. No UX contact sheet this week yet (the newest, 12 Nov, is over a week old; the next review runs Monday).
+- Tick cost is back to normal: 145 ms/tick, 7% under the 7-day median. Last hour's 222 was machine load, not a slower engine.
+- Weekend and overnight quiet, not an ask: the lanes were silent for about 12 hours on Sunday 15 Nov (09:57 to 21:48). Per your ruling, that is normal.
+- All green otherwise: the live site serves the latest main (af9c11c1, which includes THR-2266); CI and scheduled jobs green; no PRs waiting to merge; every enabled lane on schedule; the worktree reaper ran within the hour. No UX contact sheet this week yet (the newest, 12 Nov, is over a week old; the next review runs Monday).

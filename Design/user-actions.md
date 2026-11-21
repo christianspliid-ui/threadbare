@@ -1,12 +1,16 @@
 # User Action Required
 
-**Last updated:** 2026-11-21 03:58 local (02:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
+**Last updated:** 2026-11-21 04:58 local (03:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077).
 
 ## Standing asks
 
 ### Should every one of The First's own chapters give you a hand? (new 15 Nov)
 
 About 1 in 4 of Kael's chapters is "Theirs alone": it plays out without you and says so. Two of three warm testers asked for cards in every one. **(a)** Keep it as now. **(b)** Every story chapter of The First deals you a small hand on its first step: about 4 more stops per 300 ticks, from about 10 to about 14. The design lane leans (b), but it changes how The First's life feels. Say **"every chapter asks"** or **"keep theirs alone"**. Details: [THR-2174](https://linear.app/threadbare/issue/THR-2174/the-player-cant-tell-which-chapters-wait-for-their-cards-the-gallows). *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-15b.md)*
+
+### What should the design lane plan next? (21 Nov)
+
+"The build queue is almost empty again. Overnight the builders finished most of "make the ending a game". One fix is waiting to be built: [the Doom panel's raw numbers](https://linear.app/threadbare/issue/THR-2270). The design lane is working on the last open problem: [the race forecast tells a chapters-only player the Mandate wins when Doom actually ends the age](https://linear.app/threadbare/issue/THR-2267). After that, no agreed work is left to design. You can reply to the brief's standing question, "what should the design lane plan next?", at any time. If you say nothing, the lanes wait for warm round 5 to check these fixes." *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-21.md)*
 
 ### Pick the carved icon shapes (reserved for you)
 
@@ -58,6 +62,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-21: after a chapter's aftermath, the map now gets one quiet game day before the next chapter, and Needs you shows "‹Mortal› — ‹chapter› waits for you". It is live** ([THR-2266](https://linear.app/threadbare/issue/THR-2266)). Merged via [#2884](https://github.com/christianspliid-ui/threadbare/pull/2884).
 - **2026-11-21: the Mandate row now arrives with its first mention, and the card's hint waits until the row is on screen. It is live** ([THR-2265](https://linear.app/threadbare/issue/THR-2265)). Merged via [#2883](https://github.com/christianspliid-ui/threadbare/pull/2883).
 - **2026-11-20: the Doom dialog now fits on one screen: each Doom card shows once, in the stage that dealt it, and passed stages fold to their names. It is live** ([THR-2269](https://linear.app/threadbare/issue/THR-2269)). Merged via [#2882](https://github.com/christianspliid-ui/threadbare/pull/2882).
 - **2026-11-20: when your Mandate is behind, the game now points at a place you hold and says "Tend it to raise your Mandate." It is live** ([THR-2254](https://linear.app/threadbare/issue/THR-2254)). Merged via [#2878](https://github.com/christianspliid-ui/threadbare/pull/2878).
@@ -67,7 +72,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-20: a lost chapter no longer shows reputation rising: a lost group contest is settled, and the row stays on the sheet at the floor. It is live** ([THR-2257](https://linear.app/threadbare/issue/THR-2257)). Merged via [#2873](https://github.com/christianspliid-ui/threadbare/pull/2873).
 - **2026-11-20: the screen now says which clock lands first, your Mandate or the Doom, and names the one move that changes it. It is live** ([THR-2252](https://linear.app/threadbare/issue/THR-2252)). Merged via [#2872](https://github.com/christianspliid-ui/threadbare/pull/2872).
 - **2026-11-20: a failed chapter now feeds the Doom at a place; ground you tend starves it, and Rebuke can hold a place it fed. It is live** ([THR-2255](https://linear.app/threadbare/issue/THR-2255)). Merged via [#2871](https://github.com/christianspliid-ui/threadbare/pull/2871).
-- **2026-11-20: the engine now reads the race between your Mandate and the Doom: which clock lands first at the current pace. The screen and census pieces built on it are in the build queue** ([THR-2251](https://linear.app/threadbare/issue/THR-2251)). Merged via [#2869](https://github.com/christianspliid-ui/threadbare/pull/2869).
 
 ---
 
