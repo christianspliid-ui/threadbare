@@ -3161,7 +3161,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // out a quiet day. Effects run in order, so this lands before the next scan reads the set.
   const mountedChapterNotification = tieredEncounterState?.notification;
   useEffect(() => {
-    if (mountedChapterNotification) rememberOpenedChapter(mountedChapterNotification);
+    if (!mountedChapterNotification) return;
+    rememberOpenedChapter(mountedChapterNotification);
+    // Review gate round 2 — the held chapter opened by another route (its badge, while
+    // paused) leaves the scan's deps unchanged, so its waiting row clears here.
+    setHeldChapter(prev => (prev?.notificationId === mountedChapterNotification.id ? null : prev));
   }, [mountedChapterNotification, rememberOpenedChapter]);
 
   // THR-1724 (review gate) — a minimised step the world resolved without the

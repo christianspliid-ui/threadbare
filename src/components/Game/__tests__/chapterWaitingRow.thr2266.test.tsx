@@ -42,7 +42,9 @@ describe('THR-2266 — the waiting chapter in Needs you', () => {
 
   it('every mounted chapter is marked opened, whatever route mounted it (review gate)', () => {
     const src = readFileSync(resolve(__dirname, '../GameView.tsx'), 'utf8');
-    expect(src).toMatch(/const mountedChapterNotification = tieredEncounterState\?\.notification;\s*useEffect\(\(\) => \{\s*if \(mountedChapterNotification\) rememberOpenedChapter\(mountedChapterNotification\);/);
+    expect(src).toMatch(/const mountedChapterNotification = tieredEncounterState\?\.notification;\s*useEffect\(\(\) => \{\s*if \(!mountedChapterNotification\) return;\s*rememberOpenedChapter\(mountedChapterNotification\);/);
+    // Round 2 — the held chapter opened by another route clears its waiting row.
+    expect(src).toMatch(/setHeldChapter\(prev => \(prev\?\.notificationId === mountedChapterNotification\.id \? null : prev\)\);/);
   });
 
   it('shows no row for the 2.5 s click hold', () => {
