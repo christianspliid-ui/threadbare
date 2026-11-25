@@ -1,7 +1,7 @@
 ---
 name: review-gate
 description: The automatic code-review gate (THR-1691). Run before arming auto-merge on a code PR that touches src/engine/ or src/types/ or adds >400 non-test UI lines (THR-1949 scope) — a cold, suspicious reviewer subagent reviews the diff against the Threadbare rubric, a second subagent tries to refute each finding, the author fixes or rebuts what survives (max 2 rounds), and a receipt is written. The PreToolUse hook `.claude/hooks/review-gate.sh` denies `gh pr merge` on a code diff without a clean receipt. Triggers on "review gate", "code review before merge", "review receipt", "the merge was blocked by the review gate".
-last_validated_against: 2026-11-14
+last_validated_against: 2026-11-25
 ---
 
 # Review gate
@@ -20,6 +20,7 @@ Nobody reviews code before it merges here — Christian is chat-only and does no
 2. **Round 1 — cold reviewer.** Spawn a fresh `general-purpose` Agent (foreground) with the *Reviewer prompt* below, the diff path and the repo root. Give it **nothing else** — no ticket, no plan doc, no PR body, no commit messages, no summary of what you meant. Confident framing is what fools reviewers (88% in the study this gate is built on), and every one of our summaries is confident.
 3. **Verify.** If the reviewer returned findings, spawn a second fresh Agent with the *Verifier prompt* and the findings JSON. It tries to refute each one. Only `CONFIRMED` findings survive; drop the rest.
 4. **Fix or rebut.** For each confirmed finding: fix it (new commit), or write a one-line rebuttal grounded in code (`file:line` that proves the scenario cannot happen). A rebuttal goes back to the verifier with the finding; if the verifier still confirms it, it stays `open`.
+   **A finding is a class, not a line.** Before you fix, name the class the finding belongs to (a bare `getNodesByType('location')`, a `Math.random` fallback, an id kept in a property bag) and search the PR's diff for every other site of it. Fix them all in the same commit, and list the sites in the receipt row's `summary`. Sites outside the diff are not this PR's: file them as one ticket. If a round-2 finding has the same root cause as a round-1 fix, the first fix was too narrow: change the approach (remove the second writer, narrow the scope) instead of patching another spelling of it. (Borrowed from Kiro Crew's `AGENTS.md`, 2026-11-25.)
 5. **Round 2 (only if step 4 changed code or had rebuttals).** Re-run steps 1–3 on the new diff. **Two rounds maximum — never loop.**
 6. **Write the receipt.** Build `findings.json` — `{"rounds": N, "findings": [{"severity","file","line","summary","disposition"}]}`, disposition `fixed | rebutted | open`, one row per confirmed finding (an empty list is a valid, clean receipt) — then:
    ```bash

@@ -1,7 +1,7 @@
 ---
 name: impediment-reporter
 description: Loaded by ALL agents on EVERY task. When an agent encounters a blocker, workaround, or unexpected friction, it MUST log the impediment to Docs/impediments.md before continuing. This is part of Definition of Done — work is not complete unless all impediments encountered during the session are logged.
-last_validated_against: 2026-09-25
+last_validated_against: 2026-11-25
 ---
 
 # Impediment Reporter
@@ -89,6 +89,17 @@ When **any single impediment's count exceeds 5**, the agent who increments it pa
 The suggestion should be direct:
 
 > "Impediment #X ('{short description}') has now been reported {count} times. I recommend running `/retrospective` to analyze this and other recurring issues."
+
+## When Christian corrects you — a short post-mortem, not an apology
+
+Christian works in chat only (THR-608), so a correction from him is the most expensive signal this project gets. When he says your output was wrong, fabricated or not what he asked, do not just apologise and retry. Answer with the corrected result, preceded by a few lines that cover:
+
+1. **The failure, named exactly.** "I gave you a wrong file path", "I said X was merged without checking." No "I may have" or "a significant error".
+2. **Three whys:** why the wrong output happened (cause), why you did not catch it before he did (self-detection), and why nothing in the process caught it (guardrail). Stop at a cause you can change, such as "I answered from memory instead of reading the file". "I need to be more careful" is a wish, not a cause.
+3. **Knew, assumed, invented.** Split the bad output into what you had grounds for, what you inferred, and what you made up. If you do not know why you produced it, say so.
+4. **The lesson.** One reusable rule and the check you will run next time. If it applies beyond this task, log it here as an impediment row (category: `skill-gap` when an instruction was missing, otherwise `other`). Do not claim it was saved if it was not.
+
+Keep it short and structural. Self-blame is as useless as vagueness. If the message is not about a mistake in your output (for example, "why did you do that" asking for design rationale), skip this and answer the question. (Borrowed from Kiro Crew's `self-rca` skill, 2026-11-25.)
 
 ## Rules
 
